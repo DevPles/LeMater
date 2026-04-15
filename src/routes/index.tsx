@@ -4,6 +4,7 @@ import { BabySize } from "@/components/BabySize";
 import { QuickActions } from "@/components/QuickActions";
 import { TipCard } from "@/components/TipCard";
 import { motion } from "framer-motion";
+import { Droplets, Footprints, CalendarCheck } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,17 +24,17 @@ const weeklyTips = [
   {
     title: "Hidratação é essencial",
     description: "Beba pelo menos 2 litros de água por dia para manter o líquido amniótico saudável.",
-    emoji: "💧",
+    icon: Droplets,
   },
   {
     title: "Exercícios leves",
     description: "Caminhadas de 30 minutos ajudam na circulação e preparam para o parto.",
-    emoji: "🚶‍♀️",
+    icon: Footprints,
   },
   {
     title: "Próxima consulta",
     description: "Não esqueça do ultrassom morfológico agendado para esta semana.",
-    emoji: "📅",
+    icon: CalendarCheck,
   },
 ];
 

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Activity, Droplets, Weight, Ruler, Heart, ChevronRight } from "lucide-react";
+import { Activity, Droplets, Weight, Heart, Milestone, Scan, Syringe, Clipboard, Stethoscope, CalendarDays } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/prontuario")({
@@ -26,6 +26,13 @@ const vitals = [
   { icon: Droplets, label: "Glicemia", value: "85 mg/dL", change: "Normal", color: "bg-warm text-foreground" },
   { icon: Heart, label: "BCF", value: "142 bpm", change: "Normal", color: "bg-blush text-foreground" },
 ];
+
+const timelineIcons: Record<string, React.ElementType> = {
+  "Consulta pré-natal": Stethoscope,
+  "Ultrassom morfológico": Scan,
+  "1º Ultrassom": Scan,
+  "Próxima consulta": CalendarDays,
+};
 
 const timeline = [
   { week: 24, date: "10/04/2026", event: "Consulta pré-natal", notes: "Peso e pressão normais. Ultrassom sem alterações.", status: "done" },
@@ -55,8 +62,8 @@ function ProntuarioPage() {
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-full bg-coral-light flex items-center justify-center text-xl">
-            🤰
+          <div className="w-12 h-12 rounded-full bg-coral-light flex items-center justify-center">
+            <Clipboard className="w-6 h-6 text-primary" />
           </div>
           <div>
             <h2 className="font-semibold text-foreground">{patientInfo.name}</h2>
@@ -103,33 +110,38 @@ function ProntuarioPage() {
       <div className="relative">
         <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-border" />
         <div className="space-y-4">
-          {timeline.map((item, i) => (
-            <motion.div
-              key={i}
-              className="relative pl-12"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <div
-                className={`absolute left-3.5 w-3 h-3 rounded-full border-2 ${
-                  item.status === "upcoming"
-                    ? "bg-primary border-primary"
-                    : "bg-card border-border"
-                }`}
-              />
-              <div className="bg-card rounded-xl p-3 shadow-sm border border-border">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-semibold text-primary">
-                    Semana {item.week}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{item.date}</span>
+          {timeline.map((item, i) => {
+            const TimeIcon = timelineIcons[item.event] || Milestone;
+            return (
+              <motion.div
+                key={i}
+                className="relative pl-12"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <div
+                  className={`absolute left-3 w-5 h-5 rounded-full flex items-center justify-center ${
+                    item.status === "upcoming"
+                      ? "bg-primary"
+                      : "bg-card border-2 border-border"
+                  }`}
+                >
+                  <TimeIcon className={`w-3 h-3 ${item.status === "upcoming" ? "text-primary-foreground" : "text-muted-foreground"}`} />
                 </div>
-                <h4 className="font-medium text-sm text-foreground">{item.event}</h4>
-                <p className="text-xs text-muted-foreground mt-1">{item.notes}</p>
-              </div>
-            </motion.div>
-          ))}
+                <div className="bg-card rounded-xl p-3 shadow-sm border border-border">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold text-primary">
+                      Semana {item.week}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{item.date}</span>
+                  </div>
+                  <h4 className="font-medium text-sm text-foreground">{item.event}</h4>
+                  <p className="text-xs text-muted-foreground mt-1">{item.notes}</p>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </div>
