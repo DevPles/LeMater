@@ -1,26 +1,72 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { WeekProgress } from "@/components/WeekProgress";
+import { BabySize } from "@/components/BabySize";
+import { QuickActions } from "@/components/QuickActions";
+import { TipCard } from "@/components/TipCard";
+import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "MãeDigital — Cartão da Gestante" },
+      { name: "description", content: "Acompanhe sua gestação com suporte de profissionais de saúde, vídeos educativos e prontuário digital." },
+      { property: "og:title", content: "MãeDigital — Cartão da Gestante" },
+      { property: "og:description", content: "Acompanhe sua gestação com suporte de profissionais de saúde." },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. For sites with multiple pages (About, Services, Contact, etc.),
-// create separate route files (about.tsx, services.tsx, contact.tsx) — don't put all pages in this file.
-function PlaceholderIndex() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
+const CURRENT_WEEK = 24;
+
+const weeklyTips = [
+  {
+    title: "Hidratação é essencial",
+    description: "Beba pelo menos 2 litros de água por dia para manter o líquido amniótico saudável.",
+    emoji: "💧",
+  },
+  {
+    title: "Exercícios leves",
+    description: "Caminhadas de 30 minutos ajudam na circulação e preparam para o parto.",
+    emoji: "🚶‍♀️",
+  },
+  {
+    title: "Próxima consulta",
+    description: "Não esqueça do ultrassom morfológico agendado para esta semana.",
+    emoji: "📅",
+  },
+];
 
 function Index() {
-  return <PlaceholderIndex />;
+  return (
+    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-6"
+      >
+        <p className="text-sm text-muted-foreground">Olá, Maria 👋</p>
+        <h1 className="text-2xl font-bold font-display text-foreground">
+          Minha Gestação
+        </h1>
+      </motion.div>
+
+      <div className="space-y-5">
+        <WeekProgress currentWeek={CURRENT_WEEK} />
+        <BabySize week={CURRENT_WEEK} />
+        <QuickActions />
+
+        <div>
+          <h3 className="font-display font-semibold text-lg text-foreground mb-3">
+            Dicas da semana
+          </h3>
+          <div className="space-y-3">
+            {weeklyTips.map((tip) => (
+              <TipCard key={tip.title} {...tip} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
