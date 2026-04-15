@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { LucideIcon } from "lucide-react";
-import { AlertTriangle, CheckCircle, Clock, FlaskConical, CalendarDays, Moon, Play, Scan, Syringe } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, FlaskConical, CalendarDays, Info, Moon, Play, Scan, Syringe } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/alertas")({
@@ -72,10 +72,12 @@ const alerts = [
 
 const typeConfig = {
   warning: {
+    icon: AlertTriangle,
     bg: "bg-warm",
     iconColor: "text-chart-3",
   },
   info: {
+    icon: Info,
     bg: "bg-mint-light",
     iconColor: "text-accent-foreground",
   },
