@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Bell, AlertTriangle, CheckCircle, Info, Clock } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, FlaskConical, CalendarDays, Moon, Play, Scan, Syringe } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/alertas")({
@@ -16,6 +17,7 @@ const alerts = [
   {
     id: 1,
     type: "warning" as const,
+    icon: FlaskConical,
     title: "Exame pendente",
     description: "O teste de tolerância à glicose deve ser realizado até a semana 28.",
     time: "Há 2 horas",
@@ -24,6 +26,7 @@ const alerts = [
   {
     id: 2,
     type: "info" as const,
+    icon: Syringe,
     title: "Vacina da gripe",
     description: "A vacina contra influenza é recomendada durante a gestação. Converse com seu médico.",
     time: "Hoje",
@@ -32,6 +35,7 @@ const alerts = [
   {
     id: 3,
     type: "success" as const,
+    icon: Scan,
     title: "Ultrassom morfológico OK",
     description: "Resultado do ultrassom morfológico da semana 22 sem alterações.",
     time: "2 dias atrás",
@@ -40,6 +44,7 @@ const alerts = [
   {
     id: 4,
     type: "info" as const,
+    icon: Moon,
     title: "Dica: Posição para dormir",
     description: "A partir do 2º trimestre, prefira dormir de lado esquerdo para melhor circulação.",
     time: "3 dias atrás",
@@ -48,6 +53,7 @@ const alerts = [
   {
     id: 5,
     type: "warning" as const,
+    icon: CalendarDays,
     title: "Consulta em 5 dias",
     description: "Sua próxima consulta pré-natal está agendada para 15/04/2026 às 10h.",
     time: "Ontem",
@@ -56,6 +62,7 @@ const alerts = [
   {
     id: 6,
     type: "info" as const,
+    icon: Play,
     title: "Novo vídeo disponível",
     description: "A Dra. Ana Costa publicou um vídeo sobre preparação para o parto normal.",
     time: "4 dias atrás",
@@ -65,12 +72,10 @@ const alerts = [
 
 const typeConfig = {
   warning: {
-    icon: AlertTriangle,
     bg: "bg-warm",
     iconColor: "text-chart-3",
   },
   info: {
-    icon: Info,
     bg: "bg-mint-light",
     iconColor: "text-accent-foreground",
   },
@@ -79,7 +84,7 @@ const typeConfig = {
     bg: "bg-mint-light",
     iconColor: "text-accent-foreground",
   },
-};
+} satisfies Record<string, { icon?: LucideIcon; bg: string; iconColor: string }>;
 
 function AlertasPage() {
   const unread = alerts.filter((a) => !a.read);
@@ -111,6 +116,7 @@ function AlertasPage() {
           <div className="space-y-3">
             {unread.map((alert, i) => {
               const config = typeConfig[alert.type];
+              const AlertIcon = alert.icon ?? config.icon ?? AlertTriangle;
               return (
                 <motion.div
                   key={alert.id}
@@ -121,7 +127,7 @@ function AlertasPage() {
                 >
                   <div className="flex gap-3">
                     <div className={`w-9 h-9 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}>
-                      <config.icon className={`w-4 h-4 ${config.iconColor}`} />
+                      <AlertIcon className={`w-4 h-4 ${config.iconColor}`} />
                     </div>
                     <div className="flex-1">
                       <h4 className="font-semibold text-sm text-foreground">{alert.title}</h4>
@@ -148,6 +154,7 @@ function AlertasPage() {
         <div className="space-y-3">
           {read.map((alert, i) => {
             const config = typeConfig[alert.type];
+            const AlertIcon = alert.icon ?? config.icon ?? AlertTriangle;
             return (
               <motion.div
                 key={alert.id}
@@ -158,7 +165,7 @@ function AlertasPage() {
               >
                 <div className="flex gap-3">
                   <div className={`w-9 h-9 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}>
-                    <config.icon className={`w-4 h-4 ${config.iconColor}`} />
+                    <AlertIcon className={`w-4 h-4 ${config.iconColor}`} />
                   </div>
                   <div className="flex-1">
                     <h4 className="font-semibold text-sm text-foreground">{alert.title}</h4>

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Play, Clock, User, Stethoscope, Salad, Dumbbell, Heart, Baby, Flower2 } from "lucide-react";
+import { Play, Clock, Stethoscope, Salad, Dumbbell, Heart, Baby, Flower2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/videos")({
@@ -23,6 +23,7 @@ const videos = [
     duration: "12:30",
     category: "Parto",
     icon: Stethoscope,
+    authorIcon: Heart,
     gradient: "from-coral-light to-blush",
   },
   {
@@ -33,6 +34,7 @@ const videos = [
     duration: "8:45",
     category: "Nutrição",
     icon: Salad,
+    authorIcon: Salad,
     gradient: "from-mint-light to-warm",
   },
   {
@@ -43,6 +45,7 @@ const videos = [
     duration: "15:20",
     category: "Exercícios",
     icon: Dumbbell,
+    authorIcon: Dumbbell,
     gradient: "from-warm to-coral-light",
   },
   {
@@ -53,6 +56,7 @@ const videos = [
     duration: "10:15",
     category: "Amamentação",
     icon: Heart,
+    authorIcon: Baby,
     gradient: "from-blush to-coral-light",
   },
   {
@@ -63,6 +67,7 @@ const videos = [
     duration: "7:50",
     category: "Parto",
     icon: Baby,
+    authorIcon: Stethoscope,
     gradient: "from-mint-light to-blush",
   },
   {
@@ -73,6 +78,7 @@ const videos = [
     duration: "11:00",
     category: "Pós-parto",
     icon: Flower2,
+    authorIcon: Flower2,
     gradient: "from-coral-light to-mint-light",
   },
 ];
@@ -107,6 +113,7 @@ function VideosPage() {
       <div className="space-y-4">
         {videos.map((video, i) => {
           const IconComp = video.icon;
+          const AuthorIcon = video.authorIcon;
           return (
             <motion.div
               key={video.id}
@@ -131,7 +138,7 @@ function VideosPage() {
                 <h3 className="font-semibold text-sm text-foreground">{video.title}</h3>
                 <div className="flex items-center gap-2 mt-2">
                   <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
-                    <User className="w-3 h-3 text-muted-foreground" />
+                    <AuthorIcon className="w-3 h-3 text-muted-foreground" />
                   </div>
                   <div>
                     <p className="text-xs font-medium text-foreground">{video.author}</p>
