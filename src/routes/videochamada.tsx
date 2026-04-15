@@ -20,6 +20,7 @@ const professionals = [
     rating: 4.9,
     available: true,
     icon: Stethoscope,
+    actionIcon: Video,
     nextSlot: "Hoje, 14:00",
   },
   {
@@ -29,6 +30,7 @@ const professionals = [
     rating: 4.8,
     available: true,
     icon: HeartHandshake,
+    actionIcon: Phone,
     nextSlot: "Hoje, 16:30",
   },
   {
@@ -38,6 +40,7 @@ const professionals = [
     rating: 5.0,
     available: false,
     icon: Activity,
+    actionIcon: Calendar,
     nextSlot: "Amanhã, 09:00",
   },
   {
@@ -47,6 +50,7 @@ const professionals = [
     rating: 4.7,
     available: true,
     icon: UserRound,
+    actionIcon: Video,
     nextSlot: "Hoje, 18:00",
   },
 ];
@@ -87,6 +91,7 @@ function VideochamadaPage() {
       <div className="space-y-3">
         {professionals.map((prof, i) => {
           const IconComp = prof.icon;
+          const ActionIcon = prof.actionIcon;
           return (
             <motion.div
               key={prof.id}
@@ -121,7 +126,7 @@ function VideochamadaPage() {
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  <Phone className="w-4 h-4" />
+                  <ActionIcon className="w-4 h-4" />
                 </button>
               </div>
             </motion.div>
