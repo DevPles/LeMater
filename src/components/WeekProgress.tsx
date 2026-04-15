@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { HeartPulse } from "lucide-react";
 
 interface WeekProgressProps {
   currentWeek: number;
@@ -20,7 +21,7 @@ export function WeekProgress({ currentWeek, totalWeeks = 40 }: WeekProgressProps
           </h2>
         </div>
         <div className="w-16 h-16 rounded-full bg-coral-light flex items-center justify-center">
-          <span className="text-2xl">🤰</span>
+          <HeartPulse className="w-8 h-8 text-primary" />
         </div>
       </div>
       <div className="w-full h-3 bg-muted rounded-full overflow-hidden">

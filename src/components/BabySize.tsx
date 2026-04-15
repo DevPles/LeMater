@@ -1,15 +1,16 @@
 import { motion } from "framer-motion";
+import { Baby, Flower2, Cherry, Apple, Banana, Carrot, Citrus, Egg, Grape } from "lucide-react";
 
-const babySizes: Record<number, { fruit: string; size: string }> = {
-  8: { fruit: "🫐", size: "1,6 cm" },
-  12: { fruit: "🍋", size: "5,4 cm" },
-  16: { fruit: "🍐", size: "11,6 cm" },
-  20: { fruit: "🍌", size: "16,4 cm" },
-  24: { fruit: "🌽", size: "30 cm" },
-  28: { fruit: "🍆", size: "37,6 cm" },
-  32: { fruit: "🥥", size: "42,4 cm" },
-  36: { fruit: "🍈", size: "47,4 cm" },
-  40: { fruit: "🍉", size: "51,2 cm" },
+const babySizes: Record<number, { icon: React.ElementType; size: string; name: string }> = {
+  8: { icon: Grape, size: "1,6 cm", name: "Uva" },
+  12: { icon: Citrus, size: "5,4 cm", name: "Limão" },
+  16: { icon: Apple, size: "11,6 cm", name: "Pêra" },
+  20: { icon: Banana, size: "16,4 cm", name: "Banana" },
+  24: { icon: Carrot, size: "30 cm", name: "Espiga" },
+  28: { icon: Cherry, size: "37,6 cm", name: "Berinjela" },
+  32: { icon: Egg, size: "42,4 cm", name: "Coco" },
+  36: { icon: Flower2, size: "47,4 cm", name: "Melão" },
+  40: { icon: Baby, size: "51,2 cm", name: "Melancia" },
 };
 
 function getClosestSize(week: number) {
@@ -22,6 +23,7 @@ function getClosestSize(week: number) {
 
 export function BabySize({ week }: { week: number }) {
   const size = getClosestSize(week);
+  const IconComp = size.icon;
 
   return (
     <motion.div
@@ -32,10 +34,12 @@ export function BabySize({ week }: { week: number }) {
     >
       <p className="text-sm text-accent-foreground font-medium mb-2">Tamanho do bebê</p>
       <div className="flex items-center gap-4">
-        <span className="text-5xl">{size.fruit}</span>
+        <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center">
+          <IconComp className="w-7 h-7 text-accent-foreground" />
+        </div>
         <div>
           <p className="text-lg font-bold font-display text-foreground">{size.size}</p>
-          <p className="text-xs text-muted-foreground">comprimento aproximado</p>
+          <p className="text-xs text-muted-foreground">comprimento aproximado ({size.name})</p>
         </div>
       </div>
     </motion.div>

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Video, Phone, Calendar, Star } from "lucide-react";
+import { Video, Phone, Calendar, Star, UserRound, Stethoscope, Activity, HeartHandshake } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/videochamada")({
@@ -19,7 +19,7 @@ const professionals = [
     specialty: "Obstetra",
     rating: 4.9,
     available: true,
-    avatar: "👩‍⚕️",
+    icon: Stethoscope,
     nextSlot: "Hoje, 14:00",
   },
   {
@@ -28,7 +28,7 @@ const professionals = [
     specialty: "Enfermeiro Obstétrico",
     rating: 4.8,
     available: true,
-    avatar: "👨‍⚕️",
+    icon: HeartHandshake,
     nextSlot: "Hoje, 16:30",
   },
   {
@@ -37,7 +37,7 @@ const professionals = [
     specialty: "Fisioterapeuta Pélvica",
     rating: 5.0,
     available: false,
-    avatar: "👩‍⚕️",
+    icon: Activity,
     nextSlot: "Amanhã, 09:00",
   },
   {
@@ -46,7 +46,7 @@ const professionals = [
     specialty: "Enfermeira Obstétrica",
     rating: 4.7,
     available: true,
-    avatar: "👩‍⚕️",
+    icon: UserRound,
     nextSlot: "Hoje, 18:00",
   },
 ];
@@ -85,45 +85,48 @@ function VideochamadaPage() {
       </h3>
 
       <div className="space-y-3">
-        {professionals.map((prof, i) => (
-          <motion.div
-            key={prof.id}
-            className="bg-card rounded-2xl p-4 shadow-sm border border-border"
-            initial={{ opacity: 0, x: -15 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.1 }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-coral-light flex items-center justify-center text-2xl">
-                {prof.avatar}
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-sm text-foreground">{prof.name}</h4>
-                <p className="text-xs text-muted-foreground">{prof.specialty}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="flex items-center gap-0.5">
-                    <Star className="w-3 h-3 text-chart-3 fill-current" />
-                    <span className="text-xs font-medium text-foreground">{prof.rating}</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">•</span>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">{prof.nextSlot}</span>
+        {professionals.map((prof, i) => {
+          const IconComp = prof.icon;
+          return (
+            <motion.div
+              key={prof.id}
+              className="bg-card rounded-2xl p-4 shadow-sm border border-border"
+              initial={{ opacity: 0, x: -15 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.1 }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-coral-light flex items-center justify-center">
+                  <IconComp className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-sm text-foreground">{prof.name}</h4>
+                  <p className="text-xs text-muted-foreground">{prof.specialty}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-0.5">
+                      <Star className="w-3 h-3 text-chart-3 fill-current" />
+                      <span className="text-xs font-medium text-foreground">{prof.rating}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">•</span>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{prof.nextSlot}</span>
+                    </div>
                   </div>
                 </div>
+                <button
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    prof.available
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  <Phone className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  prof.available
-                    ? "bg-accent text-accent-foreground"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                <Phone className="w-4 h-4" />
-              </button>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );
