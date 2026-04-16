@@ -19,10 +19,9 @@ export function QuickActions() {
           transition={{ delay: 0.1 * i }}
         >
           <Link to={to} className="flex flex-col items-center gap-2">
-            <div className={`w-14 h-14 rounded-2xl ${color} flex items-center justify-center shadow-sm`}>
-              <span className="text-xs font-bold uppercase">{label.slice(0, 3)}</span>
+            <div className={`w-16 h-16 rounded-full ${color} flex items-center justify-center shadow-sm`}>
+              <span className="text-[10px] font-bold leading-tight text-center">{label}</span>
             </div>
-            <span className="text-xs font-medium text-foreground">{label}</span>
           </Link>
         </motion.div>
       ))}
