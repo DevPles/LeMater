@@ -1,73 +1,110 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { WeekProgress } from "@/components/WeekProgress";
-import { BabySize } from "@/components/BabySize";
-import { QuickActions } from "@/components/QuickActions";
-import { TipCard } from "@/components/TipCard";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Droplets, Footprints, CalendarCheck } from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MãeDigital — Cartão da Gestante" },
-      { name: "description", content: "Acompanhe sua gestação com suporte de profissionais de saúde, vídeos educativos e prontuário digital." },
-      { property: "og:title", content: "MãeDigital — Cartão da Gestante" },
-      { property: "og:description", content: "Acompanhe sua gestação com suporte de profissionais de saúde." },
+      { title: "MãeDigital — Cartão Digital da Gestante" },
+      { name: "description", content: "Iniciativa UNAERP. Acompanhe sua gestação com suporte profissional." },
     ],
   }),
-  component: Index,
+  component: WelcomeScreen,
 });
 
-const CURRENT_WEEK = 24;
+function WelcomeScreen() {
+  const navigate = useNavigate();
 
-const weeklyTips = [
-  {
-    title: "Hidratação é essencial",
-    description: "Beba pelo menos 2 litros de água por dia para manter o líquido amniótico saudável.",
-    icon: Droplets,
-  },
-  {
-    title: "Exercícios leves",
-    description: "Caminhadas de 30 minutos ajudam na circulação e preparam para o parto.",
-    icon: Footprints,
-  },
-  {
-    title: "Próxima consulta",
-    description: "Não esqueça do ultrassom morfológico agendado para esta semana.",
-    icon: CalendarCheck,
-  },
-];
-
-function Index() {
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+    <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+      {/* Background image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/images/unaerp-bg.png')" }}
+      />
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-[#1a1557]/70" />
+
+      {/* Content */}
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-6"
+        transition={{ duration: 0.8 }}
+        className="relative z-10 flex flex-col items-center text-center px-8 max-w-md"
       >
-        <p className="text-sm text-muted-foreground">Olá, Maria 👋</p>
-        <h1 className="text-2xl font-bold font-display text-foreground">
-          Minha Gestação
-        </h1>
+        {/* App icon */}
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+          className="w-20 h-20 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center mb-6 border border-white/20"
+        >
+          <Heart className="w-10 h-10 text-[#f0c040]" fill="#f0c040" />
+        </motion.div>
+
+        {/* App name */}
+        <motion.h1
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="text-4xl font-bold font-display text-white mb-2 tracking-tight"
+        >
+          MãeDigital
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          className="text-white/80 text-base mb-2"
+        >
+          Cartão Digital da Gestante
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.9 }}
+          className="bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 mb-10 border border-white/15"
+        >
+          <span className="text-[#f0c040] text-xs font-semibold tracking-wider uppercase">
+            Uma iniciativa UNAERP
+          </span>
+        </motion.div>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.1 }}
+          className="text-white/60 text-sm mb-8 leading-relaxed"
+        >
+          Acompanhe sua gestação com vídeos educativos, atendimento por videochamada e prontuário digital.
+        </motion.p>
+
+        {/* CTA Button */}
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.3 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate({ to: "/home" })}
+          className="flex items-center gap-3 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-lg px-10 py-4 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors"
+        >
+          Entrar
+          <ArrowRight className="w-5 h-5" />
+        </motion.button>
       </motion.div>
 
-      <div className="space-y-5">
-        <WeekProgress currentWeek={CURRENT_WEEK} />
-        <BabySize week={CURRENT_WEEK} />
-        <QuickActions />
-
-        <div>
-          <h3 className="font-display font-semibold text-lg text-foreground mb-3">
-            Dicas da semana
-          </h3>
-          <div className="space-y-3">
-            {weeklyTips.map((tip) => (
-              <TipCard key={tip.title} {...tip} />
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* Bottom UNAERP text */}
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5 }}
+        className="absolute bottom-6 text-white/40 text-xs z-10"
+      >
+        UNAERP — Há 100 anos na jornada do conhecimento
+      </motion.p>
     </div>
   );
 }
