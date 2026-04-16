@@ -79,12 +79,12 @@ export default function RegistrationModal({
   };
 
   const inputClass =
-    "bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#f0c040] focus:ring-[#f0c040]/30";
-  const labelClass = "text-white/90 text-sm font-medium";
+    "bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#f0c040] focus:ring-[#f0c040]/30 h-9 text-sm";
+  const labelClass = "text-white/90 text-xs font-medium";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 max-w-md max-h-[90vh] overflow-y-auto p-4">
         <DialogHeader>
           <DialogTitle className="text-[#f0c040] text-xl font-display text-center">
             {step === 1 ? "Cadastro da Gestante" : "Dados da Gestação"}
@@ -158,13 +158,13 @@ export default function RegistrationModal({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col gap-3"
+              className="flex flex-col gap-2"
             >
               {/* Foto */}
-              <div className="flex flex-col items-center gap-2 mb-2">
+              <div className="flex flex-col items-center gap-1 mb-1">
                 <div
                   onClick={() => fileRef.current?.click()}
-                  className="w-20 h-20 rounded-full bg-white/10 border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-[#f0c040]/60 transition-colors overflow-hidden"
+                  className="w-16 h-16 rounded-full bg-white/10 border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-[#f0c040]/60 transition-colors overflow-hidden"
                 >
                   {foto ? (
                     <img src={foto} alt="Foto" className="w-full h-full object-cover" />
@@ -243,13 +243,13 @@ export default function RegistrationModal({
               </div>
 
               {/* Gestante toggle */}
-              <div className="mt-2">
+              <div className="mt-1">
                 <Label className={labelClass}>Você está gestante?</Label>
-                <div className="flex gap-3 mt-2">
+                <div className="flex gap-2 mt-1">
                   <button
                     type="button"
                     onClick={() => setGestante(true)}
-                    className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-all ${
+                    className={`flex-1 py-2 rounded-full text-xs font-bold transition-all ${
                       gestante === true
                         ? "bg-[#f0c040] text-[#1a1557]"
                         : "bg-white/10 text-white/60 border border-white/20"
@@ -260,7 +260,7 @@ export default function RegistrationModal({
                   <button
                     type="button"
                     onClick={() => setGestante(false)}
-                    className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-all ${
+                    className={`flex-1 py-2 rounded-full text-xs font-bold transition-all ${
                       gestante === false
                         ? "bg-[#f0c040] text-[#1a1557]"
                         : "bg-white/10 text-white/60 border border-white/20"
@@ -276,7 +276,7 @@ export default function RegistrationModal({
                 whileTap={{ scale: 0.98 }}
                 onClick={handleStep1Continue}
                 disabled={!nome.trim() || gestante === null}
-                className="mt-4 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-base py-3 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="mt-2 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Continuar
               </motion.button>
