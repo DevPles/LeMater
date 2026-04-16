@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 export const Route = createFileRoute("/prontuario")({
   head: () => ({
     meta: [
-      { title: "Prontuário — MãeDigital" },
+      { title: "Cartão Digital da Gestante — MãeDigital" },
       { name: "description", content: "Acompanhe o prontuário da gestação e evolução do parto." },
     ],
   }),
@@ -39,7 +39,7 @@ function ProntuarioPage() {
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <h1 className="text-2xl font-bold font-display text-foreground mb-1">Prontuário</h1>
+        <h1 className="text-2xl font-bold font-display text-foreground mb-1">Cartão Digital da Gestante</h1>
         <p className="text-sm text-muted-foreground mb-5">Evolução da gestação</p>
       </motion.div>
 
