@@ -1,82 +1,109 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import BottomNav from "@/components/BottomNav";
 
 export const Route = createFileRoute("/videochamada")({
   head: () => ({
     meta: [
-      { title: "Videochamada — MãeDigital" },
-      { name: "description", content: "Agende uma videochamada com profissionais de saúde." },
+      { title: "Agendamentos — MãeDigital" },
+      { name: "description", content: "Seus agendamentos confirmados com profissionais de saúde." },
     ],
   }),
-  component: VideochamadaPage,
+  component: AgendamentosPage,
 });
 
-const professionals = [
-  { id: 1, name: "Dra. Ana Costa", specialty: "Obstetra", rating: 4.9, available: true, nextSlot: "Hoje, 14:00" },
-  { id: 2, name: "Enf. Carlos Silva", specialty: "Enfermeiro Obstétrico", rating: 4.8, available: true, nextSlot: "Hoje, 16:30" },
-  { id: 3, name: "Dra. Beatriz Mendes", specialty: "Fisioterapeuta Pélvica", rating: 5.0, available: false, nextSlot: "Amanhã, 09:00" },
-  { id: 4, name: "Enf. Paula Rocha", specialty: "Enfermeira Obstétrica", rating: 4.7, available: true, nextSlot: "Hoje, 18:00" },
+interface Agendamento {
+  id: number;
+  profissional: string;
+  especialidade: string;
+  data: string;
+  horario: string;
+  tipo: "videochamada" | "presencial";
+  status: "confirmado" | "pendente" | "realizado";
+}
+
+const agendamentos: Agendamento[] = [
+  { id: 1, profissional: "Dra. Ana Costa", especialidade: "Obstetra", data: "17/04/2026", horario: "14:00", tipo: "videochamada", status: "confirmado" },
+  { id: 2, profissional: "Enf. Carlos Silva", especialidade: "Enfermeiro Obstétrico", data: "18/04/2026", horario: "10:30", tipo: "presencial", status: "confirmado" },
+  { id: 3, profissional: "Dra. Beatriz Mendes", especialidade: "Fisioterapeuta Pélvica", data: "20/04/2026", horario: "09:00", tipo: "videochamada", status: "pendente" },
+  { id: 4, profissional: "Enf. Paula Rocha", especialidade: "Enfermeira Obstétrica", data: "15/04/2026", horario: "16:00", tipo: "presencial", status: "realizado" },
 ];
 
-function VideochamadaPage() {
+const statusConfig = {
+  confirmado: { label: "Confirmado", bg: "bg-green-100", text: "text-green-700" },
+  pendente: { label: "Pendente", bg: "bg-yellow-100", text: "text-yellow-700" },
+  realizado: { label: "Realizado", bg: "bg-muted", text: "text-muted-foreground" },
+};
+
+function AgendamentosPage() {
+  const [filtro, setFiltro] = useState<"todos" | "confirmado" | "pendente" | "realizado">("todos");
+
+  const filtered = filtro === "todos" ? agendamentos : agendamentos.filter(a => a.status === filtro);
+
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto bg-background">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <h1 className="text-2xl font-bold font-display text-foreground mb-1">Videochamada</h1>
-        <p className="text-sm text-muted-foreground mb-5">Converse com profissionais de saúde pelo vídeo</p>
+        <h1 className="text-2xl font-bold font-display text-foreground mb-1">Agendamentos</h1>
+        <p className="text-sm text-muted-foreground mb-4">Suas consultas com profissionais de saúde</p>
       </motion.div>
 
-      <motion.div
-        className="bg-gradient-to-br from-primary to-coral rounded-2xl p-5 mb-6 text-primary-foreground"
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-      >
-        <h2 className="font-display font-semibold text-lg mb-2">Consulta Rápida</h2>
-        <p className="text-sm opacity-90 mb-4">Tire dúvidas urgentes com um profissional disponível agora</p>
-        <button className="bg-primary-foreground text-primary font-semibold text-sm px-5 py-2.5 rounded-xl">
-          Iniciar agora
-        </button>
-      </motion.div>
+      {/* Filtros */}
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
+        {(["todos", "confirmado", "pendente", "realizado"] as const).map(f => (
+          <button
+            key={f}
+            onClick={() => setFiltro(f)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+              filtro === f
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {f === "todos" ? "Todos" : statusConfig[f].label}
+          </button>
+        ))}
+      </div>
 
-      <h3 className="font-display font-semibold text-lg text-foreground mb-4">Profissionais disponíveis</h3>
-
+      {/* Lista */}
       <div className="space-y-3">
-        {professionals.map((prof, i) => {
-          const initials = prof.name.split(" ").map(n => n[0]).join("").slice(0, 2);
+        {filtered.map((ag, i) => {
+          const initials = ag.profissional.split(" ").map(n => n[0]).join("").slice(0, 2);
+          const sc = statusConfig[ag.status];
           return (
             <motion.div
-              key={prof.id}
+              key={ag.id}
               className="bg-card rounded-2xl p-4 shadow-sm border border-border"
-              initial={{ opacity: 0, x: -15 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.1 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.08 }}
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-coral-light flex items-center justify-center">
-                  <span className="text-sm font-bold text-primary">{initials}</span>
+                <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-xs font-bold text-primary">{initials}</span>
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-sm text-foreground">{prof.name}</h4>
-                  <p className="text-xs text-muted-foreground">{prof.specialty}</p>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-sm text-foreground truncate">{ag.profissional}</h4>
+                  <p className="text-xs text-muted-foreground">{ag.especialidade}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs font-medium text-foreground">★ {prof.rating}</span>
-                    <span className="text-xs text-muted-foreground">• {prof.nextSlot}</span>
+                    <span className="text-xs text-muted-foreground">{ag.data} às {ag.horario}</span>
+                    <span className="text-xs text-muted-foreground">• {ag.tipo === "videochamada" ? "Vídeo" : "Presencial"}</span>
                   </div>
                 </div>
-                <button
-                  className={`px-3 py-2 rounded-xl text-xs font-semibold ${
-                    prof.available
-                      ? "bg-accent text-accent-foreground"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {prof.available ? "Chamar" : "Agendar"}
-                </button>
+                <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${sc.bg} ${sc.text}`}>
+                  {sc.label}
+                </span>
               </div>
             </motion.div>
           );
         })}
+
+        {filtered.length === 0 && (
+          <p className="text-center text-muted-foreground text-sm py-8">Nenhum agendamento encontrado</p>
+        )}
       </div>
+
+      <BottomNav />
     </div>
   );
 }
