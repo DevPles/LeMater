@@ -276,7 +276,7 @@ export default function RegistrationModal({
                 whileTap={{ scale: 0.98 }}
                 onClick={handleStep1Continue}
                 disabled={!nome.trim() || gestante === null}
-                className="mt-4 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-base py-3 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="mt-2 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Continuar
               </motion.button>
