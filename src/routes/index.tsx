@@ -28,14 +28,6 @@ function WelcomeScreen() {
         transition={{ duration: 0.8 }}
         className="relative z-10 flex flex-col items-center text-center px-8 max-w-md"
       >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-          className="w-20 h-20 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center mb-6 border border-white/20"
-        >
-          <span className="text-3xl font-bold text-[#f0c040] font-display">M</span>
-        </motion.div>
 
         <motion.h1
           initial={{ opacity: 0 }}
