@@ -20,7 +20,7 @@ function WelcomeScreen() {
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url('/images/unaerp-bg.png')" }}
       />
-      <div className="absolute inset-0 bg-[#1a1557]/70" />
+      <div className="absolute inset-0 bg-[#1a1557]/40" />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
