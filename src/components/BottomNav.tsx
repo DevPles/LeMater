@@ -1,12 +1,11 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Home, Play, FileText, Bell, Video } from "lucide-react";
 
 const navItems = [
-  { to: "/home", icon: Home, label: "Início" },
-  { to: "/videos", icon: Play, label: "Vídeos" },
-  { to: "/videochamada", icon: Video, label: "Chamada" },
-  { to: "/prontuario", icon: FileText, label: "Prontuário" },
-  { to: "/alertas", icon: Bell, label: "Alertas" },
+  { to: "/home", label: "Início" },
+  { to: "/videos", label: "Vídeos" },
+  { to: "/videochamada", label: "Chamada" },
+  { to: "/prontuario", label: "Prontuário" },
+  { to: "/alertas", label: "Alertas" },
 ] as const;
 
 export function BottomNav() {
@@ -15,20 +14,22 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border px-2 pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around max-w-md mx-auto">
-        {navItems.map(({ to, icon: Icon, label }) => {
+        {navItems.map(({ to, label }) => {
           const isActive = location.pathname === to;
           return (
             <Link
               key={to}
               to={to}
-              className={`flex flex-col items-center gap-0.5 py-2 px-3 text-xs transition-colors ${
+              className={`flex flex-col items-center gap-0.5 py-3 px-3 text-xs transition-colors ${
                 isActive
-                  ? "text-primary font-semibold"
+                  ? "text-primary font-bold"
                   : "text-muted-foreground"
               }`}
             >
-              <Icon className={`w-5 h-5 ${isActive ? "text-primary" : ""}`} />
-              <span>{label}</span>
+              <span className={`text-[10px] font-semibold uppercase tracking-wider ${isActive ? "text-primary" : ""}`}>
+                {label}
+              </span>
+              {isActive && <div className="w-4 h-0.5 rounded-full bg-primary mt-0.5" />}
             </Link>
           );
         })}
