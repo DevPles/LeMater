@@ -36,7 +36,7 @@ function WelcomeScreen() {
           transition={{ delay: 0.5 }}
           className="text-4xl font-bold font-display text-white mb-2 tracking-tight"
         >
-          MãeDigital
+          Mãe Digital
         </motion.h1>
 
         <motion.p
