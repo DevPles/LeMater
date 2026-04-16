@@ -161,10 +161,10 @@ export default function RegistrationModal({
               className="flex flex-col gap-2"
             >
               {/* Foto */}
-              <div className="flex flex-col items-center gap-2 mb-2">
+              <div className="flex flex-col items-center gap-1 mb-1">
                 <div
                   onClick={() => fileRef.current?.click()}
-                  className="w-20 h-20 rounded-full bg-white/10 border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-[#f0c040]/60 transition-colors overflow-hidden"
+                  className="w-16 h-16 rounded-full bg-white/10 border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-[#f0c040]/60 transition-colors overflow-hidden"
                 >
                   {foto ? (
                     <img src={foto} alt="Foto" className="w-full h-full object-cover" />
