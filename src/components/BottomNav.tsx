@@ -2,7 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { Home, Play, FileText, Bell, Video } from "lucide-react";
 
 const navItems = [
-  { to: "/", icon: Home, label: "Início" },
+  { to: "/home", icon: Home, label: "Início" },
   { to: "/videos", icon: Play, label: "Vídeos" },
   { to: "/videochamada", icon: Video, label: "Chamada" },
   { to: "/prontuario", icon: FileText, label: "Prontuário" },
