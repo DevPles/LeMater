@@ -79,8 +79,8 @@ export default function RegistrationModal({
   };
 
   const inputClass =
-    "bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#f0c040] focus:ring-[#f0c040]/30";
-  const labelClass = "text-white/90 text-sm font-medium";
+    "bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#f0c040] focus:ring-[#f0c040]/30 h-9 text-sm";
+  const labelClass = "text-white/90 text-xs font-medium";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
