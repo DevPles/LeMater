@@ -1,5 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import RegistrationModal from "@/components/RegistrationModal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -12,7 +14,7 @@ export const Route = createFileRoute("/")({
 });
 
 function WelcomeScreen() {
-  const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-end pb-20 overflow-hidden">
@@ -28,7 +30,6 @@ function WelcomeScreen() {
         transition={{ duration: 0.8 }}
         className="relative z-10 flex flex-col items-center text-center px-8 max-w-md"
       >
-
         <motion.h1
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -64,12 +65,14 @@ function WelcomeScreen() {
           transition={{ delay: 1.1 }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => navigate({ to: "/home" })}
+          onClick={() => setModalOpen(true)}
           className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-lg px-10 py-4 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors"
         >
-          Entrar →
+          Entrar
         </motion.button>
       </motion.div>
+
+      <RegistrationModal open={modalOpen} onOpenChange={setModalOpen} />
     </div>
   );
 }
