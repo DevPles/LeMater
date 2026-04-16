@@ -264,8 +264,8 @@ function LancamentosTab({
   lancamentos: Lancamento[];
   showForm: boolean;
   setShowForm: (v: boolean) => void;
-  form: Record<string, string>;
-  setForm: (f: Record<string, string>) => void;
+  form: { semana: string; data: string; peso: string; pressaoSis: string; pressaoDia: string; alturaUterina: string; bcf: string; edema: string; observacoes: string };
+  setForm: React.Dispatch<React.SetStateAction<{ semana: string; data: string; peso: string; pressaoSis: string; pressaoDia: string; alturaUterina: string; bcf: string; edema: string; observacoes: string }>>;
   onAdd: () => void;
   inputClass: string;
 }) {
