@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ArrowRight, Heart } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -17,32 +16,27 @@ function WelcomeScreen() {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-      {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url('/images/unaerp-bg.png')" }}
       />
-      {/* Overlay */}
       <div className="absolute inset-0 bg-[#1a1557]/70" />
 
-      {/* Content */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         className="relative z-10 flex flex-col items-center text-center px-8 max-w-md"
       >
-        {/* App icon */}
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
           className="w-20 h-20 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center mb-6 border border-white/20"
         >
-          <Heart className="w-10 h-10 text-[#f0c040]" fill="#f0c040" />
+          <span className="text-3xl font-bold text-[#f0c040] font-display">M</span>
         </motion.div>
 
-        {/* App name */}
         <motion.h1
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -81,7 +75,6 @@ function WelcomeScreen() {
           Acompanhe sua gestação com vídeos educativos, atendimento por videochamada e prontuário digital.
         </motion.p>
 
-        {/* CTA Button */}
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -89,14 +82,12 @@ function WelcomeScreen() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => navigate({ to: "/home" })}
-          className="flex items-center gap-3 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-lg px-10 py-4 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors"
+          className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-lg px-10 py-4 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors"
         >
-          Entrar
-          <ArrowRight className="w-5 h-5" />
+          Entrar →
         </motion.button>
       </motion.div>
 
-      {/* Bottom UNAERP text */}
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

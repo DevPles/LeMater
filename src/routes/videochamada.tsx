@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Video, Phone, Calendar, Star, UserRound, Stethoscope, Activity, HeartHandshake } from "lucide-react";
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/videochamada")({
@@ -13,58 +12,18 @@ export const Route = createFileRoute("/videochamada")({
 });
 
 const professionals = [
-  {
-    id: 1,
-    name: "Dra. Ana Costa",
-    specialty: "Obstetra",
-    rating: 4.9,
-    available: true,
-    icon: Stethoscope,
-    actionIcon: Video,
-    nextSlot: "Hoje, 14:00",
-  },
-  {
-    id: 2,
-    name: "Enf. Carlos Silva",
-    specialty: "Enfermeiro Obstétrico",
-    rating: 4.8,
-    available: true,
-    icon: HeartHandshake,
-    actionIcon: Phone,
-    nextSlot: "Hoje, 16:30",
-  },
-  {
-    id: 3,
-    name: "Dra. Beatriz Mendes",
-    specialty: "Fisioterapeuta Pélvica",
-    rating: 5.0,
-    available: false,
-    icon: Activity,
-    actionIcon: Calendar,
-    nextSlot: "Amanhã, 09:00",
-  },
-  {
-    id: 4,
-    name: "Enf. Paula Rocha",
-    specialty: "Enfermeira Obstétrica",
-    rating: 4.7,
-    available: true,
-    icon: UserRound,
-    actionIcon: Video,
-    nextSlot: "Hoje, 18:00",
-  },
+  { id: 1, name: "Dra. Ana Costa", specialty: "Obstetra", rating: 4.9, available: true, nextSlot: "Hoje, 14:00" },
+  { id: 2, name: "Enf. Carlos Silva", specialty: "Enfermeiro Obstétrico", rating: 4.8, available: true, nextSlot: "Hoje, 16:30" },
+  { id: 3, name: "Dra. Beatriz Mendes", specialty: "Fisioterapeuta Pélvica", rating: 5.0, available: false, nextSlot: "Amanhã, 09:00" },
+  { id: 4, name: "Enf. Paula Rocha", specialty: "Enfermeira Obstétrica", rating: 4.7, available: true, nextSlot: "Hoje, 18:00" },
 ];
 
 function VideochamadaPage() {
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <h1 className="text-2xl font-bold font-display text-foreground mb-1">
-          Videochamada
-        </h1>
-        <p className="text-sm text-muted-foreground mb-5">
-          Converse com profissionais de saúde pelo vídeo
-        </p>
+        <h1 className="text-2xl font-bold font-display text-foreground mb-1">Videochamada</h1>
+        <p className="text-sm text-muted-foreground mb-5">Converse com profissionais de saúde pelo vídeo</p>
       </motion.div>
 
       <motion.div
@@ -72,26 +31,18 @@ function VideochamadaPage() {
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
       >
-        <div className="flex items-center gap-3 mb-3">
-          <Video className="w-6 h-6" />
-          <h2 className="font-display font-semibold text-lg">Consulta Rápida</h2>
-        </div>
-        <p className="text-sm opacity-90 mb-4">
-          Tire dúvidas urgentes com um profissional disponível agora
-        </p>
+        <h2 className="font-display font-semibold text-lg mb-2">Consulta Rápida</h2>
+        <p className="text-sm opacity-90 mb-4">Tire dúvidas urgentes com um profissional disponível agora</p>
         <button className="bg-primary-foreground text-primary font-semibold text-sm px-5 py-2.5 rounded-xl">
           Iniciar agora
         </button>
       </motion.div>
 
-      <h3 className="font-display font-semibold text-lg text-foreground mb-4">
-        Profissionais disponíveis
-      </h3>
+      <h3 className="font-display font-semibold text-lg text-foreground mb-4">Profissionais disponíveis</h3>
 
       <div className="space-y-3">
         {professionals.map((prof, i) => {
-          const IconComp = prof.icon;
-          const ActionIcon = prof.actionIcon;
+          const initials = prof.name.split(" ").map(n => n[0]).join("").slice(0, 2);
           return (
             <motion.div
               key={prof.id}
@@ -101,32 +52,25 @@ function VideochamadaPage() {
               transition={{ delay: i * 0.1 }}
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-coral-light flex items-center justify-center">
-                  <IconComp className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-full bg-coral-light flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary">{initials}</span>
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-sm text-foreground">{prof.name}</h4>
                   <p className="text-xs text-muted-foreground">{prof.specialty}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <div className="flex items-center gap-0.5">
-                      <Star className="w-3 h-3 text-chart-3 fill-current" />
-                      <span className="text-xs font-medium text-foreground">{prof.rating}</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">•</span>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{prof.nextSlot}</span>
-                    </div>
+                    <span className="text-xs font-medium text-foreground">★ {prof.rating}</span>
+                    <span className="text-xs text-muted-foreground">• {prof.nextSlot}</span>
                   </div>
                 </div>
                 <button
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  className={`px-3 py-2 rounded-xl text-xs font-semibold ${
                     prof.available
                       ? "bg-accent text-accent-foreground"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  <ActionIcon className="w-4 h-4" />
+                  {prof.available ? "Chamar" : "Agendar"}
                 </button>
               </div>
             </motion.div>

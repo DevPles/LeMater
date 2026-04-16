@@ -3,8 +3,8 @@ import { WeekProgress } from "@/components/WeekProgress";
 import { BabySize } from "@/components/BabySize";
 import { QuickActions } from "@/components/QuickActions";
 import { TipCard } from "@/components/TipCard";
+import { UserAvatar } from "@/components/UserAvatar";
 import { motion } from "framer-motion";
-import { Droplets, Footprints, CalendarCheck } from "lucide-react";
 
 export const Route = createFileRoute("/home")({
   head: () => ({
@@ -22,17 +22,14 @@ const weeklyTips = [
   {
     title: "Hidratação é essencial",
     description: "Beba pelo menos 2 litros de água por dia para manter o líquido amniótico saudável.",
-    icon: Droplets,
   },
   {
     title: "Exercícios leves",
     description: "Caminhadas de 30 minutos ajudam na circulação e preparam para o parto.",
-    icon: Footprints,
   },
   {
     title: "Próxima consulta",
     description: "Não esqueça do ultrassom morfológico agendado para esta semana.",
-    icon: CalendarCheck,
   },
 ];
 
@@ -42,12 +39,15 @@ function HomePage() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-6"
+        className="mb-6 flex items-center justify-between"
       >
-        <p className="text-sm text-muted-foreground">Olá, Maria 👋</p>
-        <h1 className="text-2xl font-bold font-display text-foreground">
-          Minha Gestação
-        </h1>
+        <div>
+          <p className="text-sm text-muted-foreground">Olá, Maria</p>
+          <h1 className="text-2xl font-bold font-display text-foreground">
+            Minha Gestação
+          </h1>
+        </div>
+        <UserAvatar name="Maria Silva" />
       </motion.div>
 
       <div className="space-y-5">
