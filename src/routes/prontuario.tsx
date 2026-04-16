@@ -214,7 +214,7 @@ function ProntuarioPage() {
       </motion.div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 items-center">
         {tabs.map(t => (
           <button
             key={t.key}
@@ -228,6 +228,12 @@ function ProntuarioPage() {
             {t.label}
           </button>
         ))}
+        <button
+          onClick={() => window.print()}
+          className="ml-auto px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-primary text-primary bg-background transition-all hover:bg-primary hover:text-primary-foreground"
+        >
+          Exportar PDF
+        </button>
       </div>
 
       {/* Patient Card */}
