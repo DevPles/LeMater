@@ -66,19 +66,10 @@ function WelcomeScreen() {
           </span>
         </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.1 }}
-          className="text-white/60 text-sm mb-8 leading-relaxed"
-        >
-          Acompanhe sua gestação com vídeos educativos, atendimento por videochamada e prontuário digital.
-        </motion.p>
-
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.3 }}
+          transition={{ delay: 1.1 }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => navigate({ to: "/home" })}
@@ -87,15 +78,6 @@ function WelcomeScreen() {
           Entrar →
         </motion.button>
       </motion.div>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-6 text-white/40 text-xs z-10"
-      >
-        UNAERP — Há 100 anos na jornada do conhecimento
-      </motion.p>
     </div>
   );
 }
