@@ -103,7 +103,7 @@ function AgendamentosPage() {
         )}
       </div>
 
-      <BottomNav />
+      
     </div>
   );
 }
