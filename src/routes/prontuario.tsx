@@ -213,6 +213,23 @@ function ProntuarioPage() {
         <p className="text-sm text-muted-foreground mb-4">Evolução da gestação</p>
       </motion.div>
 
+      {/* Tabs */}
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+        {tabs.map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+              tab === t.key
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       {/* Patient Card */}
       <motion.div
         className="bg-card rounded-2xl p-4 shadow-sm border border-border mb-4"
@@ -239,23 +256,6 @@ function ProntuarioPage() {
           </div>
         </div>
       </motion.div>
-
-      {/* Tabs */}
-      <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
-        {tabs.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-              tab === t.key
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
 
       {tab === "resumo" && <ResumoTab timelineEntries={timelineEntries} />}
       {tab === "lancamentos" && (
