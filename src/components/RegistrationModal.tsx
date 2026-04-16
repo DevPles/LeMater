@@ -243,7 +243,7 @@ export default function RegistrationModal({
               </div>
 
               {/* Gestante toggle */}
-              <div className="mt-2">
+              <div className="mt-1">
                 <Label className={labelClass}>Você está gestante?</Label>
                 <div className="flex gap-3 mt-2">
                   <button
