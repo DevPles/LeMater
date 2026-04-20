@@ -48,7 +48,7 @@ function VideosPage() {
         ))}
       </div>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
         {filteredVideos.map((video, i) => (
           <motion.div
             key={video.id}
@@ -57,7 +57,7 @@ function VideosPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
           >
-            <div className={`h-36 bg-gradient-to-br ${video.gradient} flex items-center justify-center relative`}>
+            <div className={`h-24 bg-gradient-to-br ${video.gradient} flex items-center justify-center relative`}>
               <span className="text-4xl font-bold text-foreground/10 font-display">▶</span>
               <div className="absolute bottom-2 right-2 bg-foreground/70 text-primary-foreground text-xs px-2 py-1 rounded-lg">
                 {video.duration}
