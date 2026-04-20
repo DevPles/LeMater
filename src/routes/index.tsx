@@ -28,7 +28,7 @@ function WelcomeScreen() {
       </div>
 
       {/* Card inferior com gradiente roxo */}
-      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-12 pb-16 rounded-t-3xl mt-auto">
+      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-8 pb-10 rounded-t-3xl mt-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
