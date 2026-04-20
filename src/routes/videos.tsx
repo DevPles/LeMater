@@ -39,9 +39,13 @@ const videos: Video[] = [
 
 const reels: Video[] = [
   { id: 101, title: "Dica rápida: posições para aliviar dor lombar", author: "Dra. Beatriz Mendes", role: "Fisioterapeuta", duration: "0:45", category: "Reels", gradient: "from-coral-light to-blush" },
-  { id: 102, title: "3 lanches saudáveis em 60 segundos", author: "Enf. Carlos Silva", role: "Enfermeiro Obstétrico", duration: "1:00", category: "Reels", gradient: "from-mint-light to-warm" },
-  { id: 103, title: "Pega correta na amamentação", author: "Enf. Paula Rocha", role: "Enfermeira Obstétrica", duration: "0:50", category: "Reels", gradient: "from-blush to-coral-light" },
-  { id: 104, title: "Respiração para o trabalho de parto", author: "Dra. Ana Costa", role: "Obstetra", duration: "0:55", category: "Reels", gradient: "from-warm to-mint-light" },
+  { id: 102, title: "Minha rotina de chás no 3º trimestre 🌿", author: "Juliana M.", role: "Gestante 32 semanas", duration: "0:38", category: "Reels", gradient: "from-mint-light to-warm", isGestante: true },
+  { id: 103, title: "3 lanches saudáveis em 60 segundos", author: "Enf. Carlos Silva", role: "Enfermeiro Obstétrico", duration: "1:00", category: "Reels", gradient: "from-mint-light to-warm" },
+  { id: 104, title: "Como organizei a mala da maternidade 💕", author: "Camila R.", role: "Gestante 38 semanas", duration: "0:52", category: "Reels", gradient: "from-blush to-coral-light", isGestante: true },
+  { id: 105, title: "Pega correta na amamentação", author: "Enf. Paula Rocha", role: "Enfermeira Obstétrica", duration: "0:50", category: "Reels", gradient: "from-blush to-coral-light" },
+  { id: 106, title: "Meu chá revelação caseiro 🎀", author: "Beatriz S.", role: "Gestante 28 semanas", duration: "0:42", category: "Reels", gradient: "from-warm to-blush", isGestante: true },
+  { id: 107, title: "Respiração para o trabalho de parto", author: "Dra. Ana Costa", role: "Obstetra", duration: "0:55", category: "Reels", gradient: "from-warm to-mint-light" },
+  { id: 108, title: "Exercícios que me ajudaram com a dor nas costas", author: "Patrícia L.", role: "Gestante 25 semanas", duration: "0:48", category: "Reels", gradient: "from-coral-light to-mint-light", isGestante: true },
 ];
 
 function VideosPage() {
