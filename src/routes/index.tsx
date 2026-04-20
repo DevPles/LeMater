@@ -17,7 +17,7 @@ function WelcomeScreen() {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-white via-blue-100 to-[#1a4ba8] flex flex-col">
       {/* Logo do hospital no topo */}
       <div className="flex-1 flex items-center justify-center px-8 pt-8">
         <img
@@ -28,7 +28,7 @@ function WelcomeScreen() {
       </div>
 
       {/* Card inferior com gradiente roxo */}
-      <div className="relative bg-gradient-to-b from-[#a8a3c7] to-[#7a75a8] px-8 pt-12 pb-16 rounded-t-3xl">
+      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-12 pb-16 rounded-t-3xl">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
