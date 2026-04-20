@@ -19,7 +19,7 @@ function WelcomeScreen() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-blue-100 to-[#1a4ba8] flex flex-col">
       {/* Logo do hospital no topo */}
-      <div className="flex-1 flex items-center justify-center px-8 pt-8">
+      <div className="flex items-center justify-center px-8 pt-8 pb-4">
         <img
           src="/images/hospital-bonini-logo.png"
           alt="Hospital Electro Bonini - UNAERP"
@@ -28,7 +28,7 @@ function WelcomeScreen() {
       </div>
 
       {/* Card inferior com gradiente roxo */}
-      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-12 pb-16 rounded-t-3xl">
+      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-12 pb-16 rounded-t-3xl mt-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
