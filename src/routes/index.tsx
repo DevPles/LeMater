@@ -18,11 +18,12 @@ function WelcomeScreen() {
 
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-end pb-20 overflow-hidden">
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/hospital-bonini.png')" }}
+      <img
+        src="/images/hospital-bonini.png"
+        alt="Hospital Electro Bonini"
+        className="absolute inset-0 w-full h-full object-cover object-center"
       />
-      <div className="absolute inset-0 bg-[#1a1557]/40" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#1a1557]/30 via-[#1a1557]/20 to-[#1a1557]/70" />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
