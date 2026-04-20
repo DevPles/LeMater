@@ -85,27 +85,37 @@ function VideosPage() {
       </div>
 
       {isReels ? (
-        <div className="grid grid-cols-2 gap-3">
-          {reels.map((reel, i) => (
-            <motion.button
-              key={reel.id}
-              onClick={() => setSelected(reel)}
-              className="relative aspect-[9/16] rounded-2xl overflow-hidden shadow-sm border border-border text-left"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${reel.gradient}`} />
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent" />
-              <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">REEL</span>
-              <span className="absolute top-2 right-2 bg-foreground/70 text-primary-foreground text-[10px] px-2 py-0.5 rounded-lg">{reel.duration}</span>
-              <div className="absolute bottom-3 left-3 right-3">
-                <h3 className="font-semibold text-xs text-primary-foreground line-clamp-2">{reel.title}</h3>
-                <p className="text-[10px] text-primary-foreground/80 mt-1">{reel.author}</p>
-              </div>
-            </motion.button>
-          ))}
-        </div>
+        <>
+          <button
+            onClick={() => alert("Em breve: envie seu reel para ajudar outras gestantes! 💕")}
+            className="w-full mb-4 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
+          >
+            + Compartilhe seu reel como gestante
+          </button>
+          <div className="grid grid-cols-2 gap-3">
+            {reels.map((reel, i) => (
+              <motion.button
+                key={reel.id}
+                onClick={() => setSelected(reel)}
+                className="relative aspect-[9/16] rounded-2xl overflow-hidden shadow-sm border border-border text-left"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${reel.gradient}`} />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent" />
+                <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${reel.isGestante ? "bg-[#f0c040] text-[#1a1557]" : "bg-primary text-primary-foreground"}`}>
+                  {reel.isGestante ? "GESTANTE" : "REEL"}
+                </span>
+                <span className="absolute top-2 right-2 bg-foreground/70 text-primary-foreground text-[10px] px-2 py-0.5 rounded-lg">{reel.duration}</span>
+                <div className="absolute bottom-3 left-3 right-3">
+                  <h3 className="font-semibold text-xs text-primary-foreground line-clamp-2">{reel.title}</h3>
+                  <p className="text-[10px] text-primary-foreground/80 mt-1">{reel.author}</p>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="grid grid-cols-2 gap-3">
           <AnimatePresence mode="popLayout">
