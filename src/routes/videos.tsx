@@ -25,6 +25,7 @@ type Video = {
   duration: string;
   category: string;
   gradient: string;
+  isGestante?: boolean;
 };
 
 const videos: Video[] = [
