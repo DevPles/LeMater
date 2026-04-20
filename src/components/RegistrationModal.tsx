@@ -84,7 +84,7 @@ export default function RegistrationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 max-w-md max-h-[90vh] overflow-y-auto p-4">
+      <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 w-[calc(100vw-1rem)] max-w-md max-h-[92vh] overflow-y-auto p-3 sm:p-4 rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-[#f0c040] text-xl font-display text-center">
             {step === 1 ? "Cadastro da Gestante" : "Dados da Gestação"}
