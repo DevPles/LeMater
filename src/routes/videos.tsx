@@ -24,6 +24,9 @@ const videos = [
 ];
 
 function VideosPage() {
+  const [activeCategory, setActiveCategory] = useState("Todos");
+  const filteredVideos = activeCategory === "Todos" ? videos : videos.filter(v => v.category === activeCategory);
+
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -31,12 +34,13 @@ function VideosPage() {
         <p className="text-sm text-muted-foreground mb-5">Conteúdo de profissionais para tirar suas dúvidas</p>
       </motion.div>
 
-      <div className="flex gap-2 overflow-x-auto pb-3 mb-5 scrollbar-hide">
-        {categories.map((cat, i) => (
+      <div className="grid grid-cols-2 gap-2 mb-5">
+        {categories.map((cat) => (
           <button
             key={cat}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-              i === 0 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+            onClick={() => setActiveCategory(cat)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
             }`}
           >
             {cat}
@@ -45,7 +49,7 @@ function VideosPage() {
       </div>
 
       <div className="space-y-4">
-        {videos.map((video, i) => (
+        {filteredVideos.map((video, i) => (
           <motion.div
             key={video.id}
             className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border"
