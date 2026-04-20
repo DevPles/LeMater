@@ -17,61 +17,66 @@ function WelcomeScreen() {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-end pb-20 overflow-hidden">
-      <img
-        src="/images/hospital-bonini.png"
-        alt="Hospital Electro Bonini"
-        className="absolute inset-0 w-full h-full object-cover object-center"
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1a1557]/30 via-[#1a1557]/20 to-[#1a1557]/70" />
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Logo do hospital no topo */}
+      <div className="flex-1 flex items-center justify-center px-8 pt-8">
+        <img
+          src="/images/hospital-bonini-logo.png"
+          alt="Hospital Electro Bonini - UNAERP"
+          className="w-full max-w-xs object-contain"
+        />
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="relative z-10 flex flex-col items-center text-center px-8 max-w-md"
-      >
-        <motion.h1
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-4xl font-bold font-display text-white mb-2 tracking-tight"
-        >
-          Mãe Digital
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-          className="text-white/80 text-base mb-2"
-        >
-          Cartão Digital da Gestante
-        </motion.p>
-
+      {/* Card inferior com gradiente roxo */}
+      <div className="relative bg-gradient-to-b from-[#a8a3c7] to-[#7a75a8] px-8 pt-12 pb-16 rounded-t-3xl">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.9 }}
-          className="bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 mb-10 border border-white/15"
-        >
-          <span className="text-[#f0c040] text-xs font-semibold tracking-wider uppercase">
-            Uma iniciativa UNAERP
-          </span>
-        </motion.div>
-
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setModalOpen(true)}
-          className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-lg px-10 py-4 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors"
+          transition={{ duration: 0.8 }}
+          className="flex flex-col items-center text-center"
         >
-          Entrar
-        </motion.button>
-      </motion.div>
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-4xl font-bold font-display text-white mb-2 tracking-tight"
+          >
+            Mãe Digital
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-white/90 text-base mb-3"
+          >
+            Cartão Digital da Gestante
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="bg-white/15 backdrop-blur-sm rounded-full px-4 py-1.5 mb-10 border border-white/20"
+          >
+            <span className="text-[#f0c040] text-xs font-semibold tracking-wider uppercase">
+              Uma iniciativa UNAERP
+            </span>
+          </motion.div>
+
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setModalOpen(true)}
+            className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-lg px-12 py-4 rounded-full shadow-xl shadow-[#f0c040]/40 transition-colors"
+          >
+            Entrar
+          </motion.button>
+        </motion.div>
+      </div>
 
       <RegistrationModal open={modalOpen} onOpenChange={setModalOpen} />
     </div>
