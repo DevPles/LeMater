@@ -20,7 +20,7 @@ function WelcomeScreen() {
     <div className="relative min-h-screen flex flex-col items-center justify-end pb-20 overflow-hidden">
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/unaerp-bg.png')" }}
+        style={{ backgroundImage: "url('/images/hospital-bonini.png')" }}
       />
       <div className="absolute inset-0 bg-[#1a1557]/40" />
 
