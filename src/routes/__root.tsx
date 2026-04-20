@@ -33,6 +33,13 @@ export const Route = createRootRoute({
       { name: "description", content: "Iniciativa UNAERP. Acompanhe sua gestação." },
       { name: "author", content: "UNAERP" },
       { property: "og:type", content: "website" },
+      { property: "og:title", content: "MãeDigital — Cartão Digital da Gestante" },
+      { name: "twitter:title", content: "MãeDigital — Cartão Digital da Gestante" },
+      { property: "og:description", content: "Iniciativa UNAERP. Acompanhe sua gestação." },
+      { name: "twitter:description", content: "Iniciativa UNAERP. Acompanhe sua gestação." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/hsIaJ1cV77Y8R02Q0Rs8lMxhMw62/social-images/social-1776691083042-WhatsApp_Image_2026-04-19_at_08.00.51.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/hsIaJ1cV77Y8R02Q0Rs8lMxhMw62/social-images/social-1776691083042-WhatsApp_Image_2026-04-19_at_08.00.51.webp" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
