@@ -57,9 +57,11 @@ function WelcomeScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
-            className="bg-white/15 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6 border border-white/20"
+            className="relative rounded-full px-5 py-2 mb-6 overflow-hidden bg-gradient-to-br from-white/25 via-white/10 to-white/5 backdrop-blur-xl border border-white/30 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),inset_0_-1px_0_0_rgba(255,255,255,0.1),0_8px_32px_-4px_rgba(240,192,64,0.25)]"
           >
-            <span className="text-[#f0c040] text-xs font-semibold tracking-wider uppercase">
+            <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent rounded-t-full pointer-events-none" />
+            <span className="absolute -inset-x-2 -top-1 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent pointer-events-none" />
+            <span className="relative text-[#f0c040] text-xs font-semibold tracking-wider uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
               Uma iniciativa UNAERP
             </span>
           </motion.div>
