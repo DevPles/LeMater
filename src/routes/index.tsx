@@ -28,7 +28,7 @@ function WelcomeScreen() {
       </div>
 
       {/* Card inferior com gradiente roxo */}
-      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-12 pb-16 rounded-t-3xl mt-auto">
+      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-8 pb-10 rounded-t-3xl mt-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -57,7 +57,7 @@ function WelcomeScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
-            className="bg-white/15 backdrop-blur-sm rounded-full px-4 py-1.5 mb-10 border border-white/20"
+            className="bg-white/15 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6 border border-white/20"
           >
             <span className="text-[#f0c040] text-xs font-semibold tracking-wider uppercase">
               Uma iniciativa UNAERP
