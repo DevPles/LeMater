@@ -25,6 +25,7 @@ type Video = {
   duration: string;
   category: string;
   gradient: string;
+  isGestante?: boolean;
 };
 
 const videos: Video[] = [
@@ -38,9 +39,13 @@ const videos: Video[] = [
 
 const reels: Video[] = [
   { id: 101, title: "Dica rápida: posições para aliviar dor lombar", author: "Dra. Beatriz Mendes", role: "Fisioterapeuta", duration: "0:45", category: "Reels", gradient: "from-coral-light to-blush" },
-  { id: 102, title: "3 lanches saudáveis em 60 segundos", author: "Enf. Carlos Silva", role: "Enfermeiro Obstétrico", duration: "1:00", category: "Reels", gradient: "from-mint-light to-warm" },
-  { id: 103, title: "Pega correta na amamentação", author: "Enf. Paula Rocha", role: "Enfermeira Obstétrica", duration: "0:50", category: "Reels", gradient: "from-blush to-coral-light" },
-  { id: 104, title: "Respiração para o trabalho de parto", author: "Dra. Ana Costa", role: "Obstetra", duration: "0:55", category: "Reels", gradient: "from-warm to-mint-light" },
+  { id: 102, title: "Minha rotina de chás no 3º trimestre 🌿", author: "Juliana M.", role: "Gestante 32 semanas", duration: "0:38", category: "Reels", gradient: "from-mint-light to-warm", isGestante: true },
+  { id: 103, title: "3 lanches saudáveis em 60 segundos", author: "Enf. Carlos Silva", role: "Enfermeiro Obstétrico", duration: "1:00", category: "Reels", gradient: "from-mint-light to-warm" },
+  { id: 104, title: "Como organizei a mala da maternidade 💕", author: "Camila R.", role: "Gestante 38 semanas", duration: "0:52", category: "Reels", gradient: "from-blush to-coral-light", isGestante: true },
+  { id: 105, title: "Pega correta na amamentação", author: "Enf. Paula Rocha", role: "Enfermeira Obstétrica", duration: "0:50", category: "Reels", gradient: "from-blush to-coral-light" },
+  { id: 106, title: "Meu chá revelação caseiro 🎀", author: "Beatriz S.", role: "Gestante 28 semanas", duration: "0:42", category: "Reels", gradient: "from-warm to-blush", isGestante: true },
+  { id: 107, title: "Respiração para o trabalho de parto", author: "Dra. Ana Costa", role: "Obstetra", duration: "0:55", category: "Reels", gradient: "from-warm to-mint-light" },
+  { id: 108, title: "Exercícios que me ajudaram com a dor nas costas", author: "Patrícia L.", role: "Gestante 25 semanas", duration: "0:48", category: "Reels", gradient: "from-coral-light to-mint-light", isGestante: true },
 ];
 
 function VideosPage() {
@@ -80,27 +85,37 @@ function VideosPage() {
       </div>
 
       {isReels ? (
-        <div className="grid grid-cols-2 gap-3">
-          {reels.map((reel, i) => (
-            <motion.button
-              key={reel.id}
-              onClick={() => setSelected(reel)}
-              className="relative aspect-[9/16] rounded-2xl overflow-hidden shadow-sm border border-border text-left"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-            >
-              <div className={`absolute inset-0 bg-gradient-to-br ${reel.gradient}`} />
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent" />
-              <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">REEL</span>
-              <span className="absolute top-2 right-2 bg-foreground/70 text-primary-foreground text-[10px] px-2 py-0.5 rounded-lg">{reel.duration}</span>
-              <div className="absolute bottom-3 left-3 right-3">
-                <h3 className="font-semibold text-xs text-primary-foreground line-clamp-2">{reel.title}</h3>
-                <p className="text-[10px] text-primary-foreground/80 mt-1">{reel.author}</p>
-              </div>
-            </motion.button>
-          ))}
-        </div>
+        <>
+          <button
+            onClick={() => alert("Em breve: envie seu reel para ajudar outras gestantes! 💕")}
+            className="w-full mb-4 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
+          >
+            + Compartilhe seu reel como gestante
+          </button>
+          <div className="grid grid-cols-2 gap-3">
+            {reels.map((reel, i) => (
+              <motion.button
+                key={reel.id}
+                onClick={() => setSelected(reel)}
+                className="relative aspect-[9/16] rounded-2xl overflow-hidden shadow-sm border border-border text-left"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${reel.gradient}`} />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent" />
+                <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${reel.isGestante ? "bg-[#f0c040] text-[#1a1557]" : "bg-primary text-primary-foreground"}`}>
+                  {reel.isGestante ? "GESTANTE" : "REEL"}
+                </span>
+                <span className="absolute top-2 right-2 bg-foreground/70 text-primary-foreground text-[10px] px-2 py-0.5 rounded-lg">{reel.duration}</span>
+                <div className="absolute bottom-3 left-3 right-3">
+                  <h3 className="font-semibold text-xs text-primary-foreground line-clamp-2">{reel.title}</h3>
+                  <p className="text-[10px] text-primary-foreground/80 mt-1">{reel.author}</p>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="grid grid-cols-2 gap-3">
           <AnimatePresence mode="popLayout">
