@@ -540,79 +540,41 @@ function GestaoPage() {
             </Field>
           </div>
 
-          {/* linha 2 - status exames/vacinas */}
+          {/* linha 2 - período (DPP) */}
           <div className="grid md:grid-cols-2 gap-3">
-            <Field label="Status do exame (aplica aos selecionados)">
-              <select value={filtroExame} onChange={(e) => setFiltroExame(e.target.value as "todos" | "pendente" | "realizado")}
-                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3">
-                <option value="todos">Qualquer</option>
-                <option value="pendente">Pendentes</option>
-                <option value="realizado">Realizados</option>
-              </select>
+            <Field label="Período DPP — de">
+              <DateField date={dataInicio} setDate={setDataInicio} placeholder="Data inicial" />
             </Field>
-            <Field label="Status da vacina (aplica às selecionadas)">
-              <select value={filtroVacina} onChange={(e) => setFiltroVacina(e.target.value as "todos" | "pendente" | "realizado")}
-                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3">
-                <option value="todos">Qualquer</option>
-                <option value="pendente">Pendentes</option>
-                <option value="realizado">Realizados</option>
-              </select>
+            <Field label="Período DPP — até">
+              <DateField date={dataFim} setDate={setDataFim} placeholder="Data final" />
             </Field>
           </div>
 
-          {/* linha 3 - DPP por calendário */}
-          <div className="grid md:grid-cols-2 gap-3">
-            <Field label="DPP de">
-              <DateField date={dataInicio} setDate={setDataInicio} placeholder="Selecionar data inicial" />
-            </Field>
-            <Field label="DPP até">
-              <DateField date={dataFim} setDate={setDataFim} placeholder="Selecionar data final" />
-            </Field>
-          </div>
-
-          {/* linha 4 - faixas */}
-          <div className="grid md:grid-cols-2 gap-3">
-            <Field label="Idade (faixa)">
-              <div className="flex gap-2">
-                <input type="number" value={idadeMin} onChange={(e) => setIdadeMin(e.target.value)} placeholder="Mín"
-                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
-                <input type="number" value={idadeMax} onChange={(e) => setIdadeMax(e.target.value)} placeholder="Máx"
-                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
-              </div>
-            </Field>
-            <Field label="Semanas gestacionais (faixa)">
-              <div className="flex gap-2">
-                <input type="number" value={semanasMin} onChange={(e) => setSemanasMin(e.target.value)} placeholder="Mín"
-                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
-                <input type="number" value={semanasMax} onChange={(e) => setSemanasMax(e.target.value)} placeholder="Máx"
-                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
-              </div>
-            </Field>
-          </div>
-
-          <ChipGroup label="Exames" options={EXAMES_LISTA} selected={examesSelecionados}
-            onToggle={(v) => toggle(examesSelecionados, v, setExamesSelecionados)} />
-          <ChipGroup label="Vacinas" options={VACINAS_LISTA} selected={vacinasSelecionadas}
-            onToggle={(v) => toggle(vacinasSelecionadas, v, setVacinasSelecionadas)} />
-
-          <div>
-            <ChipGroup label="Sinais clínicos críticos" options={SINAIS_CRITICOS} selected={sinaisSelecionados}
-              onToggle={(v) => toggle(sinaisSelecionados, v, setSinaisSelecionados)} accent="red" />
-            <ModeToggle mode={modoSinais} setMode={setModoSinais} />
-          </div>
-          <div>
-            <ChipGroup label="Condições já diagnosticadas" options={CONDICOES_ALTO_RISCO}
-              selected={condicoesSelecionadas}
-              onToggle={(v) => toggle(condicoesSelecionadas, v, setCondicoesSelecionadas)} accent="red" />
-            <ModeToggle mode={modoCondicoes} setMode={setModoCondicoes} />
-          </div>
-
-          <div className="flex flex-wrap gap-4 pt-2 border-t border-border">
-            <CheckOption label="Excluir alto risco" checked={excluirAltoRisco} onChange={setExcluirAltoRisco} />
-            <CheckOption label="Apenas menores de idade" checked={apenasMenorIdade} onChange={setApenasMenorIdade} />
-            <CheckOption label="Apenas com sinais clínicos" checked={apenasComSinais} onChange={setApenasComSinais} />
-            <CheckOption label="Apenas com pendências" checked={apenasComPendencias} onChange={setApenasComPendencias} />
-          </div>
+          {/* linha 3 - status rápido */}
+          <Field label="Status">
+            <div className="flex flex-wrap gap-2">
+              {([
+                { v: "todos", l: "Todas" },
+                { v: "pendencias", l: "Com pendências" },
+                { v: "sinais", l: "Com sinais clínicos" },
+                { v: "menor", l: "Menor de idade" },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() => setFiltroStatus(opt.v)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors",
+                    filtroStatus === opt.v
+                      ? "bg-[#1a1557] text-white border-[#1a1557]"
+                      : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50",
+                  )}
+                >
+                  {opt.l}
+                </button>
+              ))}
+            </div>
+          </Field>
         </motion.div>
       )}
 
