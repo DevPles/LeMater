@@ -733,6 +733,10 @@ function GestaoPage() {
                     <td className="px-3 py-2">{g.semanas}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{g.dpp}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{g.cidade}</td>
+                    <td className="px-3 py-2 text-xs whitespace-nowrap">
+                      <div className="text-foreground">{g.telefone}</div>
+                      {g.email && <div className="text-muted-foreground">{g.email}</div>}
+                    </td>
                     <td className="px-3 py-2">
                       <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full border ${riscoStyles[g.risco]}`}>
                         {riscoLabel[g.risco]}
