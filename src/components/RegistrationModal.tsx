@@ -629,13 +629,15 @@ export default function RegistrationModal({
           )}
 
           {mode === "register" && step === 1 && !showCelebration && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="button"
               onClick={() => setMode("login")}
-              className="text-white/70 hover:text-[#f0c040] text-xs font-medium transition-colors text-center mt-2"
+              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm py-2.5 rounded-full backdrop-blur-sm transition-colors"
             >
-              Já tem cadastro? <span className="text-[#f0c040] font-bold">Entrar</span>
-            </button>
+              Entrar
+            </motion.button>
           )}
             </>
           )}
