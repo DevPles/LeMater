@@ -287,6 +287,9 @@ function GestaoPage() {
   const [pushMensagem, setPushMensagem] = useState("");
   const [pushHistorico, setPushHistorico] = useState<{ nome: string; quando: string; titulo: string }[]>([]);
 
+  // Aba ativa
+  const [aba, setAba] = useState<"gestao" | "relatorios">("gestao");
+
   const abrirPush = (g: Gestante) => {
     const sug = sugerirMensagemPush(g);
     setPushTarget(g);
