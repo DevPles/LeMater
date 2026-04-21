@@ -758,6 +758,24 @@ function GestaoPage() {
                         <span className="text-red-700">{g.condicoes.join(", ")}</span>
                       ) : "—"}
                     </td>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-col gap-1">
+                        <button
+                          type="button"
+                          onClick={() => abrirWhatsApp(g.telefone, sugerirMensagemPush(g).corpo)}
+                          className="px-2 py-1 rounded-full text-[10px] font-bold bg-green-600 text-white hover:bg-green-700 whitespace-nowrap"
+                        >
+                          WhatsApp
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => abrirPush(g)}
+                          className="px-2 py-1 rounded-full text-[10px] font-bold bg-[#1a1557] text-white hover:bg-[#241e7a] whitespace-nowrap"
+                        >
+                          Enviar push
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
