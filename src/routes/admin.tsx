@@ -446,9 +446,10 @@ function GestaoPage() {
         <Kpi label="Baixo risco" value={analise.baixoRisco} tone="ok" />
         <Kpi label="Sinais críticos" value={analise.comSinais} tone="danger" />
         <Kpi label="Com pendências" value={analise.comPendencias} tone="warn" />
+        <Kpi label="Menor de idade" value={analise.menorIdade} tone="danger" />
+        <Kpi label="≥35 anos" value={analise.idadeAvancada} tone="warn" />
         <Kpi label="Idade média" value={`${analise.idadeMedia}a`} />
         <Kpi label="Sem. média" value={analise.semanasMedia} />
-        <Kpi label="≥35 anos" value={analise.idadeAvancada} tone="warn" />
         <Kpi label="3º trimestre" value={analise.terceiroTrim} />
       </div>
 
