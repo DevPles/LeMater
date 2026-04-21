@@ -80,6 +80,8 @@ interface Gestante {
   semanas: number;
   dpp: string; // dd/mm/yyyy
   cidade: string;
+  telefone: string; // formato livre, será normalizado para WhatsApp
+  email?: string;
   exames: string[];
   examesPendentes: string[];
   vacinas: string[];
@@ -122,45 +124,55 @@ const VACINAS_LISTA = ["Hepatite B", "dTpa", "Influenza", "COVID-19"];
 /* ============ Mock data ============ */
 const gestantesMock: Gestante[] = [
   { id: 1, nome: "Maria Silva", idade: 28, semanas: 24, dpp: "15/07/2026", cidade: "Ribeirão Preto",
+    telefone: "(16) 99111-0001", email: "maria.silva@email.com",
     exames: ["Ultrassom morfológico", "Hemograma", "Sorologias (HIV/Sífilis/Hepatite)"],
     examesPendentes: ["Teste de tolerância à glicose"],
     vacinas: ["Hepatite B", "dTpa"], vacinasPendentes: ["Influenza"],
     sinaisClinicos: [], condicoes: [], risco: "baixo" },
   { id: 2, nome: "Ana Souza", idade: 34, semanas: 30, dpp: "02/06/2026", cidade: "Ribeirão Preto",
+    telefone: "(16) 99111-0002", email: "ana.souza@email.com",
     exames: ["Ultrassom morfológico", "Hemograma"], examesPendentes: ["Glicemia em jejum"],
     vacinas: ["dTpa"], vacinasPendentes: ["Influenza", "Hepatite B"],
     sinaisClinicos: ["Pressão alta"], condicoes: ["Hipertensão crônica"], risco: "alto" },
   { id: 3, nome: "Júlia Pereira", idade: 22, semanas: 16, dpp: "20/10/2026", cidade: "Sertãozinho",
+    telefone: "(16) 99111-0003", email: "julia.p@email.com",
     exames: ["Hemograma"], examesPendentes: ["Ultrassom morfológico"],
     vacinas: ["Hepatite B"], vacinasPendentes: ["dTpa", "Influenza"],
     sinaisClinicos: [], condicoes: [], risco: "baixo" },
   { id: 4, nome: "Patrícia Lopes", idade: 38, semanas: 28, dpp: "10/06/2026", cidade: "Ribeirão Preto",
+    telefone: "(16) 99111-0004", email: "patricia.l@email.com",
     exames: ["Ultrassom morfológico", "Hemograma", "Glicemia em jejum"],
     examesPendentes: ["Teste de tolerância à glicose"],
     vacinas: ["Hepatite B", "dTpa", "Influenza"], vacinasPendentes: [],
     sinaisClinicos: ["Glicemia elevada"], condicoes: ["Diabetes prévia"], risco: "alto" },
   { id: 5, nome: "Carla Mendes", idade: 26, semanas: 20, dpp: "05/09/2026", cidade: "Cravinhos",
+    telefone: "(16) 99111-0005", email: "carla.m@email.com",
     exames: ["Ultrassom morfológico", "Hemograma"], examesPendentes: ["Sorologias (HIV/Sífilis/Hepatite)"],
     vacinas: ["dTpa"], vacinasPendentes: ["Influenza"],
     sinaisClinicos: ["Cefaleia intensa"], condicoes: [], risco: "medio" },
   { id: 6, nome: "Beatriz Rocha", idade: 31, semanas: 36, dpp: "08/05/2026", cidade: "Ribeirão Preto",
+    telefone: "(16) 99111-0006", email: "beatriz.r@email.com",
     exames: ["Ultrassom morfológico", "Hemograma", "Glicemia em jejum", "Urina tipo I"],
     examesPendentes: [],
     vacinas: ["Hepatite B", "dTpa", "Influenza"], vacinasPendentes: [],
     sinaisClinicos: [], condicoes: [], risco: "baixo" },
   { id: 7, nome: "Larissa Dias", idade: 41, semanas: 18, dpp: "12/10/2026", cidade: "Ribeirão Preto",
+    telefone: "(16) 99111-0007", email: "larissa.d@email.com",
     exames: ["Hemograma"], examesPendentes: ["Ultrassom morfológico"],
     vacinas: [], vacinasPendentes: ["Hepatite B", "dTpa", "Influenza"],
     sinaisClinicos: ["Sangramento"], condicoes: ["Cardiopatia"], risco: "alto" },
   { id: 8, nome: "Fernanda Costa", idade: 25, semanas: 12, dpp: "20/11/2026", cidade: "Sertãozinho",
+    telefone: "(16) 99111-0008", email: "fernanda.c@email.com",
     exames: [], examesPendentes: ["Ultrassom morfológico", "Hemograma", "Sorologias (HIV/Sífilis/Hepatite)"],
     vacinas: [], vacinasPendentes: ["Hepatite B", "dTpa"],
     sinaisClinicos: [], condicoes: [], risco: "baixo" },
   { id: 9, nome: "Isabela Martins", idade: 16, semanas: 22, dpp: "18/08/2026", cidade: "Ribeirão Preto",
+    telefone: "(16) 99111-0009", email: "isabela.m@email.com",
     exames: ["Hemograma"], examesPendentes: ["Ultrassom morfológico", "Glicemia em jejum"],
     vacinas: ["Hepatite B"], vacinasPendentes: ["dTpa", "Influenza"],
     sinaisClinicos: [], condicoes: [], risco: "medio" },
   { id: 10, nome: "Sophia Oliveira", idade: 17, semanas: 14, dpp: "05/11/2026", cidade: "Sertãozinho",
+    telefone: "(16) 99111-0010", email: "sophia.o@email.com",
     exames: [], examesPendentes: ["Ultrassom morfológico", "Hemograma"],
     vacinas: [], vacinasPendentes: ["Hepatite B", "dTpa", "Influenza"],
     sinaisClinicos: ["Pressão alta"], condicoes: [], risco: "medio" },
@@ -186,6 +198,55 @@ const riscoLabel: Record<RiscoNivel, string> = {
 
 const CIDADES = Array.from(new Set(gestantesMock.map((g) => g.cidade))).sort();
 
+/* WhatsApp helpers */
+function normalizarTelefone(tel: string): string {
+  const digits = tel.replace(/\D/g, "");
+  // Se já começa com 55 (Brasil) e tem 12-13 dígitos, mantém. Senão, prefixa 55.
+  if (digits.startsWith("55") && digits.length >= 12) return digits;
+  return `55${digits}`;
+}
+
+function abrirWhatsApp(tel: string, mensagem: string) {
+  const numero = normalizarTelefone(tel);
+  const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+/* Sugestão automática de mensagem com base nos alertas da gestante */
+function sugerirMensagemPush(g: Gestante): { titulo: string; corpo: string } {
+  const partes: string[] = [];
+  let titulo = "MãeDigital — lembrete";
+
+  if (g.sinaisClinicos.length > 0) {
+    titulo = "MãeDigital — atenção urgente";
+    partes.push(
+      `Olá ${g.nome.split(" ")[0]}, identificamos sinais que precisam de avaliação: ${g.sinaisClinicos.join(", ")}. Procure a unidade de saúde o quanto antes.`,
+    );
+  } else if (g.risco === "alto") {
+    titulo = "MãeDigital — acompanhamento de alto risco";
+    partes.push(
+      `Olá ${g.nome.split(" ")[0]}, sua gestação é classificada como alto risco. Reforce a presença nas consultas e siga as orientações do seu pré-natal.`,
+    );
+  }
+
+  if (g.examesPendentes.length > 0) {
+    partes.push(`Exames pendentes: ${g.examesPendentes.join(", ")}.`);
+  }
+  if (g.vacinasPendentes.length > 0) {
+    partes.push(`Vacinas pendentes: ${g.vacinasPendentes.join(", ")}.`);
+  }
+  if (g.idade < 18) {
+    partes.push("Lembrando que o acompanhamento da gestante adolescente é prioritário.");
+  }
+  if (partes.length === 0) {
+    partes.push(
+      `Olá ${g.nome.split(" ")[0]}, está tudo certo com seu acompanhamento. Continue mantendo as consultas em dia.`,
+    );
+  }
+
+  return { titulo, corpo: partes.join(" ") };
+}
+
 /* ============ Page ============ */
 function GestaoPage() {
   const [busca, setBusca] = useState("");
@@ -199,6 +260,29 @@ function GestaoPage() {
   const [showFiltros, setShowFiltros] = useState(true);
   const [sortKey, setSortKey] = useState<keyof Gestante>("nome");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  // Push notification state
+  const [pushTarget, setPushTarget] = useState<Gestante | null>(null);
+  const [pushTitulo, setPushTitulo] = useState("");
+  const [pushMensagem, setPushMensagem] = useState("");
+  const [pushHistorico, setPushHistorico] = useState<{ nome: string; quando: string; titulo: string }[]>([]);
+
+  const abrirPush = (g: Gestante) => {
+    const sug = sugerirMensagemPush(g);
+    setPushTarget(g);
+    setPushTitulo(sug.titulo);
+    setPushMensagem(sug.corpo);
+  };
+
+  const enviarPush = () => {
+    if (!pushTarget) return;
+    setPushHistorico((h) => [
+      { nome: pushTarget.nome, quando: new Date().toLocaleString("pt-BR"), titulo: pushTitulo },
+      ...h,
+    ]);
+    alert(`Push enviado para ${pushTarget.nome}:\n\n${pushTitulo}\n\n${pushMensagem}`);
+    setPushTarget(null);
+  };
 
   const gestantesFiltradas = useMemo(() => {
     const buscaLower = busca.trim().toLowerCase();
@@ -348,6 +432,9 @@ function GestaoPage() {
         "Semanas gestacionais": g.semanas,
         DPP: g.dpp,
         Cidade: g.cidade,
+        Telefone: g.telefone,
+        "WhatsApp (link)": `https://wa.me/${normalizarTelefone(g.telefone)}`,
+        "E-mail": g.email ?? "",
         Risco: riscoLabel[g.risco],
         "Exames realizados": g.exames.join("; "),
         "Exames pendentes": g.examesPendentes.join("; "),
@@ -359,7 +446,8 @@ function GestaoPage() {
       const ws = XLSX.utils.json_to_sheet(rows);
       ws["!cols"] = [
         { wch: 4 }, { wch: 22 }, { wch: 6 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 16 },
-        { wch: 8 }, { wch: 38 }, { wch: 32 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 26 },
+        { wch: 18 }, { wch: 32 }, { wch: 24 }, { wch: 8 },
+        { wch: 38 }, { wch: 32 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 26 },
       ];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Gestantes");
@@ -415,6 +503,9 @@ function GestaoPage() {
         ID: g.id, Nome: g.nome, Idade: g.idade,
         "Menor de idade": g.idade < 18 ? "Sim" : "Não",
         Semanas: g.semanas, DPP: g.dpp, Cidade: g.cidade,
+        Telefone: g.telefone,
+        "WhatsApp (link)": `https://wa.me/${normalizarTelefone(g.telefone)}`,
+        "E-mail": g.email ?? "",
         Risco: riscoLabel[g.risco],
         "Exames realizados": g.exames.join("; "),
         "Exames pendentes": g.examesPendentes.join("; "),
@@ -423,7 +514,33 @@ function GestaoPage() {
         "Sinais clínicos": g.sinaisClinicos.join("; "),
         "Condições prévias": g.condicoes.join("; "),
       }));
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Gestantes");
+      const wsGest = XLSX.utils.json_to_sheet(rows);
+      wsGest["!cols"] = [
+        { wch: 4 }, { wch: 22 }, { wch: 6 }, { wch: 12 }, { wch: 8 }, { wch: 12 }, { wch: 16 },
+        { wch: 18 }, { wch: 32 }, { wch: 24 }, { wch: 8 },
+        { wch: 38 }, { wch: 32 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 26 },
+      ];
+      XLSX.utils.book_append_sheet(wb, wsGest, "Gestantes");
+
+      // Aba de contatos prontos para campanhas
+      const contatos = gestantesFiltradas.map((g) => {
+        const sug = sugerirMensagemPush(g);
+        return {
+          Nome: g.nome,
+          Telefone: g.telefone,
+          "WhatsApp (link)": `https://wa.me/${normalizarTelefone(g.telefone)}?text=${encodeURIComponent(sug.corpo)}`,
+          "E-mail": g.email ?? "",
+          Cidade: g.cidade,
+          Risco: riscoLabel[g.risco],
+          "Mensagem sugerida": sug.corpo,
+        };
+      });
+      const wsContatos = XLSX.utils.json_to_sheet(contatos);
+      wsContatos["!cols"] = [
+        { wch: 22 }, { wch: 18 }, { wch: 60 }, { wch: 24 }, { wch: 16 }, { wch: 8 }, { wch: 80 },
+      ];
+      XLSX.utils.book_append_sheet(wb, wsContatos, "Contatos");
+
 
       const toSheet = (title: string, dict: Record<string, number>) => {
         const data = [["Item", "Quantidade"], ...Object.entries(dict).sort((a, b) => b[1] - a[1])];
@@ -590,16 +707,18 @@ function GestaoPage() {
                 <Th onClick={() => handleSort("dpp")} active={sortKey === "dpp"} dir={sortDir}>DPP</Th>
                 <Th onClick={() => handleSort("cidade")} active={sortKey === "cidade"} dir={sortDir}>Cidade</Th>
                 <Th onClick={() => handleSort("risco")} active={sortKey === "risco"} dir={sortDir}>Risco</Th>
+                <th className="text-left px-3 py-2 font-semibold">Contato</th>
                 <th className="text-left px-3 py-2 font-semibold">Exames pendentes</th>
                 <th className="text-left px-3 py-2 font-semibold">Vacinas pendentes</th>
                 <th className="text-left px-3 py-2 font-semibold">Sinais</th>
                 <th className="text-left px-3 py-2 font-semibold">Condições</th>
+                <th className="text-left px-3 py-2 font-semibold">Ações</th>
               </tr>
             </thead>
             <tbody>
               {gestantesFiltradas.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-8 text-muted-foreground">
+                  <td colSpan={12} className="text-center py-8 text-muted-foreground">
                     Nenhuma gestante encontrada com os filtros aplicados.
                   </td>
                 </tr>
@@ -614,6 +733,10 @@ function GestaoPage() {
                     <td className="px-3 py-2">{g.semanas}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{g.dpp}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{g.cidade}</td>
+                    <td className="px-3 py-2 text-xs whitespace-nowrap">
+                      <div className="text-foreground">{g.telefone}</div>
+                      {g.email && <div className="text-muted-foreground">{g.email}</div>}
+                    </td>
                     <td className="px-3 py-2">
                       <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full border ${riscoStyles[g.risco]}`}>
                         {riscoLabel[g.risco]}
@@ -635,6 +758,24 @@ function GestaoPage() {
                         <span className="text-red-700">{g.condicoes.join(", ")}</span>
                       ) : "—"}
                     </td>
+                    <td className="px-3 py-2">
+                      <div className="flex flex-col gap-1">
+                        <button
+                          type="button"
+                          onClick={() => abrirWhatsApp(g.telefone, sugerirMensagemPush(g).corpo)}
+                          className="px-2 py-1 rounded-full text-[10px] font-bold bg-green-600 text-white hover:bg-green-700 whitespace-nowrap"
+                        >
+                          WhatsApp
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => abrirPush(g)}
+                          className="px-2 py-1 rounded-full text-[10px] font-bold bg-[#1a1557] text-white hover:bg-[#241e7a] whitespace-nowrap"
+                        >
+                          Enviar push
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -654,6 +795,120 @@ function GestaoPage() {
         <RankingTable title="Condições prévias diagnosticadas" data={analise.condicoesCount} accent="red" />
         <RankingTable title="Distribuição por cidade" data={analise.cidadesCount} />
       </div>
+
+      {/* Histórico de pushs enviados */}
+      {pushHistorico.length > 0 && (
+        <div className="bg-card rounded-2xl border border-border overflow-hidden mt-6">
+          <div className="px-4 py-2 bg-muted/40 border-b border-border">
+            <p className="text-xs font-bold uppercase tracking-wide text-foreground">
+              Pushs enviados nesta sessão
+            </p>
+          </div>
+          <ul className="divide-y divide-border">
+            {pushHistorico.map((p, i) => (
+              <li key={i} className="px-4 py-2 text-xs flex justify-between gap-2">
+                <span className="font-semibold text-foreground">{p.nome}</span>
+                <span className="text-muted-foreground">{p.titulo}</span>
+                <span className="text-muted-foreground whitespace-nowrap">{p.quando}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Modal de envio de push */}
+      {pushTarget && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+          onClick={() => setPushTarget(null)}
+        >
+          <div
+            className="bg-card rounded-2xl shadow-xl max-w-lg w-full p-5 space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div>
+              <p className="text-xs text-muted-foreground">Enviar push para</p>
+              <h3 className="text-lg font-bold font-display text-foreground">
+                {pushTarget.nome}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {pushTarget.telefone} · {pushTarget.cidade} · Risco {riscoLabel[pushTarget.risco]}
+              </p>
+            </div>
+
+            {(pushTarget.sinaisClinicos.length > 0 ||
+              pushTarget.examesPendentes.length > 0 ||
+              pushTarget.vacinasPendentes.length > 0) && (
+              <div className="bg-muted/40 rounded-xl p-3 text-xs space-y-1">
+                <p className="font-semibold text-foreground">Alertas detectados</p>
+                {pushTarget.sinaisClinicos.length > 0 && (
+                  <p className="text-red-700">Sinais: {pushTarget.sinaisClinicos.join(", ")}</p>
+                )}
+                {pushTarget.examesPendentes.length > 0 && (
+                  <p className="text-amber-700">Exames pendentes: {pushTarget.examesPendentes.join(", ")}</p>
+                )}
+                {pushTarget.vacinasPendentes.length > 0 && (
+                  <p className="text-amber-700">Vacinas pendentes: {pushTarget.vacinasPendentes.join(", ")}</p>
+                )}
+              </div>
+            )}
+
+            <Field label="Título do push">
+              <input
+                value={pushTitulo}
+                onChange={(e) => setPushTitulo(e.target.value)}
+                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
+              />
+            </Field>
+
+            <Field label="Mensagem (gerada automaticamente a partir dos alertas — edite à vontade)">
+              <textarea
+                value={pushMensagem}
+                onChange={(e) => setPushMensagem(e.target.value)}
+                rows={5}
+                className="w-full text-sm rounded-xl border border-border bg-background p-3"
+              />
+            </Field>
+
+            <div className="flex justify-between gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const sug = sugerirMensagemPush(pushTarget);
+                  setPushTitulo(sug.titulo);
+                  setPushMensagem(sug.corpo);
+                }}
+                className="px-3 py-2 rounded-full text-xs font-semibold border border-border text-muted-foreground hover:text-foreground"
+              >
+                Restaurar sugestão
+              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPushTarget(null)}
+                  className="px-3 py-2 rounded-full text-xs font-semibold border border-border text-muted-foreground hover:text-foreground"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => abrirWhatsApp(pushTarget.telefone, pushMensagem)}
+                  className="px-3 py-2 rounded-full text-xs font-bold bg-green-600 text-white hover:bg-green-700"
+                >
+                  Abrir no WhatsApp
+                </button>
+                <button
+                  type="button"
+                  onClick={enviarPush}
+                  className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a]"
+                >
+                  Enviar push
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
