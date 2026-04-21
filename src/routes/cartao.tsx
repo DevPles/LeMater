@@ -14,7 +14,7 @@ export const Route = createFileRoute("/cartao")({
     ],
   }),
   ssr: false,
-  component: ProntuarioPage,
+  component: CartaoPage,
 });
 
 const patientInfo = {
@@ -140,7 +140,7 @@ const bcfData = [
 
 type Tab = "resumo" | "lancamentos" | "vacinas" | "graficos";
 
-function ProntuarioPage() {
+function CartaoPage() {
   const [tab, setTab] = useState<Tab>("resumo");
   const [lancamentos, setLancamentos] = useState<Lancamento[]>(lancamentosIniciais);
   const [showForm, setShowForm] = useState(false);
