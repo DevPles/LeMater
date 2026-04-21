@@ -260,14 +260,15 @@ export default function RegistrationModal({
                 <div className="flex-1 h-px bg-white/20" />
               </div>
 
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={() => setMode("register")}
-                className="text-white/80 hover:text-[#f0c040] text-sm font-medium transition-colors text-center"
+                className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm py-2.5 rounded-full backdrop-blur-sm transition-colors"
               >
-                Não tem conta?{" "}
-                <span className="text-[#f0c040] font-bold">Cadastre-se</span>
-              </button>
+                Cadastrar
+              </motion.button>
             </motion.div>
           )}
 
