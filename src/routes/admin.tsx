@@ -150,6 +150,14 @@ const gestantesMock: Gestante[] = [
     exames: [], examesPendentes: ["Ultrassom morfológico", "Hemograma", "Sorologias (HIV/Sífilis/Hepatite)"],
     vacinas: [], vacinasPendentes: ["Hepatite B", "dTpa"],
     sinaisClinicos: [], condicoes: [], risco: "baixo" },
+  { id: 9, nome: "Isabela Martins", idade: 16, semanas: 22, dpp: "18/08/2026", cidade: "Ribeirão Preto",
+    exames: ["Hemograma"], examesPendentes: ["Ultrassom morfológico", "Glicemia em jejum"],
+    vacinas: ["Hepatite B"], vacinasPendentes: ["dTpa", "Influenza"],
+    sinaisClinicos: [], condicoes: [], risco: "medio" },
+  { id: 10, nome: "Sophia Oliveira", idade: 17, semanas: 14, dpp: "05/11/2026", cidade: "Sertãozinho",
+    exames: [], examesPendentes: ["Ultrassom morfológico", "Hemograma"],
+    vacinas: [], vacinasPendentes: ["Hepatite B", "dTpa", "Influenza"],
+    sinaisClinicos: ["Pressão alta"], condicoes: [], risco: "medio" },
 ];
 
 /* ============ Helpers ============ */
