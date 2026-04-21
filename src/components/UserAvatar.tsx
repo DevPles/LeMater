@@ -33,11 +33,11 @@ export function UserAvatar({ name = "Maria Silva" }: UserAvatarProps) {
             </div>
             <div className="py-1">
               <Link
-                to="/prontuario"
+                to="/cartao"
                 onClick={() => setOpen(false)}
                 className="block px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
               >
-                Meu Prontuário
+                Meu Cartão
               </Link>
               <Link
                 to="/alertas"
