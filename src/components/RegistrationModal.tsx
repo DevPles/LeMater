@@ -193,7 +193,7 @@ export default function RegistrationModal({
               exit={{ opacity: 0, y: -10 }}
               className="flex flex-col gap-3 pt-2"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="flex flex-col gap-2">
                 <div>
                   <Label className={labelClass}>E-mail ou CPF</Label>
                   <Input
