@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
 
-export const Route = createFileRoute("/gestao")({
+export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
       { title: "Gestão de Gestantes — MãeDigital" },

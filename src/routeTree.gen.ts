@@ -13,8 +13,8 @@ import { Route as VideosRouteImport } from './routes/videos'
 import { Route as VideochamadaRouteImport } from './routes/videochamada'
 import { Route as ProntuarioRouteImport } from './routes/prontuario'
 import { Route as HomeRouteImport } from './routes/home'
-import { Route as GestaoRouteImport } from './routes/gestao'
 import { Route as AlertasRouteImport } from './routes/alertas'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
 const VideosRoute = VideosRouteImport.update({
@@ -37,14 +37,14 @@ const HomeRoute = HomeRouteImport.update({
   path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GestaoRoute = GestaoRouteImport.update({
-  id: '/gestao',
-  path: '/gestao',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AlertasRoute = AlertasRouteImport.update({
   id: '/alertas',
   path: '/alertas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -55,8 +55,8 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/alertas': typeof AlertasRoute
-  '/gestao': typeof GestaoRoute
   '/home': typeof HomeRoute
   '/prontuario': typeof ProntuarioRoute
   '/videochamada': typeof VideochamadaRoute
@@ -64,8 +64,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/alertas': typeof AlertasRoute
-  '/gestao': typeof GestaoRoute
   '/home': typeof HomeRoute
   '/prontuario': typeof ProntuarioRoute
   '/videochamada': typeof VideochamadaRoute
@@ -74,8 +74,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/alertas': typeof AlertasRoute
-  '/gestao': typeof GestaoRoute
   '/home': typeof HomeRoute
   '/prontuario': typeof ProntuarioRoute
   '/videochamada': typeof VideochamadaRoute
@@ -85,8 +85,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/alertas'
-    | '/gestao'
     | '/home'
     | '/prontuario'
     | '/videochamada'
@@ -94,8 +94,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/alertas'
-    | '/gestao'
     | '/home'
     | '/prontuario'
     | '/videochamada'
@@ -103,8 +103,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/alertas'
-    | '/gestao'
     | '/home'
     | '/prontuario'
     | '/videochamada'
@@ -113,8 +113,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   AlertasRoute: typeof AlertasRoute
-  GestaoRoute: typeof GestaoRoute
   HomeRoute: typeof HomeRoute
   ProntuarioRoute: typeof ProntuarioRoute
   VideochamadaRoute: typeof VideochamadaRoute
@@ -151,18 +151,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gestao': {
-      id: '/gestao'
-      path: '/gestao'
-      fullPath: '/gestao'
-      preLoaderRoute: typeof GestaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/alertas': {
       id: '/alertas'
       path: '/alertas'
       fullPath: '/alertas'
       preLoaderRoute: typeof AlertasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -177,8 +177,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   AlertasRoute: AlertasRoute,
-  GestaoRoute: GestaoRoute,
   HomeRoute: HomeRoute,
   ProntuarioRoute: ProntuarioRoute,
   VideochamadaRoute: VideochamadaRoute,
@@ -187,3 +187,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

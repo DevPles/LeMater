@@ -5,7 +5,6 @@ const navItems = [
   { to: "/videos", label: "Vídeos" },
   { to: "/videochamada", label: "Chamada" },
   { to: "/prontuario", label: "Cartão" },
-  { to: "/gestao", label: "Gestão" },
   { to: "/alertas", label: "Alertas" },
 ] as const;
 
