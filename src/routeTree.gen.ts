@@ -13,6 +13,7 @@ import { Route as VideosRouteImport } from './routes/videos'
 import { Route as VideochamadaRouteImport } from './routes/videochamada'
 import { Route as ProntuarioRouteImport } from './routes/prontuario'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as GestaoRouteImport } from './routes/gestao'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -36,6 +37,11 @@ const HomeRoute = HomeRouteImport.update({
   path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GestaoRoute = GestaoRouteImport.update({
+  id: '/gestao',
+  path: '/gestao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlertasRoute = AlertasRouteImport.update({
   id: '/alertas',
   path: '/alertas',
@@ -50,6 +56,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
+  '/gestao': typeof GestaoRoute
   '/home': typeof HomeRoute
   '/prontuario': typeof ProntuarioRoute
   '/videochamada': typeof VideochamadaRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
+  '/gestao': typeof GestaoRoute
   '/home': typeof HomeRoute
   '/prontuario': typeof ProntuarioRoute
   '/videochamada': typeof VideochamadaRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
+  '/gestao': typeof GestaoRoute
   '/home': typeof HomeRoute
   '/prontuario': typeof ProntuarioRoute
   '/videochamada': typeof VideochamadaRoute
@@ -77,16 +86,25 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/alertas'
+    | '/gestao'
     | '/home'
     | '/prontuario'
     | '/videochamada'
     | '/videos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alertas' | '/home' | '/prontuario' | '/videochamada' | '/videos'
+  to:
+    | '/'
+    | '/alertas'
+    | '/gestao'
+    | '/home'
+    | '/prontuario'
+    | '/videochamada'
+    | '/videos'
   id:
     | '__root__'
     | '/'
     | '/alertas'
+    | '/gestao'
     | '/home'
     | '/prontuario'
     | '/videochamada'
@@ -96,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlertasRoute: typeof AlertasRoute
+  GestaoRoute: typeof GestaoRoute
   HomeRoute: typeof HomeRoute
   ProntuarioRoute: typeof ProntuarioRoute
   VideochamadaRoute: typeof VideochamadaRoute
@@ -132,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/gestao': {
+      id: '/gestao'
+      path: '/gestao'
+      fullPath: '/gestao'
+      preLoaderRoute: typeof GestaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/alertas': {
       id: '/alertas'
       path: '/alertas'
@@ -152,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlertasRoute: AlertasRoute,
+  GestaoRoute: GestaoRoute,
   HomeRoute: HomeRoute,
   ProntuarioRoute: ProntuarioRoute,
   VideochamadaRoute: VideochamadaRoute,
@@ -160,12 +187,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
