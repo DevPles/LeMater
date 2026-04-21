@@ -453,8 +453,7 @@ function GestaoPage() {
       ];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Gestantes");
-      const out = XLSX.write(wb, { bookType: "xlsx", type: "array" }) as Uint8Array;
-      triggerDownload(out, `maedigital-gestantes-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      downloadWorkbook(wb, `maedigital-gestantes-${new Date().toISOString().slice(0, 10)}.xlsx`);
     } catch (err) {
       console.error("Falha ao exportar tabela:", err);
       alert("Erro ao gerar Excel. Veja o console para detalhes.");
