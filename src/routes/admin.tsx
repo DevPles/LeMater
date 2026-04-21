@@ -71,7 +71,7 @@ function AdminGate() {
 
 /* ============ Tipos ============ */
 type RiscoNivel = "baixo" | "medio" | "alto";
-type MatchMode = "qualquer" | "todos";
+
 
 interface Gestante {
   id: number;
@@ -191,38 +191,14 @@ function GestaoPage() {
   const [busca, setBusca] = useState("");
   const [filtroRisco, setFiltroRisco] = useState<"todos" | RiscoNivel>("todos");
   const [filtroCidade, setFiltroCidade] = useState<string>("todas");
-
-  const [filtroExame, setFiltroExame] = useState<"todos" | "pendente" | "realizado">("todos");
-  const [filtroVacina, setFiltroVacina] = useState<"todos" | "pendente" | "realizado">("todos");
-
-  const [examesSelecionados, setExamesSelecionados] = useState<string[]>([]);
-  const [vacinasSelecionadas, setVacinasSelecionadas] = useState<string[]>([]);
-  const [sinaisSelecionados, setSinaisSelecionados] = useState<string[]>([]);
-  const [condicoesSelecionadas, setCondicoesSelecionadas] = useState<string[]>([]);
-
-  const [modoSinais, setModoSinais] = useState<MatchMode>("qualquer");
-  const [modoCondicoes, setModoCondicoes] = useState<MatchMode>("qualquer");
+  const [filtroStatus, setFiltroStatus] = useState<"todos" | "pendencias" | "sinais" | "menor">("todos");
 
   const [dataInicio, setDataInicio] = useState<Date | undefined>(undefined);
   const [dataFim, setDataFim] = useState<Date | undefined>(undefined);
 
-  const [idadeMin, setIdadeMin] = useState<string>("");
-  const [idadeMax, setIdadeMax] = useState<string>("");
-  const [semanasMin, setSemanasMin] = useState<string>("");
-  const [semanasMax, setSemanasMax] = useState<string>("");
-
-  const [excluirAltoRisco, setExcluirAltoRisco] = useState(false);
-  const [apenasMenorIdade, setApenasMenorIdade] = useState(false);
-  const [apenasComSinais, setApenasComSinais] = useState(false);
-  const [apenasComPendencias, setApenasComPendencias] = useState(false);
-
   const [showFiltros, setShowFiltros] = useState(true);
   const [sortKey, setSortKey] = useState<keyof Gestante>("nome");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-
-  const toggle = (arr: string[], value: string, setter: (v: string[]) => void) => {
-    setter(arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]);
-  };
 
   const gestantesFiltradas = useMemo(() => {
     const buscaLower = busca.trim().toLowerCase();
@@ -232,53 +208,12 @@ function GestaoPage() {
         const blob = `${g.nome} ${g.cidade}`.toLowerCase();
         if (!blob.includes(buscaLower)) return false;
       }
-      if (excluirAltoRisco && g.risco === "alto") return false;
-      if (apenasMenorIdade && g.idade >= 18) return false;
-      if (apenasComSinais && g.sinaisClinicos.length === 0) return false;
-      if (apenasComPendencias && g.examesPendentes.length === 0 && g.vacinasPendentes.length === 0) return false;
-
       if (filtroRisco !== "todos" && g.risco !== filtroRisco) return false;
       if (filtroCidade !== "todas" && g.cidade !== filtroCidade) return false;
 
-      const idadeMinN = idadeMin ? Number(idadeMin) : null;
-      const idadeMaxN = idadeMax ? Number(idadeMax) : null;
-      if (idadeMinN !== null && g.idade < idadeMinN) return false;
-      if (idadeMaxN !== null && g.idade > idadeMaxN) return false;
-
-      const semMinN = semanasMin ? Number(semanasMin) : null;
-      const semMaxN = semanasMax ? Number(semanasMax) : null;
-      if (semMinN !== null && g.semanas < semMinN) return false;
-      if (semMaxN !== null && g.semanas > semMaxN) return false;
-
-      if (examesSelecionados.length > 0) {
-        const ok = examesSelecionados.every((e) => {
-          if (filtroExame === "pendente") return g.examesPendentes.includes(e);
-          if (filtroExame === "realizado") return g.exames.includes(e);
-          return g.exames.includes(e) || g.examesPendentes.includes(e);
-        });
-        if (!ok) return false;
-      }
-
-      if (vacinasSelecionadas.length > 0) {
-        const ok = vacinasSelecionadas.every((v) => {
-          if (filtroVacina === "pendente") return g.vacinasPendentes.includes(v);
-          if (filtroVacina === "realizado") return g.vacinas.includes(v);
-          return g.vacinas.includes(v) || g.vacinasPendentes.includes(v);
-        });
-        if (!ok) return false;
-      }
-
-      if (sinaisSelecionados.length > 0) {
-        const fn = modoSinais === "todos" ? "every" : "some";
-        const ok = sinaisSelecionados[fn]((s) => g.sinaisClinicos.includes(s));
-        if (!ok) return false;
-      }
-
-      if (condicoesSelecionadas.length > 0) {
-        const fn = modoCondicoes === "todos" ? "every" : "some";
-        const ok = condicoesSelecionadas[fn]((c) => g.condicoes.includes(c));
-        if (!ok) return false;
-      }
+      if (filtroStatus === "pendencias" && g.examesPendentes.length === 0 && g.vacinasPendentes.length === 0) return false;
+      if (filtroStatus === "sinais" && g.sinaisClinicos.length === 0) return false;
+      if (filtroStatus === "menor" && g.idade >= 18) return false;
 
       if (dataInicio) {
         const d = parseDpp(g.dpp);
@@ -303,37 +238,18 @@ function GestaoPage() {
     });
 
     return sorted;
-  }, [busca, filtroRisco, filtroCidade, filtroExame, filtroVacina,
-      examesSelecionados, vacinasSelecionadas, sinaisSelecionados, condicoesSelecionadas,
-      modoSinais, modoCondicoes, dataInicio, dataFim,
-      idadeMin, idadeMax, semanasMin, semanasMax,
-      excluirAltoRisco, apenasMenorIdade, apenasComSinais, apenasComPendencias,
-      sortKey, sortDir]);
+  }, [busca, filtroRisco, filtroCidade, filtroStatus, dataInicio, dataFim, sortKey, sortDir]);
 
   const filtrosAtivos = useMemo(() => {
     let n = 0;
     if (busca) n++;
     if (filtroRisco !== "todos") n++;
     if (filtroCidade !== "todas") n++;
-    if (filtroExame !== "todos") n++;
-    if (filtroVacina !== "todos") n++;
-    if (examesSelecionados.length) n++;
-    if (vacinasSelecionadas.length) n++;
-    if (sinaisSelecionados.length) n++;
-    if (condicoesSelecionadas.length) n++;
+    if (filtroStatus !== "todos") n++;
     if (dataInicio) n++;
     if (dataFim) n++;
-    if (idadeMin || idadeMax) n++;
-    if (semanasMin || semanasMax) n++;
-    if (excluirAltoRisco) n++;
-    if (apenasMenorIdade) n++;
-    if (apenasComSinais) n++;
-    if (apenasComPendencias) n++;
     return n;
-  }, [busca, filtroRisco, filtroCidade, filtroExame, filtroVacina,
-      examesSelecionados, vacinasSelecionadas, sinaisSelecionados, condicoesSelecionadas,
-      dataInicio, dataFim, idadeMin, idadeMax, semanasMin, semanasMax,
-      excluirAltoRisco, apenasMenorIdade, apenasComSinais, apenasComPendencias]);
+  }, [busca, filtroRisco, filtroCidade, filtroStatus, dataInicio, dataFim]);
 
   const analise = useMemo(() => {
     const total = gestantesFiltradas.length;
@@ -386,14 +302,8 @@ function GestaoPage() {
 
   const limparFiltros = () => {
     setBusca(""); setFiltroRisco("todos"); setFiltroCidade("todas");
-    setFiltroExame("todos"); setFiltroVacina("todos");
-    setExamesSelecionados([]); setVacinasSelecionadas([]);
-    setSinaisSelecionados([]); setCondicoesSelecionadas([]);
-    setModoSinais("qualquer"); setModoCondicoes("qualquer");
+    setFiltroStatus("todos");
     setDataInicio(undefined); setDataFim(undefined);
-    setIdadeMin(""); setIdadeMax(""); setSemanasMin(""); setSemanasMax("");
-    setExcluirAltoRisco(false); setApenasMenorIdade(false);
-    setApenasComSinais(false); setApenasComPendencias(false);
   };
 
   const handleSort = (key: keyof Gestante) => {
@@ -473,20 +383,9 @@ function GestaoPage() {
         ["Busca", busca || "—"],
         ["Risco", filtroRisco],
         ["Cidade", filtroCidade],
-        ["Status exames", filtroExame],
-        ["Status vacinas", filtroVacina],
-        ["Exames selecionados", examesSelecionados.join("; ") || "—"],
-        ["Vacinas selecionadas", vacinasSelecionadas.join("; ") || "—"],
-        ["Sinais selecionados", `${sinaisSelecionados.join("; ") || "—"} (${modoSinais})`],
-        ["Condições selecionadas", `${condicoesSelecionadas.join("; ") || "—"} (${modoCondicoes})`],
+        ["Status", filtroStatus],
         ["DPP de", dataInicio ? format(dataInicio, "dd/MM/yyyy") : "—"],
         ["DPP até", dataFim ? format(dataFim, "dd/MM/yyyy") : "—"],
-        ["Idade", `${idadeMin || "?"} a ${idadeMax || "?"}`],
-        ["Semanas", `${semanasMin || "?"} a ${semanasMax || "?"}`],
-        ["Excluir alto risco", excluirAltoRisco ? "Sim" : "Não"],
-        ["Apenas menor de idade", apenasMenorIdade ? "Sim" : "Não"],
-        ["Apenas com sinais", apenasComSinais ? "Sim" : "Não"],
-        ["Apenas com pendências", apenasComPendencias ? "Sim" : "Não"],
       ];
 
       const resumo: (string | number)[][] = [
@@ -641,79 +540,41 @@ function GestaoPage() {
             </Field>
           </div>
 
-          {/* linha 2 - status exames/vacinas */}
+          {/* linha 2 - período (DPP) */}
           <div className="grid md:grid-cols-2 gap-3">
-            <Field label="Status do exame (aplica aos selecionados)">
-              <select value={filtroExame} onChange={(e) => setFiltroExame(e.target.value as "todos" | "pendente" | "realizado")}
-                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3">
-                <option value="todos">Qualquer</option>
-                <option value="pendente">Pendentes</option>
-                <option value="realizado">Realizados</option>
-              </select>
+            <Field label="Período DPP — de">
+              <DateField date={dataInicio} setDate={setDataInicio} placeholder="Data inicial" />
             </Field>
-            <Field label="Status da vacina (aplica às selecionadas)">
-              <select value={filtroVacina} onChange={(e) => setFiltroVacina(e.target.value as "todos" | "pendente" | "realizado")}
-                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3">
-                <option value="todos">Qualquer</option>
-                <option value="pendente">Pendentes</option>
-                <option value="realizado">Realizados</option>
-              </select>
+            <Field label="Período DPP — até">
+              <DateField date={dataFim} setDate={setDataFim} placeholder="Data final" />
             </Field>
           </div>
 
-          {/* linha 3 - DPP por calendário */}
-          <div className="grid md:grid-cols-2 gap-3">
-            <Field label="DPP de">
-              <DateField date={dataInicio} setDate={setDataInicio} placeholder="Selecionar data inicial" />
-            </Field>
-            <Field label="DPP até">
-              <DateField date={dataFim} setDate={setDataFim} placeholder="Selecionar data final" />
-            </Field>
-          </div>
-
-          {/* linha 4 - faixas */}
-          <div className="grid md:grid-cols-2 gap-3">
-            <Field label="Idade (faixa)">
-              <div className="flex gap-2">
-                <input type="number" value={idadeMin} onChange={(e) => setIdadeMin(e.target.value)} placeholder="Mín"
-                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
-                <input type="number" value={idadeMax} onChange={(e) => setIdadeMax(e.target.value)} placeholder="Máx"
-                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
-              </div>
-            </Field>
-            <Field label="Semanas gestacionais (faixa)">
-              <div className="flex gap-2">
-                <input type="number" value={semanasMin} onChange={(e) => setSemanasMin(e.target.value)} placeholder="Mín"
-                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
-                <input type="number" value={semanasMax} onChange={(e) => setSemanasMax(e.target.value)} placeholder="Máx"
-                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
-              </div>
-            </Field>
-          </div>
-
-          <ChipGroup label="Exames" options={EXAMES_LISTA} selected={examesSelecionados}
-            onToggle={(v) => toggle(examesSelecionados, v, setExamesSelecionados)} />
-          <ChipGroup label="Vacinas" options={VACINAS_LISTA} selected={vacinasSelecionadas}
-            onToggle={(v) => toggle(vacinasSelecionadas, v, setVacinasSelecionadas)} />
-
-          <div>
-            <ChipGroup label="Sinais clínicos críticos" options={SINAIS_CRITICOS} selected={sinaisSelecionados}
-              onToggle={(v) => toggle(sinaisSelecionados, v, setSinaisSelecionados)} accent="red" />
-            <ModeToggle mode={modoSinais} setMode={setModoSinais} />
-          </div>
-          <div>
-            <ChipGroup label="Condições já diagnosticadas" options={CONDICOES_ALTO_RISCO}
-              selected={condicoesSelecionadas}
-              onToggle={(v) => toggle(condicoesSelecionadas, v, setCondicoesSelecionadas)} accent="red" />
-            <ModeToggle mode={modoCondicoes} setMode={setModoCondicoes} />
-          </div>
-
-          <div className="flex flex-wrap gap-4 pt-2 border-t border-border">
-            <CheckOption label="Excluir alto risco" checked={excluirAltoRisco} onChange={setExcluirAltoRisco} />
-            <CheckOption label="Apenas menores de idade" checked={apenasMenorIdade} onChange={setApenasMenorIdade} />
-            <CheckOption label="Apenas com sinais clínicos" checked={apenasComSinais} onChange={setApenasComSinais} />
-            <CheckOption label="Apenas com pendências" checked={apenasComPendencias} onChange={setApenasComPendencias} />
-          </div>
+          {/* linha 3 - status rápido */}
+          <Field label="Status">
+            <div className="flex flex-wrap gap-2">
+              {([
+                { v: "todos", l: "Todas" },
+                { v: "pendencias", l: "Com pendências" },
+                { v: "sinais", l: "Com sinais clínicos" },
+                { v: "menor", l: "Menor de idade" },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() => setFiltroStatus(opt.v)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors",
+                    filtroStatus === opt.v
+                      ? "bg-[#1a1557] text-white border-[#1a1557]"
+                      : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50",
+                  )}
+                >
+                  {opt.l}
+                </button>
+              ))}
+            </div>
+          </Field>
         </motion.div>
       )}
 
@@ -845,38 +706,6 @@ function DateField({ date, setDate, placeholder }: { date?: Date; setDate: (d?: 
   );
 }
 
-function CheckOption({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className="flex items-center gap-2 text-sm cursor-pointer">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="text-foreground font-medium">{label}</span>
-    </label>
-  );
-}
-
-function ModeToggle({ mode, setMode }: { mode: MatchMode; setMode: (m: MatchMode) => void }) {
-  return (
-    <div className="flex items-center gap-2 mt-2">
-      <span className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Modo:</span>
-      {(["qualquer", "todos"] as MatchMode[]).map((m) => (
-        <button
-          key={m}
-          type="button"
-          onClick={() => setMode(m)}
-          className={cn(
-            "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border transition-colors",
-            mode === m
-              ? "bg-[#1a1557] text-white border-[#1a1557]"
-              : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50",
-          )}
-        >
-          {m === "qualquer" ? "Qualquer um" : "Todos"}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function Kpi({ label, value, tone = "default" }: { label: string; value: number | string; tone?: "default" | "danger" | "warn" | "ok" }) {
   const tones = {
     default: "bg-card border-border text-foreground",
@@ -897,32 +726,6 @@ function Th({ children, onClick, active, dir }: { children: React.ReactNode; onC
     <th onClick={onClick} className="text-left px-3 py-2 font-semibold cursor-pointer select-none whitespace-nowrap hover:bg-white/10">
       {children}{active ? (dir === "asc" ? " ↑" : " ↓") : ""}
     </th>
-  );
-}
-
-function ChipGroup({ label, options, selected, onToggle, accent }: {
-  label: string; options: string[]; selected: string[]; onToggle: (v: string) => void; accent?: "red";
-}) {
-  return (
-    <div>
-      <p className="text-xs font-medium text-muted-foreground mb-1.5">{label}</p>
-      <div className="flex flex-wrap gap-1.5">
-        {options.map((opt) => {
-          const sel = selected.includes(opt);
-          const base = sel
-            ? accent === "red"
-              ? "bg-red-600 text-white border-red-600"
-              : "bg-[#1a1557] text-white border-[#1a1557]"
-            : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50";
-          return (
-            <button key={opt} type="button" onClick={() => onToggle(opt)}
-              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${base}`}>
-              {opt}
-            </button>
-          );
-        })}
-      </div>
-    </div>
   );
 }
 
