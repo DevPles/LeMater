@@ -391,6 +391,63 @@ export default function RegistrationModal({
               </div>
 
               <div>
+                <Label className={labelClass}>CEP</Label>
+                <div className="relative">
+                  <Input
+                    value={cep}
+                    onChange={(e) => {
+                      const v = formatarCep(e.target.value);
+                      setCep(v);
+                      setCepError("");
+                      if (v.replace(/\D/g, "").length === 8) buscarCep(v);
+                    }}
+                    onBlur={() => buscarCep(cep)}
+                    placeholder="00000-000"
+                    inputMode="numeric"
+                    maxLength={9}
+                    className={inputClass}
+                  />
+                  {cepLoading && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#f0c040] text-xs">
+                      buscando...
+                    </span>
+                  )}
+                </div>
+                {cepError && <p className="text-red-300 text-[11px] mt-1">{cepError}</p>}
+              </div>
+
+              {(bairro || cidade) && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className={labelClass}>Bairro</Label>
+                    <Input
+                      value={bairro}
+                      onChange={(e) => {
+                        setBairro(e.target.value);
+                        setUbs(ubsParaBairro(e.target.value));
+                      }}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <Label className={labelClass}>Cidade / UF</Label>
+                    <Input
+                      value={uf ? `${cidade}/${uf}` : cidade}
+                      readOnly
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {ubs && (
+                <div className="bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl px-3 py-2">
+                  <p className="text-[10px] uppercase tracking-wide text-white/60">UBS de referência</p>
+                  <p className="text-[#f0c040] text-sm font-bold">{ubs}</p>
+                </div>
+              )}
+
+              <div>
                 <Label className={labelClass}>Endereço</Label>
                 <Input
                   value={endereco}
