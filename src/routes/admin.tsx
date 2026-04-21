@@ -2,6 +2,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -66,6 +71,7 @@ function AdminGate() {
 
 /* ============ Tipos ============ */
 type RiscoNivel = "baixo" | "medio" | "alto";
+type MatchMode = "qualquer" | "todos";
 
 interface Gestante {
   id: number;
@@ -178,19 +184,39 @@ const riscoLabel: Record<RiscoNivel, string> = {
   alto: "Alto",
 };
 
+const CIDADES = Array.from(new Set(gestantesMock.map((g) => g.cidade))).sort();
+
 /* ============ Page ============ */
 function GestaoPage() {
   const [busca, setBusca] = useState("");
   const [filtroRisco, setFiltroRisco] = useState<"todos" | RiscoNivel>("todos");
+  const [filtroCidade, setFiltroCidade] = useState<string>("todas");
+
   const [filtroExame, setFiltroExame] = useState<"todos" | "pendente" | "realizado">("todos");
+  const [filtroVacina, setFiltroVacina] = useState<"todos" | "pendente" | "realizado">("todos");
+
   const [examesSelecionados, setExamesSelecionados] = useState<string[]>([]);
   const [vacinasSelecionadas, setVacinasSelecionadas] = useState<string[]>([]);
   const [sinaisSelecionados, setSinaisSelecionados] = useState<string[]>([]);
   const [condicoesSelecionadas, setCondicoesSelecionadas] = useState<string[]>([]);
-  const [dataInicio, setDataInicio] = useState("");
-  const [dataFim, setDataFim] = useState("");
+
+  const [modoSinais, setModoSinais] = useState<MatchMode>("qualquer");
+  const [modoCondicoes, setModoCondicoes] = useState<MatchMode>("qualquer");
+
+  const [dataInicio, setDataInicio] = useState<Date | undefined>(undefined);
+  const [dataFim, setDataFim] = useState<Date | undefined>(undefined);
+
+  const [idadeMin, setIdadeMin] = useState<string>("");
+  const [idadeMax, setIdadeMax] = useState<string>("");
+  const [semanasMin, setSemanasMin] = useState<string>("");
+  const [semanasMax, setSemanasMax] = useState<string>("");
+
   const [excluirAltoRisco, setExcluirAltoRisco] = useState(false);
-  const [showFiltros, setShowFiltros] = useState(false);
+  const [apenasMenorIdade, setApenasMenorIdade] = useState(false);
+  const [apenasComSinais, setApenasComSinais] = useState(false);
+  const [apenasComPendencias, setApenasComPendencias] = useState(false);
+
+  const [showFiltros, setShowFiltros] = useState(true);
   const [sortKey, setSortKey] = useState<keyof Gestante>("nome");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
@@ -199,10 +225,30 @@ function GestaoPage() {
   };
 
   const gestantesFiltradas = useMemo(() => {
+    const buscaLower = busca.trim().toLowerCase();
+
     const lista = gestantesMock.filter((g) => {
-      if (busca && !g.nome.toLowerCase().includes(busca.toLowerCase())) return false;
+      if (buscaLower) {
+        const blob = `${g.nome} ${g.cidade}`.toLowerCase();
+        if (!blob.includes(buscaLower)) return false;
+      }
       if (excluirAltoRisco && g.risco === "alto") return false;
+      if (apenasMenorIdade && g.idade >= 18) return false;
+      if (apenasComSinais && g.sinaisClinicos.length === 0) return false;
+      if (apenasComPendencias && g.examesPendentes.length === 0 && g.vacinasPendentes.length === 0) return false;
+
       if (filtroRisco !== "todos" && g.risco !== filtroRisco) return false;
+      if (filtroCidade !== "todas" && g.cidade !== filtroCidade) return false;
+
+      const idadeMinN = idadeMin ? Number(idadeMin) : null;
+      const idadeMaxN = idadeMax ? Number(idadeMax) : null;
+      if (idadeMinN !== null && g.idade < idadeMinN) return false;
+      if (idadeMaxN !== null && g.idade > idadeMaxN) return false;
+
+      const semMinN = semanasMin ? Number(semanasMin) : null;
+      const semMaxN = semanasMax ? Number(semanasMax) : null;
+      if (semMinN !== null && g.semanas < semMinN) return false;
+      if (semMaxN !== null && g.semanas > semMaxN) return false;
 
       if (examesSelecionados.length > 0) {
         const ok = examesSelecionados.every((e) => {
@@ -214,25 +260,33 @@ function GestaoPage() {
       }
 
       if (vacinasSelecionadas.length > 0) {
-        const ok = vacinasSelecionadas.every((v) => g.vacinas.includes(v) || g.vacinasPendentes.includes(v));
+        const ok = vacinasSelecionadas.every((v) => {
+          if (filtroVacina === "pendente") return g.vacinasPendentes.includes(v);
+          if (filtroVacina === "realizado") return g.vacinas.includes(v);
+          return g.vacinas.includes(v) || g.vacinasPendentes.includes(v);
+        });
         if (!ok) return false;
       }
 
       if (sinaisSelecionados.length > 0) {
-        const ok = sinaisSelecionados.some((s) => g.sinaisClinicos.includes(s));
+        const fn = modoSinais === "todos" ? "every" : "some";
+        const ok = sinaisSelecionados[fn]((s) => g.sinaisClinicos.includes(s));
         if (!ok) return false;
       }
 
       if (condicoesSelecionadas.length > 0) {
-        const ok = condicoesSelecionadas.some((c) => g.condicoes.includes(c));
+        const fn = modoCondicoes === "todos" ? "every" : "some";
+        const ok = condicoesSelecionadas[fn]((c) => g.condicoes.includes(c));
         if (!ok) return false;
       }
 
       if (dataInicio) {
-        if (parseDpp(g.dpp) < new Date(dataInicio)) return false;
+        const d = parseDpp(g.dpp);
+        if (d < new Date(dataInicio.getFullYear(), dataInicio.getMonth(), dataInicio.getDate())) return false;
       }
       if (dataFim) {
-        if (parseDpp(g.dpp) > new Date(dataFim)) return false;
+        const d = parseDpp(g.dpp);
+        if (d > new Date(dataFim.getFullYear(), dataFim.getMonth(), dataFim.getDate(), 23, 59, 59)) return false;
       }
 
       return true;
@@ -242,16 +296,45 @@ function GestaoPage() {
       const av = a[sortKey];
       const bv = b[sortKey];
       let cmp = 0;
-      if (typeof av === "number" && typeof bv === "number") cmp = av - bv;
+      if (sortKey === "dpp") cmp = parseDpp(a.dpp).getTime() - parseDpp(b.dpp).getTime();
+      else if (typeof av === "number" && typeof bv === "number") cmp = av - bv;
       else cmp = String(av).localeCompare(String(bv), "pt-BR");
       return sortDir === "asc" ? cmp : -cmp;
     });
 
     return sorted;
-  }, [busca, filtroRisco, filtroExame, examesSelecionados, vacinasSelecionadas,
-      sinaisSelecionados, condicoesSelecionadas, dataInicio, dataFim, excluirAltoRisco, sortKey, sortDir]);
+  }, [busca, filtroRisco, filtroCidade, filtroExame, filtroVacina,
+      examesSelecionados, vacinasSelecionadas, sinaisSelecionados, condicoesSelecionadas,
+      modoSinais, modoCondicoes, dataInicio, dataFim,
+      idadeMin, idadeMax, semanasMin, semanasMax,
+      excluirAltoRisco, apenasMenorIdade, apenasComSinais, apenasComPendencias,
+      sortKey, sortDir]);
 
-  /* ============ Análises inteligentes ============ */
+  const filtrosAtivos = useMemo(() => {
+    let n = 0;
+    if (busca) n++;
+    if (filtroRisco !== "todos") n++;
+    if (filtroCidade !== "todas") n++;
+    if (filtroExame !== "todos") n++;
+    if (filtroVacina !== "todos") n++;
+    if (examesSelecionados.length) n++;
+    if (vacinasSelecionadas.length) n++;
+    if (sinaisSelecionados.length) n++;
+    if (condicoesSelecionadas.length) n++;
+    if (dataInicio) n++;
+    if (dataFim) n++;
+    if (idadeMin || idadeMax) n++;
+    if (semanasMin || semanasMax) n++;
+    if (excluirAltoRisco) n++;
+    if (apenasMenorIdade) n++;
+    if (apenasComSinais) n++;
+    if (apenasComPendencias) n++;
+    return n;
+  }, [busca, filtroRisco, filtroCidade, filtroExame, filtroVacina,
+      examesSelecionados, vacinasSelecionadas, sinaisSelecionados, condicoesSelecionadas,
+      dataInicio, dataFim, idadeMin, idadeMax, semanasMin, semanasMax,
+      excluirAltoRisco, apenasMenorIdade, apenasComSinais, apenasComPendencias]);
+
   const analise = useMemo(() => {
     const total = gestantesFiltradas.length;
     const altoRisco = gestantesFiltradas.filter((g) => g.risco === "alto").length;
@@ -294,34 +377,23 @@ function GestaoPage() {
     const cidadesCount: Record<string, number> = {};
     gestantesFiltradas.forEach((g) => (cidadesCount[g.cidade] = (cidadesCount[g.cidade] || 0) + 1));
 
-    const insights: string[] = [];
-    if (total > 0) {
-      const pctAlto = Math.round((altoRisco / total) * 100);
-      if (pctAlto >= 25) insights.push(`Atenção: ${pctAlto}% das gestantes filtradas são de alto risco.`);
-      if (terceiroTrim / total >= 0.4) insights.push(`${terceiroTrim} gestantes já estão no 3º trimestre (≥28 sem).`);
-      if (idadeAvancada > 0) insights.push(`${idadeAvancada} gestantes com idade ≥35 anos (idade materna avançada).`);
-      const examTop = Object.entries(examesPendCount).sort((a, b) => b[1] - a[1])[0];
-      if (examTop && examTop[1] > 0) insights.push(`Exame mais pendente: ${examTop[0]} (${examTop[1]} casos).`);
-      const vacTop = Object.entries(vacinasPendCount).sort((a, b) => b[1] - a[1])[0];
-      if (vacTop && vacTop[1] > 0) insights.push(`Vacina mais pendente: ${vacTop[0]} (${vacTop[1]} casos).`);
-      if (comSinais > 0) insights.push(`${comSinais} gestante(s) apresentam sinais clínicos críticos — revisar imediatamente.`);
-    } else {
-      insights.push("Nenhuma gestante atende aos filtros aplicados.");
-    }
-
     return {
       total, altoRisco, medioRisco, baixoRisco, comSinais, comPendencias,
       idadeMedia, semanasMedia, idadeAvancada, menorIdade, terceiroTrim,
       examesPendCount, vacinasPendCount, sinaisCount, condicoesCount, cidadesCount,
-      insights,
     };
   }, [gestantesFiltradas]);
 
   const limparFiltros = () => {
-    setBusca(""); setFiltroRisco("todos"); setFiltroExame("todos");
+    setBusca(""); setFiltroRisco("todos"); setFiltroCidade("todas");
+    setFiltroExame("todos"); setFiltroVacina("todos");
     setExamesSelecionados([]); setVacinasSelecionadas([]);
     setSinaisSelecionados([]); setCondicoesSelecionadas([]);
-    setDataInicio(""); setDataFim(""); setExcluirAltoRisco(false);
+    setModoSinais("qualquer"); setModoCondicoes("qualquer");
+    setDataInicio(undefined); setDataFim(undefined);
+    setIdadeMin(""); setIdadeMax(""); setSemanasMin(""); setSemanasMax("");
+    setExcluirAltoRisco(false); setApenasMenorIdade(false);
+    setApenasComSinais(false); setApenasComPendencias(false);
   };
 
   const handleSort = (key: keyof Gestante) => {
@@ -330,109 +402,142 @@ function GestaoPage() {
   };
 
   /* ============ Exportações ============ */
-  const downloadXlsx = (wb: XLSX.WorkBook, filename: string) => {
-    try {
-      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      const blob = new Blob([wbout], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (err) {
-      console.error("Falha ao exportar XLSX:", err);
-      alert("Não foi possível gerar o arquivo Excel. Verifique o console.");
-    }
+  const triggerDownload = (data: Uint8Array, filename: string) => {
+    const blob = new Blob([data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
   };
 
   const exportarExcelTabela = () => {
-    const rows = gestantesFiltradas.map((g) => ({
-      ID: g.id,
-      Nome: g.nome,
-      Idade: g.idade,
-      "Menor de idade": g.idade < 18 ? "Sim" : "Não",
-      "Semanas gestacionais": g.semanas,
-      DPP: g.dpp,
-      Cidade: g.cidade,
-      Risco: riscoLabel[g.risco],
-      "Exames realizados": g.exames.join("; "),
-      "Exames pendentes": g.examesPendentes.join("; "),
-      "Vacinas tomadas": g.vacinas.join("; "),
-      "Vacinas pendentes": g.vacinasPendentes.join("; "),
-      "Sinais clínicos": g.sinaisClinicos.join("; "),
-      "Condições prévias": g.condicoes.join("; "),
-    }));
-    const ws = XLSX.utils.json_to_sheet(rows);
-    ws["!cols"] = [
-      { wch: 4 }, { wch: 22 }, { wch: 6 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 16 },
-      { wch: 8 }, { wch: 38 }, { wch: 32 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 26 },
-    ];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Gestantes");
-    downloadXlsx(wb, `maedigital-gestantes-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    try {
+      if (gestantesFiltradas.length === 0) {
+        alert("Não há gestantes para exportar com os filtros atuais.");
+        return;
+      }
+      const rows = gestantesFiltradas.map((g) => ({
+        ID: g.id,
+        Nome: g.nome,
+        Idade: g.idade,
+        "Menor de idade": g.idade < 18 ? "Sim" : "Não",
+        "Semanas gestacionais": g.semanas,
+        DPP: g.dpp,
+        Cidade: g.cidade,
+        Risco: riscoLabel[g.risco],
+        "Exames realizados": g.exames.join("; "),
+        "Exames pendentes": g.examesPendentes.join("; "),
+        "Vacinas tomadas": g.vacinas.join("; "),
+        "Vacinas pendentes": g.vacinasPendentes.join("; "),
+        "Sinais clínicos": g.sinaisClinicos.join("; "),
+        "Condições prévias": g.condicoes.join("; "),
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws["!cols"] = [
+        { wch: 4 }, { wch: 22 }, { wch: 6 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 16 },
+        { wch: 8 }, { wch: 38 }, { wch: 32 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 26 },
+      ];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Gestantes");
+      const out = XLSX.write(wb, { bookType: "xlsx", type: "array" }) as Uint8Array;
+      triggerDownload(out, `maedigital-gestantes-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    } catch (err) {
+      console.error("Falha ao exportar tabela:", err);
+      alert("Erro ao gerar Excel. Veja o console para detalhes.");
+    }
   };
 
   const gerarRelatorioExcel = () => {
-    const wb = XLSX.utils.book_new();
+    try {
+      if (gestantesFiltradas.length === 0) {
+        alert("Não há gestantes para gerar relatório com os filtros atuais.");
+        return;
+      }
+      const wb = XLSX.utils.book_new();
 
-    // Resumo
-    const resumo = [
-      ["Relatório MãeDigital — UNAERP"],
-      ["Gerado em", new Date().toLocaleString("pt-BR")],
-      [],
-      ["Indicador", "Valor"],
-      ["Total de gestantes (filtradas)", analise.total],
-      ["Alto risco", analise.altoRisco],
-      ["Médio risco", analise.medioRisco],
-      ["Baixo risco", analise.baixoRisco],
-      ["Com sinais clínicos críticos", analise.comSinais],
-      ["Com pendências (exames/vacinas)", analise.comPendencias],
-      ["Menor de idade (<18 anos)", analise.menorIdade],
-      ["Idade ≥35 anos (avançada)", analise.idadeAvancada],
-      ["Idade média", analise.idadeMedia],
-      ["Semanas gestacionais (média)", analise.semanasMedia],
-      ["3º trimestre (≥28 semanas)", analise.terceiroTrim],
-      [],
-      ["Insights"],
-      ...analise.insights.map((i) => [i]),
-    ];
-    const wsResumo = XLSX.utils.aoa_to_sheet(resumo);
-    wsResumo["!cols"] = [{ wch: 40 }, { wch: 20 }];
-    XLSX.utils.book_append_sheet(wb, wsResumo, "Resumo");
+      const filtrosResumo: (string | number)[][] = [
+        ["Filtros aplicados"],
+        ["Busca", busca || "—"],
+        ["Risco", filtroRisco],
+        ["Cidade", filtroCidade],
+        ["Status exames", filtroExame],
+        ["Status vacinas", filtroVacina],
+        ["Exames selecionados", examesSelecionados.join("; ") || "—"],
+        ["Vacinas selecionadas", vacinasSelecionadas.join("; ") || "—"],
+        ["Sinais selecionados", `${sinaisSelecionados.join("; ") || "—"} (${modoSinais})`],
+        ["Condições selecionadas", `${condicoesSelecionadas.join("; ") || "—"} (${modoCondicoes})`],
+        ["DPP de", dataInicio ? format(dataInicio, "dd/MM/yyyy") : "—"],
+        ["DPP até", dataFim ? format(dataFim, "dd/MM/yyyy") : "—"],
+        ["Idade", `${idadeMin || "?"} a ${idadeMax || "?"}`],
+        ["Semanas", `${semanasMin || "?"} a ${semanasMax || "?"}`],
+        ["Excluir alto risco", excluirAltoRisco ? "Sim" : "Não"],
+        ["Apenas menor de idade", apenasMenorIdade ? "Sim" : "Não"],
+        ["Apenas com sinais", apenasComSinais ? "Sim" : "Não"],
+        ["Apenas com pendências", apenasComPendencias ? "Sim" : "Não"],
+      ];
 
-    // Gestantes
-    const rows = gestantesFiltradas.map((g) => ({
-      ID: g.id, Nome: g.nome, Idade: g.idade,
-      "Menor de idade": g.idade < 18 ? "Sim" : "Não",
-      Semanas: g.semanas, DPP: g.dpp, Cidade: g.cidade,
-      Risco: riscoLabel[g.risco],
-      "Exames realizados": g.exames.join("; "),
-      "Exames pendentes": g.examesPendentes.join("; "),
-      "Vacinas tomadas": g.vacinas.join("; "),
-      "Vacinas pendentes": g.vacinasPendentes.join("; "),
-      "Sinais clínicos": g.sinaisClinicos.join("; "),
-      "Condições prévias": g.condicoes.join("; "),
-    }));
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Gestantes");
+      const resumo: (string | number)[][] = [
+        ["Relatório MãeDigital — UNAERP"],
+        ["Gerado em", new Date().toLocaleString("pt-BR")],
+        [],
+        ["Indicador", "Valor"],
+        ["Total de gestantes (filtradas)", analise.total],
+        ["Alto risco", analise.altoRisco],
+        ["Médio risco", analise.medioRisco],
+        ["Baixo risco", analise.baixoRisco],
+        ["Com sinais clínicos críticos", analise.comSinais],
+        ["Com pendências (exames/vacinas)", analise.comPendencias],
+        ["Menor de idade (<18 anos)", analise.menorIdade],
+        ["Idade ≥35 anos (avançada)", analise.idadeAvancada],
+        ["Idade média", analise.idadeMedia],
+        ["Semanas gestacionais (média)", analise.semanasMedia],
+        ["3º trimestre (≥28 semanas)", analise.terceiroTrim],
+        [],
+        ...filtrosResumo,
+      ];
+      const wsResumo = XLSX.utils.aoa_to_sheet(resumo);
+      wsResumo["!cols"] = [{ wch: 40 }, { wch: 40 }];
+      XLSX.utils.book_append_sheet(wb, wsResumo, "Resumo");
 
-    const toSheet = (title: string, dict: Record<string, number>) => {
-      const data = [["Item", "Quantidade"], ...Object.entries(dict).sort((a, b) => b[1] - a[1])];
-      const ws = XLSX.utils.aoa_to_sheet(data);
-      ws["!cols"] = [{ wch: 38 }, { wch: 14 }];
-      XLSX.utils.book_append_sheet(wb, ws, title);
-    };
-    toSheet("Exames pendentes", analise.examesPendCount);
-    toSheet("Vacinas pendentes", analise.vacinasPendCount);
-    toSheet("Sinais clínicos", analise.sinaisCount);
-    toSheet("Condições prévias", analise.condicoesCount);
-    toSheet("Por cidade", analise.cidadesCount);
+      const rows = gestantesFiltradas.map((g) => ({
+        ID: g.id, Nome: g.nome, Idade: g.idade,
+        "Menor de idade": g.idade < 18 ? "Sim" : "Não",
+        Semanas: g.semanas, DPP: g.dpp, Cidade: g.cidade,
+        Risco: riscoLabel[g.risco],
+        "Exames realizados": g.exames.join("; "),
+        "Exames pendentes": g.examesPendentes.join("; "),
+        "Vacinas tomadas": g.vacinas.join("; "),
+        "Vacinas pendentes": g.vacinasPendentes.join("; "),
+        "Sinais clínicos": g.sinaisClinicos.join("; "),
+        "Condições prévias": g.condicoes.join("; "),
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Gestantes");
 
-    downloadXlsx(wb, `maedigital-relatorio-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      const toSheet = (title: string, dict: Record<string, number>) => {
+        const data = [["Item", "Quantidade"], ...Object.entries(dict).sort((a, b) => b[1] - a[1])];
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        ws["!cols"] = [{ wch: 38 }, { wch: 14 }];
+        XLSX.utils.book_append_sheet(wb, ws, title);
+      };
+      toSheet("Exames pendentes", analise.examesPendCount);
+      toSheet("Vacinas pendentes", analise.vacinasPendCount);
+      toSheet("Sinais clínicos", analise.sinaisCount);
+      toSheet("Condições prévias", analise.condicoesCount);
+      toSheet("Por cidade", analise.cidadesCount);
+
+      const out = XLSX.write(wb, { bookType: "xlsx", type: "array" }) as Uint8Array;
+      triggerDownload(out, `maedigital-relatorio-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    } catch (err) {
+      console.error("Falha ao gerar relatório:", err);
+      alert("Erro ao gerar relatório. Veja o console para detalhes.");
+    }
   };
 
   return (
@@ -443,19 +548,21 @@ function GestaoPage() {
             Gestão de Gestantes
           </h1>
           <p className="text-sm text-muted-foreground">
-            Análise inteligente dos dados cadastrados
+            Análise inteligente dos dados cadastrados — exportações respeitam os filtros aplicados.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
+            type="button"
             onClick={exportarExcelTabela}
-            className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a]"
+            className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a] transition-colors"
           >
             Exportar tabela (Excel)
           </button>
           <button
+            type="button"
             onClick={gerarRelatorioExcel}
-            className="px-4 py-2 rounded-full text-xs font-bold bg-[#f0c040] text-[#1a1557] hover:bg-[#e5b535]"
+            className="px-4 py-2 rounded-full text-xs font-bold bg-[#f0c040] text-[#1a1557] hover:bg-[#e5b535] transition-colors"
           >
             Gerar relatório completo
           </button>
@@ -478,13 +585,20 @@ function GestaoPage() {
       </div>
 
       {/* Toggle filtros */}
-      <div className="flex items-center justify-between mb-3">
-        <button
-          onClick={() => setShowFiltros(!showFiltros)}
-          className="px-3 py-1.5 rounded-full text-xs font-semibold bg-primary text-primary-foreground"
-        >
-          {showFiltros ? "Ocultar filtros" : "Mostrar filtros"}
-        </button>
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowFiltros(!showFiltros)}
+            className="px-3 py-1.5 rounded-full text-xs font-semibold bg-primary text-primary-foreground"
+          >
+            {showFiltros ? "Ocultar filtros" : "Mostrar filtros"}
+          </button>
+          {filtrosAtivos > 0 && (
+            <span className="px-2 py-1 rounded-full text-[10px] font-bold bg-[#f0c040] text-[#1a1557]">
+              {filtrosAtivos} filtro(s) ativo(s)
+            </span>
+          )}
+        </div>
         <button
           onClick={limparFiltros}
           className="px-3 py-1.5 rounded-full text-xs font-semibold border border-border text-muted-foreground hover:text-foreground"
@@ -498,9 +612,10 @@ function GestaoPage() {
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="bg-card rounded-2xl p-4 shadow-sm border border-border mb-4 space-y-4"
         >
+          {/* linha 1 */}
           <div className="grid md:grid-cols-3 gap-3">
-            <Field label="Buscar gestante">
-              <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Nome..."
+            <Field label="Buscar (nome ou cidade)">
+              <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Ex: Maria, Ribeirão..."
                 className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
             </Field>
             <Field label="Nível de risco">
@@ -512,24 +627,62 @@ function GestaoPage() {
                 <option value="alto">Alto</option>
               </select>
             </Field>
-            <Field label="Status do exame">
+            <Field label="Cidade">
+              <select value={filtroCidade} onChange={(e) => setFiltroCidade(e.target.value)}
+                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3">
+                <option value="todas">Todas</option>
+                {CIDADES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </Field>
+          </div>
+
+          {/* linha 2 - status exames/vacinas */}
+          <div className="grid md:grid-cols-2 gap-3">
+            <Field label="Status do exame (aplica aos selecionados)">
               <select value={filtroExame} onChange={(e) => setFiltroExame(e.target.value as "todos" | "pendente" | "realizado")}
                 className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3">
-                <option value="todos">Todos</option>
+                <option value="todos">Qualquer</option>
+                <option value="pendente">Pendentes</option>
+                <option value="realizado">Realizados</option>
+              </select>
+            </Field>
+            <Field label="Status da vacina (aplica às selecionadas)">
+              <select value={filtroVacina} onChange={(e) => setFiltroVacina(e.target.value as "todos" | "pendente" | "realizado")}
+                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3">
+                <option value="todos">Qualquer</option>
                 <option value="pendente">Pendentes</option>
                 <option value="realizado">Realizados</option>
               </select>
             </Field>
           </div>
 
+          {/* linha 3 - DPP por calendário */}
           <div className="grid md:grid-cols-2 gap-3">
             <Field label="DPP de">
-              <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)}
-                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
+              <DateField date={dataInicio} setDate={setDataInicio} placeholder="Selecionar data inicial" />
             </Field>
             <Field label="DPP até">
-              <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)}
-                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
+              <DateField date={dataFim} setDate={setDataFim} placeholder="Selecionar data final" />
+            </Field>
+          </div>
+
+          {/* linha 4 - faixas */}
+          <div className="grid md:grid-cols-2 gap-3">
+            <Field label="Idade (faixa)">
+              <div className="flex gap-2">
+                <input type="number" value={idadeMin} onChange={(e) => setIdadeMin(e.target.value)} placeholder="Mín"
+                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
+                <input type="number" value={idadeMax} onChange={(e) => setIdadeMax(e.target.value)} placeholder="Máx"
+                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
+              </div>
+            </Field>
+            <Field label="Semanas gestacionais (faixa)">
+              <div className="flex gap-2">
+                <input type="number" value={semanasMin} onChange={(e) => setSemanasMin(e.target.value)} placeholder="Mín"
+                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
+                <input type="number" value={semanasMax} onChange={(e) => setSemanasMax(e.target.value)} placeholder="Máx"
+                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
+              </div>
             </Field>
           </div>
 
@@ -537,16 +690,25 @@ function GestaoPage() {
             onToggle={(v) => toggle(examesSelecionados, v, setExamesSelecionados)} />
           <ChipGroup label="Vacinas" options={VACINAS_LISTA} selected={vacinasSelecionadas}
             onToggle={(v) => toggle(vacinasSelecionadas, v, setVacinasSelecionadas)} />
-          <ChipGroup label="Sinais clínicos críticos" options={SINAIS_CRITICOS} selected={sinaisSelecionados}
-            onToggle={(v) => toggle(sinaisSelecionados, v, setSinaisSelecionados)} accent="red" />
-          <ChipGroup label="Condições já diagnosticadas" options={CONDICOES_ALTO_RISCO}
-            selected={condicoesSelecionadas}
-            onToggle={(v) => toggle(condicoesSelecionadas, v, setCondicoesSelecionadas)} accent="red" />
 
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input type="checkbox" checked={excluirAltoRisco} onChange={(e) => setExcluirAltoRisco(e.target.checked)} />
-            <span className="text-foreground font-medium">Excluir gestantes de alto risco</span>
-          </label>
+          <div>
+            <ChipGroup label="Sinais clínicos críticos" options={SINAIS_CRITICOS} selected={sinaisSelecionados}
+              onToggle={(v) => toggle(sinaisSelecionados, v, setSinaisSelecionados)} accent="red" />
+            <ModeToggle mode={modoSinais} setMode={setModoSinais} />
+          </div>
+          <div>
+            <ChipGroup label="Condições já diagnosticadas" options={CONDICOES_ALTO_RISCO}
+              selected={condicoesSelecionadas}
+              onToggle={(v) => toggle(condicoesSelecionadas, v, setCondicoesSelecionadas)} accent="red" />
+            <ModeToggle mode={modoCondicoes} setMode={setModoCondicoes} />
+          </div>
+
+          <div className="flex flex-wrap gap-4 pt-2 border-t border-border">
+            <CheckOption label="Excluir alto risco" checked={excluirAltoRisco} onChange={setExcluirAltoRisco} />
+            <CheckOption label="Apenas menores de idade" checked={apenasMenorIdade} onChange={setApenasMenorIdade} />
+            <CheckOption label="Apenas com sinais clínicos" checked={apenasComSinais} onChange={setApenasComSinais} />
+            <CheckOption label="Apenas com pendências" checked={apenasComPendencias} onChange={setApenasComPendencias} />
+          </div>
         </motion.div>
       )}
 
@@ -579,7 +741,10 @@ function GestaoPage() {
                 gestantesFiltradas.map((g, i) => (
                   <tr key={g.id} className={i % 2 === 0 ? "bg-background" : "bg-muted/30"}>
                     <td className="px-3 py-2 font-semibold text-foreground whitespace-nowrap">{g.nome}</td>
-                    <td className="px-3 py-2">{g.idade}</td>
+                    <td className="px-3 py-2">
+                      {g.idade}
+                      {g.idade < 18 && <span className="ml-1 text-[9px] font-bold text-red-700">MENOR</span>}
+                    </td>
                     <td className="px-3 py-2">{g.semanas}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{g.dpp}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{g.cidade}</td>
@@ -633,6 +798,76 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     <div>
       <label className="text-xs font-medium text-muted-foreground mb-1 block">{label}</label>
       {children}
+    </div>
+  );
+}
+
+function DateField({ date, setDate, placeholder }: { date?: Date; setDate: (d?: Date) => void; placeholder: string }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "w-full h-9 text-sm rounded-xl border border-border bg-background px-3 text-left flex items-center justify-between",
+            !date && "text-muted-foreground",
+          )}
+        >
+          <span>{date ? format(date, "dd/MM/yyyy", { locale: ptBR }) : placeholder}</span>
+          {date && (
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(e) => { e.stopPropagation(); setDate(undefined); }}
+              className="text-xs text-muted-foreground hover:text-foreground ml-2"
+            >
+              limpar
+            </span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          locale={ptBR}
+          initialFocus
+          className={cn("p-3 pointer-events-auto")}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function CheckOption({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-center gap-2 text-sm cursor-pointer">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span className="text-foreground font-medium">{label}</span>
+    </label>
+  );
+}
+
+function ModeToggle({ mode, setMode }: { mode: MatchMode; setMode: (m: MatchMode) => void }) {
+  return (
+    <div className="flex items-center gap-2 mt-2">
+      <span className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Modo:</span>
+      {(["qualquer", "todos"] as MatchMode[]).map((m) => (
+        <button
+          key={m}
+          type="button"
+          onClick={() => setMode(m)}
+          className={cn(
+            "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border transition-colors",
+            mode === m
+              ? "bg-[#1a1557] text-white border-[#1a1557]"
+              : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50",
+          )}
+        >
+          {m === "qualquer" ? "Qualquer um" : "Todos"}
+        </button>
+      ))}
     </div>
   );
 }
