@@ -49,6 +49,7 @@ export default function RegistrationModal({
   // Login fields
   const [loginEmail, setLoginEmail] = useState("");
   const [loginSenha, setLoginSenha] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   // Step 1 fields
   const [nome, setNome] = useState("");
@@ -132,13 +133,22 @@ export default function RegistrationModal({
 
               <div>
                 <Label className={labelClass}>Senha</Label>
-                <Input
-                  type="password"
-                  value={loginSenha}
-                  onChange={(e) => setLoginSenha(e.target.value)}
-                  placeholder="••••••••"
-                  className={inputClass}
-                />
+                <div className="relative">
+                  <Input
+                    type={showLoginPassword ? "text" : "password"}
+                    value={loginSenha}
+                    onChange={(e) => setLoginSenha(e.target.value)}
+                    placeholder="••••••••"
+                    className={`${inputClass} pr-16`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword((v) => !v)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[#f0c040] hover:text-[#e5b535] text-xs font-bold uppercase tracking-wide transition-colors"
+                  >
+                    {showLoginPassword ? "Ocultar" : "Ver"}
+                  </button>
+                </div>
               </div>
 
               <button
