@@ -53,6 +53,13 @@ export default function RegistrationModal({
 
   // Step 1 fields
   const [nome, setNome] = useState("");
+  const [cep, setCep] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [uf, setUf] = useState("");
+  const [ubs, setUbs] = useState("");
+  const [cepLoading, setCepLoading] = useState(false);
+  const [cepError, setCepError] = useState("");
   const [endereco, setEndereco] = useState("");
   const [cpf, setCpf] = useState("");
   const [dataNasc, setDataNasc] = useState("");
@@ -60,6 +67,71 @@ export default function RegistrationModal({
   const [whatsapp, setWhatsapp] = useState("");
   const [foto, setFoto] = useState<string | null>(null);
   const [gestante, setGestante] = useState<boolean | null>(null);
+
+  // Mapeamento simplificado bairro → UBS (Ribeirão Preto e região).
+  // Em produção, substituir por consulta ao backend.
+  const UBS_POR_BAIRRO: Record<string, string> = {
+    "Centro": "UBS Central",
+    "Campos Elíseos": "UBS Campos Elíseos",
+    "Ipiranga": "UBS Ipiranga",
+    "Vila Tibério": "UBS Vila Tibério",
+    "Sumarezinho": "UBS Sumarezinho",
+    "Jardim Paulista": "UBS Jardim Paulista",
+    "Jardim Paulistano": "UBS Jardim Paulista",
+    "Vila Virgínia": "UBS Vila Virgínia",
+    "Quintino Facci": "UBS Quintino Facci",
+    "Adão do Carmo": "UBS Adão do Carmo Leonel",
+    "Monte Alegre": "UBS Monte Alegre",
+    "Castelo Branco": "UBS Castelo Branco",
+  };
+
+  const ubsParaBairro = (b: string) => {
+    if (!b) return "";
+    // procura por chave que apareça no nome do bairro (case-insensitive)
+    const bLow = b.toLowerCase();
+    const hit = Object.entries(UBS_POR_BAIRRO).find(([k]) => bLow.includes(k.toLowerCase()));
+    return hit ? hit[1] : `UBS de referência (${b})`;
+  };
+
+  const formatarCep = (v: string) => {
+    const d = v.replace(/\D/g, "").slice(0, 8);
+    if (d.length > 5) return `${d.slice(0, 5)}-${d.slice(5)}`;
+    return d;
+  };
+
+  const buscarCep = async (raw: string) => {
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+    setCepLoading(true);
+    setCepError("");
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = await res.json();
+      if (data.erro) {
+        setCepError("CEP não encontrado");
+        setBairro("");
+        setCidade("");
+        setUf("");
+        setUbs("");
+        return;
+      }
+      const b = data.bairro || "";
+      const c = data.localidade || "";
+      setBairro(b);
+      setCidade(c);
+      setUf(data.uf || "");
+      setUbs(ubsParaBairro(b));
+      // Preenche o endereço se estiver vazio
+      if (!endereco && data.logradouro) {
+        setEndereco(`${data.logradouro}${b ? `, ${b}` : ""}`);
+      }
+    } catch {
+      setCepError("Erro ao consultar o CEP");
+    } finally {
+      setCepLoading(false);
+    }
+  };
+
 
   // Step 2 fields (pregnancy)
   const [dum, setDum] = useState("");
@@ -317,6 +389,63 @@ export default function RegistrationModal({
                   className={inputClass}
                 />
               </div>
+
+              <div>
+                <Label className={labelClass}>CEP</Label>
+                <div className="relative">
+                  <Input
+                    value={cep}
+                    onChange={(e) => {
+                      const v = formatarCep(e.target.value);
+                      setCep(v);
+                      setCepError("");
+                      if (v.replace(/\D/g, "").length === 8) buscarCep(v);
+                    }}
+                    onBlur={() => buscarCep(cep)}
+                    placeholder="00000-000"
+                    inputMode="numeric"
+                    maxLength={9}
+                    className={inputClass}
+                  />
+                  {cepLoading && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#f0c040] text-xs">
+                      buscando...
+                    </span>
+                  )}
+                </div>
+                {cepError && <p className="text-red-300 text-[11px] mt-1">{cepError}</p>}
+              </div>
+
+              {(bairro || cidade) && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className={labelClass}>Bairro</Label>
+                    <Input
+                      value={bairro}
+                      onChange={(e) => {
+                        setBairro(e.target.value);
+                        setUbs(ubsParaBairro(e.target.value));
+                      }}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <Label className={labelClass}>Cidade / UF</Label>
+                    <Input
+                      value={uf ? `${cidade}/${uf}` : cidade}
+                      readOnly
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {ubs && (
+                <div className="bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl px-3 py-2">
+                  <p className="text-[10px] uppercase tracking-wide text-white/60">UBS de referência</p>
+                  <p className="text-[#f0c040] text-sm font-bold">{ubs}</p>
+                </div>
+              )}
 
               <div>
                 <Label className={labelClass}>Endereço</Label>
