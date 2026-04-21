@@ -844,8 +844,10 @@ function GestaoPage() {
         <RankingTable title="Condições prévias diagnosticadas" data={analise.condicoesCount} accent="red" />
         <RankingTable title="Distribuição por cidade" data={analise.cidadesCount} />
       </div>
+      </>
+      )}
 
-      {/* Histórico de pushs enviados */}
+
       {pushHistorico.length > 0 && (
         <div className="bg-card rounded-2xl border border-border overflow-hidden mt-6">
           <div className="px-4 py-2 bg-muted/40 border-b border-border">
