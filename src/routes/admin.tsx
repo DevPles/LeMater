@@ -402,7 +402,7 @@ function GestaoPage() {
   };
 
   /* ============ Exportações ============ */
-  const triggerDownload = (data: Uint8Array, filename: string) => {
+  const triggerDownload = (data: ArrayBuffer, filename: string) => {
     const blob = new Blob([data], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
