@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
+import * as XLSX from "xlsx";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -14,101 +15,54 @@ export const Route = createFileRoute("/admin")({
   component: AdminGate,
 });
 
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "unaerp2026";
 const ADMIN_KEY = "maedigital_admin_auth";
 
 function AdminGate() {
+  const navigate = useNavigate();
+  const [ready, setReady] = useState(false);
   const [authed, setAuthed] = useState(false);
-  const [user, setUser] = useState("");
-  const [pass, setPass] = useState("");
-  const [erro, setErro] = useState("");
 
   useEffect(() => {
-    if (typeof window !== "undefined" && sessionStorage.getItem(ADMIN_KEY) === "1") {
-      setAuthed(true);
+    if (typeof window !== "undefined") {
+      const ok = sessionStorage.getItem(ADMIN_KEY) === "1";
+      setAuthed(ok);
+      setReady(true);
+      if (!ok) navigate({ to: "/" });
     }
-  }, []);
+  }, [navigate]);
 
-  if (authed) {
+  if (!ready) return null;
+  if (!authed) {
     return (
-      <div>
-        <div className="bg-[#1a1557] text-white px-4 py-2 flex items-center justify-between text-sm sticky top-0 z-40">
-          <span className="font-semibold">Painel Administrativo</span>
-          <button
-            onClick={() => {
-              sessionStorage.removeItem(ADMIN_KEY);
-              setAuthed(false);
-              setUser("");
-              setPass("");
-            }}
-            className="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full text-xs"
-          >
-            Sair
-          </button>
+      <div className="min-h-screen flex items-center justify-center p-6 text-center">
+        <div>
+          <p className="text-sm text-gray-600">Redirecionando para o login...</p>
         </div>
-        <GestaoPage />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-[#1a4ba8] p-6">
-      <motion.form
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (user === ADMIN_USER && pass === ADMIN_PASS) {
-            sessionStorage.setItem(ADMIN_KEY, "1");
-            setAuthed(true);
-            setErro("");
-          } else {
-            setErro("Credenciais inválidas");
-          }
-        }}
-        className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-8 space-y-4"
-      >
-        <div className="text-center mb-2">
-          <h1 className="text-2xl font-bold text-[#1a1557] font-display">Acesso Administrativo</h1>
-          <p className="text-sm text-gray-500 mt-1">Restrito à equipe MãeDigital</p>
+    <div>
+      <div className="bg-[#1a1557] text-white px-4 py-2 flex items-center justify-between text-sm sticky top-0 z-40">
+        <div className="flex items-center gap-3">
+          <span className="font-semibold">Painel Administrativo MãeDigital</span>
+          <span className="text-white/50 hidden sm:inline">UNAERP</span>
         </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Usuário</label>
-          <input
-            type="text"
-            value={user}
-            onChange={(e) => setUser(e.target.value)}
-            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#1a1557]"
-            placeholder="admin"
-            autoFocus
-          />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Senha</label>
-          <input
-            type="password"
-            value={pass}
-            onChange={(e) => setPass(e.target.value)}
-            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#1a1557]"
-            placeholder="••••••••"
-          />
-        </div>
-        {erro && <p className="text-sm text-red-600 text-center">{erro}</p>}
         <button
-          type="submit"
-          className="w-full bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold py-3 rounded-full transition-colors"
+          onClick={() => {
+            sessionStorage.removeItem(ADMIN_KEY);
+            navigate({ to: "/" });
+          }}
+          className="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full text-xs"
         >
-          Entrar
+          Sair
         </button>
-        <p className="text-[10px] text-gray-400 text-center mt-2">
-          Demonstração: admin / unaerp2026
-        </p>
-      </motion.form>
+      </div>
+      <GestaoPage />
     </div>
   );
 }
-
 
 /* ============ Tipos ============ */
 type RiscoNivel = "baixo" | "medio" | "alto";
@@ -120,12 +74,12 @@ interface Gestante {
   semanas: number;
   dpp: string; // dd/mm/yyyy
   cidade: string;
-  exames: string[]; // realizados
+  exames: string[];
   examesPendentes: string[];
-  vacinas: string[]; // tomadas
+  vacinas: string[];
   vacinasPendentes: string[];
-  sinaisClinicos: string[]; // alertas observados
-  condicoes: string[]; // diagnósticos prévios
+  sinaisClinicos: string[];
+  condicoes: string[];
   risco: RiscoNivel;
 }
 
@@ -161,58 +115,41 @@ const VACINAS_LISTA = ["Hepatite B", "dTpa", "Influenza", "COVID-19"];
 
 /* ============ Mock data ============ */
 const gestantesMock: Gestante[] = [
-  {
-    id: 1, nome: "Maria Silva", idade: 28, semanas: 24, dpp: "15/07/2026", cidade: "Ribeirão Preto",
+  { id: 1, nome: "Maria Silva", idade: 28, semanas: 24, dpp: "15/07/2026", cidade: "Ribeirão Preto",
     exames: ["Ultrassom morfológico", "Hemograma", "Sorologias (HIV/Sífilis/Hepatite)"],
     examesPendentes: ["Teste de tolerância à glicose"],
     vacinas: ["Hepatite B", "dTpa"], vacinasPendentes: ["Influenza"],
-    sinaisClinicos: [], condicoes: [], risco: "baixo",
-  },
-  {
-    id: 2, nome: "Ana Souza", idade: 34, semanas: 30, dpp: "02/06/2026", cidade: "Ribeirão Preto",
-    exames: ["Ultrassom morfológico", "Hemograma"],
-    examesPendentes: ["Glicemia em jejum"],
+    sinaisClinicos: [], condicoes: [], risco: "baixo" },
+  { id: 2, nome: "Ana Souza", idade: 34, semanas: 30, dpp: "02/06/2026", cidade: "Ribeirão Preto",
+    exames: ["Ultrassom morfológico", "Hemograma"], examesPendentes: ["Glicemia em jejum"],
     vacinas: ["dTpa"], vacinasPendentes: ["Influenza", "Hepatite B"],
-    sinaisClinicos: ["Pressão alta"], condicoes: ["Hipertensão crônica"], risco: "alto",
-  },
-  {
-    id: 3, nome: "Júlia Pereira", idade: 22, semanas: 16, dpp: "20/10/2026", cidade: "Sertãozinho",
+    sinaisClinicos: ["Pressão alta"], condicoes: ["Hipertensão crônica"], risco: "alto" },
+  { id: 3, nome: "Júlia Pereira", idade: 22, semanas: 16, dpp: "20/10/2026", cidade: "Sertãozinho",
     exames: ["Hemograma"], examesPendentes: ["Ultrassom morfológico"],
     vacinas: ["Hepatite B"], vacinasPendentes: ["dTpa", "Influenza"],
-    sinaisClinicos: [], condicoes: [], risco: "baixo",
-  },
-  {
-    id: 4, nome: "Patrícia Lopes", idade: 38, semanas: 28, dpp: "10/06/2026", cidade: "Ribeirão Preto",
+    sinaisClinicos: [], condicoes: [], risco: "baixo" },
+  { id: 4, nome: "Patrícia Lopes", idade: 38, semanas: 28, dpp: "10/06/2026", cidade: "Ribeirão Preto",
     exames: ["Ultrassom morfológico", "Hemograma", "Glicemia em jejum"],
     examesPendentes: ["Teste de tolerância à glicose"],
     vacinas: ["Hepatite B", "dTpa", "Influenza"], vacinasPendentes: [],
-    sinaisClinicos: ["Glicemia elevada"], condicoes: ["Diabetes prévia"], risco: "alto",
-  },
-  {
-    id: 5, nome: "Carla Mendes", idade: 26, semanas: 20, dpp: "05/09/2026", cidade: "Cravinhos",
+    sinaisClinicos: ["Glicemia elevada"], condicoes: ["Diabetes prévia"], risco: "alto" },
+  { id: 5, nome: "Carla Mendes", idade: 26, semanas: 20, dpp: "05/09/2026", cidade: "Cravinhos",
     exames: ["Ultrassom morfológico", "Hemograma"], examesPendentes: ["Sorologias (HIV/Sífilis/Hepatite)"],
     vacinas: ["dTpa"], vacinasPendentes: ["Influenza"],
-    sinaisClinicos: ["Cefaleia intensa"], condicoes: [], risco: "medio",
-  },
-  {
-    id: 6, nome: "Beatriz Rocha", idade: 31, semanas: 36, dpp: "08/05/2026", cidade: "Ribeirão Preto",
+    sinaisClinicos: ["Cefaleia intensa"], condicoes: [], risco: "medio" },
+  { id: 6, nome: "Beatriz Rocha", idade: 31, semanas: 36, dpp: "08/05/2026", cidade: "Ribeirão Preto",
     exames: ["Ultrassom morfológico", "Hemograma", "Glicemia em jejum", "Urina tipo I"],
     examesPendentes: [],
     vacinas: ["Hepatite B", "dTpa", "Influenza"], vacinasPendentes: [],
-    sinaisClinicos: [], condicoes: [], risco: "baixo",
-  },
-  {
-    id: 7, nome: "Larissa Dias", idade: 41, semanas: 18, dpp: "12/10/2026", cidade: "Ribeirão Preto",
+    sinaisClinicos: [], condicoes: [], risco: "baixo" },
+  { id: 7, nome: "Larissa Dias", idade: 41, semanas: 18, dpp: "12/10/2026", cidade: "Ribeirão Preto",
     exames: ["Hemograma"], examesPendentes: ["Ultrassom morfológico"],
     vacinas: [], vacinasPendentes: ["Hepatite B", "dTpa", "Influenza"],
-    sinaisClinicos: ["Sangramento"], condicoes: ["Cardiopatia"], risco: "alto",
-  },
-  {
-    id: 8, nome: "Fernanda Costa", idade: 25, semanas: 12, dpp: "20/11/2026", cidade: "Sertãozinho",
+    sinaisClinicos: ["Sangramento"], condicoes: ["Cardiopatia"], risco: "alto" },
+  { id: 8, nome: "Fernanda Costa", idade: 25, semanas: 12, dpp: "20/11/2026", cidade: "Sertãozinho",
     exames: [], examesPendentes: ["Ultrassom morfológico", "Hemograma", "Sorologias (HIV/Sífilis/Hepatite)"],
     vacinas: [], vacinasPendentes: ["Hepatite B", "dTpa"],
-    sinaisClinicos: [], condicoes: [], risco: "baixo",
-  },
+    sinaisClinicos: [], condicoes: [], risco: "baixo" },
 ];
 
 /* ============ Helpers ============ */
@@ -227,6 +164,12 @@ const riscoStyles: Record<RiscoNivel, string> = {
   alto: "bg-red-100 text-red-700 border-red-300",
 };
 
+const riscoLabel: Record<RiscoNivel, string> = {
+  baixo: "Baixo",
+  medio: "Médio",
+  alto: "Alto",
+};
+
 /* ============ Page ============ */
 function GestaoPage() {
   const [busca, setBusca] = useState("");
@@ -238,22 +181,23 @@ function GestaoPage() {
   const [condicoesSelecionadas, setCondicoesSelecionadas] = useState<string[]>([]);
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
-  const [excluirAltoRisco, setExcluirAltoRisco] = useState(true);
-  const [showFiltros, setShowFiltros] = useState(true);
-  const [selecionada, setSelecionada] = useState<Gestante | null>(null);
+  const [excluirAltoRisco, setExcluirAltoRisco] = useState(false);
+  const [showFiltros, setShowFiltros] = useState(false);
+  const [sortKey, setSortKey] = useState<keyof Gestante>("nome");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   const toggle = (arr: string[], value: string, setter: (v: string[]) => void) => {
-    setter(arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value]);
+    setter(arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]);
   };
 
   const gestantesFiltradas = useMemo(() => {
-    return gestantesMock.filter(g => {
+    const lista = gestantesMock.filter((g) => {
       if (busca && !g.nome.toLowerCase().includes(busca.toLowerCase())) return false;
       if (excluirAltoRisco && g.risco === "alto") return false;
       if (filtroRisco !== "todos" && g.risco !== filtroRisco) return false;
 
       if (examesSelecionados.length > 0) {
-        const ok = examesSelecionados.every(e => {
+        const ok = examesSelecionados.every((e) => {
           if (filtroExame === "pendente") return g.examesPendentes.includes(e);
           if (filtroExame === "realizado") return g.exames.includes(e);
           return g.exames.includes(e) || g.examesPendentes.includes(e);
@@ -262,17 +206,17 @@ function GestaoPage() {
       }
 
       if (vacinasSelecionadas.length > 0) {
-        const ok = vacinasSelecionadas.every(v => g.vacinas.includes(v) || g.vacinasPendentes.includes(v));
+        const ok = vacinasSelecionadas.every((v) => g.vacinas.includes(v) || g.vacinasPendentes.includes(v));
         if (!ok) return false;
       }
 
       if (sinaisSelecionados.length > 0) {
-        const ok = sinaisSelecionados.some(s => g.sinaisClinicos.includes(s));
+        const ok = sinaisSelecionados.some((s) => g.sinaisClinicos.includes(s));
         if (!ok) return false;
       }
 
       if (condicoesSelecionadas.length > 0) {
-        const ok = condicoesSelecionadas.some(c => g.condicoes.includes(c));
+        const ok = condicoesSelecionadas.some((c) => g.condicoes.includes(c));
         if (!ok) return false;
       }
 
@@ -285,41 +229,234 @@ function GestaoPage() {
 
       return true;
     });
-  }, [busca, filtroRisco, filtroExame, examesSelecionados, vacinasSelecionadas,
-      sinaisSelecionados, condicoesSelecionadas, dataInicio, dataFim, excluirAltoRisco]);
 
-  const stats = useMemo(() => ({
-    total: gestantesFiltradas.length,
-    altoRisco: gestantesFiltradas.filter(g => g.risco === "alto").length,
-    pendentes: gestantesFiltradas.filter(g => g.examesPendentes.length > 0 || g.vacinasPendentes.length > 0).length,
-    comSinais: gestantesFiltradas.filter(g => g.sinaisClinicos.length > 0).length,
-  }), [gestantesFiltradas]);
+    const sorted = [...lista].sort((a, b) => {
+      const av = a[sortKey];
+      const bv = b[sortKey];
+      let cmp = 0;
+      if (typeof av === "number" && typeof bv === "number") cmp = av - bv;
+      else cmp = String(av).localeCompare(String(bv), "pt-BR");
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+
+    return sorted;
+  }, [busca, filtroRisco, filtroExame, examesSelecionados, vacinasSelecionadas,
+      sinaisSelecionados, condicoesSelecionadas, dataInicio, dataFim, excluirAltoRisco, sortKey, sortDir]);
+
+  /* ============ Análises inteligentes ============ */
+  const analise = useMemo(() => {
+    const total = gestantesFiltradas.length;
+    const altoRisco = gestantesFiltradas.filter((g) => g.risco === "alto").length;
+    const medioRisco = gestantesFiltradas.filter((g) => g.risco === "medio").length;
+    const baixoRisco = gestantesFiltradas.filter((g) => g.risco === "baixo").length;
+    const comSinais = gestantesFiltradas.filter((g) => g.sinaisClinicos.length > 0).length;
+    const comPendencias = gestantesFiltradas.filter(
+      (g) => g.examesPendentes.length > 0 || g.vacinasPendentes.length > 0,
+    ).length;
+    const idadeMedia = total ? Math.round(gestantesFiltradas.reduce((s, g) => s + g.idade, 0) / total) : 0;
+    const semanasMedia = total ? Math.round(gestantesFiltradas.reduce((s, g) => s + g.semanas, 0) / total) : 0;
+    const idadeAvancada = gestantesFiltradas.filter((g) => g.idade >= 35).length;
+    const terceiroTrim = gestantesFiltradas.filter((g) => g.semanas >= 28).length;
+
+    const examesPendCount: Record<string, number> = {};
+    EXAMES_LISTA.forEach((e) => (examesPendCount[e] = 0));
+    gestantesFiltradas.forEach((g) =>
+      g.examesPendentes.forEach((e) => (examesPendCount[e] = (examesPendCount[e] || 0) + 1)),
+    );
+
+    const vacinasPendCount: Record<string, number> = {};
+    VACINAS_LISTA.forEach((v) => (vacinasPendCount[v] = 0));
+    gestantesFiltradas.forEach((g) =>
+      g.vacinasPendentes.forEach((v) => (vacinasPendCount[v] = (vacinasPendCount[v] || 0) + 1)),
+    );
+
+    const sinaisCount: Record<string, number> = {};
+    SINAIS_CRITICOS.forEach((s) => (sinaisCount[s] = 0));
+    gestantesFiltradas.forEach((g) =>
+      g.sinaisClinicos.forEach((s) => (sinaisCount[s] = (sinaisCount[s] || 0) + 1)),
+    );
+
+    const condicoesCount: Record<string, number> = {};
+    CONDICOES_ALTO_RISCO.forEach((c) => (condicoesCount[c] = 0));
+    gestantesFiltradas.forEach((g) =>
+      g.condicoes.forEach((c) => (condicoesCount[c] = (condicoesCount[c] || 0) + 1)),
+    );
+
+    const cidadesCount: Record<string, number> = {};
+    gestantesFiltradas.forEach((g) => (cidadesCount[g.cidade] = (cidadesCount[g.cidade] || 0) + 1));
+
+    const insights: string[] = [];
+    if (total > 0) {
+      const pctAlto = Math.round((altoRisco / total) * 100);
+      if (pctAlto >= 25) insights.push(`Atenção: ${pctAlto}% das gestantes filtradas são de alto risco.`);
+      if (terceiroTrim / total >= 0.4) insights.push(`${terceiroTrim} gestantes já estão no 3º trimestre (≥28 sem).`);
+      if (idadeAvancada > 0) insights.push(`${idadeAvancada} gestantes com idade ≥35 anos (idade materna avançada).`);
+      const examTop = Object.entries(examesPendCount).sort((a, b) => b[1] - a[1])[0];
+      if (examTop && examTop[1] > 0) insights.push(`Exame mais pendente: ${examTop[0]} (${examTop[1]} casos).`);
+      const vacTop = Object.entries(vacinasPendCount).sort((a, b) => b[1] - a[1])[0];
+      if (vacTop && vacTop[1] > 0) insights.push(`Vacina mais pendente: ${vacTop[0]} (${vacTop[1]} casos).`);
+      if (comSinais > 0) insights.push(`${comSinais} gestante(s) apresentam sinais clínicos críticos — revisar imediatamente.`);
+    } else {
+      insights.push("Nenhuma gestante atende aos filtros aplicados.");
+    }
+
+    return {
+      total, altoRisco, medioRisco, baixoRisco, comSinais, comPendencias,
+      idadeMedia, semanasMedia, idadeAvancada, terceiroTrim,
+      examesPendCount, vacinasPendCount, sinaisCount, condicoesCount, cidadesCount,
+      insights,
+    };
+  }, [gestantesFiltradas]);
 
   const limparFiltros = () => {
     setBusca(""); setFiltroRisco("todos"); setFiltroExame("todos");
     setExamesSelecionados([]); setVacinasSelecionadas([]);
     setSinaisSelecionados([]); setCondicoesSelecionadas([]);
-    setDataInicio(""); setDataFim("");
+    setDataInicio(""); setDataFim(""); setExcluirAltoRisco(false);
+  };
+
+  const handleSort = (key: keyof Gestante) => {
+    if (sortKey === key) setSortDir(sortDir === "asc" ? "desc" : "asc");
+    else { setSortKey(key); setSortDir("asc"); }
+  };
+
+  /* ============ Exportações ============ */
+  const exportarExcelTabela = () => {
+    const rows = gestantesFiltradas.map((g) => ({
+      ID: g.id,
+      Nome: g.nome,
+      Idade: g.idade,
+      "Semanas gestacionais": g.semanas,
+      DPP: g.dpp,
+      Cidade: g.cidade,
+      Risco: riscoLabel[g.risco],
+      "Exames realizados": g.exames.join("; "),
+      "Exames pendentes": g.examesPendentes.join("; "),
+      "Vacinas tomadas": g.vacinas.join("; "),
+      "Vacinas pendentes": g.vacinasPendentes.join("; "),
+      "Sinais clínicos": g.sinaisClinicos.join("; "),
+      "Condições prévias": g.condicoes.join("; "),
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = [
+      { wch: 4 }, { wch: 22 }, { wch: 6 }, { wch: 10 }, { wch: 12 }, { wch: 16 },
+      { wch: 8 }, { wch: 38 }, { wch: 32 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 26 },
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Gestantes");
+    XLSX.writeFile(wb, `maedigital-gestantes-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
+  const gerarRelatorioExcel = () => {
+    const wb = XLSX.utils.book_new();
+
+    // Resumo
+    const resumo = [
+      ["Relatório MãeDigital — UNAERP"],
+      ["Gerado em", new Date().toLocaleString("pt-BR")],
+      [],
+      ["Indicador", "Valor"],
+      ["Total de gestantes (filtradas)", analise.total],
+      ["Alto risco", analise.altoRisco],
+      ["Médio risco", analise.medioRisco],
+      ["Baixo risco", analise.baixoRisco],
+      ["Com sinais clínicos críticos", analise.comSinais],
+      ["Com pendências (exames/vacinas)", analise.comPendencias],
+      ["Idade média", analise.idadeMedia],
+      ["Semanas gestacionais (média)", analise.semanasMedia],
+      ["Idade ≥35 anos", analise.idadeAvancada],
+      ["3º trimestre (≥28 semanas)", analise.terceiroTrim],
+      [],
+      ["Insights"],
+      ...analise.insights.map((i) => [i]),
+    ];
+    const wsResumo = XLSX.utils.aoa_to_sheet(resumo);
+    wsResumo["!cols"] = [{ wch: 40 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, wsResumo, "Resumo");
+
+    // Gestantes
+    const rows = gestantesFiltradas.map((g) => ({
+      ID: g.id, Nome: g.nome, Idade: g.idade, Semanas: g.semanas, DPP: g.dpp, Cidade: g.cidade,
+      Risco: riscoLabel[g.risco],
+      "Exames realizados": g.exames.join("; "),
+      "Exames pendentes": g.examesPendentes.join("; "),
+      "Vacinas tomadas": g.vacinas.join("; "),
+      "Vacinas pendentes": g.vacinasPendentes.join("; "),
+      "Sinais clínicos": g.sinaisClinicos.join("; "),
+      "Condições prévias": g.condicoes.join("; "),
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Gestantes");
+
+    const toSheet = (title: string, dict: Record<string, number>) => {
+      const data = [["Item", "Quantidade"], ...Object.entries(dict).sort((a, b) => b[1] - a[1])];
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      ws["!cols"] = [{ wch: 38 }, { wch: 14 }];
+      XLSX.utils.book_append_sheet(wb, ws, title);
+    };
+    toSheet("Exames pendentes", analise.examesPendCount);
+    toSheet("Vacinas pendentes", analise.vacinasPendCount);
+    toSheet("Sinais clínicos", analise.sinaisCount);
+    toSheet("Condições prévias", analise.condicoesCount);
+    toSheet("Por cidade", analise.cidadesCount);
+
+    XLSX.writeFile(wb, `maedigital-relatorio-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-6xl mx-auto">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <h1 className="text-2xl md:text-3xl font-bold font-display text-foreground mb-1">
-          Gestão de Gestantes
-        </h1>
-        <p className="text-sm text-muted-foreground mb-4">
-          Triagem e acompanhamento — não aceitamos gestantes de alto risco
-        </p>
+    <div className="min-h-screen pb-16 px-4 pt-6 max-w-7xl mx-auto">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap items-end justify-between gap-3 mb-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold font-display text-foreground mb-1">
+            Gestão de Gestantes
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Análise inteligente dos dados cadastrados
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={exportarExcelTabela}
+            className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a]"
+          >
+            Exportar tabela (Excel)
+          </button>
+          <button
+            onClick={gerarRelatorioExcel}
+            className="px-4 py-2 rounded-full text-xs font-bold bg-[#f0c040] text-[#1a1557] hover:bg-[#e5b535]"
+          >
+            Gerar relatório completo
+          </button>
+        </div>
       </motion.div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <StatCard label="Total filtrado" value={stats.total} color="bg-coral-light" />
-        <StatCard label="Alto risco" value={stats.altoRisco} color="bg-red-100" />
-        <StatCard label="Com pendências" value={stats.pendentes} color="bg-warm" />
-        <StatCard label="Com sinais críticos" value={stats.comSinais} color="bg-blush" />
+      {/* KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4">
+        <Kpi label="Total" value={analise.total} />
+        <Kpi label="Alto risco" value={analise.altoRisco} tone="danger" />
+        <Kpi label="Médio risco" value={analise.medioRisco} tone="warn" />
+        <Kpi label="Baixo risco" value={analise.baixoRisco} tone="ok" />
+        <Kpi label="Sinais críticos" value={analise.comSinais} tone="danger" />
+        <Kpi label="Com pendências" value={analise.comPendencias} tone="warn" />
+        <Kpi label="Idade média" value={`${analise.idadeMedia}a`} />
+        <Kpi label="Sem. média" value={analise.semanasMedia} />
+        <Kpi label="≥35 anos" value={analise.idadeAvancada} tone="warn" />
+        <Kpi label="3º trimestre" value={analise.terceiroTrim} />
       </div>
+
+      {/* Insights */}
+      {analise.insights.length > 0 && (
+        <div className="bg-[#1a1557]/5 border border-[#1a1557]/20 rounded-2xl p-4 mb-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#1a1557] mb-2">Insights</p>
+          <ul className="space-y-1 text-sm text-foreground">
+            {analise.insights.map((i, idx) => (
+              <li key={idx} className="flex gap-2">
+                <span className="text-[#f0c040] font-bold">•</span>
+                <span>{i}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Toggle filtros */}
       <div className="flex items-center justify-between mb-3">
@@ -339,230 +476,188 @@ function GestaoPage() {
 
       {showFiltros && (
         <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="bg-card rounded-2xl p-4 shadow-sm border border-border mb-4 space-y-4"
         >
-          {/* Busca + risco */}
           <div className="grid md:grid-cols-3 gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Buscar gestante</label>
-              <input
-                value={busca}
-                onChange={e => setBusca(e.target.value)}
-                placeholder="Nome..."
-                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Nível de risco</label>
-              <select
-                value={filtroRisco}
-                onChange={e => setFiltroRisco(e.target.value as "todos" | RiscoNivel)}
-                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
-              >
+            <Field label="Buscar gestante">
+              <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Nome..."
+                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
+            </Field>
+            <Field label="Nível de risco">
+              <select value={filtroRisco} onChange={(e) => setFiltroRisco(e.target.value as "todos" | RiscoNivel)}
+                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3">
                 <option value="todos">Todos</option>
                 <option value="baixo">Baixo</option>
                 <option value="medio">Médio</option>
                 <option value="alto">Alto</option>
               </select>
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Status do exame</label>
-              <select
-                value={filtroExame}
-                onChange={e => setFiltroExame(e.target.value as "todos" | "pendente" | "realizado")}
-                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
-              >
+            </Field>
+            <Field label="Status do exame">
+              <select value={filtroExame} onChange={(e) => setFiltroExame(e.target.value as "todos" | "pendente" | "realizado")}
+                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3">
                 <option value="todos">Todos</option>
                 <option value="pendente">Pendentes</option>
                 <option value="realizado">Realizados</option>
               </select>
-            </div>
+            </Field>
           </div>
 
-          {/* Datas DPP */}
           <div className="grid md:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">DPP de</label>
-              <input type="date" value={dataInicio} onChange={e => setDataInicio(e.target.value)}
+            <Field label="DPP de">
+              <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)}
                 className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">DPP até</label>
-              <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)}
+            </Field>
+            <Field label="DPP até">
+              <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)}
                 className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3" />
-            </div>
+            </Field>
           </div>
 
           <ChipGroup label="Exames" options={EXAMES_LISTA} selected={examesSelecionados}
-            onToggle={v => toggle(examesSelecionados, v, setExamesSelecionados)} />
+            onToggle={(v) => toggle(examesSelecionados, v, setExamesSelecionados)} />
           <ChipGroup label="Vacinas" options={VACINAS_LISTA} selected={vacinasSelecionadas}
-            onToggle={v => toggle(vacinasSelecionadas, v, setVacinasSelecionadas)} />
+            onToggle={(v) => toggle(vacinasSelecionadas, v, setVacinasSelecionadas)} />
           <ChipGroup label="Sinais clínicos críticos" options={SINAIS_CRITICOS} selected={sinaisSelecionados}
-            onToggle={v => toggle(sinaisSelecionados, v, setSinaisSelecionados)} accent="red" />
+            onToggle={(v) => toggle(sinaisSelecionados, v, setSinaisSelecionados)} accent="red" />
           <ChipGroup label="Condições já diagnosticadas" options={CONDICOES_ALTO_RISCO}
             selected={condicoesSelecionadas}
-            onToggle={v => toggle(condicoesSelecionadas, v, setCondicoesSelecionadas)} accent="red" />
+            onToggle={(v) => toggle(condicoesSelecionadas, v, setCondicoesSelecionadas)} accent="red" />
 
           <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input type="checkbox" checked={excluirAltoRisco}
-              onChange={e => setExcluirAltoRisco(e.target.checked)} />
-            <span className="text-foreground font-medium">
-              Excluir automaticamente gestantes de alto risco
-            </span>
+            <input type="checkbox" checked={excluirAltoRisco} onChange={(e) => setExcluirAltoRisco(e.target.checked)} />
+            <span className="text-foreground font-medium">Excluir gestantes de alto risco</span>
           </label>
         </motion.div>
       )}
 
-      {/* Lista */}
-      <div className="space-y-3">
-        {gestantesFiltradas.length === 0 ? (
-          <div className="bg-card rounded-2xl p-8 text-center border border-border">
-            <p className="text-muted-foreground">Nenhuma gestante encontrada com os filtros aplicados.</p>
-          </div>
-        ) : (
-          gestantesFiltradas.map((g, i) => (
-            <motion.button
-              key={g.id}
-              onClick={() => setSelecionada(g)}
-              className="w-full text-left bg-card rounded-2xl p-4 shadow-sm border border-border hover:border-primary/50 transition-colors"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <h3 className="font-semibold text-foreground">{g.nome}</h3>
-                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${riscoStyles[g.risco]}`}>
-                      Risco {g.risco}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    {g.idade} anos • {g.semanas} semanas • DPP {g.dpp} • {g.cidade}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {g.examesPendentes.length > 0 && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
-                        {g.examesPendentes.length} exame(s) pendente(s)
+      {/* Tabela */}
+      <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-[#1a1557] text-white text-xs uppercase tracking-wide">
+              <tr>
+                <Th onClick={() => handleSort("nome")} active={sortKey === "nome"} dir={sortDir}>Nome</Th>
+                <Th onClick={() => handleSort("idade")} active={sortKey === "idade"} dir={sortDir}>Idade</Th>
+                <Th onClick={() => handleSort("semanas")} active={sortKey === "semanas"} dir={sortDir}>Semanas</Th>
+                <Th onClick={() => handleSort("dpp")} active={sortKey === "dpp"} dir={sortDir}>DPP</Th>
+                <Th onClick={() => handleSort("cidade")} active={sortKey === "cidade"} dir={sortDir}>Cidade</Th>
+                <Th onClick={() => handleSort("risco")} active={sortKey === "risco"} dir={sortDir}>Risco</Th>
+                <th className="text-left px-3 py-2 font-semibold">Exames pendentes</th>
+                <th className="text-left px-3 py-2 font-semibold">Vacinas pendentes</th>
+                <th className="text-left px-3 py-2 font-semibold">Sinais</th>
+                <th className="text-left px-3 py-2 font-semibold">Condições</th>
+              </tr>
+            </thead>
+            <tbody>
+              {gestantesFiltradas.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="text-center py-8 text-muted-foreground">
+                    Nenhuma gestante encontrada com os filtros aplicados.
+                  </td>
+                </tr>
+              ) : (
+                gestantesFiltradas.map((g, i) => (
+                  <tr key={g.id} className={i % 2 === 0 ? "bg-background" : "bg-muted/30"}>
+                    <td className="px-3 py-2 font-semibold text-foreground whitespace-nowrap">{g.nome}</td>
+                    <td className="px-3 py-2">{g.idade}</td>
+                    <td className="px-3 py-2">{g.semanas}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">{g.dpp}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">{g.cidade}</td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full border ${riscoStyles[g.risco]}`}>
+                        {riscoLabel[g.risco]}
                       </span>
-                    )}
-                    {g.vacinasPendentes.length > 0 && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                        {g.vacinasPendentes.length} vacina(s) pendente(s)
-                      </span>
-                    )}
-                    {g.sinaisClinicos.map(s => (
-                      <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700">
-                        {s}
-                      </span>
-                    ))}
-                    {g.condicoes.map(c => (
-                      <span key={c} className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-300">
-                        {c}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <span className="text-xs text-primary font-semibold whitespace-nowrap">Ver mais →</span>
-              </div>
-            </motion.button>
-          ))
-        )}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">
+                      {g.examesPendentes.length ? g.examesPendentes.join(", ") : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">
+                      {g.vacinasPendentes.length ? g.vacinasPendentes.join(", ") : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      {g.sinaisClinicos.length ? (
+                        <span className="text-red-700">{g.sinaisClinicos.join(", ")}</span>
+                      ) : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      {g.condicoes.length ? (
+                        <span className="text-red-700">{g.condicoes.join(", ")}</span>
+                      ) : "—"}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-3 py-2 text-xs text-muted-foreground border-t border-border bg-muted/20">
+          {gestantesFiltradas.length} registro(s) exibido(s)
+        </div>
       </div>
 
-      {/* Detalhes modal */}
-      {selecionada && (
-        <div
-          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
-          onClick={() => setSelecionada(null)}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            onClick={e => e.stopPropagation()}
-            className="bg-card rounded-2xl p-5 max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-xl border border-border"
-          >
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h2 className="font-display font-bold text-xl text-foreground">{selecionada.nome}</h2>
-                <p className="text-xs text-muted-foreground">
-                  {selecionada.idade} anos • {selecionada.semanas} semanas • DPP {selecionada.dpp}
-                </p>
-              </div>
-              <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full border ${riscoStyles[selecionada.risco]}`}>
-                Risco {selecionada.risco}
-              </span>
-            </div>
-
-            {selecionada.risco === "alto" && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-3">
-                <p className="text-xs font-semibold text-red-700">
-                  Gestante de alto risco — não elegível para acompanhamento neste programa.
-                  Encaminhar para referência hospitalar especializada.
-                </p>
-              </div>
-            )}
-
-            <DetailSection title="Exames realizados" items={selecionada.exames} color="green" />
-            <DetailSection title="Exames pendentes" items={selecionada.examesPendentes} color="amber" />
-            <DetailSection title="Vacinas tomadas" items={selecionada.vacinas} color="green" />
-            <DetailSection title="Vacinas pendentes" items={selecionada.vacinasPendentes} color="blue" />
-            <DetailSection title="Sinais clínicos" items={selecionada.sinaisClinicos} color="red" />
-            <DetailSection title="Condições diagnosticadas" items={selecionada.condicoes} color="red" />
-
-            <button
-              onClick={() => setSelecionada(null)}
-              className="mt-4 w-full py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
-            >
-              Fechar
-            </button>
-          </motion.div>
-        </div>
-      )}
+      {/* Tabelas analíticas */}
+      <div className="grid md:grid-cols-2 gap-4 mt-6">
+        <RankingTable title="Exames mais pendentes" data={analise.examesPendCount} />
+        <RankingTable title="Vacinas mais pendentes" data={analise.vacinasPendCount} />
+        <RankingTable title="Sinais clínicos observados" data={analise.sinaisCount} accent="red" />
+        <RankingTable title="Condições prévias diagnosticadas" data={analise.condicoesCount} accent="red" />
+        <RankingTable title="Distribuição por cidade" data={analise.cidadesCount} />
+      </div>
     </div>
   );
 }
 
-/* ============ Sub-components ============ */
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className="bg-card rounded-2xl p-3 border border-border shadow-sm">
-      <div className={`w-8 h-2 rounded-full ${color} mb-2`} />
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-2xl font-bold font-display text-foreground">{value}</p>
-    </div>
-  );
-}
-
-function ChipGroup({
-  label, options, selected, onToggle, accent = "primary",
-}: {
-  label: string;
-  options: string[];
-  selected: string[];
-  onToggle: (v: string) => void;
-  accent?: "primary" | "red";
-}) {
-  const activeClass = accent === "red"
-    ? "bg-red-500 text-white border-red-500"
-    : "bg-primary text-primary-foreground border-primary";
+/* ============ Subcomponentes ============ */
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="text-xs font-medium text-muted-foreground mb-2 block">{label}</label>
-      <div className="flex flex-wrap gap-2">
-        {options.map(opt => {
-          const isActive = selected.includes(opt);
+      <label className="text-xs font-medium text-muted-foreground mb-1 block">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function Kpi({ label, value, tone = "default" }: { label: string; value: number | string; tone?: "default" | "danger" | "warn" | "ok" }) {
+  const tones = {
+    default: "bg-card border-border text-foreground",
+    danger: "bg-red-50 border-red-200 text-red-700",
+    warn: "bg-amber-50 border-amber-200 text-amber-700",
+    ok: "bg-green-50 border-green-200 text-green-700",
+  };
+  return (
+    <div className={`rounded-2xl border p-3 ${tones[tone]}`}>
+      <p className="text-[10px] uppercase tracking-wide font-semibold opacity-70">{label}</p>
+      <p className="text-2xl font-bold font-display mt-0.5">{value}</p>
+    </div>
+  );
+}
+
+function Th({ children, onClick, active, dir }: { children: React.ReactNode; onClick: () => void; active: boolean; dir: "asc" | "desc" }) {
+  return (
+    <th onClick={onClick} className="text-left px-3 py-2 font-semibold cursor-pointer select-none whitespace-nowrap hover:bg-white/10">
+      {children}{active ? (dir === "asc" ? " ↑" : " ↓") : ""}
+    </th>
+  );
+}
+
+function ChipGroup({ label, options, selected, onToggle, accent }: {
+  label: string; options: string[]; selected: string[]; onToggle: (v: string) => void; accent?: "red";
+}) {
+  return (
+    <div>
+      <p className="text-xs font-medium text-muted-foreground mb-1.5">{label}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((opt) => {
+          const sel = selected.includes(opt);
+          const base = sel
+            ? accent === "red"
+              ? "bg-red-600 text-white border-red-600"
+              : "bg-[#1a1557] text-white border-[#1a1557]"
+            : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50";
           return (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => onToggle(opt)}
-              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
-                isActive ? activeClass : "bg-background text-muted-foreground border-border hover:border-primary/50"
-              }`}
-            >
+            <button key={opt} type="button" onClick={() => onToggle(opt)}
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${base}`}>
               {opt}
             </button>
           );
@@ -572,27 +667,36 @@ function ChipGroup({
   );
 }
 
-function DetailSection({ title, items, color }: {
-  title: string; items: string[]; color: "green" | "amber" | "blue" | "red";
-}) {
-  const colorMap = {
-    green: "bg-green-100 text-green-700",
-    amber: "bg-amber-100 text-amber-700",
-    blue: "bg-blue-100 text-blue-700",
-    red: "bg-red-100 text-red-700",
-  };
+function RankingTable({ title, data, accent }: { title: string; data: Record<string, number>; accent?: "red" }) {
+  const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(1, ...entries.map(([, v]) => v));
   return (
-    <div className="mb-3">
-      <p className="text-xs font-semibold text-foreground mb-1.5">{title}</p>
-      {items.length === 0 ? (
-        <p className="text-xs text-muted-foreground italic">Nenhum registro.</p>
-      ) : (
-        <div className="flex flex-wrap gap-1.5">
-          {items.map(i => (
-            <span key={i} className={`text-[11px] px-2 py-0.5 rounded-full ${colorMap[color]}`}>{i}</span>
+    <div className="bg-card rounded-2xl border border-border overflow-hidden">
+      <div className="px-4 py-2 bg-muted/40 border-b border-border">
+        <p className="text-xs font-bold uppercase tracking-wide text-foreground">{title}</p>
+      </div>
+      <table className="w-full text-sm">
+        <tbody>
+          {entries.length === 0 ? (
+            <tr><td className="px-4 py-3 text-muted-foreground text-xs">Sem dados</td></tr>
+          ) : entries.map(([k, v]) => (
+            <tr key={k} className="border-t border-border/50">
+              <td className="px-4 py-2 text-xs">{k}</td>
+              <td className="px-4 py-2 w-1/2">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full ${accent === "red" ? "bg-red-500" : "bg-[#1a1557]"}`}
+                      style={{ width: `${(v / max) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-bold w-6 text-right">{v}</span>
+                </div>
+              </td>
+            </tr>
           ))}
-        </div>
-      )}
+        </tbody>
+      </table>
     </div>
   );
 }
