@@ -151,7 +151,18 @@ export default function RegistrationModal({
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate({ to: "/home" })}
+                onClick={() => {
+                  const u = loginEmail.trim().toLowerCase();
+                  const p = loginSenha.trim();
+                  if (u === "admin" && p === "unaerp2026") {
+                    if (typeof window !== "undefined") {
+                      sessionStorage.setItem("maedigital_admin_auth", "1");
+                    }
+                    navigate({ to: "/admin" });
+                    return;
+                  }
+                  navigate({ to: "/home" });
+                }}
                 disabled={!loginEmail.trim() || !loginSenha.trim()}
                 className="mt-2 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
