@@ -613,6 +613,32 @@ function GestaoPage() {
         </div>
       </motion.div>
 
+      {/* Abas */}
+      <div className="flex gap-2 mb-4 border-b border-border">
+        {([
+          { v: "gestao", l: "Gestão" },
+          { v: "relatorios", l: "Relatórios e Gráficos" },
+        ] as const).map((t) => (
+          <button
+            key={t.v}
+            type="button"
+            onClick={() => setAba(t.v)}
+            className={cn(
+              "px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors",
+              aba === t.v
+                ? "border-[#1a1557] text-[#1a1557]"
+                : "border-transparent text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {t.l}
+          </button>
+        ))}
+      </div>
+
+      {aba === "relatorios" ? (
+        <RelatoriosTab analise={analise} gestantes={gestantesFiltradas} />
+      ) : (
+      <>
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-4">
         <Kpi label="Total" value={analise.total} />
