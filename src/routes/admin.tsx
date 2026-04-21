@@ -311,7 +311,7 @@ function GestaoPage() {
 
     return {
       total, altoRisco, medioRisco, baixoRisco, comSinais, comPendencias,
-      idadeMedia, semanasMedia, idadeAvancada, terceiroTrim,
+      idadeMedia, semanasMedia, idadeAvancada, menorIdade, terceiroTrim,
       examesPendCount, vacinasPendCount, sinaisCount, condicoesCount, cidadesCount,
       insights,
     };
