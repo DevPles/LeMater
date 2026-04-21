@@ -195,7 +195,7 @@ function GestaoPage() {
     total: gestantesFiltradas.length,
     altoRisco: gestantesFiltradas.filter(g => g.risco === "alto").length,
     pendentes: gestantesFiltradas.filter(g => g.examesPendentes.length > 0 || g.vacinasPendentes.length > 0).length,
-    com Sinais: gestantesFiltradas.filter(g => g.sinaisClinicos.length > 0).length,
+    comSinais: gestantesFiltradas.filter(g => g.sinaisClinicos.length > 0).length,
   }), [gestantesFiltradas]);
 
   const limparFiltros = () => {
