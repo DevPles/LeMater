@@ -394,30 +394,42 @@ export default function RegistrationModal({
                 </div>
               </div>
 
-              <div>
-                <Label className={labelClass}>CEP</Label>
-                <div className="relative">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className={labelClass}>CEP</Label>
+                  <div className="relative">
+                    <Input
+                      value={cep}
+                      onChange={(e) => {
+                        const v = formatarCep(e.target.value);
+                        setCep(v);
+                        setCepError("");
+                        if (v.replace(/\D/g, "").length === 8) buscarCep(v);
+                      }}
+                      onBlur={() => buscarCep(cep)}
+                      placeholder="00000-000"
+                      inputMode="numeric"
+                      maxLength={9}
+                      className={inputClass}
+                    />
+                    {cepLoading && (
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[#f0c040] text-[10px]">
+                        ...
+                      </span>
+                    )}
+                  </div>
+                  {cepError && <p className="text-red-300 text-[11px] mt-1">{cepError}</p>}
+                </div>
+
+                <div>
+                  <Label className={labelClass}>WhatsApp</Label>
                   <Input
-                    value={cep}
-                    onChange={(e) => {
-                      const v = formatarCep(e.target.value);
-                      setCep(v);
-                      setCepError("");
-                      if (v.replace(/\D/g, "").length === 8) buscarCep(v);
-                    }}
-                    onBlur={() => buscarCep(cep)}
-                    placeholder="00000-000"
-                    inputMode="numeric"
-                    maxLength={9}
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    placeholder="(00) 00000-0000"
                     className={inputClass}
                   />
-                  {cepLoading && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#f0c040] text-xs">
-                      buscando...
-                    </span>
-                  )}
                 </div>
-                {cepError && <p className="text-red-300 text-[11px] mt-1">{cepError}</p>}
               </div>
 
               {(bairro || cidade) && (
@@ -461,27 +473,15 @@ export default function RegistrationModal({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label className={labelClass}>E-mail</Label>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="email@exemplo.com"
-                    className={inputClass}
-                  />
-                </div>
-
-                <div>
-                  <Label className={labelClass}>WhatsApp</Label>
-                  <Input
-                    value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
-                    placeholder="(00) 00000-0000"
-                    className={inputClass}
-                  />
-                </div>
+              <div>
+                <Label className={labelClass}>E-mail</Label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="email@exemplo.com"
+                  className={inputClass}
+                />
               </div>
 
               {/* Gestante toggle */}
