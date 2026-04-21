@@ -66,12 +66,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const location = useLocation();
-  const isWelcome = location.pathname === "/";
+  const hideNav = location.pathname === "/" || location.pathname.startsWith("/admin");
 
   return (
     <>
       <Outlet />
-      {!isWelcome && <BottomNav />}
+      {!hideNav && <BottomNav />}
     </>
   );
 }

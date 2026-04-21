@@ -1,17 +1,114 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-export const Route = createFileRoute("/gestao")({
+export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Gestão de Gestantes — MãeDigital" },
-      { name: "description", content: "Painel administrativo de triagem e acompanhamento das gestantes cadastradas." },
+      { title: "Admin — Gestão MãeDigital" },
+      { name: "description", content: "Painel administrativo restrito." },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   ssr: false,
-  component: GestaoPage,
+  component: AdminGate,
 });
+
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "unaerp2026";
+const ADMIN_KEY = "maedigital_admin_auth";
+
+function AdminGate() {
+  const [authed, setAuthed] = useState(false);
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
+  const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && sessionStorage.getItem(ADMIN_KEY) === "1") {
+      setAuthed(true);
+    }
+  }, []);
+
+  if (authed) {
+    return (
+      <div>
+        <div className="bg-[#1a1557] text-white px-4 py-2 flex items-center justify-between text-sm sticky top-0 z-40">
+          <span className="font-semibold">Painel Administrativo</span>
+          <button
+            onClick={() => {
+              sessionStorage.removeItem(ADMIN_KEY);
+              setAuthed(false);
+              setUser("");
+              setPass("");
+            }}
+            className="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full text-xs"
+          >
+            Sair
+          </button>
+        </div>
+        <GestaoPage />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-[#1a4ba8] p-6">
+      <motion.form
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (user === ADMIN_USER && pass === ADMIN_PASS) {
+            sessionStorage.setItem(ADMIN_KEY, "1");
+            setAuthed(true);
+            setErro("");
+          } else {
+            setErro("Credenciais inválidas");
+          }
+        }}
+        className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-8 space-y-4"
+      >
+        <div className="text-center mb-2">
+          <h1 className="text-2xl font-bold text-[#1a1557] font-display">Acesso Administrativo</h1>
+          <p className="text-sm text-gray-500 mt-1">Restrito à equipe MãeDigital</p>
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Usuário</label>
+          <input
+            type="text"
+            value={user}
+            onChange={(e) => setUser(e.target.value)}
+            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#1a1557]"
+            placeholder="admin"
+            autoFocus
+          />
+        </div>
+        <div>
+          <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Senha</label>
+          <input
+            type="password"
+            value={pass}
+            onChange={(e) => setPass(e.target.value)}
+            className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#1a1557]"
+            placeholder="••••••••"
+          />
+        </div>
+        {erro && <p className="text-sm text-red-600 text-center">{erro}</p>}
+        <button
+          type="submit"
+          className="w-full bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold py-3 rounded-full transition-colors"
+        >
+          Entrar
+        </button>
+        <p className="text-[10px] text-gray-400 text-center mt-2">
+          Demonstração: admin / unaerp2026
+        </p>
+      </motion.form>
+    </div>
+  );
+}
+
 
 /* ============ Tipos ============ */
 type RiscoNivel = "baixo" | "medio" | "alto";
