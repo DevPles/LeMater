@@ -53,6 +53,13 @@ export default function RegistrationModal({
 
   // Step 1 fields
   const [nome, setNome] = useState("");
+  const [cep, setCep] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [uf, setUf] = useState("");
+  const [ubs, setUbs] = useState("");
+  const [cepLoading, setCepLoading] = useState(false);
+  const [cepError, setCepError] = useState("");
   const [endereco, setEndereco] = useState("");
   const [cpf, setCpf] = useState("");
   const [dataNasc, setDataNasc] = useState("");
@@ -60,6 +67,71 @@ export default function RegistrationModal({
   const [whatsapp, setWhatsapp] = useState("");
   const [foto, setFoto] = useState<string | null>(null);
   const [gestante, setGestante] = useState<boolean | null>(null);
+
+  // Mapeamento simplificado bairro → UBS (Ribeirão Preto e região).
+  // Em produção, substituir por consulta ao backend.
+  const UBS_POR_BAIRRO: Record<string, string> = {
+    "Centro": "UBS Central",
+    "Campos Elíseos": "UBS Campos Elíseos",
+    "Ipiranga": "UBS Ipiranga",
+    "Vila Tibério": "UBS Vila Tibério",
+    "Sumarezinho": "UBS Sumarezinho",
+    "Jardim Paulista": "UBS Jardim Paulista",
+    "Jardim Paulistano": "UBS Jardim Paulista",
+    "Vila Virgínia": "UBS Vila Virgínia",
+    "Quintino Facci": "UBS Quintino Facci",
+    "Adão do Carmo": "UBS Adão do Carmo Leonel",
+    "Monte Alegre": "UBS Monte Alegre",
+    "Castelo Branco": "UBS Castelo Branco",
+  };
+
+  const ubsParaBairro = (b: string) => {
+    if (!b) return "";
+    // procura por chave que apareça no nome do bairro (case-insensitive)
+    const bLow = b.toLowerCase();
+    const hit = Object.entries(UBS_POR_BAIRRO).find(([k]) => bLow.includes(k.toLowerCase()));
+    return hit ? hit[1] : `UBS de referência (${b})`;
+  };
+
+  const formatarCep = (v: string) => {
+    const d = v.replace(/\D/g, "").slice(0, 8);
+    if (d.length > 5) return `${d.slice(0, 5)}-${d.slice(5)}`;
+    return d;
+  };
+
+  const buscarCep = async (raw: string) => {
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+    setCepLoading(true);
+    setCepError("");
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = await res.json();
+      if (data.erro) {
+        setCepError("CEP não encontrado");
+        setBairro("");
+        setCidade("");
+        setUf("");
+        setUbs("");
+        return;
+      }
+      const b = data.bairro || "";
+      const c = data.localidade || "";
+      setBairro(b);
+      setCidade(c);
+      setUf(data.uf || "");
+      setUbs(ubsParaBairro(b));
+      // Preenche o endereço se estiver vazio
+      if (!endereco && data.logradouro) {
+        setEndereco(`${data.logradouro}${b ? `, ${b}` : ""}`);
+      }
+    } catch {
+      setCepError("Erro ao consultar o CEP");
+    } finally {
+      setCepLoading(false);
+    }
+  };
+
 
   // Step 2 fields (pregnancy)
   const [dum, setDum] = useState("");
