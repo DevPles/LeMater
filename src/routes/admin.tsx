@@ -150,6 +150,14 @@ const gestantesMock: Gestante[] = [
     exames: [], examesPendentes: ["Ultrassom morfológico", "Hemograma", "Sorologias (HIV/Sífilis/Hepatite)"],
     vacinas: [], vacinasPendentes: ["Hepatite B", "dTpa"],
     sinaisClinicos: [], condicoes: [], risco: "baixo" },
+  { id: 9, nome: "Isabela Martins", idade: 16, semanas: 22, dpp: "18/08/2026", cidade: "Ribeirão Preto",
+    exames: ["Hemograma"], examesPendentes: ["Ultrassom morfológico", "Glicemia em jejum"],
+    vacinas: ["Hepatite B"], vacinasPendentes: ["dTpa", "Influenza"],
+    sinaisClinicos: [], condicoes: [], risco: "medio" },
+  { id: 10, nome: "Sophia Oliveira", idade: 17, semanas: 14, dpp: "05/11/2026", cidade: "Sertãozinho",
+    exames: [], examesPendentes: ["Ultrassom morfológico", "Hemograma"],
+    vacinas: [], vacinasPendentes: ["Hepatite B", "dTpa", "Influenza"],
+    sinaisClinicos: ["Pressão alta"], condicoes: [], risco: "medio" },
 ];
 
 /* ============ Helpers ============ */
@@ -256,6 +264,7 @@ function GestaoPage() {
     const idadeMedia = total ? Math.round(gestantesFiltradas.reduce((s, g) => s + g.idade, 0) / total) : 0;
     const semanasMedia = total ? Math.round(gestantesFiltradas.reduce((s, g) => s + g.semanas, 0) / total) : 0;
     const idadeAvancada = gestantesFiltradas.filter((g) => g.idade >= 35).length;
+    const menorIdade = gestantesFiltradas.filter((g) => g.idade < 18).length;
     const terceiroTrim = gestantesFiltradas.filter((g) => g.semanas >= 28).length;
 
     const examesPendCount: Record<string, number> = {};
@@ -302,7 +311,7 @@ function GestaoPage() {
 
     return {
       total, altoRisco, medioRisco, baixoRisco, comSinais, comPendencias,
-      idadeMedia, semanasMedia, idadeAvancada, terceiroTrim,
+      idadeMedia, semanasMedia, idadeAvancada, menorIdade, terceiroTrim,
       examesPendCount, vacinasPendCount, sinaisCount, condicoesCount, cidadesCount,
       insights,
     };
@@ -321,11 +330,32 @@ function GestaoPage() {
   };
 
   /* ============ Exportações ============ */
+  const downloadXlsx = (wb: XLSX.WorkBook, filename: string) => {
+    try {
+      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([wbout], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("Falha ao exportar XLSX:", err);
+      alert("Não foi possível gerar o arquivo Excel. Verifique o console.");
+    }
+  };
+
   const exportarExcelTabela = () => {
     const rows = gestantesFiltradas.map((g) => ({
       ID: g.id,
       Nome: g.nome,
       Idade: g.idade,
+      "Menor de idade": g.idade < 18 ? "Sim" : "Não",
       "Semanas gestacionais": g.semanas,
       DPP: g.dpp,
       Cidade: g.cidade,
@@ -339,12 +369,12 @@ function GestaoPage() {
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
     ws["!cols"] = [
-      { wch: 4 }, { wch: 22 }, { wch: 6 }, { wch: 10 }, { wch: 12 }, { wch: 16 },
+      { wch: 4 }, { wch: 22 }, { wch: 6 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 16 },
       { wch: 8 }, { wch: 38 }, { wch: 32 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 26 },
     ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Gestantes");
-    XLSX.writeFile(wb, `maedigital-gestantes-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    downloadXlsx(wb, `maedigital-gestantes-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const gerarRelatorioExcel = () => {
@@ -362,9 +392,10 @@ function GestaoPage() {
       ["Baixo risco", analise.baixoRisco],
       ["Com sinais clínicos críticos", analise.comSinais],
       ["Com pendências (exames/vacinas)", analise.comPendencias],
+      ["Menor de idade (<18 anos)", analise.menorIdade],
+      ["Idade ≥35 anos (avançada)", analise.idadeAvancada],
       ["Idade média", analise.idadeMedia],
       ["Semanas gestacionais (média)", analise.semanasMedia],
-      ["Idade ≥35 anos", analise.idadeAvancada],
       ["3º trimestre (≥28 semanas)", analise.terceiroTrim],
       [],
       ["Insights"],
@@ -376,7 +407,9 @@ function GestaoPage() {
 
     // Gestantes
     const rows = gestantesFiltradas.map((g) => ({
-      ID: g.id, Nome: g.nome, Idade: g.idade, Semanas: g.semanas, DPP: g.dpp, Cidade: g.cidade,
+      ID: g.id, Nome: g.nome, Idade: g.idade,
+      "Menor de idade": g.idade < 18 ? "Sim" : "Não",
+      Semanas: g.semanas, DPP: g.dpp, Cidade: g.cidade,
       Risco: riscoLabel[g.risco],
       "Exames realizados": g.exames.join("; "),
       "Exames pendentes": g.examesPendentes.join("; "),
@@ -399,7 +432,7 @@ function GestaoPage() {
     toSheet("Condições prévias", analise.condicoesCount);
     toSheet("Por cidade", analise.cidadesCount);
 
-    XLSX.writeFile(wb, `maedigital-relatorio-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    downloadXlsx(wb, `maedigital-relatorio-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   return (
@@ -437,9 +470,10 @@ function GestaoPage() {
         <Kpi label="Baixo risco" value={analise.baixoRisco} tone="ok" />
         <Kpi label="Sinais críticos" value={analise.comSinais} tone="danger" />
         <Kpi label="Com pendências" value={analise.comPendencias} tone="warn" />
+        <Kpi label="Menor de idade" value={analise.menorIdade} tone="danger" />
+        <Kpi label="≥35 anos" value={analise.idadeAvancada} tone="warn" />
         <Kpi label="Idade média" value={`${analise.idadeMedia}a`} />
         <Kpi label="Sem. média" value={analise.semanasMedia} />
-        <Kpi label="≥35 anos" value={analise.idadeAvancada} tone="warn" />
         <Kpi label="3º trimestre" value={analise.terceiroTrim} />
       </div>
 
