@@ -330,11 +330,32 @@ function GestaoPage() {
   };
 
   /* ============ Exportações ============ */
+  const downloadXlsx = (wb: XLSX.WorkBook, filename: string) => {
+    try {
+      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([wbout], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("Falha ao exportar XLSX:", err);
+      alert("Não foi possível gerar o arquivo Excel. Verifique o console.");
+    }
+  };
+
   const exportarExcelTabela = () => {
     const rows = gestantesFiltradas.map((g) => ({
       ID: g.id,
       Nome: g.nome,
       Idade: g.idade,
+      "Menor de idade": g.idade < 18 ? "Sim" : "Não",
       "Semanas gestacionais": g.semanas,
       DPP: g.dpp,
       Cidade: g.cidade,
@@ -348,12 +369,12 @@ function GestaoPage() {
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
     ws["!cols"] = [
-      { wch: 4 }, { wch: 22 }, { wch: 6 }, { wch: 10 }, { wch: 12 }, { wch: 16 },
+      { wch: 4 }, { wch: 22 }, { wch: 6 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 16 },
       { wch: 8 }, { wch: 38 }, { wch: 32 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 26 },
     ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Gestantes");
-    XLSX.writeFile(wb, `maedigital-gestantes-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    downloadXlsx(wb, `maedigital-gestantes-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const gerarRelatorioExcel = () => {
@@ -371,9 +392,10 @@ function GestaoPage() {
       ["Baixo risco", analise.baixoRisco],
       ["Com sinais clínicos críticos", analise.comSinais],
       ["Com pendências (exames/vacinas)", analise.comPendencias],
+      ["Menor de idade (<18 anos)", analise.menorIdade],
+      ["Idade ≥35 anos (avançada)", analise.idadeAvancada],
       ["Idade média", analise.idadeMedia],
       ["Semanas gestacionais (média)", analise.semanasMedia],
-      ["Idade ≥35 anos", analise.idadeAvancada],
       ["3º trimestre (≥28 semanas)", analise.terceiroTrim],
       [],
       ["Insights"],
@@ -385,7 +407,9 @@ function GestaoPage() {
 
     // Gestantes
     const rows = gestantesFiltradas.map((g) => ({
-      ID: g.id, Nome: g.nome, Idade: g.idade, Semanas: g.semanas, DPP: g.dpp, Cidade: g.cidade,
+      ID: g.id, Nome: g.nome, Idade: g.idade,
+      "Menor de idade": g.idade < 18 ? "Sim" : "Não",
+      Semanas: g.semanas, DPP: g.dpp, Cidade: g.cidade,
       Risco: riscoLabel[g.risco],
       "Exames realizados": g.exames.join("; "),
       "Exames pendentes": g.examesPendentes.join("; "),
@@ -408,7 +432,7 @@ function GestaoPage() {
     toSheet("Condições prévias", analise.condicoesCount);
     toSheet("Por cidade", analise.cidadesCount);
 
-    XLSX.writeFile(wb, `maedigital-relatorio-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    downloadXlsx(wb, `maedigital-relatorio-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   return (
