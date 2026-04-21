@@ -15,6 +15,7 @@ export const Route = createFileRoute("/")({
 
 function WelcomeScreen() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"login" | "register">("login");
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-blue-100 to-[#1a4ba8] flex flex-col">
@@ -66,21 +67,41 @@ function WelcomeScreen() {
             </span>
           </motion.div>
 
-          <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setModalOpen(true)}
-            className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-lg px-12 py-4 rounded-full shadow-xl shadow-[#f0c040]/40 transition-colors"
-          >
-            Entrar
-          </motion.button>
+          <div className="flex flex-col gap-3 w-full items-center">
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                setModalMode("login");
+                setModalOpen(true);
+              }}
+              className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-lg px-12 py-4 rounded-full shadow-xl shadow-[#f0c040]/40 transition-colors w-64"
+            >
+              Entrar
+            </motion.button>
+
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.0 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                setModalMode("register");
+                setModalOpen(true);
+              }}
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/40 backdrop-blur-md font-bold text-lg px-12 py-4 rounded-full transition-colors w-64"
+            >
+              Cadastrar-se
+            </motion.button>
+          </div>
         </motion.div>
       </div>
 
-      <RegistrationModal open={modalOpen} onOpenChange={setModalOpen} />
+      <RegistrationModal open={modalOpen} onOpenChange={setModalOpen} initialMode={modalMode} />
     </div>
   );
 }

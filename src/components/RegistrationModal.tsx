@@ -1,9 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "@tanstack/react-router";
+
+type Mode = "login" | "register";
 
 function calcGestationalAge(lmpDate: Date): { weeks: number; days: number } {
   const now = new Date();
@@ -25,14 +27,28 @@ function formatDate(date: Date): string {
 export default function RegistrationModal({
   open,
   onOpenChange,
+  initialMode = "register",
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  initialMode?: Mode;
 }) {
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [step, setStep] = useState<1 | 2>(1);
   const [showCelebration, setShowCelebration] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setMode(initialMode);
+      setStep(1);
+    }
+  }, [open, initialMode]);
+
+  // Login fields
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginSenha, setLoginSenha] = useState("");
 
   // Step 1 fields
   const [nome, setNome] = useState("");
@@ -87,11 +103,80 @@ export default function RegistrationModal({
       <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 w-[calc(100vw-1rem)] max-w-md max-h-[92vh] overflow-y-auto p-3 sm:p-4 rounded-2xl">
         <DialogHeader>
           <DialogTitle className="text-[#f0c040] text-xl font-display text-center">
-            {step === 1 ? "Cadastro da Gestante" : "Dados da Gestação"}
+            {mode === "login"
+              ? "Entrar"
+              : step === 1
+                ? "Cadastro da Gestante"
+                : "Dados da Gestação"}
           </DialogTitle>
         </DialogHeader>
 
         <AnimatePresence mode="wait">
+          {mode === "login" && (
+            <motion.div
+              key="login"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex flex-col gap-3 pt-2"
+            >
+              <div>
+                <Label className={labelClass}>E-mail ou CPF</Label>
+                <Input
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  placeholder="email@exemplo.com"
+                  className={inputClass}
+                />
+              </div>
+
+              <div>
+                <Label className={labelClass}>Senha</Label>
+                <Input
+                  type="password"
+                  value={loginSenha}
+                  onChange={(e) => setLoginSenha(e.target.value)}
+                  placeholder="••••••••"
+                  className={inputClass}
+                />
+              </div>
+
+              <button
+                type="button"
+                className="text-white/60 hover:text-[#f0c040] text-xs text-right transition-colors self-end"
+              >
+                Esqueci minha senha
+              </button>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate({ to: "/home" })}
+                disabled={!loginEmail.trim() || !loginSenha.trim()}
+                className="mt-2 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Entrar
+              </motion.button>
+
+              <div className="flex items-center gap-2 my-1">
+                <div className="flex-1 h-px bg-white/20" />
+                <span className="text-white/40 text-xs">ou</span>
+                <div className="flex-1 h-px bg-white/20" />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setMode("register")}
+                className="text-white/80 hover:text-[#f0c040] text-sm font-medium transition-colors text-center"
+              >
+                Não tem conta?{" "}
+                <span className="text-[#f0c040] font-bold">Cadastre-se</span>
+              </button>
+            </motion.div>
+          )}
+
+          {mode === "register" && (
+            <>
           {/* Celebration animation */}
           {showCelebration && (
             <motion.div
@@ -383,6 +468,18 @@ export default function RegistrationModal({
                 </motion.button>
               </div>
             </motion.div>
+          )}
+
+          {mode === "register" && step === 1 && !showCelebration && (
+            <button
+              type="button"
+              onClick={() => setMode("login")}
+              className="text-white/70 hover:text-[#f0c040] text-xs font-medium transition-colors text-center mt-2"
+            >
+              Já tem cadastro? <span className="text-[#f0c040] font-bold">Entrar</span>
+            </button>
+          )}
+            </>
           )}
         </AnimatePresence>
       </DialogContent>
