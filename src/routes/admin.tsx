@@ -191,38 +191,14 @@ function GestaoPage() {
   const [busca, setBusca] = useState("");
   const [filtroRisco, setFiltroRisco] = useState<"todos" | RiscoNivel>("todos");
   const [filtroCidade, setFiltroCidade] = useState<string>("todas");
-
-  const [filtroExame, setFiltroExame] = useState<"todos" | "pendente" | "realizado">("todos");
-  const [filtroVacina, setFiltroVacina] = useState<"todos" | "pendente" | "realizado">("todos");
-
-  const [examesSelecionados, setExamesSelecionados] = useState<string[]>([]);
-  const [vacinasSelecionadas, setVacinasSelecionadas] = useState<string[]>([]);
-  const [sinaisSelecionados, setSinaisSelecionados] = useState<string[]>([]);
-  const [condicoesSelecionadas, setCondicoesSelecionadas] = useState<string[]>([]);
-
-  const [modoSinais, setModoSinais] = useState<MatchMode>("qualquer");
-  const [modoCondicoes, setModoCondicoes] = useState<MatchMode>("qualquer");
+  const [filtroStatus, setFiltroStatus] = useState<"todos" | "pendencias" | "sinais" | "menor">("todos");
 
   const [dataInicio, setDataInicio] = useState<Date | undefined>(undefined);
   const [dataFim, setDataFim] = useState<Date | undefined>(undefined);
 
-  const [idadeMin, setIdadeMin] = useState<string>("");
-  const [idadeMax, setIdadeMax] = useState<string>("");
-  const [semanasMin, setSemanasMin] = useState<string>("");
-  const [semanasMax, setSemanasMax] = useState<string>("");
-
-  const [excluirAltoRisco, setExcluirAltoRisco] = useState(false);
-  const [apenasMenorIdade, setApenasMenorIdade] = useState(false);
-  const [apenasComSinais, setApenasComSinais] = useState(false);
-  const [apenasComPendencias, setApenasComPendencias] = useState(false);
-
   const [showFiltros, setShowFiltros] = useState(true);
   const [sortKey, setSortKey] = useState<keyof Gestante>("nome");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-
-  const toggle = (arr: string[], value: string, setter: (v: string[]) => void) => {
-    setter(arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value]);
-  };
 
   const gestantesFiltradas = useMemo(() => {
     const buscaLower = busca.trim().toLowerCase();
@@ -232,53 +208,12 @@ function GestaoPage() {
         const blob = `${g.nome} ${g.cidade}`.toLowerCase();
         if (!blob.includes(buscaLower)) return false;
       }
-      if (excluirAltoRisco && g.risco === "alto") return false;
-      if (apenasMenorIdade && g.idade >= 18) return false;
-      if (apenasComSinais && g.sinaisClinicos.length === 0) return false;
-      if (apenasComPendencias && g.examesPendentes.length === 0 && g.vacinasPendentes.length === 0) return false;
-
       if (filtroRisco !== "todos" && g.risco !== filtroRisco) return false;
       if (filtroCidade !== "todas" && g.cidade !== filtroCidade) return false;
 
-      const idadeMinN = idadeMin ? Number(idadeMin) : null;
-      const idadeMaxN = idadeMax ? Number(idadeMax) : null;
-      if (idadeMinN !== null && g.idade < idadeMinN) return false;
-      if (idadeMaxN !== null && g.idade > idadeMaxN) return false;
-
-      const semMinN = semanasMin ? Number(semanasMin) : null;
-      const semMaxN = semanasMax ? Number(semanasMax) : null;
-      if (semMinN !== null && g.semanas < semMinN) return false;
-      if (semMaxN !== null && g.semanas > semMaxN) return false;
-
-      if (examesSelecionados.length > 0) {
-        const ok = examesSelecionados.every((e) => {
-          if (filtroExame === "pendente") return g.examesPendentes.includes(e);
-          if (filtroExame === "realizado") return g.exames.includes(e);
-          return g.exames.includes(e) || g.examesPendentes.includes(e);
-        });
-        if (!ok) return false;
-      }
-
-      if (vacinasSelecionadas.length > 0) {
-        const ok = vacinasSelecionadas.every((v) => {
-          if (filtroVacina === "pendente") return g.vacinasPendentes.includes(v);
-          if (filtroVacina === "realizado") return g.vacinas.includes(v);
-          return g.vacinas.includes(v) || g.vacinasPendentes.includes(v);
-        });
-        if (!ok) return false;
-      }
-
-      if (sinaisSelecionados.length > 0) {
-        const fn = modoSinais === "todos" ? "every" : "some";
-        const ok = sinaisSelecionados[fn]((s) => g.sinaisClinicos.includes(s));
-        if (!ok) return false;
-      }
-
-      if (condicoesSelecionadas.length > 0) {
-        const fn = modoCondicoes === "todos" ? "every" : "some";
-        const ok = condicoesSelecionadas[fn]((c) => g.condicoes.includes(c));
-        if (!ok) return false;
-      }
+      if (filtroStatus === "pendencias" && g.examesPendentes.length === 0 && g.vacinasPendentes.length === 0) return false;
+      if (filtroStatus === "sinais" && g.sinaisClinicos.length === 0) return false;
+      if (filtroStatus === "menor" && g.idade >= 18) return false;
 
       if (dataInicio) {
         const d = parseDpp(g.dpp);
@@ -303,37 +238,18 @@ function GestaoPage() {
     });
 
     return sorted;
-  }, [busca, filtroRisco, filtroCidade, filtroExame, filtroVacina,
-      examesSelecionados, vacinasSelecionadas, sinaisSelecionados, condicoesSelecionadas,
-      modoSinais, modoCondicoes, dataInicio, dataFim,
-      idadeMin, idadeMax, semanasMin, semanasMax,
-      excluirAltoRisco, apenasMenorIdade, apenasComSinais, apenasComPendencias,
-      sortKey, sortDir]);
+  }, [busca, filtroRisco, filtroCidade, filtroStatus, dataInicio, dataFim, sortKey, sortDir]);
 
   const filtrosAtivos = useMemo(() => {
     let n = 0;
     if (busca) n++;
     if (filtroRisco !== "todos") n++;
     if (filtroCidade !== "todas") n++;
-    if (filtroExame !== "todos") n++;
-    if (filtroVacina !== "todos") n++;
-    if (examesSelecionados.length) n++;
-    if (vacinasSelecionadas.length) n++;
-    if (sinaisSelecionados.length) n++;
-    if (condicoesSelecionadas.length) n++;
+    if (filtroStatus !== "todos") n++;
     if (dataInicio) n++;
     if (dataFim) n++;
-    if (idadeMin || idadeMax) n++;
-    if (semanasMin || semanasMax) n++;
-    if (excluirAltoRisco) n++;
-    if (apenasMenorIdade) n++;
-    if (apenasComSinais) n++;
-    if (apenasComPendencias) n++;
     return n;
-  }, [busca, filtroRisco, filtroCidade, filtroExame, filtroVacina,
-      examesSelecionados, vacinasSelecionadas, sinaisSelecionados, condicoesSelecionadas,
-      dataInicio, dataFim, idadeMin, idadeMax, semanasMin, semanasMax,
-      excluirAltoRisco, apenasMenorIdade, apenasComSinais, apenasComPendencias]);
+  }, [busca, filtroRisco, filtroCidade, filtroStatus, dataInicio, dataFim]);
 
   const analise = useMemo(() => {
     const total = gestantesFiltradas.length;
@@ -386,14 +302,8 @@ function GestaoPage() {
 
   const limparFiltros = () => {
     setBusca(""); setFiltroRisco("todos"); setFiltroCidade("todas");
-    setFiltroExame("todos"); setFiltroVacina("todos");
-    setExamesSelecionados([]); setVacinasSelecionadas([]);
-    setSinaisSelecionados([]); setCondicoesSelecionadas([]);
-    setModoSinais("qualquer"); setModoCondicoes("qualquer");
+    setFiltroStatus("todos");
     setDataInicio(undefined); setDataFim(undefined);
-    setIdadeMin(""); setIdadeMax(""); setSemanasMin(""); setSemanasMax("");
-    setExcluirAltoRisco(false); setApenasMenorIdade(false);
-    setApenasComSinais(false); setApenasComPendencias(false);
   };
 
   const handleSort = (key: keyof Gestante) => {
