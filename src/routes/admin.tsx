@@ -198,6 +198,55 @@ const riscoLabel: Record<RiscoNivel, string> = {
 
 const CIDADES = Array.from(new Set(gestantesMock.map((g) => g.cidade))).sort();
 
+/* WhatsApp helpers */
+function normalizarTelefone(tel: string): string {
+  const digits = tel.replace(/\D/g, "");
+  // Se já começa com 55 (Brasil) e tem 12-13 dígitos, mantém. Senão, prefixa 55.
+  if (digits.startsWith("55") && digits.length >= 12) return digits;
+  return `55${digits}`;
+}
+
+function abrirWhatsApp(tel: string, mensagem: string) {
+  const numero = normalizarTelefone(tel);
+  const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+/* Sugestão automática de mensagem com base nos alertas da gestante */
+function sugerirMensagemPush(g: Gestante): { titulo: string; corpo: string } {
+  const partes: string[] = [];
+  let titulo = "MãeDigital — lembrete";
+
+  if (g.sinaisClinicos.length > 0) {
+    titulo = "MãeDigital — atenção urgente";
+    partes.push(
+      `Olá ${g.nome.split(" ")[0]}, identificamos sinais que precisam de avaliação: ${g.sinaisClinicos.join(", ")}. Procure a unidade de saúde o quanto antes.`,
+    );
+  } else if (g.risco === "alto") {
+    titulo = "MãeDigital — acompanhamento de alto risco";
+    partes.push(
+      `Olá ${g.nome.split(" ")[0]}, sua gestação é classificada como alto risco. Reforce a presença nas consultas e siga as orientações do seu pré-natal.`,
+    );
+  }
+
+  if (g.examesPendentes.length > 0) {
+    partes.push(`Exames pendentes: ${g.examesPendentes.join(", ")}.`);
+  }
+  if (g.vacinasPendentes.length > 0) {
+    partes.push(`Vacinas pendentes: ${g.vacinasPendentes.join(", ")}.`);
+  }
+  if (g.idade < 18) {
+    partes.push("Lembrando que o acompanhamento da gestante adolescente é prioritário.");
+  }
+  if (partes.length === 0) {
+    partes.push(
+      `Olá ${g.nome.split(" ")[0]}, está tudo certo com seu acompanhamento. Continue mantendo as consultas em dia.`,
+    );
+  }
+
+  return { titulo, corpo: partes.join(" ") };
+}
+
 /* ============ Page ============ */
 function GestaoPage() {
   const [busca, setBusca] = useState("");
