@@ -1068,3 +1068,235 @@ function RankingTable({ title, data, accent }: { title: string; data: Record<str
     </div>
   );
 }
+
+/* ============ Aba Relatórios e Gráficos ============ */
+type Analise = {
+  total: number;
+  altoRisco: number;
+  medioRisco: number;
+  baixoRisco: number;
+  comSinais: number;
+  comPendencias: number;
+  idadeMedia: number;
+  semanasMedia: number;
+  idadeAvancada: number;
+  menorIdade: number;
+  terceiroTrim: number;
+  examesPendCount: Record<string, number>;
+  vacinasPendCount: Record<string, number>;
+  sinaisCount: Record<string, number>;
+  condicoesCount: Record<string, number>;
+  cidadesCount: Record<string, number>;
+};
+
+const COLORS_RISCO = ["#16a34a", "#f0c040", "#dc2626"];
+const COLORS_PALETTE = ["#1a1557", "#f0c040", "#dc2626", "#16a34a", "#3b82f6", "#a855f7", "#ec4899", "#14b8a6"];
+
+function RelatoriosTab({ analise, gestantes }: { analise: Analise; gestantes: Gestante[] }) {
+  const dataRisco = [
+    { name: "Baixo", value: analise.baixoRisco },
+    { name: "Médio", value: analise.medioRisco },
+    { name: "Alto", value: analise.altoRisco },
+  ];
+
+  const dataExames = Object.entries(analise.examesPendCount)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+
+  const dataVacinas = Object.entries(analise.vacinasPendCount)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+
+  const dataSinais = Object.entries(analise.sinaisCount)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+
+  const dataCondicoes = Object.entries(analise.condicoesCount)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+
+  const dataCidades = Object.entries(analise.cidadesCount)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+
+  // Faixas etárias
+  const faixas = [
+    { name: "<18", value: gestantes.filter((g) => g.idade < 18).length },
+    { name: "18-24", value: gestantes.filter((g) => g.idade >= 18 && g.idade <= 24).length },
+    { name: "25-34", value: gestantes.filter((g) => g.idade >= 25 && g.idade <= 34).length },
+    { name: "≥35", value: gestantes.filter((g) => g.idade >= 35).length },
+  ];
+
+  // Distribuição por trimestre
+  const trimestres = [
+    { name: "1º (0-13 sem)", value: gestantes.filter((g) => g.semanas <= 13).length },
+    { name: "2º (14-27 sem)", value: gestantes.filter((g) => g.semanas >= 14 && g.semanas <= 27).length },
+    { name: "3º (28+ sem)", value: gestantes.filter((g) => g.semanas >= 28).length },
+  ];
+
+  // Cobertura geral (radar)
+  const totalExamesPossiveis = gestantes.length * EXAMES_LISTA.length;
+  const totalExamesFeitos = gestantes.reduce((s, g) => s + g.exames.length, 0);
+  const totalVacinasPossiveis = gestantes.length * VACINAS_LISTA.length;
+  const totalVacinasFeitas = gestantes.reduce((s, g) => s + g.vacinas.length, 0);
+  const radarData = [
+    { dim: "Cobertura exames", valor: totalExamesPossiveis ? Math.round((totalExamesFeitos / totalExamesPossiveis) * 100) : 0 },
+    { dim: "Cobertura vacinas", valor: totalVacinasPossiveis ? Math.round((totalVacinasFeitas / totalVacinasPossiveis) * 100) : 0 },
+    { dim: "Sem sinais críticos", valor: analise.total ? Math.round(((analise.total - analise.comSinais) / analise.total) * 100) : 0 },
+    { dim: "Baixo risco", valor: analise.total ? Math.round((analise.baixoRisco / analise.total) * 100) : 0 },
+    { dim: "Maioria de idade", valor: analise.total ? Math.round(((analise.total - analise.menorIdade) / analise.total) * 100) : 0 },
+  ];
+
+  // Linha cumulativa por semana gestacional
+  const porSemana = Array.from({ length: 41 }, (_, sem) => ({
+    semana: sem,
+    gestantes: gestantes.filter((g) => g.semanas === sem).length,
+  })).filter((d) => d.gestantes > 0);
+
+  return (
+    <div className="space-y-6">
+      {/* KPIs resumo */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <Kpi label="Total" value={analise.total} />
+        <Kpi label="Alto risco" value={analise.altoRisco} tone="danger" />
+        <Kpi label="Médio risco" value={analise.medioRisco} tone="warn" />
+        <Kpi label="Baixo risco" value={analise.baixoRisco} tone="ok" />
+        <Kpi label="Sinais críticos" value={analise.comSinais} tone="danger" />
+        <Kpi label="Com pendências" value={analise.comPendencias} tone="warn" />
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <ChartCard title="Distribuição por nível de risco">
+          <ResponsiveContainer width="100%" height={260}>
+            <PieChart>
+              <Pie data={dataRisco} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label>
+                {dataRisco.map((_, i) => <Cell key={i} fill={COLORS_RISCO[i]} />)}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Gestantes por trimestre">
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={trimestres}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" fontSize={11} />
+              <YAxis allowDecimals={false} fontSize={11} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#1a1557" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Faixa etária das gestantes">
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={faixas}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" fontSize={11} />
+              <YAxis allowDecimals={false} fontSize={11} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#f0c040" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Distribuição por cidade">
+          <ResponsiveContainer width="100%" height={260}>
+            <PieChart>
+              <Pie data={dataCidades} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label>
+                {dataCidades.map((_, i) => <Cell key={i} fill={COLORS_PALETTE[i % COLORS_PALETTE.length]} />)}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Exames pendentes (ranking)">
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={dataExames} layout="vertical" margin={{ left: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" allowDecimals={false} fontSize={11} />
+              <YAxis dataKey="name" type="category" width={150} fontSize={10} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#1a1557" radius={[0, 6, 6, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Vacinas pendentes (ranking)">
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={dataVacinas} layout="vertical" margin={{ left: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" allowDecimals={false} fontSize={11} />
+              <YAxis dataKey="name" type="category" width={120} fontSize={10} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#f0c040" radius={[0, 6, 6, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Sinais clínicos observados">
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={dataSinais} layout="vertical" margin={{ left: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" allowDecimals={false} fontSize={11} />
+              <YAxis dataKey="name" type="category" width={150} fontSize={10} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#dc2626" radius={[0, 6, 6, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Condições prévias">
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={dataCondicoes} layout="vertical" margin={{ left: 30 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" allowDecimals={false} fontSize={11} />
+              <YAxis dataKey="name" type="category" width={150} fontSize={10} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#a855f7" radius={[0, 6, 6, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Gestantes por semana gestacional">
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={porSemana}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="semana" fontSize={11} label={{ value: "Semana", position: "insideBottom", offset: -2, fontSize: 11 }} />
+              <YAxis allowDecimals={false} fontSize={11} />
+              <Tooltip />
+              <Line type="monotone" dataKey="gestantes" stroke="#1a1557" strokeWidth={2} dot={{ r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Indicadores de cobertura (%)">
+          <ResponsiveContainer width="100%" height={260}>
+            <RadarChart data={radarData}>
+              <PolarGrid />
+              <PolarAngleAxis dataKey="dim" fontSize={10} />
+              <PolarRadiusAxis angle={30} domain={[0, 100]} fontSize={10} />
+              <Radar dataKey="valor" stroke="#1a1557" fill="#1a1557" fillOpacity={0.4} />
+              <Tooltip />
+            </RadarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      </div>
+    </div>
+  );
+}
+
+function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-card rounded-2xl border border-border overflow-hidden">
+      <div className="px-4 py-2 bg-muted/40 border-b border-border">
+        <p className="text-xs font-bold uppercase tracking-wide text-foreground">{title}</p>
+      </div>
+      <div className="p-3">{children}</div>
+    </div>
+  );
+}
