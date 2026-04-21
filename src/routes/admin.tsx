@@ -538,8 +538,7 @@ function GestaoPage() {
       toSheet("Condições prévias", analise.condicoesCount);
       toSheet("Por cidade", analise.cidadesCount);
 
-      const out = XLSX.write(wb, { bookType: "xlsx", type: "array" }) as Uint8Array;
-      triggerDownload(out, `maedigital-relatorio-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      downloadWorkbook(wb, `maedigital-relatorio-${new Date().toISOString().slice(0, 10)}.xlsx`);
     } catch (err) {
       console.error("Falha ao gerar relatório:", err);
       alert("Erro ao gerar relatório. Veja o console para detalhes.");
