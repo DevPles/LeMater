@@ -15,6 +15,12 @@ export const Route = createFileRoute("/")({
 
 function WelcomeScreen() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"login" | "register">("login");
+
+  const openModal = (mode: "login" | "register") => {
+    setModalMode(mode);
+    setModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-blue-100 to-[#1a4ba8] flex flex-col">
@@ -66,21 +72,34 @@ function WelcomeScreen() {
             </span>
           </motion.div>
 
-          <motion.button
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setModalOpen(true)}
-            className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-lg px-12 py-4 rounded-full shadow-xl shadow-[#f0c040]/40 transition-colors w-64"
+            className="flex flex-row items-center justify-center gap-3 w-full max-w-md"
           >
-            Entrar
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => openModal("login")}
+              className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-base px-8 py-4 rounded-full shadow-xl shadow-[#f0c040]/40 transition-colors flex-1"
+            >
+              Entrar
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => openModal("register")}
+              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-base px-8 py-4 rounded-full backdrop-blur-sm transition-colors flex-1"
+            >
+              Cadastrar
+            </motion.button>
+          </motion.div>
         </motion.div>
       </div>
 
-      <RegistrationModal open={modalOpen} onOpenChange={setModalOpen} initialMode="login" />
+      <RegistrationModal open={modalOpen} onOpenChange={setModalOpen} initialMode={modalMode} />
     </div>
   );
 }
