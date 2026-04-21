@@ -27,14 +27,28 @@ function formatDate(date: Date): string {
 export default function RegistrationModal({
   open,
   onOpenChange,
+  initialMode = "register",
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  initialMode?: Mode;
 }) {
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [step, setStep] = useState<1 | 2>(1);
   const [showCelebration, setShowCelebration] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setMode(initialMode);
+      setStep(1);
+    }
+  }, [open, initialMode]);
+
+  // Login fields
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginSenha, setLoginSenha] = useState("");
 
   // Step 1 fields
   const [nome, setNome] = useState("");
