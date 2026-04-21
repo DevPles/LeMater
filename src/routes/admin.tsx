@@ -264,6 +264,7 @@ function GestaoPage() {
     const idadeMedia = total ? Math.round(gestantesFiltradas.reduce((s, g) => s + g.idade, 0) / total) : 0;
     const semanasMedia = total ? Math.round(gestantesFiltradas.reduce((s, g) => s + g.semanas, 0) / total) : 0;
     const idadeAvancada = gestantesFiltradas.filter((g) => g.idade >= 35).length;
+    const menorIdade = gestantesFiltradas.filter((g) => g.idade < 18).length;
     const terceiroTrim = gestantesFiltradas.filter((g) => g.semanas >= 28).length;
 
     const examesPendCount: Record<string, number> = {};
