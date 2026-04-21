@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
@@ -192,10 +192,7 @@ function GestacaoPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-6"
       >
-        <Link to="/home" className="text-sm text-muted-foreground hover:text-foreground">
-          ← Voltar
-        </Link>
-        <h1 className="text-2xl font-bold font-display text-foreground mt-2">
+        <h1 className="text-2xl font-bold font-display text-foreground">
           Minha Gestação
         </h1>
         <p className="text-sm text-muted-foreground">
