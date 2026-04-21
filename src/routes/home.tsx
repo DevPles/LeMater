@@ -10,7 +10,7 @@ export const Route = createFileRoute("/home")({
   head: () => ({
     meta: [
       { title: "MãeDigital — Minha Gestação" },
-      { name: "description", content: "Acompanhe sua gestação com suporte de profissionais de saúde, vídeos educativos e prontuário digital." },
+      { name: "description", content: "Acompanhe sua gestação com suporte de profissionais de saúde, vídeos educativos e cartão digital." },
     ],
   }),
   component: HomePage,

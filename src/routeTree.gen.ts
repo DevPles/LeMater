@@ -11,8 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as VideochamadaRouteImport } from './routes/videochamada'
-import { Route as ProntuarioRouteImport } from './routes/prontuario'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as CartaoRouteImport } from './routes/cartao'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -27,14 +27,14 @@ const VideochamadaRoute = VideochamadaRouteImport.update({
   path: '/videochamada',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProntuarioRoute = ProntuarioRouteImport.update({
-  id: '/prontuario',
-  path: '/prontuario',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartaoRoute = CartaoRouteImport.update({
+  id: '/cartao',
+  path: '/cartao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlertasRoute = AlertasRouteImport.update({
@@ -57,8 +57,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/alertas': typeof AlertasRoute
+  '/cartao': typeof CartaoRoute
   '/home': typeof HomeRoute
-  '/prontuario': typeof ProntuarioRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
 }
@@ -66,8 +66,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/alertas': typeof AlertasRoute
+  '/cartao': typeof CartaoRoute
   '/home': typeof HomeRoute
-  '/prontuario': typeof ProntuarioRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
 }
@@ -76,8 +76,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/alertas': typeof AlertasRoute
+  '/cartao': typeof CartaoRoute
   '/home': typeof HomeRoute
-  '/prontuario': typeof ProntuarioRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
 }
@@ -87,8 +87,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/alertas'
+    | '/cartao'
     | '/home'
-    | '/prontuario'
     | '/videochamada'
     | '/videos'
   fileRoutesByTo: FileRoutesByTo
@@ -96,8 +96,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/alertas'
+    | '/cartao'
     | '/home'
-    | '/prontuario'
     | '/videochamada'
     | '/videos'
   id:
@@ -105,8 +105,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/alertas'
+    | '/cartao'
     | '/home'
-    | '/prontuario'
     | '/videochamada'
     | '/videos'
   fileRoutesById: FileRoutesById
@@ -115,8 +115,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AlertasRoute: typeof AlertasRoute
+  CartaoRoute: typeof CartaoRoute
   HomeRoute: typeof HomeRoute
-  ProntuarioRoute: typeof ProntuarioRoute
   VideochamadaRoute: typeof VideochamadaRoute
   VideosRoute: typeof VideosRoute
 }
@@ -137,18 +137,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VideochamadaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/prontuario': {
-      id: '/prontuario'
-      path: '/prontuario'
-      fullPath: '/prontuario'
-      preLoaderRoute: typeof ProntuarioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/home': {
       id: '/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cartao': {
+      id: '/cartao'
+      path: '/cartao'
+      fullPath: '/cartao'
+      preLoaderRoute: typeof CartaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/alertas': {
@@ -179,8 +179,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AlertasRoute: AlertasRoute,
+  CartaoRoute: CartaoRoute,
   HomeRoute: HomeRoute,
-  ProntuarioRoute: ProntuarioRoute,
   VideochamadaRoute: VideochamadaRoute,
   VideosRoute: VideosRoute,
 }

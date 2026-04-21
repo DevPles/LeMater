@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 const actions = [
   { to: "/videos", label: "Vídeos", color: "bg-coral-light text-primary" },
   { to: "/videochamada", label: "Chamada", color: "bg-mint-light text-accent-foreground" },
-  { to: "/prontuario", label: "Prontuário", color: "bg-blush text-foreground" },
+  { to: "/cartao", label: "Cartão", color: "bg-blush text-foreground" },
   { to: "/alertas", label: "Alertas", color: "bg-warm text-foreground" },
 ] as const;
 

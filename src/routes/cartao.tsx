@@ -6,7 +6,7 @@ import {
   AreaChart, Area,
 } from "recharts";
 
-export const Route = createFileRoute("/prontuario")({
+export const Route = createFileRoute("/cartao")({
   head: () => ({
     meta: [
       { title: "Cartão Digital da Gestante — MãeDigital" },
