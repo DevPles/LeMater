@@ -1,9 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "@tanstack/react-router";
+
+type Mode = "login" | "register";
 
 function calcGestationalAge(lmpDate: Date): { weeks: number; days: number } {
   const now = new Date();
