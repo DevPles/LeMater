@@ -1020,9 +1020,14 @@ function Kpi({ label, value, tone = "default" }: { label: string; value: number 
     ok: "bg-green-50 border-green-200 text-green-700",
   };
   return (
-    <div className={`rounded-2xl border p-3 ${tones[tone]}`}>
-      <p className="text-[10px] uppercase tracking-wide font-semibold opacity-70">{label}</p>
-      <p className="text-2xl font-bold font-display mt-0.5">{value}</p>
+    <div
+      className={`relative rounded-2xl border p-3 shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 overflow-hidden ${tones[tone]}`}
+    >
+      <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
+      <div className="relative">
+        <p className="text-[10px] uppercase tracking-wide font-semibold opacity-70">{label}</p>
+        <p className="text-2xl font-bold font-display mt-0.5 drop-shadow-sm">{value}</p>
+      </div>
     </div>
   );
 }
