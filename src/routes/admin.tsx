@@ -480,6 +480,9 @@ function GestaoPage() {
         ID: g.id, Nome: g.nome, Idade: g.idade,
         "Menor de idade": g.idade < 18 ? "Sim" : "Não",
         Semanas: g.semanas, DPP: g.dpp, Cidade: g.cidade,
+        Telefone: g.telefone,
+        "WhatsApp (link)": `https://wa.me/${normalizarTelefone(g.telefone)}`,
+        "E-mail": g.email ?? "",
         Risco: riscoLabel[g.risco],
         "Exames realizados": g.exames.join("; "),
         "Exames pendentes": g.examesPendentes.join("; "),
@@ -488,7 +491,33 @@ function GestaoPage() {
         "Sinais clínicos": g.sinaisClinicos.join("; "),
         "Condições prévias": g.condicoes.join("; "),
       }));
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "Gestantes");
+      const wsGest = XLSX.utils.json_to_sheet(rows);
+      wsGest["!cols"] = [
+        { wch: 4 }, { wch: 22 }, { wch: 6 }, { wch: 12 }, { wch: 8 }, { wch: 12 }, { wch: 16 },
+        { wch: 18 }, { wch: 32 }, { wch: 24 }, { wch: 8 },
+        { wch: 38 }, { wch: 32 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 26 },
+      ];
+      XLSX.utils.book_append_sheet(wb, wsGest, "Gestantes");
+
+      // Aba de contatos prontos para campanhas
+      const contatos = gestantesFiltradas.map((g) => {
+        const sug = sugerirMensagemPush(g);
+        return {
+          Nome: g.nome,
+          Telefone: g.telefone,
+          "WhatsApp (link)": `https://wa.me/${normalizarTelefone(g.telefone)}?text=${encodeURIComponent(sug.corpo)}`,
+          "E-mail": g.email ?? "",
+          Cidade: g.cidade,
+          Risco: riscoLabel[g.risco],
+          "Mensagem sugerida": sug.corpo,
+        };
+      });
+      const wsContatos = XLSX.utils.json_to_sheet(contatos);
+      wsContatos["!cols"] = [
+        { wch: 22 }, { wch: 18 }, { wch: 60 }, { wch: 24 }, { wch: 16 }, { wch: 8 }, { wch: 80 },
+      ];
+      XLSX.utils.book_append_sheet(wb, wsContatos, "Contatos");
+
 
       const toSheet = (title: string, dict: Record<string, number>) => {
         const data = [["Item", "Quantidade"], ...Object.entries(dict).sort((a, b) => b[1] - a[1])];
