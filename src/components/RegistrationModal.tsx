@@ -193,34 +193,36 @@ export default function RegistrationModal({
               exit={{ opacity: 0, y: -10 }}
               className="flex flex-col gap-3 pt-2"
             >
-              <div>
-                <Label className={labelClass}>E-mail ou CPF</Label>
-                <Input
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  placeholder="email@exemplo.com"
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <Label className={labelClass}>Senha</Label>
-                <div className="relative">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <Label className={labelClass}>E-mail ou CPF</Label>
                   <Input
-                    type={showLoginPassword ? "text" : "password"}
-                    value={loginSenha}
-                    onChange={(e) => setLoginSenha(e.target.value)}
-                    placeholder="••••••••"
-                    className={`${inputClass} pr-16`}
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    placeholder="email@exemplo.com"
+                    className={inputClass}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowLoginPassword((v) => !v)}
-                    aria-label={showLoginPassword ? "Ocultar senha" : "Mostrar senha"}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#f0c040] hover:text-[#e5b535] text-lg leading-none transition-colors"
-                  >
-                    {showLoginPassword ? "🙈" : "👁"}
-                  </button>
+                </div>
+
+                <div>
+                  <Label className={labelClass}>Senha</Label>
+                  <div className="relative">
+                    <Input
+                      type={showLoginPassword ? "text" : "password"}
+                      value={loginSenha}
+                      onChange={(e) => setLoginSenha(e.target.value)}
+                      placeholder="••••••••"
+                      className={`${inputClass} pr-10`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginPassword((v) => !v)}
+                      aria-label={showLoginPassword ? "Ocultar senha" : "Mostrar senha"}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#f0c040] hover:text-[#e5b535] text-base leading-none transition-colors"
+                    >
+                      {showLoginPassword ? "🙈" : "👁"}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -370,24 +372,26 @@ export default function RegistrationModal({
                 />
               </div>
 
-              <div>
-                <Label className={labelClass}>CPF</Label>
-                <Input
-                  value={cpf}
-                  onChange={(e) => setCpf(e.target.value)}
-                  placeholder="000.000.000-00"
-                  className={inputClass}
-                />
-              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className={labelClass}>CPF</Label>
+                  <Input
+                    value={cpf}
+                    onChange={(e) => setCpf(e.target.value)}
+                    placeholder="000.000.000-00"
+                    className={inputClass}
+                  />
+                </div>
 
-              <div>
-                <Label className={labelClass}>Data de nascimento</Label>
-                <Input
-                  type="date"
-                  value={dataNasc}
-                  onChange={(e) => setDataNasc(e.target.value)}
-                  className={inputClass}
-                />
+                <div>
+                  <Label className={labelClass}>Data de nascimento</Label>
+                  <Input
+                    type="date"
+                    value={dataNasc}
+                    onChange={(e) => setDataNasc(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
               </div>
 
               <div>
@@ -457,25 +461,27 @@ export default function RegistrationModal({
                 />
               </div>
 
-              <div>
-                <Label className={labelClass}>E-mail</Label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="email@exemplo.com"
-                  className={inputClass}
-                />
-              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className={labelClass}>E-mail</Label>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="email@exemplo.com"
+                    className={inputClass}
+                  />
+                </div>
 
-              <div>
-                <Label className={labelClass}>WhatsApp</Label>
-                <Input
-                  value={whatsapp}
-                  onChange={(e) => setWhatsapp(e.target.value)}
-                  placeholder="(00) 00000-0000"
-                  className={inputClass}
-                />
+                <div>
+                  <Label className={labelClass}>WhatsApp</Label>
+                  <Input
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    placeholder="(00) 00000-0000"
+                    className={inputClass}
+                  />
+                </div>
               </div>
 
               {/* Gestante toggle */}
