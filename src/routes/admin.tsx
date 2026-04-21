@@ -707,16 +707,18 @@ function GestaoPage() {
                 <Th onClick={() => handleSort("dpp")} active={sortKey === "dpp"} dir={sortDir}>DPP</Th>
                 <Th onClick={() => handleSort("cidade")} active={sortKey === "cidade"} dir={sortDir}>Cidade</Th>
                 <Th onClick={() => handleSort("risco")} active={sortKey === "risco"} dir={sortDir}>Risco</Th>
+                <th className="text-left px-3 py-2 font-semibold">Contato</th>
                 <th className="text-left px-3 py-2 font-semibold">Exames pendentes</th>
                 <th className="text-left px-3 py-2 font-semibold">Vacinas pendentes</th>
                 <th className="text-left px-3 py-2 font-semibold">Sinais</th>
                 <th className="text-left px-3 py-2 font-semibold">Condições</th>
+                <th className="text-left px-3 py-2 font-semibold">Ações</th>
               </tr>
             </thead>
             <tbody>
               {gestantesFiltradas.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-8 text-muted-foreground">
+                  <td colSpan={12} className="text-center py-8 text-muted-foreground">
                     Nenhuma gestante encontrada com os filtros aplicados.
                   </td>
                 </tr>
