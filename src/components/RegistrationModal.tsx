@@ -473,27 +473,15 @@ export default function RegistrationModal({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label className={labelClass}>E-mail</Label>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="email@exemplo.com"
-                    className={inputClass}
-                  />
-                </div>
-
-                <div>
-                  <Label className={labelClass}>WhatsApp</Label>
-                  <Input
-                    value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
-                    placeholder="(00) 00000-0000"
-                    className={inputClass}
-                  />
-                </div>
+              <div>
+                <Label className={labelClass}>E-mail</Label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="email@exemplo.com"
+                  className={inputClass}
+                />
               </div>
 
               {/* Gestante toggle */}
