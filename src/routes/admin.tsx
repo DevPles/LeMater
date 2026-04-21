@@ -261,6 +261,29 @@ function GestaoPage() {
   const [sortKey, setSortKey] = useState<keyof Gestante>("nome");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
+  // Push notification state
+  const [pushTarget, setPushTarget] = useState<Gestante | null>(null);
+  const [pushTitulo, setPushTitulo] = useState("");
+  const [pushMensagem, setPushMensagem] = useState("");
+  const [pushHistorico, setPushHistorico] = useState<{ nome: string; quando: string; titulo: string }[]>([]);
+
+  const abrirPush = (g: Gestante) => {
+    const sug = sugerirMensagemPush(g);
+    setPushTarget(g);
+    setPushTitulo(sug.titulo);
+    setPushMensagem(sug.corpo);
+  };
+
+  const enviarPush = () => {
+    if (!pushTarget) return;
+    setPushHistorico((h) => [
+      { nome: pushTarget.nome, quando: new Date().toLocaleString("pt-BR"), titulo: pushTitulo },
+      ...h,
+    ]);
+    alert(`Push enviado para ${pushTarget.nome}:\n\n${pushTitulo}\n\n${pushMensagem}`);
+    setPushTarget(null);
+  };
+
   const gestantesFiltradas = useMemo(() => {
     const buscaLower = busca.trim().toLowerCase();
 
