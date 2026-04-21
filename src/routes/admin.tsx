@@ -795,6 +795,120 @@ function GestaoPage() {
         <RankingTable title="Condições prévias diagnosticadas" data={analise.condicoesCount} accent="red" />
         <RankingTable title="Distribuição por cidade" data={analise.cidadesCount} />
       </div>
+
+      {/* Histórico de pushs enviados */}
+      {pushHistorico.length > 0 && (
+        <div className="bg-card rounded-2xl border border-border overflow-hidden mt-6">
+          <div className="px-4 py-2 bg-muted/40 border-b border-border">
+            <p className="text-xs font-bold uppercase tracking-wide text-foreground">
+              Pushs enviados nesta sessão
+            </p>
+          </div>
+          <ul className="divide-y divide-border">
+            {pushHistorico.map((p, i) => (
+              <li key={i} className="px-4 py-2 text-xs flex justify-between gap-2">
+                <span className="font-semibold text-foreground">{p.nome}</span>
+                <span className="text-muted-foreground">{p.titulo}</span>
+                <span className="text-muted-foreground whitespace-nowrap">{p.quando}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Modal de envio de push */}
+      {pushTarget && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+          onClick={() => setPushTarget(null)}
+        >
+          <div
+            className="bg-card rounded-2xl shadow-xl max-w-lg w-full p-5 space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div>
+              <p className="text-xs text-muted-foreground">Enviar push para</p>
+              <h3 className="text-lg font-bold font-display text-foreground">
+                {pushTarget.nome}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {pushTarget.telefone} · {pushTarget.cidade} · Risco {riscoLabel[pushTarget.risco]}
+              </p>
+            </div>
+
+            {(pushTarget.sinaisClinicos.length > 0 ||
+              pushTarget.examesPendentes.length > 0 ||
+              pushTarget.vacinasPendentes.length > 0) && (
+              <div className="bg-muted/40 rounded-xl p-3 text-xs space-y-1">
+                <p className="font-semibold text-foreground">Alertas detectados</p>
+                {pushTarget.sinaisClinicos.length > 0 && (
+                  <p className="text-red-700">Sinais: {pushTarget.sinaisClinicos.join(", ")}</p>
+                )}
+                {pushTarget.examesPendentes.length > 0 && (
+                  <p className="text-amber-700">Exames pendentes: {pushTarget.examesPendentes.join(", ")}</p>
+                )}
+                {pushTarget.vacinasPendentes.length > 0 && (
+                  <p className="text-amber-700">Vacinas pendentes: {pushTarget.vacinasPendentes.join(", ")}</p>
+                )}
+              </div>
+            )}
+
+            <Field label="Título do push">
+              <input
+                value={pushTitulo}
+                onChange={(e) => setPushTitulo(e.target.value)}
+                className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
+              />
+            </Field>
+
+            <Field label="Mensagem (gerada automaticamente a partir dos alertas — edite à vontade)">
+              <textarea
+                value={pushMensagem}
+                onChange={(e) => setPushMensagem(e.target.value)}
+                rows={5}
+                className="w-full text-sm rounded-xl border border-border bg-background p-3"
+              />
+            </Field>
+
+            <div className="flex justify-between gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const sug = sugerirMensagemPush(pushTarget);
+                  setPushTitulo(sug.titulo);
+                  setPushMensagem(sug.corpo);
+                }}
+                className="px-3 py-2 rounded-full text-xs font-semibold border border-border text-muted-foreground hover:text-foreground"
+              >
+                Restaurar sugestão
+              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPushTarget(null)}
+                  className="px-3 py-2 rounded-full text-xs font-semibold border border-border text-muted-foreground hover:text-foreground"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => abrirWhatsApp(pushTarget.telefone, pushMensagem)}
+                  className="px-3 py-2 rounded-full text-xs font-bold bg-green-600 text-white hover:bg-green-700"
+                >
+                  Abrir no WhatsApp
+                </button>
+                <button
+                  type="button"
+                  onClick={enviarPush}
+                  className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a]"
+                >
+                  Enviar push
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
