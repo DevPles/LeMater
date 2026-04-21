@@ -409,6 +409,9 @@ function GestaoPage() {
         "Semanas gestacionais": g.semanas,
         DPP: g.dpp,
         Cidade: g.cidade,
+        Telefone: g.telefone,
+        "WhatsApp (link)": `https://wa.me/${normalizarTelefone(g.telefone)}`,
+        "E-mail": g.email ?? "",
         Risco: riscoLabel[g.risco],
         "Exames realizados": g.exames.join("; "),
         "Exames pendentes": g.examesPendentes.join("; "),
@@ -420,7 +423,8 @@ function GestaoPage() {
       const ws = XLSX.utils.json_to_sheet(rows);
       ws["!cols"] = [
         { wch: 4 }, { wch: 22 }, { wch: 6 }, { wch: 12 }, { wch: 10 }, { wch: 12 }, { wch: 16 },
-        { wch: 8 }, { wch: 38 }, { wch: 32 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 26 },
+        { wch: 18 }, { wch: 32 }, { wch: 24 }, { wch: 8 },
+        { wch: 38 }, { wch: 32 }, { wch: 26 }, { wch: 26 }, { wch: 26 }, { wch: 26 },
       ];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Gestantes");
