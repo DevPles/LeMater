@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as VideochamadaRouteImport } from './routes/videochamada'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as GestacaoRouteImport } from './routes/gestacao'
 import { Route as CartaoRouteImport } from './routes/cartao'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -30,6 +31,11 @@ const VideochamadaRoute = VideochamadaRouteImport.update({
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GestacaoRoute = GestacaoRouteImport.update({
+  id: '/gestacao',
+  path: '/gestacao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartaoRoute = CartaoRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/alertas': typeof AlertasRoute
   '/cartao': typeof CartaoRoute
+  '/gestacao': typeof GestacaoRoute
   '/home': typeof HomeRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/alertas': typeof AlertasRoute
   '/cartao': typeof CartaoRoute
+  '/gestacao': typeof GestacaoRoute
   '/home': typeof HomeRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/alertas': typeof AlertasRoute
   '/cartao': typeof CartaoRoute
+  '/gestacao': typeof GestacaoRoute
   '/home': typeof HomeRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/alertas'
     | '/cartao'
+    | '/gestacao'
     | '/home'
     | '/videochamada'
     | '/videos'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/alertas'
     | '/cartao'
+    | '/gestacao'
     | '/home'
     | '/videochamada'
     | '/videos'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/alertas'
     | '/cartao'
+    | '/gestacao'
     | '/home'
     | '/videochamada'
     | '/videos'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AlertasRoute: typeof AlertasRoute
   CartaoRoute: typeof CartaoRoute
+  GestacaoRoute: typeof GestacaoRoute
   HomeRoute: typeof HomeRoute
   VideochamadaRoute: typeof VideochamadaRoute
   VideosRoute: typeof VideosRoute
@@ -142,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gestacao': {
+      id: '/gestacao'
+      path: '/gestacao'
+      fullPath: '/gestacao'
+      preLoaderRoute: typeof GestacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cartao': {
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AlertasRoute: AlertasRoute,
   CartaoRoute: CartaoRoute,
+  GestacaoRoute: GestacaoRoute,
   HomeRoute: HomeRoute,
   VideochamadaRoute: VideochamadaRoute,
   VideosRoute: VideosRoute,

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "@tanstack/react-router";
 
 interface WeekProgressProps {
   currentWeek: number;
@@ -11,7 +12,10 @@ export function WeekProgress({ currentWeek, totalWeeks = 40 }: WeekProgressProps
     currentWeek <= 13 ? "1º Trimestre" : currentWeek <= 26 ? "2º Trimestre" : "3º Trimestre";
 
   return (
-    <div className="bg-card rounded-2xl p-5 shadow-sm">
+    <Link
+      to="/gestacao"
+      className="block bg-card rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow"
+    >
       <div className="flex items-center justify-between mb-3">
         <div>
           <p className="text-sm text-muted-foreground">{trimester}</p>
@@ -34,6 +38,9 @@ export function WeekProgress({ currentWeek, totalWeeks = 40 }: WeekProgressProps
       <p className="text-xs text-muted-foreground mt-2">
         {totalWeeks - currentWeek} semanas restantes
       </p>
-    </div>
+      <p className="text-xs text-primary font-medium mt-3">
+        Ver todos os trimestres →
+      </p>
+    </Link>
   );
 }
