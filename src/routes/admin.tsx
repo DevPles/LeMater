@@ -71,7 +71,7 @@ function AdminGate() {
 
 /* ============ Tipos ============ */
 type RiscoNivel = "baixo" | "medio" | "alto";
-type MatchMode = "qualquer" | "todos";
+
 
 interface Gestante {
   id: number;
@@ -706,38 +706,6 @@ function DateField({ date, setDate, placeholder }: { date?: Date; setDate: (d?: 
   );
 }
 
-function CheckOption({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className="flex items-center gap-2 text-sm cursor-pointer">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="text-foreground font-medium">{label}</span>
-    </label>
-  );
-}
-
-function ModeToggle({ mode, setMode }: { mode: MatchMode; setMode: (m: MatchMode) => void }) {
-  return (
-    <div className="flex items-center gap-2 mt-2">
-      <span className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Modo:</span>
-      {(["qualquer", "todos"] as MatchMode[]).map((m) => (
-        <button
-          key={m}
-          type="button"
-          onClick={() => setMode(m)}
-          className={cn(
-            "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border transition-colors",
-            mode === m
-              ? "bg-[#1a1557] text-white border-[#1a1557]"
-              : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50",
-          )}
-        >
-          {m === "qualquer" ? "Qualquer um" : "Todos"}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function Kpi({ label, value, tone = "default" }: { label: string; value: number | string; tone?: "default" | "danger" | "warn" | "ok" }) {
   const tones = {
     default: "bg-card border-border text-foreground",
@@ -758,32 +726,6 @@ function Th({ children, onClick, active, dir }: { children: React.ReactNode; onC
     <th onClick={onClick} className="text-left px-3 py-2 font-semibold cursor-pointer select-none whitespace-nowrap hover:bg-white/10">
       {children}{active ? (dir === "asc" ? " ↑" : " ↓") : ""}
     </th>
-  );
-}
-
-function ChipGroup({ label, options, selected, onToggle, accent }: {
-  label: string; options: string[]; selected: string[]; onToggle: (v: string) => void; accent?: "red";
-}) {
-  return (
-    <div>
-      <p className="text-xs font-medium text-muted-foreground mb-1.5">{label}</p>
-      <div className="flex flex-wrap gap-1.5">
-        {options.map((opt) => {
-          const sel = selected.includes(opt);
-          const base = sel
-            ? accent === "red"
-              ? "bg-red-600 text-white border-red-600"
-              : "bg-[#1a1557] text-white border-[#1a1557]"
-            : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50";
-          return (
-            <button key={opt} type="button" onClick={() => onToggle(opt)}
-              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${base}`}>
-              {opt}
-            </button>
-          );
-        })}
-      </div>
-    </div>
   );
 }
 
