@@ -402,19 +402,26 @@ function GestaoPage() {
   };
 
   /* ============ Exportações ============ */
-  const triggerDownload = (data: BlobPart, filename: string) => {
-    const blob = new Blob([data], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  const downloadWorkbook = (wb: XLSX.WorkBook, filename: string) => {
+    try {
+      // Caminho principal: writeFile injeta o download no browser.
+      XLSX.writeFile(wb, filename, { bookType: "xlsx", compression: true });
+    } catch (err) {
+      console.warn("writeFile falhou, usando fallback Blob:", err);
+      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" }) as ArrayBuffer;
+      const blob = new Blob([wbout], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
   };
 
   const exportarExcelTabela = () => {
