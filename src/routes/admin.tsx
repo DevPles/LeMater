@@ -443,21 +443,6 @@ function GestaoPage() {
         <Kpi label="3º trimestre" value={analise.terceiroTrim} />
       </div>
 
-      {/* Insights */}
-      {analise.insights.length > 0 && (
-        <div className="bg-[#1a1557]/5 border border-[#1a1557]/20 rounded-2xl p-4 mb-4">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#1a1557] mb-2">Insights</p>
-          <ul className="space-y-1 text-sm text-foreground">
-            {analise.insights.map((i, idx) => (
-              <li key={idx} className="flex gap-2">
-                <span className="text-[#f0c040] font-bold">•</span>
-                <span>{i}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       {/* Toggle filtros */}
       <div className="flex items-center justify-between mb-3">
         <button
