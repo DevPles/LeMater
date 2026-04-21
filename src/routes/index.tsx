@@ -15,6 +15,7 @@ export const Route = createFileRoute("/")({
 
 function WelcomeScreen() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"login" | "register">("login");
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-blue-100 to-[#1a4ba8] flex flex-col">
