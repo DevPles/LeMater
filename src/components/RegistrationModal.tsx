@@ -469,6 +469,18 @@ export default function RegistrationModal({
               </div>
             </motion.div>
           )}
+
+          {mode === "register" && step === 1 && !showCelebration && (
+            <button
+              type="button"
+              onClick={() => setMode("login")}
+              className="text-white/70 hover:text-[#f0c040] text-xs font-medium transition-colors text-center mt-2"
+            >
+              Já tem cadastro? <span className="text-[#f0c040] font-bold">Entrar</span>
+            </button>
+          )}
+            </>
+          )}
         </AnimatePresence>
       </DialogContent>
     </Dialog>
