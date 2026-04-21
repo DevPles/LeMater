@@ -383,20 +383,9 @@ function GestaoPage() {
         ["Busca", busca || "—"],
         ["Risco", filtroRisco],
         ["Cidade", filtroCidade],
-        ["Status exames", filtroExame],
-        ["Status vacinas", filtroVacina],
-        ["Exames selecionados", examesSelecionados.join("; ") || "—"],
-        ["Vacinas selecionadas", vacinasSelecionadas.join("; ") || "—"],
-        ["Sinais selecionados", `${sinaisSelecionados.join("; ") || "—"} (${modoSinais})`],
-        ["Condições selecionadas", `${condicoesSelecionadas.join("; ") || "—"} (${modoCondicoes})`],
+        ["Status", filtroStatus],
         ["DPP de", dataInicio ? format(dataInicio, "dd/MM/yyyy") : "—"],
         ["DPP até", dataFim ? format(dataFim, "dd/MM/yyyy") : "—"],
-        ["Idade", `${idadeMin || "?"} a ${idadeMax || "?"}`],
-        ["Semanas", `${semanasMin || "?"} a ${semanasMax || "?"}`],
-        ["Excluir alto risco", excluirAltoRisco ? "Sim" : "Não"],
-        ["Apenas menor de idade", apenasMenorIdade ? "Sim" : "Não"],
-        ["Apenas com sinais", apenasComSinais ? "Sim" : "Não"],
-        ["Apenas com pendências", apenasComPendencias ? "Sim" : "Não"],
       ];
 
       const resumo: (string | number)[][] = [
