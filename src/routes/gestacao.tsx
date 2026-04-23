@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { LiquidCard } from "@/components/LiquidCard";
 
 export const Route = createFileRoute("/gestacao")({
   head: () => ({
@@ -236,8 +237,8 @@ function GestacaoPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
-            className="bg-card rounded-2xl p-5 shadow-sm"
           >
+            <LiquidCard className="p-5">
             <div className="flex items-baseline justify-between mb-3">
               <h3 className="text-lg font-bold font-display text-foreground">
                 Mês {mes.mes}
@@ -276,6 +277,7 @@ function GestacaoPage() {
                 ))}
               </ul>
             </div>
+            </LiquidCard>
           </motion.div>
         ))}
       </div>

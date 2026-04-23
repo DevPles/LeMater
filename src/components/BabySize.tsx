@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { LiquidCard } from "@/components/LiquidCard";
 
 const babySizes: Record<number, { size: string; name: string }> = {
   8: { size: "1,6 cm", name: "Uva" },
@@ -25,21 +26,33 @@ export function BabySize({ week }: { week: number }) {
 
   return (
     <motion.div
-      className="bg-mint-light rounded-2xl p-5 shadow-sm"
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ delay: 0.2 }}
     >
-      <p className="text-sm text-accent-foreground font-medium mb-2">Tamanho do bebê</p>
-      <div className="flex items-center gap-4">
-        <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center">
-          <span className="text-lg font-bold text-accent-foreground font-display">{size.name.charAt(0)}</span>
+      <LiquidCard className="p-5">
+        <p className="text-sm text-accent-foreground font-medium mb-2">Tamanho do bebê</p>
+        <div className="flex items-center gap-4">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center border"
+            style={{
+              background:
+                "linear-gradient(180deg, oklch(1 0 0 / 0.7) 0%, oklch(0.92 0.05 25 / 0.35) 100%)",
+              borderColor: "oklch(1 0 0 / 0.7)",
+              WebkitBackdropFilter: "blur(12px) saturate(160%)",
+              backdropFilter: "blur(12px) saturate(160%)",
+              boxShadow:
+                "inset 0 1px 0 0 oklch(1 0 0 / 0.9), inset 0 -1px 0 0 oklch(1 0 0 / 0.2)",
+            }}
+          >
+            <span className="text-lg font-bold text-accent-foreground font-display">{size.name.charAt(0)}</span>
+          </div>
+          <div>
+            <p className="text-lg font-bold font-display text-foreground">{size.size}</p>
+            <p className="text-xs text-muted-foreground">comprimento aproximado ({size.name})</p>
+          </div>
         </div>
-        <div>
-          <p className="text-lg font-bold font-display text-foreground">{size.size}</p>
-          <p className="text-xs text-muted-foreground">comprimento aproximado ({size.name})</p>
-        </div>
-      </div>
+      </LiquidCard>
     </motion.div>
   );
 }

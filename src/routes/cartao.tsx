@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState, useRef } from "react";
+import { LiquidCard } from "@/components/LiquidCard";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area,
@@ -238,10 +239,11 @@ function CartaoPage() {
 
       {/* Patient Card */}
       <motion.div
-        className="bg-card rounded-2xl p-4 shadow-sm border border-border mb-4"
+        className="mb-4"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
+        <LiquidCard className="p-4">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-11 h-11 rounded-full bg-coral-light flex items-center justify-center">
             <span className="text-sm font-bold text-primary">MS</span>
@@ -261,6 +263,7 @@ function CartaoPage() {
             <p className="font-bold text-foreground text-sm">{patientInfo.dpp}</p>
           </div>
         </div>
+        </LiquidCard>
       </motion.div>
 
       {tab === "resumo" && <ResumoTab timelineEntries={timelineEntries} />}
@@ -304,15 +307,16 @@ function ResumoTab({ timelineEntries }: { timelineEntries: TimelineEntry[] }) {
         {vitals.map((v, i) => (
           <motion.div
             key={v.label}
-            className="bg-card rounded-2xl p-4 shadow-sm border border-border"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.08 }}
           >
-            <div className={`w-8 h-2 rounded-full ${v.color} mb-3`} />
-            <p className="text-xs text-muted-foreground">{v.label}</p>
-            <p className="font-bold text-foreground">{v.value}</p>
-            <p className="text-xs text-accent-foreground font-medium">{v.change}</p>
+            <LiquidCard className="p-4">
+              <div className={`w-8 h-2 rounded-full ${v.color} mb-3`} />
+              <p className="text-xs text-muted-foreground">{v.label}</p>
+              <p className="font-bold text-foreground">{v.value}</p>
+              <p className="text-xs text-accent-foreground font-medium">{v.change}</p>
+            </LiquidCard>
           </motion.div>
         ))}
       </div>
