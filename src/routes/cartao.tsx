@@ -240,16 +240,16 @@ function CartaoPage() {
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h1 className="text-2xl font-bold font-display text-foreground">Cartão Digital da Gestante</h1>
+        <div className="relative mb-1">
+          <h1 className="text-2xl font-bold font-display text-foreground text-center">Cartão Digital da Gestante</h1>
           <button
             onClick={() => window.print()}
-            className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border border-primary text-primary bg-background transition-all hover:bg-primary hover:text-primary-foreground"
+            className="absolute right-0 top-0 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border border-primary text-primary bg-background transition-all hover:bg-primary hover:text-primary-foreground"
           >
             Exportar
           </button>
         </div>
-        <p className="text-sm text-muted-foreground">Evolução da gestação</p>
+        <p className="text-sm text-muted-foreground text-center">Evolução da gestação</p>
       </motion.div>
 
       {/* Tabs */}
