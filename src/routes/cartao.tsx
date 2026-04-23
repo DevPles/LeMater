@@ -22,9 +22,36 @@ const patientInfo = {
   name: "Maria Silva",
   age: 28,
   bloodType: "O+",
+  // DUM (Data da Última Menstruação) — usada para calcular a semana atual
+  dum: "29/10/2025",
   dpp: "15/07/2026",
   weeks: 24,
 };
+
+// Helpers para data/semana
+function parseBR(dateStr: string): Date | null {
+  const m = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const [, dd, mm, yyyy] = m;
+  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatBR(d: Date): string {
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+
+function semanaGestacional(dataConsultaBR: string, dumBR: string): number {
+  const consulta = parseBR(dataConsultaBR);
+  const dum = parseBR(dumBR);
+  if (!consulta || !dum) return 0;
+  const diffMs = consulta.getTime() - dum.getTime();
+  const semanas = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7));
+  return Math.max(1, Math.min(42, semanas));
+}
+
 
 // --- Resumo data ---
 const vitals = [
