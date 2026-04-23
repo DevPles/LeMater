@@ -5,6 +5,8 @@ import { QuickActions } from "@/components/QuickActions";
 import { TipCard } from "@/components/TipCard";
 import { UserAvatar } from "@/components/UserAvatar";
 import { motion } from "framer-motion";
+import { useScreenContent } from "@/hooks/useScreenContent";
+import { HOME_DEFAULT } from "@/components/admin/TelasTab";
 
 export const Route = createFileRoute("/home")({
   head: () => ({
@@ -16,24 +18,9 @@ export const Route = createFileRoute("/home")({
   component: HomePage,
 });
 
-const CURRENT_WEEK = 24;
-
-const weeklyTips = [
-  {
-    title: "Hidratação é essencial",
-    description: "Beba pelo menos 2 litros de água por dia para manter o líquido amniótico saudável.",
-  },
-  {
-    title: "Exercícios leves",
-    description: "Caminhadas de 30 minutos ajudam na circulação e preparam para o parto.",
-  },
-  {
-    title: "Próxima consulta",
-    description: "Não esqueça do ultrassom morfológico agendado para esta semana.",
-  },
-];
-
 function HomePage() {
+  const { content } = useScreenContent("home", HOME_DEFAULT);
+
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
       <motion.div
@@ -42,26 +29,26 @@ function HomePage() {
         className="mb-6 flex items-center justify-between"
       >
         <div>
-          <p className="text-sm text-muted-foreground">Olá, Maria</p>
+          <p className="text-sm text-muted-foreground">{content.greeting}</p>
           <h1 className="text-2xl font-bold font-display text-foreground">
-            Minha Gestação
+            {content.pageTitle}
           </h1>
         </div>
         <UserAvatar name="Maria Silva" />
       </motion.div>
 
       <div className="space-y-5">
-        <WeekProgress currentWeek={CURRENT_WEEK} />
-        <BabySize week={CURRENT_WEEK} />
+        <WeekProgress currentWeek={content.currentWeek} />
+        <BabySize week={content.currentWeek} />
         <QuickActions />
 
         <div>
           <h3 className="font-display font-semibold text-lg text-foreground mb-3">
-            Dicas da semana
+            {content.tipsHeading}
           </h3>
           <div className="space-y-3">
-            {weeklyTips.map((tip) => (
-              <TipCard key={tip.title} {...tip} />
+            {content.weeklyTips.map((tip, i) => (
+              <TipCard key={`${tip.title}-${i}`} {...tip} />
             ))}
           </div>
         </div>
