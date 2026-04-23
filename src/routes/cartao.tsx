@@ -465,12 +465,9 @@ function LancamentosTab({
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                Semana <span className="text-[10px] text-primary">(auto)</span>
-              </label>
-              <div className={`${inputClass} flex items-center justify-between bg-muted/50`}>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Semana</label>
+              <div className={`${inputClass} flex items-center bg-muted/50`}>
                 <span className="font-semibold text-foreground">{form.semana || "—"}ª semana</span>
-                <span className="text-[10px] text-muted-foreground">DUM: {patientInfo.dum}</span>
               </div>
             </div>
           </div>
