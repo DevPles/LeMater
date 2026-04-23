@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState, useRef } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
+import { useScreenContent } from "@/hooks/useScreenContent";
+import { CARTAO_DEFAULT } from "@/components/admin/TelasTab";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area,
@@ -18,14 +20,14 @@ export const Route = createFileRoute("/cartao")({
   component: CartaoPage,
 });
 
-const patientInfo = {
-  name: "Maria Silva",
-  age: 28,
-  bloodType: "O+",
-  // DUM (Data da Última Menstruação) — usada para calcular a semana atual
-  dum: "29/10/2025",
-  dpp: "15/07/2026",
-  weeks: 24,
+// Defaults — sobrescritos via /admin → Telas do App → Cartão da Gestante
+const patientInfoDefault = {
+  name: CARTAO_DEFAULT.patientName,
+  age: CARTAO_DEFAULT.patientAge,
+  bloodType: CARTAO_DEFAULT.bloodType,
+  dum: CARTAO_DEFAULT.dum,
+  dpp: CARTAO_DEFAULT.dpp,
+  weeks: CARTAO_DEFAULT.weeks,
 };
 
 // Helpers para data/semana
@@ -54,12 +56,7 @@ function semanaGestacional(dataConsultaBR: string, dumBR: string): number {
 
 
 // --- Resumo data ---
-const vitals = [
-  { label: "Peso", value: "68,5 kg", change: "+2,1 kg", color: "bg-coral-light" },
-  { label: "Pressão", value: "110/70", change: "Normal", color: "bg-mint-light" },
-  { label: "Glicemia", value: "85 mg/dL", change: "Normal", color: "bg-warm" },
-  { label: "BCF", value: "142 bpm", change: "Normal", color: "bg-blush" },
-];
+const vitalColors = ["bg-coral-light", "bg-mint-light", "bg-warm", "bg-blush"];
 
 // --- Timeline entries (shared state) ---
 export interface TimelineEntry {
@@ -174,6 +171,20 @@ function CartaoPage() {
   const [showForm, setShowForm] = useState(false);
   const [timelineEntries, setTimelineEntries] = useState<TimelineEntry[]>(timelineIniciais);
   const [vacinasExames, setVacinasExames] = useState<VacinaExame[]>(vacinasExamesIniciais);
+
+  const { content: cartaoContent } = useScreenContent("cartao", CARTAO_DEFAULT);
+  const patientInfo = {
+    name: cartaoContent.patientName,
+    age: cartaoContent.patientAge,
+    bloodType: cartaoContent.bloodType,
+    dum: cartaoContent.dum,
+    dpp: cartaoContent.dpp,
+    weeks: cartaoContent.weeks,
+  };
+  const vitals = (cartaoContent.vitals ?? []).map((v, i) => ({
+    ...v,
+    color: vitalColors[i % vitalColors.length],
+  }));
 
   const hojeBR = formatBR(new Date());
   const semanaHoje = String(semanaGestacional(hojeBR, patientInfo.dum));
@@ -298,7 +309,7 @@ function CartaoPage() {
         </LiquidCard>
       </motion.div>
 
-      {tab === "resumo" && <ResumoTab timelineEntries={timelineEntries} />}
+      {tab === "resumo" && <ResumoTab timelineEntries={timelineEntries} vitals={vitals} />}
       {tab === "lancamentos" && (
         <LancamentosTab
           lancamentos={lancamentos}
@@ -308,6 +319,7 @@ function CartaoPage() {
           setForm={setForm}
           onAdd={handleAddLancamento}
           inputClass={inputClass}
+          dum={patientInfo.dum}
         />
       )}
       {tab === "vacinas" && (
@@ -323,7 +335,7 @@ function CartaoPage() {
 }
 
 /* ========== RESUMO TAB ========== */
-function ResumoTab({ timelineEntries }: { timelineEntries: TimelineEntry[] }) {
+function ResumoTab({ timelineEntries, vitals }: { timelineEntries: TimelineEntry[]; vitals: { label: string; value: string; change: string; color: string }[] }) {
   const sorted = [...timelineEntries].sort((a, b) => b.week - a.week);
 
   const typeColors: Record<string, string> = {
@@ -404,7 +416,7 @@ function ResumoTab({ timelineEntries }: { timelineEntries: TimelineEntry[] }) {
 
 /* ========== LANÇAMENTOS TAB ========== */
 function LancamentosTab({
-  lancamentos, showForm, setShowForm, form, setForm, onAdd, inputClass,
+  lancamentos, showForm, setShowForm, form, setForm, onAdd, inputClass, dum,
 }: {
   lancamentos: Lancamento[];
   showForm: boolean;
@@ -413,13 +425,14 @@ function LancamentosTab({
   setForm: React.Dispatch<React.SetStateAction<{ semana: string; data: string; peso: string; pressaoSis: string; pressaoDia: string; alturaUterina: string; bcf: string; edema: string; observacoes: string }>>;
   onAdd: () => void;
   inputClass: string;
+  dum: string;
 }) {
   const update = (field: string, value: string) => {
     setForm(prev => {
       const next = { ...prev, [field]: value };
       // Quando a data muda, recalcula automaticamente a semana gestacional
       if (field === "data") {
-        const semana = semanaGestacional(value, patientInfo.dum);
+        const semana = semanaGestacional(value, dum);
         if (semana > 0) next.semana = String(semana);
       }
       return next;
