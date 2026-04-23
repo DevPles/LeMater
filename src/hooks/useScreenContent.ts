@@ -39,7 +39,7 @@ export async function saveScreenContent(screenKey: string, content: unknown) {
   const { error } = await supabase
     .from("app_content")
     .upsert(
-      { screen_key: screenKey, content: content as object },
+      [{ screen_key: screenKey, content: content as object }],
       { onConflict: "screen_key" },
     );
   if (error) throw error;
