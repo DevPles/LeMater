@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
+import { useScreenContent } from "@/hooks/useScreenContent";
+import { GESTACAO_DEFAULT } from "@/components/admin/TelasTab";
 
 export const Route = createFileRoute("/gestacao")({
   head: () => ({
@@ -185,6 +187,7 @@ function GestacaoPage() {
   const [trimestreAtivo, setTrimestreAtivo] = useState(2);
 
   const atual = trimestres.find((t) => t.numero === trimestreAtivo)!;
+  const { content } = useScreenContent("gestacao", GESTACAO_DEFAULT);
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
@@ -194,10 +197,10 @@ function GestacaoPage() {
         className="mb-6"
       >
         <h1 className="text-2xl font-bold font-display text-foreground">
-          Minha Gestação
+          {content.pageTitle}
         </h1>
         <p className="text-sm text-muted-foreground">
-          O que acontece no seu corpo, mês a mês
+          {content.pageSubtitle}
         </p>
       </motion.div>
 
