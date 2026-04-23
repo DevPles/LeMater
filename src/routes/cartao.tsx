@@ -20,14 +20,14 @@ export const Route = createFileRoute("/cartao")({
   component: CartaoPage,
 });
 
-const patientInfo = {
-  name: "Maria Silva",
-  age: 28,
-  bloodType: "O+",
-  // DUM (Data da Última Menstruação) — usada para calcular a semana atual
-  dum: "29/10/2025",
-  dpp: "15/07/2026",
-  weeks: 24,
+// Defaults — sobrescritos via /admin → Telas do App → Cartão da Gestante
+const patientInfoDefault = {
+  name: CARTAO_DEFAULT.patientName,
+  age: CARTAO_DEFAULT.patientAge,
+  bloodType: CARTAO_DEFAULT.bloodType,
+  dum: CARTAO_DEFAULT.dum,
+  dpp: CARTAO_DEFAULT.dpp,
+  weeks: CARTAO_DEFAULT.weeks,
 };
 
 // Helpers para data/semana
@@ -56,12 +56,7 @@ function semanaGestacional(dataConsultaBR: string, dumBR: string): number {
 
 
 // --- Resumo data ---
-const vitals = [
-  { label: "Peso", value: "68,5 kg", change: "+2,1 kg", color: "bg-coral-light" },
-  { label: "Pressão", value: "110/70", change: "Normal", color: "bg-mint-light" },
-  { label: "Glicemia", value: "85 mg/dL", change: "Normal", color: "bg-warm" },
-  { label: "BCF", value: "142 bpm", change: "Normal", color: "bg-blush" },
-];
+const vitalColors = ["bg-coral-light", "bg-mint-light", "bg-warm", "bg-blush"];
 
 // --- Timeline entries (shared state) ---
 export interface TimelineEntry {
