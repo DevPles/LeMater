@@ -89,7 +89,7 @@ function AlertasPage() {
         <h3 className="font-display font-semibold text-sm text-foreground mb-3 uppercase tracking-wide">Anteriores</h3>
         <div className="space-y-3">
           {read.map((alert, i) => {
-            const config = typeConfig[alert.type];
+            const config = typeConfig[alert.type] ?? typeConfig.info;
             return (
               <motion.div
                 key={alert.id}
