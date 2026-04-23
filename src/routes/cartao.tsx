@@ -456,12 +456,22 @@ function LancamentosTab({
         >
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Semana</label>
-              <input className={inputClass} type="number" placeholder="Ex: 24" value={form.semana} onChange={e => update("semana", e.target.value)} />
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Data da consulta</label>
+              <input
+                className={inputClass}
+                type="date"
+                value={dataParaInput(form.data)}
+                onChange={e => update("data", dataDoInput(e.target.value))}
+              />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Data</label>
-              <input className={inputClass} type="text" placeholder="DD/MM/AAAA" value={form.data} onChange={e => update("data", e.target.value)} />
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                Semana <span className="text-[10px] text-primary">(auto)</span>
+              </label>
+              <div className={`${inputClass} flex items-center justify-between bg-muted/50`}>
+                <span className="font-semibold text-foreground">{form.semana || "—"}ª semana</span>
+                <span className="text-[10px] text-muted-foreground">DUM: {patientInfo.dum}</span>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
