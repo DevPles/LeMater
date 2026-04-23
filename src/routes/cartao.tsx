@@ -208,7 +208,7 @@ function CartaoPage() {
       status: "done",
       type: "consulta",
     }, ...prev]);
-    setForm({ semana: "", data: "", peso: "", pressaoSis: "", pressaoDia: "", alturaUterina: "", bcf: "", edema: "Ausente", observacoes: "" });
+    setForm({ semana: semanaHoje, data: hojeBR, peso: "", pressaoSis: "", pressaoDia: "", alturaUterina: "", bcf: "", edema: "Ausente", observacoes: "" });
     setShowForm(false);
   };
 
