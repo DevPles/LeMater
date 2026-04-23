@@ -201,7 +201,7 @@ function CartaoPage() {
   const tabs: { key: Tab; label: string }[] = [
     { key: "resumo", label: "Resumo" },
     { key: "lancamentos", label: "Lançamentos" },
-    { key: "vacinas", label: "Vacinas/Exames" },
+    { key: "vacinas", label: "Vacinas" },
     { key: "graficos", label: "Gráficos" },
   ];
 
@@ -209,13 +209,21 @@ function CartaoPage() {
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <h1 className="text-2xl font-bold font-display text-foreground mb-1">Cartão Digital da Gestante</h1>
-        <p className="text-sm text-muted-foreground mb-4">Evolução da gestação</p>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4">
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h1 className="text-2xl font-bold font-display text-foreground">Cartão Digital da Gestante</h1>
+          <button
+            onClick={() => window.print()}
+            className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border border-primary text-primary bg-background transition-all hover:bg-primary hover:text-primary-foreground"
+          >
+            Exportar
+          </button>
+        </div>
+        <p className="text-sm text-muted-foreground">Evolução da gestação</p>
       </motion.div>
 
       {/* Tabs */}
-      <div className="grid grid-cols-4 gap-2 mb-2">
+      <div className="grid grid-cols-4 gap-2 mb-4">
         {tabs.map(t => (
           <button
             key={t.key}
@@ -230,12 +238,6 @@ function CartaoPage() {
           </button>
         ))}
       </div>
-      <button
-        onClick={() => window.print()}
-        className="mb-4 px-3 py-1.5 rounded-full text-xs font-semibold border border-primary text-primary bg-background transition-all hover:bg-primary hover:text-primary-foreground"
-      >
-        Exportar PDF
-      </button>
 
       {/* Patient Card */}
       <motion.div
