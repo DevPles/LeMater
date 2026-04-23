@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { LiquidCard } from "@/components/LiquidCard";
 
 export const Route = createFileRoute("/alertas")({
   head: () => ({
@@ -62,11 +63,11 @@ function AlertasPage() {
               return (
                 <motion.div
                   key={alert.id}
-                  className="bg-card rounded-2xl p-4 shadow-sm border-2 border-primary/20"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08 }}
                 >
+                  <LiquidCard className="p-4">
                   <div className="flex gap-3">
                     <div className={`w-2 h-2 rounded-full ${config.dot} mt-1.5 shrink-0`} />
                     <div className="flex-1">
@@ -83,6 +84,7 @@ function AlertasPage() {
                       <p className="text-xs text-muted-foreground mt-2">{alert.time}</p>
                     </div>
                   </div>
+                  </LiquidCard>
                 </motion.div>
               );
             })}
@@ -98,11 +100,12 @@ function AlertasPage() {
             return (
               <motion.div
                 key={alert.id}
-                className="bg-card rounded-2xl p-4 shadow-sm border border-border opacity-75"
+                className="opacity-75"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 0.75, y: 0 }}
                 transition={{ delay: i * 0.08 }}
               >
+                <LiquidCard className="p-4" withCoralDroplet={false}>
                 <div className="flex gap-3">
                   <div className={`w-2 h-2 rounded-full ${config.dot} mt-1.5 shrink-0`} />
                   <div className="flex-1">
@@ -116,6 +119,7 @@ function AlertasPage() {
                     <p className="text-xs text-muted-foreground mt-2">{alert.time}</p>
                   </div>
                 </div>
+                </LiquidCard>
               </motion.div>
             );
           })}

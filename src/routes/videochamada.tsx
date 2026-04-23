@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { LiquidCard } from "@/components/LiquidCard";
 
 
 export const Route = createFileRoute("/videochamada")({
@@ -73,11 +74,11 @@ function AgendamentosPage() {
           return (
             <motion.div
               key={ag.id}
-              className="bg-card rounded-2xl p-4 shadow-sm border border-border"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
             >
+              <LiquidCard className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                   <span className="text-xs font-bold text-primary">{initials}</span>
@@ -94,6 +95,7 @@ function AgendamentosPage() {
                   {sc.label}
                 </span>
               </div>
+              </LiquidCard>
             </motion.div>
           );
         })}
