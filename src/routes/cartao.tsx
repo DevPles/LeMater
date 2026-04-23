@@ -244,7 +244,7 @@ function CartaoPage() {
           <h1 className="text-2xl font-bold font-display text-foreground text-center">Cartão Digital da Gestante</h1>
           <button
             onClick={() => window.print()}
-            className="absolute right-0 top-0 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border border-primary text-primary bg-background transition-all hover:bg-primary hover:text-primary-foreground"
+            className="absolute right-0 top-2 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border border-primary text-primary bg-background transition-all hover:bg-primary hover:text-primary-foreground"
           >
             Exportar
           </button>
