@@ -172,6 +172,20 @@ function CartaoPage() {
   const [timelineEntries, setTimelineEntries] = useState<TimelineEntry[]>(timelineIniciais);
   const [vacinasExames, setVacinasExames] = useState<VacinaExame[]>(vacinasExamesIniciais);
 
+  const { content: cartaoContent } = useScreenContent("cartao", CARTAO_DEFAULT);
+  const patientInfo = {
+    name: cartaoContent.patientName,
+    age: cartaoContent.patientAge,
+    bloodType: cartaoContent.bloodType,
+    dum: cartaoContent.dum,
+    dpp: cartaoContent.dpp,
+    weeks: cartaoContent.weeks,
+  };
+  const vitals = (cartaoContent.vitals ?? []).map((v, i) => ({
+    ...v,
+    color: vitalColors[i % vitalColors.length],
+  }));
+
   const hojeBR = formatBR(new Date());
   const semanaHoje = String(semanaGestacional(hojeBR, patientInfo.dum));
 
