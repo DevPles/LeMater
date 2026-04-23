@@ -231,7 +231,7 @@ function CartaoPage() {
   const tabs: { key: Tab; label: string }[] = [
     { key: "resumo", label: "Resumo" },
     { key: "lancamentos", label: "Lançamentos" },
-    { key: "vacinas", label: "Vacinas" },
+    { key: "vacinas", label: "Vacinas/Exames" },
     { key: "graficos", label: "Gráficos" },
   ];
 
@@ -258,7 +258,7 @@ function CartaoPage() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-2 py-1.5 rounded-full text-[11px] font-semibold leading-tight transition-all ${
+            className={`px-2 py-2 rounded-full text-[10px] font-semibold leading-tight whitespace-nowrap transition-all ${
               tab === t.key
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground"
