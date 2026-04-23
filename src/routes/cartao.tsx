@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState, useRef } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
+import { useScreenContent } from "@/hooks/useScreenContent";
+import { CARTAO_DEFAULT } from "@/components/admin/TelasTab";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area,
