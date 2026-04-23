@@ -645,6 +645,12 @@ function GestaoPage() {
 
       {aba === "telas" ? (
         <TelasTab />
+      ) : aba === "profissionais" ? (
+        <ProfissionaisTab />
+      ) : aba === "parametros" ? (
+        <ParametrosTab />
+      ) : aba === "dados" ? (
+        <DadosClinicosTab />
       ) : aba === "relatorios" ? (
         <RelatoriosTab analise={analise} gestantes={gestantesFiltradas} />
       ) : (
