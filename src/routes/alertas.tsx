@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { LiquidCard } from "@/components/LiquidCard";
+import { useScreenContent } from "@/hooks/useScreenContent";
+import { ALERTAS_DEFAULT } from "@/components/admin/TelasTab";
 
 export const Route = createFileRoute("/alertas")({
   head: () => ({
@@ -12,18 +14,7 @@ export const Route = createFileRoute("/alertas")({
   component: AlertasPage,
 });
 
-const alerts = [
-  { id: 1, type: "warning" as const, title: "Exame pendente: Teste de tolerância à glicose", description: "Deve ser realizado até a semana 28. Agende com seu médico.", time: "Há 2 horas", read: false, category: "exame" as const },
-  { id: 2, type: "warning" as const, title: "Vacina agendada: Influenza", description: "Vacina contra gripe recomendada na semana 28. Data prevista: 08/05/2026.", time: "Hoje", read: false, category: "vacina" as const },
-  { id: 3, type: "warning" as const, title: "Exame agendado: Ultrassom obstétrico", description: "Verificar crescimento fetal. Semana 30 — 22/05/2026.", time: "Hoje", read: false, category: "exame" as const },
-  { id: 4, type: "warning" as const, title: "Consulta em 5 dias", description: "Sua próxima consulta pré-natal está agendada para 08/05/2026.", time: "Ontem", read: false, category: "consulta" as const },
-  { id: 5, type: "success" as const, title: "Ultrassom morfológico OK", description: "Resultado do ultrassom morfológico da semana 22 sem alterações.", time: "2 dias atrás", read: true, category: "exame" as const },
-  { id: 6, type: "success" as const, title: "Vacina dTpa aplicada", description: "Vacina dTpa aplicada na semana 20 na UBS Central.", time: "3 dias atrás", read: true, category: "vacina" as const },
-  { id: 7, type: "info" as const, title: "Dica: Posição para dormir", description: "A partir do 2º trimestre, prefira dormir de lado esquerdo para melhor circulação.", time: "3 dias atrás", read: true, category: "dica" as const },
-  { id: 8, type: "info" as const, title: "Novo vídeo disponível", description: "A Dra. Ana Costa publicou um vídeo sobre preparação para o parto normal.", time: "4 dias atrás", read: true, category: "dica" as const },
-];
-
-const typeConfig = {
+const typeConfig: Record<string, { label: string; bg: string; dot: string }> = {
   warning: { label: "Atenção", bg: "bg-warm", dot: "bg-chart-3" },
   info: { label: "Info", bg: "bg-mint-light", dot: "bg-accent" },
   success: { label: "OK", bg: "bg-mint-light", dot: "bg-accent" },
@@ -37,6 +28,8 @@ const categoryLabels: Record<string, string> = {
 };
 
 function AlertasPage() {
+  const { content } = useScreenContent("alertas", ALERTAS_DEFAULT);
+  const alerts = content.alerts;
   const unread = alerts.filter((a) => !a.read);
   const read = alerts.filter((a) => a.read);
 
@@ -44,14 +37,14 @@ function AlertasPage() {
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <div className="flex items-center justify-between mb-1">
-          <h1 className="text-2xl font-bold font-display text-foreground">Alertas</h1>
+          <h1 className="text-2xl font-bold font-display text-foreground">{content.pageTitle}</h1>
           {unread.length > 0 && (
             <span className="bg-primary text-primary-foreground text-xs font-bold px-2.5 py-1 rounded-full">
               {unread.length} novos
             </span>
           )}
         </div>
-        <p className="text-sm text-muted-foreground mb-5">Alertas, lembretes e dicas para sua gestação</p>
+        <p className="text-sm text-muted-foreground mb-5">{content.pageSubtitle}</p>
       </motion.div>
 
       {unread.length > 0 && (
@@ -59,7 +52,7 @@ function AlertasPage() {
           <h3 className="font-display font-semibold text-sm text-foreground mb-3 uppercase tracking-wide">Novos</h3>
           <div className="space-y-3">
             {unread.map((alert, i) => {
-              const config = typeConfig[alert.type];
+              const config = typeConfig[alert.type] ?? typeConfig.info;
               return (
                 <motion.div
                   key={alert.id}
