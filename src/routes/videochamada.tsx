@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
+import { useScreenContent } from "@/hooks/useScreenContent";
+import { VIDEOCHAMADA_DEFAULT } from "@/components/admin/TelasTab";
 
 
 export const Route = createFileRoute("/videochamada")({
@@ -14,30 +16,15 @@ export const Route = createFileRoute("/videochamada")({
   component: AgendamentosPage,
 });
 
-interface Agendamento {
-  id: number;
-  profissional: string;
-  especialidade: string;
-  data: string;
-  horario: string;
-  tipo: "videochamada" | "presencial";
-  status: "confirmado" | "pendente" | "realizado";
-}
-
-const agendamentos: Agendamento[] = [
-  { id: 1, profissional: "Dra. Ana Costa", especialidade: "Obstetra", data: "17/04/2026", horario: "14:00", tipo: "videochamada", status: "confirmado" },
-  { id: 2, profissional: "Enf. Carlos Silva", especialidade: "Enfermeiro Obstétrico", data: "18/04/2026", horario: "10:30", tipo: "presencial", status: "confirmado" },
-  { id: 3, profissional: "Dra. Beatriz Mendes", especialidade: "Fisioterapeuta Pélvica", data: "20/04/2026", horario: "09:00", tipo: "videochamada", status: "pendente" },
-  { id: 4, profissional: "Enf. Paula Rocha", especialidade: "Enfermeira Obstétrica", data: "15/04/2026", horario: "16:00", tipo: "presencial", status: "realizado" },
-];
-
-const statusConfig = {
+const statusConfig: Record<string, { label: string; bg: string; text: string }> = {
   confirmado: { label: "Confirmado", bg: "bg-green-100", text: "text-green-700" },
   pendente: { label: "Pendente", bg: "bg-yellow-100", text: "text-yellow-700" },
   realizado: { label: "Realizado", bg: "bg-muted", text: "text-muted-foreground" },
 };
 
 function AgendamentosPage() {
+  const { content } = useScreenContent("videochamada", VIDEOCHAMADA_DEFAULT);
+  const agendamentos = content.agendamentos;
   const [filtro, setFiltro] = useState<"todos" | "confirmado" | "pendente" | "realizado">("todos");
 
   const filtered = filtro === "todos" ? agendamentos : agendamentos.filter(a => a.status === filtro);
@@ -45,8 +32,8 @@ function AgendamentosPage() {
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto bg-background">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <h1 className="text-2xl font-bold font-display text-foreground mb-1">Agendamentos</h1>
-        <p className="text-sm text-muted-foreground mb-4">Suas consultas com profissionais de saúde</p>
+        <h1 className="text-2xl font-bold font-display text-foreground mb-1">{content.pageTitle}</h1>
+        <p className="text-sm text-muted-foreground mb-4">{content.pageSubtitle}</p>
       </motion.div>
 
       {/* Filtros */}
