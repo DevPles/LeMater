@@ -309,7 +309,7 @@ function CartaoPage() {
         </LiquidCard>
       </motion.div>
 
-      {tab === "resumo" && <ResumoTab timelineEntries={timelineEntries} />}
+      {tab === "resumo" && <ResumoTab timelineEntries={timelineEntries} vitals={vitals} />}
       {tab === "lancamentos" && (
         <LancamentosTab
           lancamentos={lancamentos}
@@ -319,6 +319,7 @@ function CartaoPage() {
           setForm={setForm}
           onAdd={handleAddLancamento}
           inputClass={inputClass}
+          dum={patientInfo.dum}
         />
       )}
       {tab === "vacinas" && (
