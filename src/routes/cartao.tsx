@@ -22,9 +22,36 @@ const patientInfo = {
   name: "Maria Silva",
   age: 28,
   bloodType: "O+",
+  // DUM (Data da Última Menstruação) — usada para calcular a semana atual
+  dum: "29/10/2025",
   dpp: "15/07/2026",
   weeks: 24,
 };
+
+// Helpers para data/semana
+function parseBR(dateStr: string): Date | null {
+  const m = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const [, dd, mm, yyyy] = m;
+  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatBR(d: Date): string {
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+
+function semanaGestacional(dataConsultaBR: string, dumBR: string): number {
+  const consulta = parseBR(dataConsultaBR);
+  const dum = parseBR(dumBR);
+  if (!consulta || !dum) return 0;
+  const diffMs = consulta.getTime() - dum.getTime();
+  const semanas = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7));
+  return Math.max(1, Math.min(42, semanas));
+}
+
 
 // --- Resumo data ---
 const vitals = [
@@ -148,8 +175,11 @@ function CartaoPage() {
   const [timelineEntries, setTimelineEntries] = useState<TimelineEntry[]>(timelineIniciais);
   const [vacinasExames, setVacinasExames] = useState<VacinaExame[]>(vacinasExamesIniciais);
 
+  const hojeBR = formatBR(new Date());
+  const semanaHoje = String(semanaGestacional(hojeBR, patientInfo.dum));
+
   const [form, setForm] = useState({
-    semana: "", data: "", peso: "", pressaoSis: "", pressaoDia: "",
+    semana: semanaHoje, data: hojeBR, peso: "", pressaoSis: "", pressaoDia: "",
     alturaUterina: "", bcf: "", edema: "Ausente", observacoes: "",
   });
 
@@ -178,7 +208,7 @@ function CartaoPage() {
       status: "done",
       type: "consulta",
     }, ...prev]);
-    setForm({ semana: "", data: "", peso: "", pressaoSis: "", pressaoDia: "", alturaUterina: "", bcf: "", edema: "Ausente", observacoes: "" });
+    setForm({ semana: semanaHoje, data: hojeBR, peso: "", pressaoSis: "", pressaoDia: "", alturaUterina: "", bcf: "", edema: "Ausente", observacoes: "" });
     setShowForm(false);
   };
 
@@ -384,7 +414,27 @@ function LancamentosTab({
   onAdd: () => void;
   inputClass: string;
 }) {
-  const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+  const update = (field: string, value: string) => {
+    setForm(prev => {
+      const next = { ...prev, [field]: value };
+      // Quando a data muda, recalcula automaticamente a semana gestacional
+      if (field === "data") {
+        const semana = semanaGestacional(value, patientInfo.dum);
+        if (semana > 0) next.semana = String(semana);
+      }
+      return next;
+    });
+  };
+
+  // Converte yyyy-mm-dd (input date) <-> dd/mm/yyyy (formato BR usado no estado)
+  const dataParaInput = (br: string) => {
+    const m = br.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : "";
+  };
+  const dataDoInput = (iso: string) => {
+    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -406,12 +456,22 @@ function LancamentosTab({
         >
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Semana</label>
-              <input className={inputClass} type="number" placeholder="Ex: 24" value={form.semana} onChange={e => update("semana", e.target.value)} />
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Data da consulta</label>
+              <input
+                className={inputClass}
+                type="date"
+                value={dataParaInput(form.data)}
+                onChange={e => update("data", dataDoInput(e.target.value))}
+              />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Data</label>
-              <input className={inputClass} type="text" placeholder="DD/MM/AAAA" value={form.data} onChange={e => update("data", e.target.value)} />
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                Semana <span className="text-[10px] text-primary">(auto)</span>
+              </label>
+              <div className={`${inputClass} flex items-center justify-between bg-muted/50`}>
+                <span className="font-semibold text-foreground">{form.semana || "—"}ª semana</span>
+                <span className="text-[10px] text-muted-foreground">DUM: {patientInfo.dum}</span>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
