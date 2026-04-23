@@ -57,7 +57,7 @@ function AgendamentosPage() {
       <div className="space-y-3">
         {filtered.map((ag, i) => {
           const initials = ag.profissional.split(" ").map(n => n[0]).join("").slice(0, 2);
-          const sc = statusConfig[ag.status];
+          const sc = statusConfig[ag.status] ?? statusConfig.confirmado;
           return (
             <motion.div
               key={ag.id}
