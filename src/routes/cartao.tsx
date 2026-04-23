@@ -335,7 +335,7 @@ function CartaoPage() {
 }
 
 /* ========== RESUMO TAB ========== */
-function ResumoTab({ timelineEntries }: { timelineEntries: TimelineEntry[] }) {
+function ResumoTab({ timelineEntries, vitals }: { timelineEntries: TimelineEntry[]; vitals: { label: string; value: string; change: string; color: string }[] }) {
   const sorted = [...timelineEntries].sort((a, b) => b.week - a.week);
 
   const typeColors: Record<string, string> = {
@@ -416,7 +416,7 @@ function ResumoTab({ timelineEntries }: { timelineEntries: TimelineEntry[] }) {
 
 /* ========== LANÇAMENTOS TAB ========== */
 function LancamentosTab({
-  lancamentos, showForm, setShowForm, form, setForm, onAdd, inputClass,
+  lancamentos, showForm, setShowForm, form, setForm, onAdd, inputClass, dum,
 }: {
   lancamentos: Lancamento[];
   showForm: boolean;
@@ -425,13 +425,14 @@ function LancamentosTab({
   setForm: React.Dispatch<React.SetStateAction<{ semana: string; data: string; peso: string; pressaoSis: string; pressaoDia: string; alturaUterina: string; bcf: string; edema: string; observacoes: string }>>;
   onAdd: () => void;
   inputClass: string;
+  dum: string;
 }) {
   const update = (field: string, value: string) => {
     setForm(prev => {
       const next = { ...prev, [field]: value };
       // Quando a data muda, recalcula automaticamente a semana gestacional
       if (field === "data") {
-        const semana = semanaGestacional(value, patientInfo.dum);
+        const semana = semanaGestacional(value, dum);
         if (semana > 0) next.semana = String(semana);
       }
       return next;
