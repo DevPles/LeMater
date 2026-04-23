@@ -28,6 +28,9 @@ import {
   Radar,
 } from "recharts";
 import { TelasTab } from "@/components/admin/TelasTab";
+import { ProfissionaisTab } from "@/components/admin/ProfissionaisTab";
+import { ParametrosTab } from "@/components/admin/ParametrosTab";
+import { DadosClinicosTab } from "@/components/admin/DadosClinicosTab";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -289,7 +292,7 @@ function GestaoPage() {
   const [pushHistorico, setPushHistorico] = useState<{ nome: string; quando: string; titulo: string }[]>([]);
 
   // Aba ativa
-  const [aba, setAba] = useState<"gestao" | "relatorios" | "telas">("gestao");
+  const [aba, setAba] = useState<"gestao" | "relatorios" | "telas" | "profissionais" | "parametros" | "dados">("gestao");
 
   const abrirPush = (g: Gestante) => {
     const sug = sugerirMensagemPush(g);
@@ -615,10 +618,13 @@ function GestaoPage() {
       </motion.div>
 
       {/* Abas */}
-      <div className="flex gap-2 mb-4 border-b border-border">
+      <div className="flex gap-2 mb-4 border-b border-border overflow-x-auto">
         {([
           { v: "gestao", l: "Gestão" },
-          { v: "relatorios", l: "Relatórios e Gráficos" },
+          { v: "relatorios", l: "Relatórios" },
+          { v: "dados", l: "Dados Clínicos" },
+          { v: "parametros", l: "Parâmetros Clínicos" },
+          { v: "profissionais", l: "Profissionais" },
           { v: "telas", l: "Telas do App" },
         ] as const).map((t) => (
           <button
@@ -639,6 +645,12 @@ function GestaoPage() {
 
       {aba === "telas" ? (
         <TelasTab />
+      ) : aba === "profissionais" ? (
+        <ProfissionaisTab />
+      ) : aba === "parametros" ? (
+        <ParametrosTab />
+      ) : aba === "dados" ? (
+        <DadosClinicosTab />
       ) : aba === "relatorios" ? (
         <RelatoriosTab analise={analise} gestantes={gestantesFiltradas} />
       ) : (

@@ -111,47 +111,6 @@ const SCREENS: Screen[] = [
     ],
   },
   {
-    key: "alertas",
-    label: "Alertas",
-    description: "Lista de alertas, lembretes e dicas exibidos na tela de alertas.",
-    defaults: ALERTAS_DEFAULT,
-    fields: [
-      { kind: "text", path: "pageTitle", label: "Título da página" },
-      { kind: "text", path: "pageSubtitle", label: "Subtítulo" },
-      {
-        kind: "list", path: "alerts", label: "Alertas",
-        itemFields: [
-          { key: "title", label: "Título", kind: "text" },
-          { key: "description", label: "Descrição", kind: "textarea" },
-          { key: "type", label: "Tipo (warning/info/success)", kind: "text" },
-          { key: "category", label: "Categoria (exame/vacina/consulta/dica)", kind: "text" },
-          { key: "time", label: "Quando", kind: "text" },
-        ],
-      },
-    ],
-  },
-  {
-    key: "videochamada",
-    label: "Agendamentos",
-    description: "Lista de consultas e videochamadas agendadas.",
-    defaults: VIDEOCHAMADA_DEFAULT,
-    fields: [
-      { kind: "text", path: "pageTitle", label: "Título da página" },
-      { kind: "text", path: "pageSubtitle", label: "Subtítulo" },
-      {
-        kind: "list", path: "agendamentos", label: "Agendamentos",
-        itemFields: [
-          { key: "profissional", label: "Profissional", kind: "text" },
-          { key: "especialidade", label: "Especialidade", kind: "text" },
-          { key: "data", label: "Data", kind: "text" },
-          { key: "horario", label: "Horário", kind: "text" },
-          { key: "tipo", label: "Tipo (videochamada/presencial)", kind: "text" },
-          { key: "status", label: "Status (confirmado/pendente/realizado)", kind: "text" },
-        ],
-      },
-    ],
-  },
-  {
     key: "videos",
     label: "Vídeos",
     description: "Vídeos educativos exibidos na biblioteca.",
