@@ -215,12 +215,12 @@ function CartaoPage() {
       </motion.div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-1 items-center">
+      <div className="grid grid-cols-4 gap-2 mb-2">
         {tabs.map(t => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+            className={`px-2 py-1.5 rounded-full text-[11px] font-semibold leading-tight transition-all ${
               tab === t.key
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground"
@@ -229,13 +229,13 @@ function CartaoPage() {
             {t.label}
           </button>
         ))}
-        <button
-          onClick={() => window.print()}
-          className="ml-auto px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-primary text-primary bg-background transition-all hover:bg-primary hover:text-primary-foreground"
-        >
-          Exportar PDF
-        </button>
       </div>
+      <button
+        onClick={() => window.print()}
+        className="mb-4 px-3 py-1.5 rounded-full text-xs font-semibold border border-primary text-primary bg-background transition-all hover:bg-primary hover:text-primary-foreground"
+      >
+        Exportar PDF
+      </button>
 
       {/* Patient Card */}
       <motion.div
