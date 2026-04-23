@@ -19,15 +19,22 @@ export function BottomNav() {
           "linear-gradient(180deg, var(--glass-nav-strong) 0%, var(--glass-nav) 100%)",
         borderColor: "var(--glass-stroke)",
         boxShadow: "var(--glass-shadow)",
-        WebkitBackdropFilter: "blur(28px) saturate(180%)",
-        backdropFilter: "blur(28px) saturate(180%)",
+        WebkitBackdropFilter: "blur(30px) saturate(190%)",
+        backdropFilter: "blur(30px) saturate(190%)",
       }}
     >
       <div
         className="pointer-events-none absolute inset-0 rounded-3xl"
         style={{
           background:
-            "linear-gradient(180deg, var(--glass-highlight) 0%, transparent 34%), radial-gradient(120% 90% at 50% -10%, oklch(1 0 0 / 0.48) 0%, transparent 56%)",
+            "linear-gradient(180deg, var(--glass-highlight) 0%, transparent 26%), radial-gradient(120% 100% at 50% -18%, oklch(1 0 0 / 0.54) 0%, transparent 58%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-[1px] rounded-[calc(1.5rem-1px)]"
+        style={{
+          background:
+            "linear-gradient(180deg, oklch(1 0 0 / 0.08) 0%, transparent 42%, oklch(1 0 0 / 0.05) 100%)",
         }}
       />
       <div className="pointer-events-none absolute inset-x-5 top-0 h-px" style={{ background: "var(--glass-highlight)" }} />
