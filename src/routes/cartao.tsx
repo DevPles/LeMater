@@ -414,7 +414,27 @@ function LancamentosTab({
   onAdd: () => void;
   inputClass: string;
 }) {
-  const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+  const update = (field: string, value: string) => {
+    setForm(prev => {
+      const next = { ...prev, [field]: value };
+      // Quando a data muda, recalcula automaticamente a semana gestacional
+      if (field === "data") {
+        const semana = semanaGestacional(value, patientInfo.dum);
+        if (semana > 0) next.semana = String(semana);
+      }
+      return next;
+    });
+  };
+
+  // Converte yyyy-mm-dd (input date) <-> dd/mm/yyyy (formato BR usado no estado)
+  const dataParaInput = (br: string) => {
+    const m = br.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : "";
+  };
+  const dataDoInput = (iso: string) => {
+    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
