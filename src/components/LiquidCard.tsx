@@ -4,23 +4,22 @@ import { cn } from "@/lib/utils";
 interface LiquidCardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   rounded?: "2xl" | "3xl";
-  /** kept for backward compat — ignored in the clean variant */
+  /** kept for backward compat — ignored */
   withCoralDroplet?: boolean;
 }
 
 /**
  * LiquidCard — clean translucent surface.
- * White frosted background, soft hairline border, gentle shadow.
+ * Performance-optimized: solid translucent background, no backdrop-filter.
+ * Looks frosted but doesn't trigger expensive GPU compositing per frame.
  */
 export const LiquidCard = forwardRef<HTMLDivElement, LiquidCardProps>(
   ({ children, className, rounded = "2xl", style, withCoralDroplet: _ignored, ...props }, ref) => {
     const liquidStyle: CSSProperties = {
-      background: "oklch(1 0 0 / 0.72)",
+      background: "oklch(1 0 0 / 0.85)",
       borderColor: "oklch(0 0 0 / 0.06)",
-      WebkitBackdropFilter: "blur(20px) saturate(160%)",
-      backdropFilter: "blur(20px) saturate(160%)",
       boxShadow:
-        "0 8px 24px -16px color-mix(in oklab, var(--foreground) 18%, transparent), 0 2px 6px -3px color-mix(in oklab, var(--foreground) 8%, transparent), inset 0 1px 0 0 oklch(1 0 0 / 0.7)",
+        "0 6px 18px -12px color-mix(in oklab, var(--foreground) 18%, transparent), 0 1px 3px -1px color-mix(in oklab, var(--foreground) 8%, transparent), inset 0 1px 0 0 oklch(1 0 0 / 0.7)",
       ...style,
     };
 
@@ -28,7 +27,7 @@ export const LiquidCard = forwardRef<HTMLDivElement, LiquidCardProps>(
       <div
         ref={ref}
         className={cn(
-          "relative isolate overflow-hidden border",
+          "border",
           rounded === "3xl" ? "rounded-3xl" : "rounded-2xl",
           className,
         )}
