@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as VideochamadaRouteImport } from './routes/videochamada'
+import { Route as ProfissionalRouteImport } from './routes/profissional'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as GestacaoRouteImport } from './routes/gestacao'
 import { Route as CartaoRouteImport } from './routes/cartao'
@@ -26,6 +27,11 @@ const VideosRoute = VideosRouteImport.update({
 const VideochamadaRoute = VideochamadaRouteImport.update({
   id: '/videochamada',
   path: '/videochamada',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfissionalRoute = ProfissionalRouteImport.update({
+  id: '/profissional',
+  path: '/profissional',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/cartao': typeof CartaoRoute
   '/gestacao': typeof GestacaoRoute
   '/home': typeof HomeRoute
+  '/profissional': typeof ProfissionalRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/cartao': typeof CartaoRoute
   '/gestacao': typeof GestacaoRoute
   '/home': typeof HomeRoute
+  '/profissional': typeof ProfissionalRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/cartao': typeof CartaoRoute
   '/gestacao': typeof GestacaoRoute
   '/home': typeof HomeRoute
+  '/profissional': typeof ProfissionalRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/cartao'
     | '/gestacao'
     | '/home'
+    | '/profissional'
     | '/videochamada'
     | '/videos'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/cartao'
     | '/gestacao'
     | '/home'
+    | '/profissional'
     | '/videochamada'
     | '/videos'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/cartao'
     | '/gestacao'
     | '/home'
+    | '/profissional'
     | '/videochamada'
     | '/videos'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   CartaoRoute: typeof CartaoRoute
   GestacaoRoute: typeof GestacaoRoute
   HomeRoute: typeof HomeRoute
+  ProfissionalRoute: typeof ProfissionalRoute
   VideochamadaRoute: typeof VideochamadaRoute
   VideosRoute: typeof VideosRoute
 }
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/videochamada'
       fullPath: '/videochamada'
       preLoaderRoute: typeof VideochamadaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profissional': {
+      id: '/profissional'
+      path: '/profissional'
+      fullPath: '/profissional'
+      preLoaderRoute: typeof ProfissionalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartaoRoute: CartaoRoute,
   GestacaoRoute: GestacaoRoute,
   HomeRoute: HomeRoute,
+  ProfissionalRoute: ProfissionalRoute,
   VideochamadaRoute: VideochamadaRoute,
   VideosRoute: VideosRoute,
 }
