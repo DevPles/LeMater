@@ -175,8 +175,11 @@ function CartaoPage() {
   const [timelineEntries, setTimelineEntries] = useState<TimelineEntry[]>(timelineIniciais);
   const [vacinasExames, setVacinasExames] = useState<VacinaExame[]>(vacinasExamesIniciais);
 
+  const hojeBR = formatBR(new Date());
+  const semanaHoje = String(semanaGestacional(hojeBR, patientInfo.dum));
+
   const [form, setForm] = useState({
-    semana: "", data: "", peso: "", pressaoSis: "", pressaoDia: "",
+    semana: semanaHoje, data: hojeBR, peso: "", pressaoSis: "", pressaoDia: "",
     alturaUterina: "", bcf: "", edema: "Ausente", observacoes: "",
   });
 
