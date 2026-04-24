@@ -205,14 +205,6 @@ export function RelatoriosEpidemiologicosTab() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
-        <p className="text-xs text-emerald-900">
-          <strong>Inteligência epidemiológica DRS-XIII Ribeirão Preto.</strong> Dados agregados das
-          gestantes cadastradas no sistema, cruzando localização, demografia, paridade, condições
-          clínicas, cobertura vacinal e exames.
-        </p>
-      </div>
-
       {/* Filtros internos removidos — esta aba consome os filtros globais do topbar (cidade → bairro → UBS, idade, trimestre). */}
 
       {/* KPIs */}
