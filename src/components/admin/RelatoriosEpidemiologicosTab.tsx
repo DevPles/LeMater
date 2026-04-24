@@ -75,7 +75,27 @@ export function RelatoriosEpidemiologicosTab() {
   const { filters } = useAdminFilters();
 
   useEffect(() => {
-...
+    const load = async () => {
+      setLoading(true);
+      const [p, m, e, v, i] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select(
+            "user_id, cidade, bairro, unidade_saude, data_nascimento, dum, numero_gestacoes, numero_partos, numero_abortos, partos_classificacao",
+          ),
+        supabase.from("clinical_measurements").select("gestante_id, parametro, valor, semana_gestacional"),
+        supabase.from("exam_results").select("gestante_id, tipo_exame, status"),
+        supabase.from("vaccinations").select("gestante_id, vacina"),
+        supabase.from("image_exam_results").select("gestante_id, tipo_exame, status"),
+      ]);
+      setProfiles((p.data ?? []) as ProfileRow[]);
+      setMeasurements((m.data ?? []) as MeasurementRow[]);
+      setExams((e.data ?? []) as ExamRow[]);
+      setVaccinations((v.data ?? []) as VaccinationRow[]);
+      setImageResults((i.data ?? []) as ImageResultRow[]);
+      setLoading(false);
+    };
+    load();
   }, []);
 
   // Aplica filtros globais
