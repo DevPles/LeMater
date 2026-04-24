@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
  */
 export const DEMO_GESTANTE_ID = "00000000-0000-0000-0000-000000000001";
 
-type Tab = "medicoes" | "exames" | "vacinas" | "alertas";
+type Tab = "medicoes" | "exames" | "imagem" | "vacinas" | "alertas";
 
 export function DadosClinicosTab() {
   const [tab, setTab] = useState<Tab>("medicoes");
@@ -28,7 +28,8 @@ export function DadosClinicosTab() {
       <div className="flex gap-2 flex-wrap">
         {[
           { v: "medicoes" as const, l: "Medições" },
-          { v: "exames" as const, l: "Exames" },
+          { v: "exames" as const, l: "Exames laboratoriais" },
+          { v: "imagem" as const, l: "Exames de imagem" },
           { v: "vacinas" as const, l: "Vacinas aplicadas" },
           { v: "alertas" as const, l: "Alertas calculados" },
         ].map((t) => (
