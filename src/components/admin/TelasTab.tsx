@@ -92,25 +92,6 @@ type Field =
 
 const SCREENS: Screen[] = [
   {
-    key: "home",
-    label: "Home",
-    description: "Cabeçalho, semana atual e dicas semanais.",
-    defaults: HOME_DEFAULT,
-    fields: [
-      { kind: "text", path: "greeting", label: "Saudação" },
-      { kind: "text", path: "pageTitle", label: "Título da página" },
-      { kind: "number", path: "currentWeek", label: "Semana atual da gestação" },
-      { kind: "text", path: "tipsHeading", label: "Título da seção de dicas" },
-      {
-        kind: "list", path: "weeklyTips", label: "Dicas da semana",
-        itemFields: [
-          { key: "title", label: "Título", kind: "text" },
-          { key: "description", label: "Descrição", kind: "textarea" },
-        ],
-      },
-    ],
-  },
-  {
     key: "videos",
     label: "Vídeos",
     description: "Vídeos educativos exibidos na biblioteca.",
