@@ -33,8 +33,8 @@ function WelcomeScreen() {
         />
       </div>
 
-      {/* Card inferior com gradiente roxo */}
-      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-5 pb-6 rounded-t-3xl mt-3">
+      {/* Card inferior com gradiente roxo — preenche até o rodapé */}
+      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-6 pb-6 rounded-t-3xl mt-3 flex-1 flex items-start justify-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
