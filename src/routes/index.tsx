@@ -25,7 +25,7 @@ function WelcomeScreen() {
   return (
     <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-white via-blue-100 to-[#1a4ba8] flex flex-col">
       {/* Logo do hospital no topo */}
-      <div className="flex-1 flex items-center justify-center px-8 pt-4 pb-2 min-h-0">
+      <div className="flex-1 flex items-start justify-center px-8 pt-2 pb-2 min-h-0">
         <img
           src="/images/hospital-bonini-logo.png"
           alt="Hospital Electro Bonini - UNAERP"
