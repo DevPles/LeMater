@@ -1,135 +1,85 @@
+## Plano — Parâmetros clínicos baseados em referências oficiais
 
+### Problema atual
+A aba **Parâmetros Clínicos** existe mas as tabelas (`reference_ranges`, `exam_criteria`, `vaccine_schedule`) estão **vazias**. Sem regras cadastradas, a engine `get_active_alerts` não tem o que comparar contra os dados clínicos lançados, então nenhum alerta é gerado mesmo quando há dados fora do padrão.
 
-## Entendi agora — Plano revisado
-
-Vou separar em **duas engines distintas**: uma de **alertas clínicos automáticos** (gerados a partir de dados reais da gestante) e um **sistema de agendamento real** (profissionais publicam horários, gestantes reservam).
-
----
-
-### 1. Alertas automáticos (sem edição manual)
-
-Os alertas serão **derivados** de três fontes de dados clínicos da gestante:
-
-**a) Sinais vitais / dados clínicos fora do padrão**
-- PA (pressão arterial), peso, glicemia, batimentos fetais, altura uterina, etc.
-- Cada parâmetro tem faixa de normalidade **por semana gestacional**.
-- Se o valor inserido sai da faixa → gera alerta automático com severidade (atenção / urgente).
-
-**b) Exames com resultados ruins**
-- Hemograma, urina tipo 1, glicemia, sorologias (sífilis, HIV, toxoplasmose), ultrassom, etc.
-- Cada exame tem critérios de "resultado alterado" → gera alerta automático.
-
-**c) Vacinas em atraso**
-- Calendário vacinal da gestante (dT/dTpa, Hepatite B, Influenza, COVID).
-- Se a semana gestacional atual ≥ semana recomendada e a vacina não consta como aplicada → alerta automático.
-
-**Estrutura de banco:**
-
-```text
-clinical_measurements   → leituras (tipo, valor, semana, data)
-exam_results            → exames (tipo, resultado, status: normal/alterado)
-vaccinations            → vacinas aplicadas (tipo, data)
-reference_ranges        → faixas de normalidade por parâmetro × semana
-exam_criteria           → critérios de "resultado alterado" por tipo de exame
-vaccine_schedule        → calendário vacinal recomendado (tipo, semana_min)
-```
-
-A página `/alertas` consulta essas tabelas e **calcula os alertas em tempo real** (ou via view/função SQL). **Nenhum alerta é editado manualmente.**
-
-No Admin, em vez de editar alertas, haverá uma aba **"Parâmetros Clínicos"** para configurar as faixas de referência, critérios de exames e calendário vacinal (regras, não alertas individuais).
+### Solução
+Pré-popular o banco com os **valores de referência oficiais** usados no pré-natal pelo Ministério da Saúde (Caderno de Atenção Básica nº 32 — Atenção ao Pré-natal de Baixo Risco), OMS e FEBRASGO. A tela de Parâmetros continua editável, mas já vem com o **padrão clínico de normalidade pronto**, e a partir daí a engine de alertas passa a funcionar de verdade contra qualquer medição/exame inserido.
 
 ---
 
-### 2. Sistema de agendamento real
+### 1. Seed de Faixas de referência (`reference_ranges`)
 
-**Fluxo:**
+Sinais vitais e medidas antropométricas com faixas validadas pelas diretrizes:
 
-```text
-Profissional                          Gestante
-    │                                     │
-    ├─ Login no portal /profissional      │
-    ├─ Cadastra horários disponíveis      │
-    │  (data, hora, duração, modalidade)  │
-    │                                     │
-    │                                     ├─ Acessa /videochamada
-    │                                     ├─ Filtra por especialidade
-    │                                     ├─ Vê horários livres
-    │                                     ├─ Clica e agenda
-    │                                     │
-    ├─ Vê agenda com pacientes confirmadas│
-    └─ Marca como realizado               │
-```
+| parametro | unidade | semanas | min | max | severidade | fonte |
+|---|---|---|---|---|---|---|
+| `pa_sistolica` | mmHg | 0–42 | 90 | 139 | atenção | MS / FEBRASGO |
+| `pa_sistolica` | mmHg | 0–42 | — | 159 (>=160) | urgente | hipertensão grave |
+| `pa_diastolica` | mmHg | 0–42 | 60 | 89 | atenção | MS |
+| `pa_diastolica` | mmHg | 0–42 | — | 109 (>=110) | urgente | crise hipertensiva |
+| `bcf` (batimento fetal) | bpm | 12–42 | 110 | 160 | urgente | OMS |
+| `glicemia_jejum` | mg/dL | 0–42 | 70 | 92 | atenção | IADPSG/MS |
+| `glicemia_jejum` | mg/dL | 0–42 | — | 125 (>=126) | urgente | DM gestacional |
+| `temperatura` | °C | 0–42 | 35.5 | 37.7 | atenção | febre materna |
+| `frequencia_cardiaca` | bpm | 0–42 | 60 | 100 | atenção | — |
+| `altura_uterina` | cm | 20–36 | semana−3 | semana+3 | atenção | curva MS (faixa por semana) |
+| `ganho_peso_semanal` | kg/semana | 14–42 | 0.2 | 0.5 | atenção | IOM |
+| `hemoglobina` | g/dL | 0–42 | 11 | 15 | atenção | OMS — anemia gestacional |
+| `proteinuria` | mg/24h | 20–42 | — | 299 (>=300) | urgente | pré-eclâmpsia |
 
-**Estrutura de banco:**
+Para `altura_uterina` vou inserir várias linhas (uma por faixa de semana — 20-22, 23-25, 26-28, …) para refletir a curva oficial.
 
-```text
-professionals       → id, nome, especialidade, CRM/COREN, user_id (auth)
-appointment_slots   → professional_id, data_hora, duração,
-                      modalidade (vídeo/presencial),
-                      status (disponivel | reservado | realizado | cancelado),
-                      gestante_id (preenchido ao reservar)
-```
+### 2. Seed de Critérios de exames (`exam_criteria`)
 
-**Páginas novas:**
-- `/profissional/login` — login dedicado para profissionais
-- `/profissional` — dashboard do profissional (ver agenda, criar slots, marcar realizado)
-- `/videochamada` (refatorada) — gestante vê apenas slots `disponivel`, filtra por especialidade, agenda
+Exames do pré-natal cujo resultado alterado deve gerar alerta:
 
-**Função segura** `book_slot(slot_id)` no banco — garante que duas gestantes não reservem o mesmo horário (atomic update com `WHERE status = 'disponivel'`).
+| tipo_exame | resultado_alterado | severidade |
+|---|---|---|
+| `sifilis_vdrl` | reagente | urgente |
+| `hiv` | reagente | urgente |
+| `hepatite_b_hbsag` | reagente | urgente |
+| `toxoplasmose_igm` | reagente | urgente |
+| `urocultura` | positiva | atenção |
+| `glicemia_jejum` | >=92 | atenção |
+| `tsh` | >2.5 | atenção |
+| `coombs_indireto` | positivo | urgente |
+| `hemograma_hb` | <11 | atenção |
+| `streptococcus_b` | positivo | atenção |
 
----
+### 3. Seed do Calendário vacinal (`vaccine_schedule`)
 
-### 3. Refatoração do Admin
+PNI/MS — vacinas recomendadas na gestação:
 
-**Removido:**
-- Aba de edição manual de alertas
-- Aba de edição manual de agendamentos
+| vacina | semana_min | semana_max | obrigatória |
+|---|---|---|---|
+| `dTpa` | 20 | 36 | sim |
+| `hepatite_b` | 0 | 42 | sim (3 doses) |
+| `influenza` | 0 | 42 | sim (sazonal) |
+| `covid_19` | 0 | 42 | sim |
 
-**Mantido:**
-- Home (saudação, dicas)
-- Vídeos (lista editorial)
-- Cartão / Gestação (rótulos e dados clínicos da gestante demo)
+### 4. Mudanças na UI da aba "Parâmetros Clínicos"
 
-**Adicionado:**
-- **Parâmetros Clínicos** — gerenciar faixas de referência, critérios de exames, calendário vacinal
-- **Profissionais** — admin cadastra/aprova profissionais (cria conta + vincula a `professionals`)
-- **Dados Clínicos da Gestante** — inserir medições, exames e vacinas (que automaticamente alimentam os alertas)
+- **Banner explicativo** no topo: "Faixas pré-carregadas conforme MS / OMS / FEBRASGO. Edite ou adicione conforme protocolo da sua unidade."
+- Coluna **"Fonte"** opcional na listagem (campo existente: usa `mensagem` para incluir a referência).
+- Botão **"Restaurar valores oficiais"** que reexecuta o seed (idempotente, via upsert por `parametro + faixa de semanas`).
+- Lista agrupada por categoria: Sinais vitais / Antropometria / Laboratorial.
 
----
+### 5. Fluxo de alerta — confirmação
 
-### 4. Autenticação
-
-Necessária para separar perfis:
-- **Gestante** — vê alertas, agenda consultas
-- **Profissional** — gerencia próprios slots
-- **Admin** — gerencia tudo
-
-Tabela `user_roles` separada (gestante / profissional / admin) com função `has_role()` (security definer) para RLS.
+Sem mudança na lógica: a função `get_active_alerts(_gestante_id)` já cruza `clinical_measurements` × `reference_ranges`. Após o seed, qualquer medição lançada em **Dados Clínicos → Medições** com valor fora da faixa vai aparecer automaticamente em `/alertas` da gestante e na sub-aba "Alertas calculados" do admin.
 
 ---
 
 ### Detalhes técnicos
 
-- **Banco**: novas tabelas `clinical_measurements`, `exam_results`, `vaccinations`, `reference_ranges`, `exam_criteria`, `vaccine_schedule`, `professionals`, `appointment_slots`, `user_roles` + enum `app_role`.
-- **Geração de alertas**: função SQL `get_active_alerts(gestante_id)` que cruza medições/exames/vacinas com as regras → retorna lista de alertas calculados. Sem persistência de alertas individuais.
-- **Booking atômico**: função `book_slot(slot_id, gestante_id)` com `UPDATE ... WHERE status='disponivel' RETURNING` para evitar double-booking.
-- **RLS**: 
-  - `appointment_slots`: gestante lê apenas `disponivel` ou os próprios reservados; profissional gerencia apenas os próprios.
-  - `clinical_measurements/exam_results/vaccinations`: gestante lê apenas os próprios; profissional/admin pode inserir.
-- **Auth**: email/senha + Google. Login separado por role no redirect pós-login.
+- Migração SQL com `INSERT ... ON CONFLICT DO NOTHING` usando uma constraint única em `(parametro, semana_min, semana_max, severidade)` para idempotência. Adicionar essa unique constraint primeiro.
+- Mensagens em português, prontas para mostrar à gestante (ex: "Pressão arterial elevada — agende consulta nas próximas 48h").
+- Campo `mensagem` carrega também a fonte: "MS — Caderno 32 / 2012".
+- Para `altura_uterina` o "valor_min/max por semana" é representado por múltiplas linhas (uma faixa de 3 semanas cada) em vez de cálculo dinâmico — mantém a engine SQL simples.
 
----
+### Arquivos afetados
 
-### Fases de implementação
-
-**Fase A — Auth + Roles**
-- Tabela `user_roles`, função `has_role`, telas de login/signup, separação gestante/profissional/admin.
-
-**Fase B — Alertas automáticos**
-- Tabelas clínicas + regras + função `get_active_alerts` + refatorar `/alertas` para consumir + aba "Parâmetros Clínicos" e "Dados Clínicos" no Admin.
-
-**Fase C — Agendamento real**
-- Tabelas `professionals` + `appointment_slots` + portal `/profissional` + refatorar `/videochamada` para reserva real + aba "Profissionais" no Admin.
-
-**Limpeza**: remover do `TelasTab` as seções de alertas e agendamentos (substituídas pelas engines).
-
+- **Nova migração**: `supabase/migrations/..._seed_reference_ranges.sql` — unique constraint + seeds de `reference_ranges`, `exam_criteria`, `vaccine_schedule`.
+- **Editado**: `src/components/admin/ParametrosTab.tsx` — banner com fontes, agrupamento visual por categoria, botão "Restaurar valores oficiais" (chama uma RPC `reseed_reference_ranges` ou re-roda os mesmos inserts via cliente).
+- Sem mudança em: `alertas.tsx`, `DadosClinicosTab.tsx`, função `get_active_alerts` (já estão prontos para consumir os dados).
