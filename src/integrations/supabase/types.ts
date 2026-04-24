@@ -127,6 +127,7 @@ export type Database = {
       exam_criteria: {
         Row: {
           created_at: string
+          fonte: string | null
           id: string
           mensagem: string
           resultado_alterado: string
@@ -136,6 +137,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          fonte?: string | null
           id?: string
           mensagem: string
           resultado_alterado: string
@@ -145,6 +147,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          fonte?: string | null
           id?: string
           mensagem?: string
           resultado_alterado?: string
@@ -190,6 +193,84 @@ export type Database = {
         }
         Relationships: []
       }
+      image_exam_results: {
+        Row: {
+          created_at: string
+          data_exame: string
+          gestante_id: string
+          id: string
+          imagem_path: string | null
+          laudo_texto: string | null
+          observacao: string | null
+          registrado_por: string | null
+          semana_gestacional: number | null
+          status: string
+          tipo_exame: string
+        }
+        Insert: {
+          created_at?: string
+          data_exame?: string
+          gestante_id: string
+          id?: string
+          imagem_path?: string | null
+          laudo_texto?: string | null
+          observacao?: string | null
+          registrado_por?: string | null
+          semana_gestacional?: number | null
+          status?: string
+          tipo_exame: string
+        }
+        Update: {
+          created_at?: string
+          data_exame?: string
+          gestante_id?: string
+          id?: string
+          imagem_path?: string | null
+          laudo_texto?: string | null
+          observacao?: string | null
+          registrado_por?: string | null
+          semana_gestacional?: number | null
+          status?: string
+          tipo_exame?: string
+        }
+        Relationships: []
+      }
+      image_exam_schedule: {
+        Row: {
+          created_at: string
+          fonte: string | null
+          id: string
+          mensagem: string
+          obrigatorio: boolean
+          semana_max: number
+          semana_min: number
+          tipo_exame: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fonte?: string | null
+          id?: string
+          mensagem: string
+          obrigatorio?: boolean
+          semana_max: number
+          semana_min: number
+          tipo_exame: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fonte?: string | null
+          id?: string
+          mensagem?: string
+          obrigatorio?: boolean
+          semana_max?: number
+          semana_min?: number
+          tipo_exame?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       professionals: {
         Row: {
           ativo: boolean
@@ -228,35 +309,59 @@ export type Database = {
       }
       profiles: {
         Row: {
+          bairro: string | null
+          cidade: string | null
           created_at: string
+          data_nascimento: string | null
           dum: string | null
           email: string | null
           foto_url: string | null
           id: string
           nome: string | null
+          numero_abortos: number | null
+          numero_gestacoes: number | null
+          numero_partos: number | null
+          partos_classificacao: Json | null
           telefone: string | null
+          unidade_saude: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          bairro?: string | null
+          cidade?: string | null
           created_at?: string
+          data_nascimento?: string | null
           dum?: string | null
           email?: string | null
           foto_url?: string | null
           id?: string
           nome?: string | null
+          numero_abortos?: number | null
+          numero_gestacoes?: number | null
+          numero_partos?: number | null
+          partos_classificacao?: Json | null
           telefone?: string | null
+          unidade_saude?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          bairro?: string | null
+          cidade?: string | null
           created_at?: string
+          data_nascimento?: string | null
           dum?: string | null
           email?: string | null
           foto_url?: string | null
           id?: string
           nome?: string | null
+          numero_abortos?: number | null
+          numero_gestacoes?: number | null
+          numero_partos?: number | null
+          partos_classificacao?: Json | null
           telefone?: string | null
+          unidade_saude?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -265,6 +370,7 @@ export type Database = {
       reference_ranges: {
         Row: {
           created_at: string
+          fonte: string | null
           id: string
           mensagem: string
           parametro: string
@@ -278,6 +384,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          fonte?: string | null
           id?: string
           mensagem: string
           parametro: string
@@ -291,6 +398,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          fonte?: string | null
           id?: string
           mensagem?: string
           parametro?: string
@@ -358,6 +466,7 @@ export type Database = {
       vaccine_schedule: {
         Row: {
           created_at: string
+          fonte: string | null
           id: string
           mensagem: string
           obrigatoria: boolean
@@ -368,6 +477,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          fonte?: string | null
           id?: string
           mensagem: string
           obrigatoria?: boolean
@@ -378,9 +488,43 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          fonte?: string | null
           id?: string
           mensagem?: string
           obrigatoria?: boolean
+          semana_max?: number | null
+          semana_min?: number
+          updated_at?: string
+          vacina?: string
+        }
+        Relationships: []
+      }
+      vaccine_schedule_extra: {
+        Row: {
+          created_at: string
+          fonte: string | null
+          id: string
+          mensagem: string
+          semana_max: number | null
+          semana_min: number
+          updated_at: string
+          vacina: string
+        }
+        Insert: {
+          created_at?: string
+          fonte?: string | null
+          id?: string
+          mensagem: string
+          semana_max?: number | null
+          semana_min?: number
+          updated_at?: string
+          vacina: string
+        }
+        Update: {
+          created_at?: string
+          fonte?: string | null
+          id?: string
+          mensagem?: string
           semana_max?: number | null
           semana_min?: number
           updated_at?: string
