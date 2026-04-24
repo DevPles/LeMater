@@ -271,6 +271,127 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_campaigns: {
+        Row: {
+          canal: string
+          created_at: string
+          enviado_por: string | null
+          filtros_snapshot: Json
+          group_id: string | null
+          id: string
+          mensagem: string
+          template_origem: string | null
+          titulo: string | null
+          total_destinatarios: number
+        }
+        Insert: {
+          canal: string
+          created_at?: string
+          enviado_por?: string | null
+          filtros_snapshot?: Json
+          group_id?: string | null
+          id?: string
+          mensagem: string
+          template_origem?: string | null
+          titulo?: string | null
+          total_destinatarios?: number
+        }
+        Update: {
+          canal?: string
+          created_at?: string
+          enviado_por?: string | null
+          filtros_snapshot?: Json
+          group_id?: string | null
+          id?: string
+          mensagem?: string
+          template_origem?: string | null
+          titulo?: string | null
+          total_destinatarios?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_campaigns_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "notification_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_deliveries: {
+        Row: {
+          campaign_id: string
+          canal: string
+          created_at: string
+          enviado_em: string | null
+          erro: string | null
+          gestante_id: string
+          id: string
+          lido_em: string | null
+          status: string
+        }
+        Insert: {
+          campaign_id: string
+          canal: string
+          created_at?: string
+          enviado_em?: string | null
+          erro?: string | null
+          gestante_id: string
+          id?: string
+          lido_em?: string | null
+          status?: string
+        }
+        Update: {
+          campaign_id?: string
+          canal?: string
+          created_at?: string
+          enviado_em?: string | null
+          erro?: string | null
+          gestante_id?: string
+          id?: string
+          lido_em?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_deliveries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "notification_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_groups: {
+        Row: {
+          created_at: string
+          criado_por: string | null
+          descricao: string | null
+          filtros: Json
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criado_por?: string | null
+          descricao?: string | null
+          filtros?: Json
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criado_por?: string | null
+          descricao?: string | null
+          filtros?: Json
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       professionals: {
         Row: {
           ativo: boolean
