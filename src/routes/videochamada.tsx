@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { supabase } from "@/integrations/supabase/client";
-import { DEMO_GESTANTE_ID } from "@/components/admin/DadosClinicosTab";
+import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 
 export const Route = createFileRoute("/videochamada")({
   head: () => ({
