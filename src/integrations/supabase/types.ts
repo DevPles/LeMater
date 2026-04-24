@@ -124,6 +124,30 @@ export type Database = {
         }
         Relationships: []
       }
+      districts: {
+        Row: {
+          cidade: string
+          created_at: string
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          cidade: string
+          created_at?: string
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          cidade?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       exam_criteria: {
         Row: {
           created_at: string
@@ -192,6 +216,63 @@ export type Database = {
           tipo_exame?: string
         }
         Relationships: []
+      }
+      health_units: {
+        Row: {
+          ativo: boolean
+          cidade: string
+          cnes: string | null
+          created_at: string
+          district_id: string | null
+          endereco: string | null
+          id: string
+          neighborhood_id: string | null
+          nome: string
+          tipo: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          cidade: string
+          cnes?: string | null
+          created_at?: string
+          district_id?: string | null
+          endereco?: string | null
+          id?: string
+          neighborhood_id?: string | null
+          nome: string
+          tipo?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          cidade?: string
+          cnes?: string | null
+          created_at?: string
+          district_id?: string | null
+          endereco?: string | null
+          id?: string
+          neighborhood_id?: string | null
+          nome?: string
+          tipo?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_units_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "health_units_neighborhood_id_fkey"
+            columns: ["neighborhood_id"]
+            isOneToOne: false
+            referencedRelation: "neighborhoods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       image_exam_results: {
         Row: {
@@ -270,6 +351,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      neighborhoods: {
+        Row: {
+          cidade: string
+          created_at: string
+          district_id: string | null
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          cidade: string
+          created_at?: string
+          district_id?: string | null
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          cidade?: string
+          created_at?: string
+          district_id?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neighborhoods_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_campaigns: {
         Row: {
@@ -434,9 +550,11 @@ export type Database = {
           cidade: string | null
           created_at: string
           data_nascimento: string | null
+          district_id: string | null
           dum: string | null
           email: string | null
           foto_url: string | null
+          health_unit_id: string | null
           id: string
           nome: string | null
           numero_abortos: number | null
@@ -453,9 +571,11 @@ export type Database = {
           cidade?: string | null
           created_at?: string
           data_nascimento?: string | null
+          district_id?: string | null
           dum?: string | null
           email?: string | null
           foto_url?: string | null
+          health_unit_id?: string | null
           id?: string
           nome?: string | null
           numero_abortos?: number | null
@@ -472,9 +592,11 @@ export type Database = {
           cidade?: string | null
           created_at?: string
           data_nascimento?: string | null
+          district_id?: string | null
           dum?: string | null
           email?: string | null
           foto_url?: string | null
+          health_unit_id?: string | null
           id?: string
           nome?: string | null
           numero_abortos?: number | null
@@ -486,7 +608,22 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_health_unit_id_fkey"
+            columns: ["health_unit_id"]
+            isOneToOne: false
+            referencedRelation: "health_units"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reference_ranges: {
         Row: {
