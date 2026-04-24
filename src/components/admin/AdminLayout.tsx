@@ -113,7 +113,7 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
         <div className="px-3 py-4 border-b border-white/10 flex items-center justify-between gap-2">
           {!collapsed && (
             <div className="min-w-0">
-              <p className="font-bold text-sm truncate">MãeDigital</p>
+              <p className="font-bold text-sm truncate">Cartão Digital Materno</p>
               <p className="text-[10px] text-white/60 uppercase tracking-wide truncate">
                 Painel administrativo
               </p>
