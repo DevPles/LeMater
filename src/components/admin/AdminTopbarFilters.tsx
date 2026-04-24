@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAdminFilters } from "@/contexts/AdminFiltersContext";
 import { DRS_XIII_CIDADES } from "@/lib/drs-xiii";
 import type { AdminProfile, AdminAlert } from "@/utils/admin-filters";
@@ -11,6 +11,7 @@ type Props = {
 
 export function AdminTopbarFilters({ profiles, alerts, totalFiltrado }: Props) {
   const { filters, patch, reset, activeCount } = useAdminFilters();
+  const [hidden, setHidden] = useState(false);
 
   // Perfis restritos pelas cidades selecionadas (se houver) — usado para
   // alimentar Bairro e UBS de forma encadeada (cidade → bairro → UBS).
@@ -80,15 +81,25 @@ export function AdminTopbarFilters({ profiles, alerts, totalFiltrado }: Props) {
             {totalFiltrado} gestante{totalFiltrado === 1 ? "" : "s"}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={reset}
-          className="text-[11px] font-semibold text-muted-foreground hover:text-foreground underline"
-        >
-          Limpar tudo
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setHidden((v) => !v)}
+            className="text-[11px] font-semibold px-3 h-7 rounded-lg border border-border bg-background hover:bg-muted text-foreground transition-colors"
+          >
+            {hidden ? "Mostrar filtros" : "Ocultar filtros"}
+          </button>
+          <button
+            type="button"
+            onClick={reset}
+            className="text-[11px] font-semibold px-3 h-7 rounded-lg bg-[#1a1557] hover:bg-[#1a1557]/90 text-white transition-colors"
+          >
+            Limpar tudo
+          </button>
+        </div>
       </div>
 
+      {!hidden && (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
         {/* 1. Geografia: cidade → bairro → UBS (nessa ordem) */}
         <CidadesPopover
@@ -179,6 +190,7 @@ export function AdminTopbarFilters({ profiles, alerts, totalFiltrado }: Props) {
           onChange={(v) => patch({ periodoFim: v || null })}
         />
       </div>
+      )}
     </div>
   );
 }
