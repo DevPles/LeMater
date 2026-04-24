@@ -203,15 +203,22 @@ export default function RegistrationModal({
           throw error;
         }
       }
-      // Se gestante e DUM informada, garante que o profile tem a DUM (caso o trigger não tenha pegado)
-      if (dumIso) {
-        const { data: sess } = await supabase.auth.getSession();
-        if (sess.session) {
-          await supabase
-            .from("profiles")
-            .update({ dum: dumIso, nome: nome.trim() })
-            .eq("user_id", sess.session.user.id);
-        }
+      // Atualiza profile com todos os dados demográficos coletados no cadastro
+      const { data: sess } = await supabase.auth.getSession();
+      if (sess.session) {
+        const profileUpdate: Record<string, unknown> = {
+          nome: nome.trim(),
+          telefone: whatsapp || null,
+          bairro: bairro || null,
+          cidade: cidade || "Ribeirão Preto",
+          unidade_saude: ubs || null,
+          data_nascimento: dataNasc || null,
+        };
+        if (dumIso) profileUpdate.dum = dumIso;
+        await supabase
+          .from("profiles")
+          .update(profileUpdate)
+          .eq("user_id", sess.session.user.id);
       }
       onOpenChange(false);
       navigate({ to: "/home" });
