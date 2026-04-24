@@ -608,14 +608,20 @@ export default function RegistrationModal({
                 </div>
               </div>
 
+              {submitErro && (
+                <p className="text-red-300 text-xs bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">
+                  {submitErro}
+                </p>
+              )}
+
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleStep1Continue}
-                disabled={!nome.trim() || gestante === null}
+                disabled={!nome.trim() || gestante === null || submitting}
                 className="mt-2 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Continuar
+                {submitting ? "Criando conta..." : gestante === true ? "Continuar" : "Finalizar"}
               </motion.button>
             </motion.div>
           )}
