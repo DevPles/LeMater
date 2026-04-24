@@ -11,6 +11,7 @@ type Props = {
 
 export function AdminTopbarFilters({ profiles, alerts, totalFiltrado }: Props) {
   const { filters, patch, reset, activeCount } = useAdminFilters();
+  const [hidden, setHidden] = useState(false);
 
   // Perfis restritos pelas cidades selecionadas (se houver) — usado para
   // alimentar Bairro e UBS de forma encadeada (cidade → bairro → UBS).
