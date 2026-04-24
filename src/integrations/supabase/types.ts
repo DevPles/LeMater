@@ -836,6 +836,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      resolve_login_email_by_cpf: { Args: { _cpf: string }; Returns: string }
     }
     Enums: {
       app_role: "gestante" | "profissional" | "admin"
