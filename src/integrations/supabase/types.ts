@@ -814,6 +814,18 @@ export type Database = {
           titulo: string
         }[]
       }
+      get_all_active_alerts: {
+        Args: never
+        Returns: {
+          data: string
+          gestante_id: string
+          id: string
+          mensagem: string
+          origem: string
+          severidade: string
+          titulo: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
