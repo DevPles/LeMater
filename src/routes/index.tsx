@@ -54,7 +54,7 @@ function WelcomeScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="text-white/90 text-sm mb-2"
+            className="text-white/90 text-sm mb-5"
           >
             Cartão Digital da Gestante
           </motion.p>
