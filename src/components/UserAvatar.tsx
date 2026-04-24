@@ -5,9 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 interface UserAvatarProps {
   name?: string;
   week?: number;
+  photoUrl?: string | null;
 }
 
-export function UserAvatar({ name = "Mamãe", week }: UserAvatarProps) {
+export function UserAvatar({ name = "Mamãe", week, photoUrl }: UserAvatarProps) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const initials = name
