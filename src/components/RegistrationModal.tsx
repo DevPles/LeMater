@@ -568,6 +568,17 @@ export default function RegistrationModal({
                 />
               </div>
 
+              <div>
+                <Label className={labelClass}>Senha (mín. 6 caracteres)</Label>
+                <Input
+                  type="password"
+                  value={senhaCadastro}
+                  onChange={(e) => setSenhaCadastro(e.target.value)}
+                  placeholder="••••••••"
+                  className={inputClass}
+                />
+              </div>
+
               {/* Gestante toggle */}
               <div className="mt-1">
                 <Label className={labelClass}>Você está gestante?</Label>
