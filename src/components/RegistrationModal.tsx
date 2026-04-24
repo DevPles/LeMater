@@ -158,8 +158,8 @@ export default function RegistrationModal({
       setBairro(b);
       setCidade(c);
       setUf(data.uf || "");
-      // Preenche o endereço se estiver vazio
-      if (!endereco && data.logradouro) {
+      // Sempre preenche o endereço com o logradouro retornado pelo ViaCEP
+      if (data.logradouro) {
         setEndereco(`${data.logradouro}${b ? `, ${b}` : ""}`);
       }
     } catch {
