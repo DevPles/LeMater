@@ -62,6 +62,11 @@ export default function RegistrationModal({
   const [cidade, setCidade] = useState("");
   const [uf, setUf] = useState("");
   const [ubs, setUbs] = useState("");
+  // IDs estruturados (preenchidos quando o bairro/UBS casa com o catálogo)
+  const [districtId, setDistrictId] = useState<string | null>(null);
+  const [neighborhoodId, setNeighborhoodId] = useState<string | null>(null);
+  const [healthUnitId, setHealthUnitId] = useState<string | null>(null);
+  const [ubsManual, setUbsManual] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
   const [cepError, setCepError] = useState("");
   const [endereco, setEndereco] = useState("");
@@ -75,30 +80,47 @@ export default function RegistrationModal({
   const [submitting, setSubmitting] = useState(false);
   const [submitErro, setSubmitErro] = useState<string | null>(null);
 
-  // Mapeamento simplificado bairro → UBS (Ribeirão Preto e região).
-  // Em produção, substituir por consulta ao backend.
-  const UBS_POR_BAIRRO: Record<string, string> = {
-    "Centro": "UBS Central",
-    "Campos Elíseos": "UBS Campos Elíseos",
-    "Ipiranga": "UBS Ipiranga",
-    "Vila Tibério": "UBS Vila Tibério",
-    "Sumarezinho": "UBS Sumarezinho",
-    "Jardim Paulista": "UBS Jardim Paulista",
-    "Jardim Paulistano": "UBS Jardim Paulista",
-    "Vila Virgínia": "UBS Vila Virgínia",
-    "Quintino Facci": "UBS Quintino Facci",
-    "Adão do Carmo": "UBS Adão do Carmo Leonel",
-    "Monte Alegre": "UBS Monte Alegre",
-    "Castelo Branco": "UBS Castelo Branco",
-  };
+  // Catálogo geográfico (banco) — encadeado por cidade → distrito → bairro → UBS
+  const { data: distritosCatalogo } = useDistritos(cidade || null);
+  const { data: bairrosCatalogo } = useBairros(cidade || null, districtId);
+  const { data: ubsCatalogo } = useUbs(cidade || null, districtId, neighborhoodId);
 
-  const ubsParaBairro = (b: string) => {
-    if (!b) return "";
-    // procura por chave que apareça no nome do bairro (case-insensitive)
-    const bLow = b.toLowerCase();
-    const hit = Object.entries(UBS_POR_BAIRRO).find(([k]) => bLow.includes(k.toLowerCase()));
-    return hit ? hit[1] : `UBS de referência (${b})`;
-  };
+  const temDistritos = distritosCatalogo.length > 1;
+
+  // Quando o ViaCEP preenche o bairro, tentamos casar com o catálogo
+  // para deduzir distrito e bairro_id automaticamente.
+  useEffect(() => {
+    if (!cidade || !bairro || distritosCatalogo.length === 0) return;
+    // Se já temos districtId+neighborhoodId, não precisamos refazer
+    if (neighborhoodId) return;
+
+    const casaBairro = async () => {
+      const { data: nbhMatch } = await supabase
+        .from("neighborhoods")
+        .select("id, district_id")
+        .eq("cidade", cidade)
+        .ilike("nome", bairro)
+        .maybeSingle();
+      if (nbhMatch) {
+        setNeighborhoodId(nbhMatch.id);
+        if (nbhMatch.district_id) setDistrictId(nbhMatch.district_id);
+      }
+    };
+    casaBairro();
+  }, [cidade, bairro, distritosCatalogo.length, neighborhoodId]);
+
+  // Sugestão automática da UBS: se há exatamente uma UBS no bairro/distrito
+  // selecionado e o usuário ainda não escolheu manualmente, pré-seleciona.
+  useEffect(() => {
+    if (ubsManual) return;
+    if (ubsCatalogo.length === 1) {
+      setUbs(ubsCatalogo[0].nome);
+      setHealthUnitId(ubsCatalogo[0].id);
+    } else if (ubsCatalogo.length > 1 && !healthUnitId) {
+      // Múltiplas opções → limpa para o usuário escolher
+      setUbs("");
+    }
+  }, [ubsCatalogo, ubsManual, healthUnitId]);
 
   const formatarCep = (v: string) => {
     const d = v.replace(/\D/g, "").slice(0, 8);
@@ -120,14 +142,22 @@ export default function RegistrationModal({
         setCidade("");
         setUf("");
         setUbs("");
+        setDistrictId(null);
+        setNeighborhoodId(null);
+        setHealthUnitId(null);
         return;
       }
       const b = data.bairro || "";
       const c = data.localidade || "";
+      // Reset do vínculo estruturado — será refeito pelo effect ao casar com o catálogo
+      setDistrictId(null);
+      setNeighborhoodId(null);
+      setHealthUnitId(null);
+      setUbs("");
+      setUbsManual(false);
       setBairro(b);
       setCidade(c);
       setUf(data.uf || "");
-      setUbs(ubsParaBairro(b));
       // Preenche o endereço se estiver vazio
       if (!endereco && data.logradouro) {
         setEndereco(`${data.logradouro}${b ? `, ${b}` : ""}`);
@@ -138,6 +168,7 @@ export default function RegistrationModal({
       setCepLoading(false);
     }
   };
+
 
 
   // Step 2 fields (pregnancy)
