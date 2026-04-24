@@ -31,6 +31,7 @@ import { TelasTab } from "@/components/admin/TelasTab";
 import { ProfissionaisTab } from "@/components/admin/ProfissionaisTab";
 import { ParametrosTab } from "@/components/admin/ParametrosTab";
 import { DadosClinicosTab } from "@/components/admin/DadosClinicosTab";
+import { RelatoriosEpidemiologicosTab } from "@/components/admin/RelatoriosEpidemiologicosTab";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -292,7 +293,7 @@ function GestaoPage() {
   const [pushHistorico, setPushHistorico] = useState<{ nome: string; quando: string; titulo: string }[]>([]);
 
   // Aba ativa
-  const [aba, setAba] = useState<"gestao" | "relatorios" | "telas" | "profissionais" | "parametros" | "dados">("gestao");
+  const [aba, setAba] = useState<"gestao" | "relatorios" | "epidemiologia" | "telas" | "profissionais" | "parametros" | "dados">("gestao");
 
   const abrirPush = (g: Gestante) => {
     const sug = sugerirMensagemPush(g);
@@ -621,7 +622,8 @@ function GestaoPage() {
       <div className="flex gap-2 mb-4 border-b border-border overflow-x-auto">
         {([
           { v: "gestao", l: "Gestão" },
-          { v: "relatorios", l: "Relatórios" },
+          { v: "epidemiologia", l: "Epidemiologia DRS-XIII" },
+          { v: "relatorios", l: "Relatórios (mock)" },
           { v: "dados", l: "Dados Clínicos" },
           { v: "parametros", l: "Parâmetros Clínicos" },
           { v: "profissionais", l: "Profissionais" },
@@ -651,6 +653,8 @@ function GestaoPage() {
         <ParametrosTab />
       ) : aba === "dados" ? (
         <DadosClinicosTab />
+      ) : aba === "epidemiologia" ? (
+        <RelatoriosEpidemiologicosTab />
       ) : aba === "relatorios" ? (
         <RelatoriosTab analise={analise} gestantes={gestantesFiltradas} />
       ) : (
