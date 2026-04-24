@@ -32,6 +32,8 @@ type SlotComProf = {
 };
 
 function AgendamentosPage() {
+  const { session } = useGestanteProfile();
+  const userId = session?.user?.id ?? null;
   const [slots, setSlots] = useState<SlotComProf[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"disponiveis" | "meus">("disponiveis");
@@ -52,11 +54,15 @@ function AgendamentosPage() {
       if (error) console.error(error);
       if (data) setSlots(data as SlotComProf[]);
     } else {
-      // "meus" - reservados/realizados pela gestante demo
+      if (!userId) {
+        setSlots([]);
+        setLoading(false);
+        return;
+      }
       const { data, error } = await supabase
         .from("appointment_slots")
         .select("*, professionals(id, nome, especialidade)")
-        .eq("gestante_id", DEMO_GESTANTE_ID)
+        .eq("gestante_id", userId)
         .order("data_hora", { ascending: false });
       if (error) console.error(error);
       if (data) setSlots(data as SlotComProf[]);
@@ -67,7 +73,7 @@ function AgendamentosPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
+  }, [tab, userId]);
 
   const especialidades = useMemo(() => {
     const s = new Set(slots.map((x) => x.professionals?.especialidade).filter(Boolean) as string[]);
