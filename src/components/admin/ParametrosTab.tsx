@@ -36,11 +36,15 @@ export function ParametrosTab() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-1">
         <p className="text-xs text-amber-900">
           <strong>Engine de alertas automáticos.</strong> Os alertas exibidos para a gestante são
           calculados em tempo real cruzando os <em>dados clínicos inseridos</em> com as regras
           definidas aqui. Não há criação manual de alertas.
+        </p>
+        <p className="text-[11px] text-amber-900/80">
+          Faixas pré-carregadas conforme <strong>Ministério da Saúde</strong> (Caderno de Atenção Básica nº 32),
+          <strong> OMS</strong>, <strong>FEBRASGO</strong> e <strong>PNI</strong>. Edite ou adicione conforme o protocolo da sua unidade.
         </p>
       </div>
 
