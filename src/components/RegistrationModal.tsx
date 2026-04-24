@@ -51,6 +51,8 @@ export default function RegistrationModal({
   const [loginEmail, setLoginEmail] = useState("");
   const [loginSenha, setLoginSenha] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginErro, setLoginErro] = useState<string | null>(null);
+  const [loginLoading, setLoginLoading] = useState(false);
 
   // Step 1 fields
   const [nome, setNome] = useState("");
