@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { supabase } from "@/integrations/supabase/client";
-import { DEMO_GESTANTE_ID } from "@/components/admin/DadosClinicosTab";
+import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 
 export const Route = createFileRoute("/videochamada")({
   head: () => ({
@@ -32,6 +32,8 @@ type SlotComProf = {
 };
 
 function AgendamentosPage() {
+  const { session } = useGestanteProfile();
+  const userId = session?.user?.id ?? null;
   const [slots, setSlots] = useState<SlotComProf[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"disponiveis" | "meus">("disponiveis");
@@ -52,11 +54,15 @@ function AgendamentosPage() {
       if (error) console.error(error);
       if (data) setSlots(data as SlotComProf[]);
     } else {
-      // "meus" - reservados/realizados pela gestante demo
+      if (!userId) {
+        setSlots([]);
+        setLoading(false);
+        return;
+      }
       const { data, error } = await supabase
         .from("appointment_slots")
         .select("*, professionals(id, nome, especialidade)")
-        .eq("gestante_id", DEMO_GESTANTE_ID)
+        .eq("gestante_id", userId)
         .order("data_hora", { ascending: false });
       if (error) console.error(error);
       if (data) setSlots(data as SlotComProf[]);
@@ -67,7 +73,7 @@ function AgendamentosPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab]);
+  }, [tab, userId]);
 
   const especialidades = useMemo(() => {
     const s = new Set(slots.map((x) => x.professionals?.especialidade).filter(Boolean) as string[]);
@@ -80,22 +86,18 @@ function AgendamentosPage() {
   }, [slots, filtroEsp]);
 
   const reservar = async (slotId: string) => {
+    if (!userId) {
+      setMsg("Faça login para reservar.");
+      return;
+    }
     setBooking(slotId);
     setMsg(null);
-    // Para o MVP sem auth de gestante, fazemos reserva direta com gestante_id demo.
-    // Em produção, a função book_slot usa auth.uid().
-    const { error } = await supabase
-      .from("appointment_slots")
-      .update({
-        status: "reservado",
-        gestante_id: DEMO_GESTANTE_ID,
-        reservado_em: new Date().toISOString(),
-      })
-      .eq("id", slotId)
-      .eq("status", "disponivel");
-
+    // book_slot é SECURITY DEFINER e usa auth.uid() para garantir rastreabilidade
+    const { data, error } = await supabase.rpc("book_slot", { _slot_id: slotId });
     if (error) {
       setMsg("Não foi possível reservar: " + error.message);
+    } else if (Array.isArray(data) && data[0] && !data[0].success) {
+      setMsg(data[0].message ?? "Horário indisponível");
     } else {
       setMsg("Horário reservado com sucesso!");
     }

@@ -3,56 +3,117 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * ID da gestante demo do app — mesma referência usada nas telas
- * /alertas e /cartao quando a paciente "Maria Silva" é exibida.
- * Para o MVP, usamos um UUID fixo. Quando houver autenticação real
- * de gestante, este componente passará a listar gestantes do auth.
+ * Visualização read-only dos dados clínicos das gestantes.
+ *
+ * IMPORTANTE: o lançamento de medições, exames, vacinas e exames de imagem
+ * acontece exclusivamente no app pela própria gestante (ou pelo profissional
+ * em consulta), sempre vinculado ao `auth.uid()` para garantir rastreabilidade.
+ * O admin apenas audita / acompanha os dados aqui.
  */
-export const DEMO_GESTANTE_ID = "00000000-0000-0000-0000-000000000001";
 
 type Tab = "medicoes" | "exames" | "imagem" | "vacinas" | "alertas";
 
+type Gestante = {
+  user_id: string;
+  nome: string | null;
+  email: string | null;
+  cidade: string | null;
+  bairro: string | null;
+  unidade_saude: string | null;
+};
+
 export function DadosClinicosTab() {
   const [tab, setTab] = useState<Tab>("medicoes");
+  const [gestantes, setGestantes] = useState<Gestante[]>([]);
+  const [selecionada, setSelecionada] = useState<string>("");
+  const [loadingList, setLoadingList] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      setLoadingList(true);
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, nome, email, cidade, bairro, unidade_saude")
+        .order("nome", { ascending: true })
+        .limit(500);
+      if (data) {
+        setGestantes(data as Gestante[]);
+        if (data.length > 0) setSelecionada((data[0] as Gestante).user_id);
+      }
+      setLoadingList(false);
+    })();
+  }, []);
 
   return (
     <div className="space-y-4">
-      <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
-        <p className="text-xs text-blue-900">
-          <strong>Dados clínicos da gestante demo.</strong> Tudo que for inserido aqui é avaliado
-          automaticamente contra as <em>regras</em> definidas em "Parâmetros Clínicos" e gera os
-          alertas exibidos na tela <code className="bg-blue-100 px-1 rounded">/alertas</code>.
+      <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+        <p className="text-xs text-amber-900">
+          <strong>Visualização somente leitura.</strong> O lançamento de medições, exames e vacinas
+          é feito no app pela gestante ou pelo profissional em consulta — sempre vinculado à
+          paciente autenticada para garantir rastreabilidade. Aqui o admin acompanha e audita.
         </p>
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        {[
-          { v: "medicoes" as const, l: "Medições" },
-          { v: "exames" as const, l: "Exames laboratoriais" },
-          { v: "imagem" as const, l: "Exames de imagem" },
-          { v: "vacinas" as const, l: "Vacinas aplicadas" },
-          { v: "alertas" as const, l: "Alertas calculados" },
-        ].map((t) => (
-          <button
-            key={t.v}
-            type="button"
-            onClick={() => setTab(t.v)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
-              tab === t.v
-                ? "bg-[#1a1557] text-white border-[#1a1557]"
-                : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50"
-            }`}
+      <div className="bg-card border border-border rounded-2xl p-4">
+        <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+          Gestante
+        </label>
+        {loadingList ? (
+          <p className="text-sm text-muted-foreground">Carregando gestantes...</p>
+        ) : gestantes.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Nenhuma gestante cadastrada ainda. Os dados aparecerão aqui assim que houver cadastros
+            no app.
+          </p>
+        ) : (
+          <select
+            value={selecionada}
+            onChange={(e) => setSelecionada(e.target.value)}
+            className="w-full h-10 text-sm rounded-xl border border-border bg-background px-3"
           >
-            {t.l}
-          </button>
-        ))}
+            {gestantes.map((g) => (
+              <option key={g.user_id} value={g.user_id}>
+                {g.nome || g.email || g.user_id.slice(0, 8)}
+                {g.cidade ? ` — ${g.cidade}` : ""}
+                {g.unidade_saude ? ` / ${g.unidade_saude}` : ""}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
-      {tab === "medicoes" && <MedicoesEditor />}
-      {tab === "exames" && <ExamesEditor />}
-      {tab === "imagem" && <ImagemEditor />}
-      {tab === "vacinas" && <VacinasEditor />}
-      {tab === "alertas" && <AlertasCalculados />}
+      {selecionada && (
+        <>
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { v: "medicoes" as const, l: "Medições" },
+              { v: "exames" as const, l: "Exames laboratoriais" },
+              { v: "imagem" as const, l: "Exames de imagem" },
+              { v: "vacinas" as const, l: "Vacinas aplicadas" },
+              { v: "alertas" as const, l: "Alertas calculados" },
+            ].map((t) => (
+              <button
+                key={t.v}
+                type="button"
+                onClick={() => setTab(t.v)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                  tab === t.v
+                    ? "bg-[#1a1557] text-white border-[#1a1557]"
+                    : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50"
+                }`}
+              >
+                {t.l}
+              </button>
+            ))}
+          </div>
+
+          {tab === "medicoes" && <MedicoesView gestanteId={selecionada} />}
+          {tab === "exames" && <ExamesView gestanteId={selecionada} />}
+          {tab === "imagem" && <ImagemView gestanteId={selecionada} />}
+          {tab === "vacinas" && <VacinasView gestanteId={selecionada} />}
+          {tab === "alertas" && <AlertasCalculados gestanteId={selecionada} />}
+        </>
+      )}
     </div>
   );
 }
@@ -67,56 +128,27 @@ type Medicao = {
   observacao: string | null;
 };
 
-function MedicoesEditor() {
+function MedicoesView({ gestanteId }: { gestanteId: string }) {
   const [list, setList] = useState<Medicao[]>([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({
-    parametro: "",
-    valor: "",
-    semana_gestacional: "",
-    observacao: "",
-  });
 
-  const load = async () => {
-    setLoading(true);
-    const { data } = await supabase
-      .from("clinical_measurements")
-      .select("*")
-      .eq("gestante_id", DEMO_GESTANTE_ID)
-      .order("data_medicao", { ascending: false })
-      .limit(50);
-    if (data) setList(data as Medicao[]);
-    setLoading(false);
-  };
   useEffect(() => {
-    load();
-  }, []);
-
-  const create = async () => {
-    if (!form.parametro || !form.valor) return alert("Preencha parâmetro e valor.");
-    const { error } = await supabase.from("clinical_measurements").insert({
-      gestante_id: DEMO_GESTANTE_ID,
-      parametro: form.parametro,
-      valor: Number(form.valor),
-      semana_gestacional: form.semana_gestacional ? Number(form.semana_gestacional) : null,
-      observacao: form.observacao || null,
-    });
-    if (error) return alert(error.message);
-    setForm({ parametro: "", valor: "", semana_gestacional: "", observacao: "" });
-    await load();
-  };
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("clinical_measurements")
+        .select("*")
+        .eq("gestante_id", gestanteId)
+        .order("data_medicao", { ascending: false })
+        .limit(100);
+      if (data) setList(data as Medicao[]);
+      setLoading(false);
+    })();
+  }, [gestanteId]);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-      <FormCard title="Nova medição clínica">
-        <Field label="Parâmetro" value={form.parametro} onChange={(v) => setForm({ ...form, parametro: v })} placeholder="pa_sistolica, peso, glicemia, bcf..." />
-        <Field label="Valor" value={form.valor} onChange={(v) => setForm({ ...form, valor: v })} placeholder="120, 68.5, 142..." />
-        <Field label="Semana gestacional" value={form.semana_gestacional} onChange={(v) => setForm({ ...form, semana_gestacional: v })} placeholder="24" />
-        <Field label="Observação" value={form.observacao} onChange={(v) => setForm({ ...form, observacao: v })} placeholder="opcional" />
-        <SubmitButton onClick={create} label="Registrar medição" />
-      </FormCard>
-
-      <ListCard title={`Últimas medições (${list.length})`} loading={loading} empty={list.length === 0}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <ListCard title={`Medições (${list.length})`} loading={loading} empty={list.length === 0}>
         {list.map((m) => (
           <li key={m.id} className="p-3 text-xs">
             <p className="font-bold text-foreground">
@@ -136,7 +168,7 @@ function MedicoesEditor() {
   );
 }
 
-/* ============ Exames ============ */
+/* ============ Exames laboratoriais ============ */
 type Exame = {
   id: string;
   tipo_exame: string;
@@ -146,69 +178,42 @@ type Exame = {
   observacao: string | null;
 };
 
-function ExamesEditor() {
+function ExamesView({ gestanteId }: { gestanteId: string }) {
   const [list, setList] = useState<Exame[]>([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({
-    tipo_exame: "",
-    resultado: "",
-    status: "normal",
-    observacao: "",
-  });
 
-  const load = async () => {
-    setLoading(true);
-    const { data } = await supabase
-      .from("exam_results")
-      .select("*")
-      .eq("gestante_id", DEMO_GESTANTE_ID)
-      .order("data_exame", { ascending: false })
-      .limit(50);
-    if (data) setList(data as Exame[]);
-    setLoading(false);
-  };
   useEffect(() => {
-    load();
-  }, []);
-
-  const create = async () => {
-    if (!form.tipo_exame || !form.resultado) return alert("Preencha tipo e resultado.");
-    const { error } = await supabase.from("exam_results").insert({
-      gestante_id: DEMO_GESTANTE_ID,
-      tipo_exame: form.tipo_exame,
-      resultado: form.resultado,
-      status: form.status,
-      observacao: form.observacao || null,
-    });
-    if (error) return alert(error.message);
-    setForm({ tipo_exame: "", resultado: "", status: "normal", observacao: "" });
-    await load();
-  };
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("exam_results")
+        .select("*")
+        .eq("gestante_id", gestanteId)
+        .order("data_exame", { ascending: false })
+        .limit(100);
+      if (data) setList(data as Exame[]);
+      setLoading(false);
+    })();
+  }, [gestanteId]);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-      <FormCard title="Novo resultado de exame">
-        <Field label="Tipo de exame" value={form.tipo_exame} onChange={(v) => setForm({ ...form, tipo_exame: v })} placeholder="hemograma, sifilis, hiv..." />
-        <Field label="Resultado" value={form.resultado} onChange={(v) => setForm({ ...form, resultado: v })} placeholder="reagente, normal, 120..." />
-        <SelectField
-          label="Status"
-          value={form.status}
-          onChange={(v) => setForm({ ...form, status: v })}
-          options={[
-            { value: "normal", label: "Normal" },
-            { value: "alterado", label: "Alterado (gera alerta)" },
-          ]}
-        />
-        <Field label="Observação" value={form.observacao} onChange={(v) => setForm({ ...form, observacao: v })} placeholder="opcional" />
-        <SubmitButton onClick={create} label="Registrar exame" />
-      </FormCard>
-
-      <ListCard title={`Exames recentes (${list.length})`} loading={loading} empty={list.length === 0}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <ListCard
+        title={`Exames recentes (${list.length})`}
+        loading={loading}
+        empty={list.length === 0}
+      >
         {list.map((e) => (
           <li key={e.id} className="p-3 text-xs">
             <p className="font-bold text-foreground">
               {e.tipo_exame}: <span className="font-normal">{e.resultado}</span>{" "}
-              <span className={`px-2 py-0.5 rounded-full text-[10px] ${e.status === "alterado" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] ${
+                  e.status === "alterado"
+                    ? "bg-red-100 text-red-700"
+                    : "bg-green-100 text-green-700"
+                }`}
+              >
                 {e.status}
               </span>
             </p>
@@ -231,46 +236,30 @@ type Vacina = {
   observacao: string | null;
 };
 
-function VacinasEditor() {
+function VacinasView({ gestanteId }: { gestanteId: string }) {
   const [list, setList] = useState<Vacina[]>([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ vacina: "", observacao: "" });
 
-  const load = async () => {
-    setLoading(true);
-    const { data } = await supabase
-      .from("vaccinations")
-      .select("*")
-      .eq("gestante_id", DEMO_GESTANTE_ID)
-      .order("data_aplicacao", { ascending: false });
-    if (data) setList(data as Vacina[]);
-    setLoading(false);
-  };
   useEffect(() => {
-    load();
-  }, []);
-
-  const create = async () => {
-    if (!form.vacina) return alert("Preencha o nome da vacina.");
-    const { error } = await supabase.from("vaccinations").insert({
-      gestante_id: DEMO_GESTANTE_ID,
-      vacina: form.vacina,
-      observacao: form.observacao || null,
-    });
-    if (error) return alert(error.message);
-    setForm({ vacina: "", observacao: "" });
-    await load();
-  };
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("vaccinations")
+        .select("*")
+        .eq("gestante_id", gestanteId)
+        .order("data_aplicacao", { ascending: false });
+      if (data) setList(data as Vacina[]);
+      setLoading(false);
+    })();
+  }, [gestanteId]);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-      <FormCard title="Registrar vacina aplicada">
-        <Field label="Vacina" value={form.vacina} onChange={(v) => setForm({ ...form, vacina: v })} placeholder="dTpa, hepatite_b, influenza..." />
-        <Field label="Observação" value={form.observacao} onChange={(v) => setForm({ ...form, observacao: v })} placeholder="lote, local..." />
-        <SubmitButton onClick={create} label="Registrar vacina" />
-      </FormCard>
-
-      <ListCard title={`Vacinas aplicadas (${list.length})`} loading={loading} empty={list.length === 0}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <ListCard
+        title={`Vacinas aplicadas (${list.length})`}
+        loading={loading}
+        empty={list.length === 0}
+      >
         {list.map((v) => (
           <li key={v.id} className="p-3 text-xs">
             <p className="font-bold text-foreground">{v.vacina}</p>
@@ -285,8 +274,7 @@ function VacinasEditor() {
   );
 }
 
-/* ============ Exames de imagem (com upload) ============ */
-type ImageSchedule = { id: string; tipo_exame: string; semana_min: number; semana_max: number };
+/* ============ Exames de imagem ============ */
 type ImageResult = {
   id: string;
   tipo_exame: string;
@@ -298,136 +286,39 @@ type ImageResult = {
   observacao: string | null;
 };
 
-function ImagemEditor() {
-  const [schedule, setSchedule] = useState<ImageSchedule[]>([]);
+function ImagemView({ gestanteId }: { gestanteId: string }) {
   const [list, setList] = useState<ImageResult[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [form, setForm] = useState({
-    tipo_exame: "",
-    semana_gestacional: "",
-    status: "normal",
-    laudo_texto: "",
-    observacao: "",
-  });
-  const [file, setFile] = useState<File | null>(null);
 
-  const load = async () => {
-    setLoading(true);
-    const [s, r] = await Promise.all([
-      supabase.from("image_exam_schedule").select("id, tipo_exame, semana_min, semana_max").order("semana_min"),
-      supabase
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
         .from("image_exam_results")
         .select("*")
-        .eq("gestante_id", DEMO_GESTANTE_ID)
+        .eq("gestante_id", gestanteId)
         .order("data_exame", { ascending: false })
-        .limit(50),
-    ]);
-    if (s.data) setSchedule(s.data as ImageSchedule[]);
-    if (r.data) setList(r.data as ImageResult[]);
-    setLoading(false);
-  };
-  useEffect(() => {
-    load();
-  }, []);
-
-  const create = async () => {
-    if (!form.tipo_exame) return alert("Selecione o tipo de exame.");
-    setUploading(true);
-    let imagem_path: string | null = null;
-
-    try {
-      if (file) {
-        const ext = file.name.split(".").pop() || "bin";
-        const path = `${DEMO_GESTANTE_ID}/${Date.now()}_${form.tipo_exame.replace(/\s+/g, "_")}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("image-exams").upload(path, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-        if (upErr) throw upErr;
-        imagem_path = path;
-      }
-
-      const { error } = await supabase.from("image_exam_results").insert({
-        gestante_id: DEMO_GESTANTE_ID,
-        tipo_exame: form.tipo_exame,
-        semana_gestacional: form.semana_gestacional ? Number(form.semana_gestacional) : null,
-        status: form.status,
-        laudo_texto: form.laudo_texto || null,
-        observacao: form.observacao || null,
-        imagem_path,
-      });
-      if (error) throw error;
-
-      setForm({ tipo_exame: "", semana_gestacional: "", status: "normal", laudo_texto: "", observacao: "" });
-      setFile(null);
-      await load();
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao salvar");
-    } finally {
-      setUploading(false);
-    }
-  };
+        .limit(100);
+      if (data) setList(data as ImageResult[]);
+      setLoading(false);
+    })();
+  }, [gestanteId]);
 
   const verImagem = async (path: string) => {
-    const { data, error } = await supabase.storage.from("image-exams").createSignedUrl(path, 300);
+    const { data, error } = await supabase.storage
+      .from("image-exams")
+      .createSignedUrl(path, 300);
     if (error || !data?.signedUrl) return alert("Não foi possível gerar URL.");
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-      <FormCard title="Novo exame de imagem">
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Tipo de exame</label>
-          <select
-            value={form.tipo_exame}
-            onChange={(e) => setForm({ ...form, tipo_exame: e.target.value })}
-            className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
-          >
-            <option value="">Selecione...</option>
-            {schedule.map((s) => (
-              <option key={s.id} value={s.tipo_exame}>
-                {s.tipo_exame} (sem {s.semana_min}-{s.semana_max})
-              </option>
-            ))}
-          </select>
-        </div>
-        <Field label="Semana gestacional" value={form.semana_gestacional} onChange={(v) => setForm({ ...form, semana_gestacional: v })} placeholder="22" />
-        <SelectField
-          label="Status"
-          value={form.status}
-          onChange={(v) => setForm({ ...form, status: v })}
-          options={[
-            { value: "normal", label: "Normal" },
-            { value: "alterado", label: "Alterado (gera alerta)" },
-            { value: "pendente", label: "Pendente" },
-          ]}
-        />
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Imagem / PDF do laudo</label>
-          <input
-            type="file"
-            accept="image/*,application/pdf"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="w-full text-xs"
-          />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Laudo (texto)</label>
-          <textarea
-            rows={2}
-            value={form.laudo_texto}
-            onChange={(e) => setForm({ ...form, laudo_texto: e.target.value })}
-            className="w-full text-sm rounded-xl border border-border bg-background p-3"
-            placeholder="Descrição do laudo médico"
-          />
-        </div>
-        <Field label="Observação" value={form.observacao} onChange={(v) => setForm({ ...form, observacao: v })} placeholder="opcional" />
-        <SubmitButton onClick={create} label={uploading ? "Enviando..." : "Registrar exame de imagem"} />
-      </FormCard>
-
-      <ListCard title={`Exames de imagem (${list.length})`} loading={loading} empty={list.length === 0}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <ListCard
+        title={`Exames de imagem (${list.length})`}
+        loading={loading}
+        empty={list.length === 0}
+      >
         {list.map((e) => (
           <li key={e.id} className="p-3 text-xs">
             <p className="font-bold text-foreground">
@@ -447,9 +338,15 @@ function ImagemEditor() {
                 <span className="text-muted-foreground"> • semana {e.semana_gestacional}</span>
               )}
             </p>
-            <p className="text-muted-foreground">{new Date(e.data_exame).toLocaleDateString("pt-BR")}</p>
-            {e.laudo_texto && <p className="text-muted-foreground italic mt-0.5">{e.laudo_texto}</p>}
-            {e.observacao && <p className="text-muted-foreground/80 mt-0.5">Obs: {e.observacao}</p>}
+            <p className="text-muted-foreground">
+              {new Date(e.data_exame).toLocaleDateString("pt-BR")}
+            </p>
+            {e.laudo_texto && (
+              <p className="text-muted-foreground italic mt-0.5">{e.laudo_texto}</p>
+            )}
+            {e.observacao && (
+              <p className="text-muted-foreground/80 mt-0.5">Obs: {e.observacao}</p>
+            )}
             {e.imagem_path && (
               <button
                 type="button"
@@ -465,6 +362,8 @@ function ImagemEditor() {
     </motion.div>
   );
 }
+
+/* ============ Alertas calculados ============ */
 type Alerta = {
   id: string;
   origem: string;
@@ -474,14 +373,14 @@ type Alerta = {
   data: string;
 };
 
-function AlertasCalculados() {
+function AlertasCalculados({ gestanteId }: { gestanteId: string }) {
   const [list, setList] = useState<Alerta[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase.rpc("get_active_alerts", {
-      _gestante_id: DEMO_GESTANTE_ID,
+      _gestante_id: gestanteId,
     });
     if (error) console.error(error);
     if (data) setList(data as Alerta[]);
@@ -489,13 +388,19 @@ function AlertasCalculados() {
   };
   useEffect(() => {
     load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gestanteId]);
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
       <div className="px-4 py-2 bg-muted/40 border-b border-border flex items-center justify-between">
-        <p className="text-xs font-bold uppercase tracking-wide">Alertas ativos calculados ({list.length})</p>
-        <button onClick={load} className="text-[10px] font-semibold text-[#1a1557] hover:underline">
+        <p className="text-xs font-bold uppercase tracking-wide">
+          Alertas ativos calculados ({list.length})
+        </p>
+        <button
+          onClick={load}
+          className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+        >
           Recalcular
         </button>
       </div>
@@ -537,15 +442,6 @@ function AlertasCalculados() {
 }
 
 /* ============ helpers ============ */
-function FormCard({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
-      <h3 className="font-bold text-sm text-foreground">{title}</h3>
-      <div className="grid sm:grid-cols-2 gap-3">{children}</div>
-    </div>
-  );
-}
-
 function ListCard({
   title,
   loading,
@@ -569,74 +465,6 @@ function ListCard({
       ) : (
         <ul className="divide-y divide-border">{children}</ul>
       )}
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <div>
-      <label className="text-xs font-semibold text-muted-foreground mb-1 block">{label}</label>
-      <input
-        type="text"
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
-      />
-    </div>
-  );
-}
-
-function SelectField({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: { value: string; label: string }[];
-}) {
-  return (
-    <div>
-      <label className="text-xs font-semibold text-muted-foreground mb-1 block">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-function SubmitButton({ onClick, label }: { onClick: () => void; label: string }) {
-  return (
-    <div className="sm:col-span-2 flex justify-end">
-      <button
-        type="button"
-        onClick={onClick}
-        className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a]"
-      >
-        {label}
-      </button>
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { supabase } from "@/integrations/supabase/client";
-import { DEMO_GESTANTE_ID } from "@/components/admin/DadosClinicosTab";
+import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 
 export const Route = createFileRoute("/alertas")({
   head: () => ({
@@ -37,14 +37,21 @@ const severidadeStyle: Record<string, { bg: string; dot: string; text: string; l
 };
 
 function AlertasPage() {
+  const { session, loading: authLoading } = useGestanteProfile();
   const [alerts, setAlerts] = useState<Alerta[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!session?.user?.id) {
+      setAlerts([]);
+      setLoading(false);
+      return;
+    }
     let active = true;
     (async () => {
       const { data, error } = await supabase.rpc("get_active_alerts", {
-        _gestante_id: DEMO_GESTANTE_ID,
+        _gestante_id: session.user.id,
       });
       if (!active) return;
       if (error) console.error("get_active_alerts:", error);
@@ -54,7 +61,7 @@ function AlertasPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [authLoading, session?.user?.id]);
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
