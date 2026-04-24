@@ -227,7 +227,7 @@ export default function RegistrationModal({
         email: email.trim(),
         password: senhaCadastro,
         options: {
-          data: { nome: nome.trim(), dum: dumIso ?? "" },
+          data: { nome: nome.trim(), dum: dumIso ?? "", cpf: normalizeCpf(cpf) },
           emailRedirectTo: window.location.origin + "/home",
         },
       });
