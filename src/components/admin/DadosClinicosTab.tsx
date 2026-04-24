@@ -50,6 +50,7 @@ export function DadosClinicosTab() {
 
       {tab === "medicoes" && <MedicoesEditor />}
       {tab === "exames" && <ExamesEditor />}
+      {tab === "imagem" && <ImagemEditor />}
       {tab === "vacinas" && <VacinasEditor />}
       {tab === "alertas" && <AlertasCalculados />}
     </div>
