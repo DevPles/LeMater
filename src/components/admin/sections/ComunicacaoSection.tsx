@@ -112,7 +112,7 @@ function CampanhasView({ profiles, alerts }: Props) {
         titulo,
         mensagem: msg,
         total_destinatarios: filtered.length,
-        filtros_snapshot: filters as unknown as Record<string, unknown>,
+        filtros_snapshot: filters as never,
       })
       .select()
       .single();
@@ -282,7 +282,7 @@ function GruposView({ profiles, alerts }: Props) {
     await supabase.from("notification_groups").insert({
       nome,
       descricao: descricao || null,
-      filtros: filters as unknown as Record<string, unknown>,
+      filtros: filters as never,
     });
     setNome("");
     setDescricao("");
