@@ -272,7 +272,45 @@ export default function RegistrationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 w-[calc(100vw-1rem)] max-w-md max-h-[92vh] overflow-y-auto p-3 sm:p-4 rounded-2xl">
+      <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 w-[calc(100vw-1rem)] max-w-md max-h-[92vh] overflow-y-auto p-3 sm:p-4 rounded-2xl relative">
+        {/* Rising particles / bokeh animation */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+          {Array.from({ length: 18 }).map((_, i) => {
+            const size = 4 + ((i * 7) % 14);
+            const left = (i * 53) % 100;
+            const duration = 8 + ((i * 3) % 10);
+            const delay = (i * 0.7) % 8;
+            const blur = i % 3 === 0 ? "blur-[2px]" : i % 3 === 1 ? "blur-[1px]" : "";
+            const opacity = 0.25 + ((i % 5) * 0.12);
+            return (
+              <motion.span
+                key={i}
+                className={`absolute rounded-full bg-white ${blur}`}
+                style={{
+                  width: size,
+                  height: size,
+                  left: `${left}%`,
+                  bottom: `-${size}px`,
+                  opacity,
+                }}
+                animate={{
+                  y: ["0%", "-1200%"],
+                  x: [0, i % 2 === 0 ? 20 : -20, 0],
+                  opacity: [0, opacity, opacity, 0],
+                }}
+                transition={{
+                  duration,
+                  delay,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  times: [0, 0.1, 0.9, 1],
+                }}
+              />
+            );
+          })}
+        </div>
+
+        <div className="relative z-10">
         <DialogHeader>
           <DialogTitle className="text-[#f0c040] text-xl font-display text-center">
             {mode === "login"
