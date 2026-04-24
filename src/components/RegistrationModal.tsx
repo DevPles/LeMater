@@ -65,9 +65,12 @@ export default function RegistrationModal({
   const [cpf, setCpf] = useState("");
   const [dataNasc, setDataNasc] = useState("");
   const [email, setEmail] = useState("");
+  const [senhaCadastro, setSenhaCadastro] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [foto, setFoto] = useState<string | null>(null);
   const [gestante, setGestante] = useState<boolean | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitErro, setSubmitErro] = useState<string | null>(null);
 
   // Mapeamento simplificado bairro → UBS (Ribeirão Preto e região).
   // Em produção, substituir por consulta ao backend.
