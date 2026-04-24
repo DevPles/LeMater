@@ -929,7 +929,6 @@ export default function RegistrationModal({
             </>
           )}
         </AnimatePresence>
-        </div>
       </DialogContent>
     </Dialog>
   );
