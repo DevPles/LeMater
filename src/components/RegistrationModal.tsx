@@ -320,6 +320,7 @@ export default function RegistrationModal({
           </DialogTitle>
         </DialogHeader>
 
+        <div className="relative z-10">
         <AnimatePresence mode="wait">
           {mode === "login" && (
             <motion.div
@@ -929,6 +930,7 @@ export default function RegistrationModal({
             </>
           )}
         </AnimatePresence>
+        </div>
       </DialogContent>
     </Dialog>
   );
