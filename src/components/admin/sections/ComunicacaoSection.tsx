@@ -282,7 +282,7 @@ function GruposView({ profiles, alerts }: Props) {
     await supabase.from("notification_groups").insert({
       nome,
       descricao: descricao || null,
-      filtros: filters as unknown as Record<string, unknown>,
+      filtros: filters as never,
     });
     setNome("");
     setDescricao("");
