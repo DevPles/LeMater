@@ -310,8 +310,7 @@ export default function RegistrationModal({
           })}
         </div>
 
-        <div className="relative z-10">
-        <DialogHeader>
+        <DialogHeader className="relative z-10">
           <DialogTitle className="text-[#f0c040] text-xl font-display text-center">
             {mode === "login"
               ? "Entrar"
