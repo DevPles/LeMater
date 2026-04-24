@@ -61,6 +61,8 @@ function faixaEtaria(idade: number | null): "<18" | "18-34" | "≥35" | "—" {
   return "≥35";
 }
 
+import { useAdminFilters } from "@/contexts/AdminFiltersContext";
+
 export function RelatoriosEpidemiologicosTab() {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [measurements, setMeasurements] = useState<MeasurementRow[]>([]);
@@ -69,62 +71,27 @@ export function RelatoriosEpidemiologicosTab() {
   const [imageResults, setImageResults] = useState<ImageResultRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filtros
-  const [cidadesSel, setCidadesSel] = useState<string[]>([]);
-  const [bairroSel, setBairroSel] = useState<string>("todos");
-  const [ubsSel, setUbsSel] = useState<string>("todas");
-  const [faixaSel, setFaixaSel] = useState<string>("todas");
-  const [trimSel, setTrimSel] = useState<string>("todos");
+  // Consome filtros globais do topbar (evita duplicação na UI)
+  const { filters } = useAdminFilters();
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      const [p, m, e, v, i] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select(
-            "user_id, cidade, bairro, unidade_saude, data_nascimento, dum, numero_gestacoes, numero_partos, numero_abortos, partos_classificacao",
-          ),
-        supabase.from("clinical_measurements").select("gestante_id, parametro, valor, semana_gestacional"),
-        supabase.from("exam_results").select("gestante_id, tipo_exame, status"),
-        supabase.from("vaccinations").select("gestante_id, vacina"),
-        supabase.from("image_exam_results").select("gestante_id, tipo_exame, status"),
-      ]);
-      setProfiles((p.data ?? []) as ProfileRow[]);
-      setMeasurements((m.data ?? []) as MeasurementRow[]);
-      setExams((e.data ?? []) as ExamRow[]);
-      setVaccinations((v.data ?? []) as VaccinationRow[]);
-      setImageResults((i.data ?? []) as ImageResultRow[]);
-      setLoading(false);
-    };
-    load();
+...
   }, []);
 
-  // Bairros e UBS disponíveis (deriva do dataset)
-  const bairrosDisp = useMemo(
-    () =>
-      Array.from(new Set(profiles.map((p) => p.bairro).filter((x): x is string => !!x))).sort(),
-    [profiles],
-  );
-  const ubsDisp = useMemo(
-    () =>
-      Array.from(new Set(profiles.map((p) => p.unidade_saude).filter((x): x is string => !!x))).sort(),
-    [profiles],
-  );
-
-  // Aplica filtros
+  // Aplica filtros globais
   const filtered = useMemo(() => {
     return profiles.filter((p) => {
-      if (cidadesSel.length > 0 && (!p.cidade || !cidadesSel.includes(p.cidade))) return false;
-      if (bairroSel !== "todos" && p.bairro !== bairroSel) return false;
-      if (ubsSel !== "todas" && p.unidade_saude !== ubsSel) return false;
+      if (filters.cidades.length > 0 && (!p.cidade || !filters.cidades.includes(p.cidade))) return false;
+      if (filters.bairro !== "todos" && p.bairro !== filters.bairro) return false;
+      if (filters.ubs !== "todas" && p.unidade_saude !== filters.ubs) return false;
       const idade = calcAge(p.data_nascimento);
-      if (faixaSel !== "todas" && faixaEtaria(idade) !== faixaSel) return false;
+      if (filters.faixa !== "todas" && faixaEtaria(idade) !== filters.faixa) return false;
       const w = calcWeeks(p.dum);
-      if (trimSel !== "todos" && trimestre(w) !== trimSel) return false;
+      const trimMap: Record<string, string> = { "1": "1º", "2": "2º", "3": "3º" };
+      if (filters.trimestre !== "todos" && trimestre(w) !== trimMap[filters.trimestre]) return false;
       return true;
     });
-  }, [profiles, cidadesSel, bairroSel, ubsSel, faixaSel, trimSel]);
+  }, [profiles, filters]);
 
   const filteredIds = useMemo(() => new Set(filtered.map((p) => p.user_id)), [filtered]);
 
