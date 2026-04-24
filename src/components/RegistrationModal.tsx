@@ -246,6 +246,8 @@ export default function RegistrationModal({
             bairro: bairro || null,
             cidade: cidade || "Ribeirão Preto",
             unidade_saude: ubs || null,
+            district_id: districtId,
+            health_unit_id: healthUnitId,
             data_nascimento: dataNasc || null,
             ...(dumIso ? { dum: dumIso } : {}),
           })
