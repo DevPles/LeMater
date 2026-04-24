@@ -927,17 +927,6 @@ export default function RegistrationModal({
             </motion.div>
           )}
 
-          {mode === "register" && step === 1 && !showCelebration && (
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="button"
-              onClick={() => setMode("login")}
-              className="relative z-10 bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm py-2.5 rounded-full backdrop-blur-sm transition-colors"
-            >
-              Entrar
-            </motion.button>
-          )}
             </>
           )}
         </AnimatePresence>
