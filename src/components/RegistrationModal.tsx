@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 
 type Mode = "login" | "register";
 
@@ -50,6 +51,8 @@ export default function RegistrationModal({
   const [loginEmail, setLoginEmail] = useState("");
   const [loginSenha, setLoginSenha] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginErro, setLoginErro] = useState<string | null>(null);
+  const [loginLoading, setLoginLoading] = useState(false);
 
   // Step 1 fields
   const [nome, setNome] = useState("");
@@ -64,9 +67,12 @@ export default function RegistrationModal({
   const [cpf, setCpf] = useState("");
   const [dataNasc, setDataNasc] = useState("");
   const [email, setEmail] = useState("");
+  const [senhaCadastro, setSenhaCadastro] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [foto, setFoto] = useState<string | null>(null);
   const [gestante, setGestante] = useState<boolean | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitErro, setSubmitErro] = useState<string | null>(null);
 
   // Mapeamento simplificado bairro → UBS (Ribeirão Preto e região).
   // Em produção, substituir por consulta ao backend.
@@ -150,21 +156,74 @@ export default function RegistrationModal({
     }
   };
 
-  const handleStep1Continue = () => {
+  const handleStep1Continue = async () => {
+    setSubmitErro(null);
     if (!nome.trim()) return;
+
     if (gestante === true) {
+      // Validações para criar conta no Supabase já no step1 → 2
+      if (!email.trim()) return setSubmitErro("Informe um e-mail.");
+      if (senhaCadastro.length < 6) return setSubmitErro("Senha precisa ter ao menos 6 caracteres.");
       setShowCelebration(true);
       setTimeout(() => {
         setShowCelebration(false);
         setStep(2);
       }, 2500);
-    } else {
+      return;
+    }
+
+    // Não-gestante: cria conta simples e leva para home
+    if (!email.trim() || senhaCadastro.length < 6) {
+      return setSubmitErro("Informe e-mail e senha (mínimo 6 caracteres) para criar sua conta.");
+    }
+    await criarContaENavegar(null);
+  };
+
+  const criarContaENavegar = async (dumIso: string | null) => {
+    setSubmitting(true);
+    setSubmitErro(null);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: senhaCadastro,
+        options: {
+          data: { nome: nome.trim(), dum: dumIso ?? "" },
+          emailRedirectTo: window.location.origin + "/home",
+        },
+      });
+      if (error) {
+        // Se email já existe, tenta login direto
+        if (/registered|exists|already/i.test(error.message)) {
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password: senhaCadastro,
+          });
+          if (signInErr) throw signInErr;
+        } else {
+          throw error;
+        }
+      }
+      // Se gestante e DUM informada, garante que o profile tem a DUM (caso o trigger não tenha pegado)
+      if (dumIso) {
+        const { data: sess } = await supabase.auth.getSession();
+        if (sess.session) {
+          await supabase
+            .from("profiles")
+            .update({ dum: dumIso, nome: nome.trim() })
+            .eq("user_id", sess.session.user.id);
+        }
+      }
+      onOpenChange(false);
       navigate({ to: "/home" });
+    } catch (e) {
+      setSubmitErro((e as Error).message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleFinish = () => {
-    navigate({ to: "/home" });
+  const handleFinish = async () => {
+    await criarContaENavegar(dum || null);
   };
 
   const inputClass =
@@ -233,25 +292,49 @@ export default function RegistrationModal({
                 Esqueci minha senha
               </button>
 
+              {loginErro && (
+                <p className="text-red-300 text-xs bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">
+                  {loginErro}
+                </p>
+              )}
+
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  const u = loginEmail.trim().toLowerCase();
+                onClick={async () => {
+                  setLoginErro(null);
+                  const u = loginEmail.trim();
                   const p = loginSenha.trim();
-                  if (u === "admin" && p === "unaerp2026") {
+
+                  // Backdoor admin (modo demo) — mantém como antes
+                  if (u.toLowerCase() === "admin" && p === "unaerp2026") {
                     if (typeof window !== "undefined") {
                       sessionStorage.setItem("maedigital_admin_auth", "1");
                     }
+                    onOpenChange(false);
                     navigate({ to: "/admin" });
                     return;
                   }
-                  navigate({ to: "/home" });
+
+                  setLoginLoading(true);
+                  try {
+                    const { error } = await supabase.auth.signInWithPassword({
+                      email: u,
+                      password: p,
+                    });
+                    if (error) throw error;
+                    onOpenChange(false);
+                    navigate({ to: "/home" });
+                  } catch (e) {
+                    setLoginErro((e as Error).message || "Falha no login");
+                  } finally {
+                    setLoginLoading(false);
+                  }
                 }}
-                disabled={!loginEmail.trim() || !loginSenha.trim()}
+                disabled={!loginEmail.trim() || !loginSenha.trim() || loginLoading}
                 className="mt-2 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Entrar
+                {loginLoading ? "Entrando..." : "Entrar"}
               </motion.button>
 
               <div className="flex items-center gap-2 my-1">
@@ -485,6 +568,17 @@ export default function RegistrationModal({
                 />
               </div>
 
+              <div>
+                <Label className={labelClass}>Senha (mín. 6 caracteres)</Label>
+                <Input
+                  type="password"
+                  value={senhaCadastro}
+                  onChange={(e) => setSenhaCadastro(e.target.value)}
+                  placeholder="••••••••"
+                  className={inputClass}
+                />
+              </div>
+
               {/* Gestante toggle */}
               <div className="mt-1">
                 <Label className={labelClass}>Você está gestante?</Label>
@@ -514,14 +608,20 @@ export default function RegistrationModal({
                 </div>
               </div>
 
+              {submitErro && (
+                <p className="text-red-300 text-xs bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">
+                  {submitErro}
+                </p>
+              )}
+
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleStep1Continue}
-                disabled={!nome.trim() || gestante === null}
+                disabled={!nome.trim() || gestante === null || submitting}
                 className="mt-2 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Continuar
+                {submitting ? "Criando conta..." : gestante === true ? "Continuar" : "Finalizar"}
               </motion.button>
             </motion.div>
           )}
@@ -608,6 +708,12 @@ export default function RegistrationModal({
                 </motion.div>
               )}
 
+              {submitErro && (
+                <p className="text-red-300 text-xs bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">
+                  {submitErro}
+                </p>
+              )}
+
               <div className="flex gap-3 mt-4">
                 <button
                   type="button"
@@ -620,9 +726,10 @@ export default function RegistrationModal({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleFinish}
-                  className="flex-1 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-base py-3 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors"
+                  disabled={submitting}
+                  className="flex-1 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-base py-3 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Finalizar
+                  {submitting ? "Criando conta..." : "Finalizar"}
                 </motion.button>
               </div>
             </motion.div>

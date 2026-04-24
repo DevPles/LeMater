@@ -229,6 +229,9 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          dum: string | null
+          email: string | null
+          foto_url: string | null
           id: string
           nome: string | null
           telefone: string | null
@@ -237,6 +240,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          dum?: string | null
+          email?: string | null
+          foto_url?: string | null
           id?: string
           nome?: string | null
           telefone?: string | null
@@ -245,6 +251,9 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          dum?: string | null
+          email?: string | null
+          foto_url?: string | null
           id?: string
           nome?: string | null
           telefone?: string | null
