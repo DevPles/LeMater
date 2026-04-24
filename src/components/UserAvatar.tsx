@@ -1,18 +1,26 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserAvatarProps {
   name?: string;
+  week?: number;
 }
 
-export function UserAvatar({ name = "Maria Silva" }: UserAvatarProps) {
+export function UserAvatar({ name = "Mamãe", week }: UserAvatarProps) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const initials = name
     .split(" ")
     .map((n) => n[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/" });
+  };
 
   return (
     <div className="relative">
@@ -29,7 +37,9 @@ export function UserAvatar({ name = "Maria Silva" }: UserAvatarProps) {
           <div className="absolute right-0 top-12 z-50 w-56 bg-card rounded-xl border border-border shadow-lg overflow-hidden">
             <div className="p-4 border-b border-border">
               <p className="font-semibold text-sm text-foreground">{name}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Gestante • Semana 24</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Gestante{typeof week === "number" ? ` • Semana ${week}` : ""}
+              </p>
             </div>
             <div className="py-1">
               <Link
@@ -47,13 +57,15 @@ export function UserAvatar({ name = "Maria Silva" }: UserAvatarProps) {
                 Meus Alertas
               </Link>
               <div className="border-t border-border my-1" />
-              <Link
-                to="/"
-                onClick={() => setOpen(false)}
-                className="block px-4 py-2.5 text-sm text-destructive hover:bg-muted transition-colors"
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  handleLogout();
+                }}
+                className="block w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-muted transition-colors"
               >
                 Sair
-              </Link>
+              </button>
             </div>
           </div>
         </>
