@@ -12,7 +12,7 @@ import { ComunicacaoSection } from "@/components/admin/sections/ComunicacaoSecti
 import { TelasTab } from "@/components/admin/TelasTab";
 import { ProfissionaisTab } from "@/components/admin/ProfissionaisTab";
 import { ParametrosTab } from "@/components/admin/ParametrosTab";
-import { DadosClinicosTab } from "@/components/admin/DadosClinicosTab";
+
 import { RelatoriosEpidemiologicosTab } from "@/components/admin/RelatoriosEpidemiologicosTab";
 
 export const Route = createFileRoute("/admin")({
