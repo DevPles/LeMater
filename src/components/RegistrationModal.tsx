@@ -795,15 +795,26 @@ export default function RegistrationModal({
                 </p>
               )}
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleStep1Continue}
-                disabled={!nome.trim() || gestante === null || submitting}
-                className="mt-2 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {submitting ? "Criando conta..." : gestante === true ? "Continuar" : "Finalizar"}
-              </motion.button>
+              <div className="flex gap-3 mt-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={() => setMode("login")}
+                  className="flex-1 bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm py-2.5 rounded-full backdrop-blur-sm transition-colors"
+                >
+                  Entrar
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleStep1Continue}
+                  disabled={!nome.trim() || gestante === null || submitting}
+                  className="flex-1 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {submitting ? "Criando conta..." : gestante === true ? "Continuar" : "Finalizar"}
+                </motion.button>
+              </div>
             </motion.div>
           )}
 
