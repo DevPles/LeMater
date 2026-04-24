@@ -26,6 +26,14 @@ function formatDate(date: Date): string {
   return date.toLocaleDateString("pt-BR");
 }
 
+function normalizeCpf(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
+function looksLikeCpf(value: string): boolean {
+  return normalizeCpf(value).length === 11 && !value.includes("@");
+}
+
 export default function RegistrationModal({
   open,
   onOpenChange,
@@ -242,6 +250,7 @@ export default function RegistrationModal({
           .from("profiles")
           .update({
             nome: nome.trim(),
+            cpf: normalizeCpf(cpf) || null,
             telefone: whatsapp || null,
             bairro: bairro || null,
             cidade: cidade || "Ribeirão Preto",
@@ -396,8 +405,24 @@ export default function RegistrationModal({
 
                   setLoginLoading(true);
                   try {
+                    let emailParaLogin = u;
+
+                    if (looksLikeCpf(u)) {
+                      const { data: resolvedEmail, error: resolveError } = await supabase.rpc(
+                        "resolve_login_email_by_cpf",
+                        { _cpf: normalizeCpf(u) },
+                      );
+
+                      if (resolveError) throw resolveError;
+                      if (!resolvedEmail) {
+                        throw new Error("CPF não encontrado. Tente entrar com seu e-mail ou finalize o cadastro.");
+                      }
+
+                      emailParaLogin = resolvedEmail;
+                    }
+
                     const { error } = await supabase.auth.signInWithPassword({
-                      email: u,
+                      email: emailParaLogin,
                       password: p,
                     });
                     if (error) throw error;
