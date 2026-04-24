@@ -61,6 +61,8 @@ function faixaEtaria(idade: number | null): "<18" | "18-34" | "≥35" | "—" {
   return "≥35";
 }
 
+import { useAdminFilters } from "@/contexts/AdminFiltersContext";
+
 export function RelatoriosEpidemiologicosTab() {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [measurements, setMeasurements] = useState<MeasurementRow[]>([]);
@@ -69,12 +71,8 @@ export function RelatoriosEpidemiologicosTab() {
   const [imageResults, setImageResults] = useState<ImageResultRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filtros
-  const [cidadesSel, setCidadesSel] = useState<string[]>([]);
-  const [bairroSel, setBairroSel] = useState<string>("todos");
-  const [ubsSel, setUbsSel] = useState<string>("todas");
-  const [faixaSel, setFaixaSel] = useState<string>("todas");
-  const [trimSel, setTrimSel] = useState<string>("todos");
+  // Consome filtros globais do topbar (evita duplicação na UI)
+  const { filters } = useAdminFilters();
 
   useEffect(() => {
     const load = async () => {
@@ -100,31 +98,20 @@ export function RelatoriosEpidemiologicosTab() {
     load();
   }, []);
 
-  // Bairros e UBS disponíveis (deriva do dataset)
-  const bairrosDisp = useMemo(
-    () =>
-      Array.from(new Set(profiles.map((p) => p.bairro).filter((x): x is string => !!x))).sort(),
-    [profiles],
-  );
-  const ubsDisp = useMemo(
-    () =>
-      Array.from(new Set(profiles.map((p) => p.unidade_saude).filter((x): x is string => !!x))).sort(),
-    [profiles],
-  );
-
-  // Aplica filtros
+  // Aplica filtros globais
   const filtered = useMemo(() => {
     return profiles.filter((p) => {
-      if (cidadesSel.length > 0 && (!p.cidade || !cidadesSel.includes(p.cidade))) return false;
-      if (bairroSel !== "todos" && p.bairro !== bairroSel) return false;
-      if (ubsSel !== "todas" && p.unidade_saude !== ubsSel) return false;
+      if (filters.cidades.length > 0 && (!p.cidade || !filters.cidades.includes(p.cidade))) return false;
+      if (filters.bairro !== "todos" && p.bairro !== filters.bairro) return false;
+      if (filters.ubs !== "todas" && p.unidade_saude !== filters.ubs) return false;
       const idade = calcAge(p.data_nascimento);
-      if (faixaSel !== "todas" && faixaEtaria(idade) !== faixaSel) return false;
+      if (filters.faixa !== "todas" && faixaEtaria(idade) !== filters.faixa) return false;
       const w = calcWeeks(p.dum);
-      if (trimSel !== "todos" && trimestre(w) !== trimSel) return false;
+      const trimMap: Record<string, string> = { "1": "1º", "2": "2º", "3": "3º" };
+      if (filters.trimestre !== "todos" && trimestre(w) !== trimMap[filters.trimestre]) return false;
       return true;
     });
-  }, [profiles, cidadesSel, bairroSel, ubsSel, faixaSel, trimSel]);
+  }, [profiles, filters]);
 
   const filteredIds = useMemo(() => new Set(filtered.map((p) => p.user_id)), [filtered]);
 
@@ -226,44 +213,7 @@ export function RelatoriosEpidemiologicosTab() {
         </p>
       </div>
 
-      {/* Filtros */}
-      <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
-        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Filtros</p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
-          <div>
-            <label className="font-semibold text-muted-foreground mb-1 block">Cidades DRS-XIII</label>
-            <select
-              multiple
-              value={cidadesSel}
-              onChange={(e) =>
-                setCidadesSel(Array.from(e.target.selectedOptions).map((o) => o.value))
-              }
-              className="w-full h-24 rounded-xl border border-border bg-background px-2 py-1 text-xs"
-            >
-              {DRS_XIII_CIDADES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-            <p className="text-[10px] text-muted-foreground mt-1">Ctrl/Cmd + clique para múltiplas</p>
-          </div>
-          <SelectFilter label="Bairro" value={bairroSel} onChange={setBairroSel} options={["todos", ...bairrosDisp]} />
-          <SelectFilter label="UBS / Unidade" value={ubsSel} onChange={setUbsSel} options={["todas", ...ubsDisp]} />
-          <SelectFilter
-            label="Faixa etária"
-            value={faixaSel}
-            onChange={setFaixaSel}
-            options={["todas", "<18", "18-34", "≥35"]}
-          />
-          <SelectFilter
-            label="Trimestre"
-            value={trimSel}
-            onChange={setTrimSel}
-            options={["todos", "1º", "2º", "3º"]}
-          />
-        </div>
-      </div>
+      {/* Filtros internos removidos — esta aba consome os filtros globais do topbar (cidade → bairro → UBS, idade, trimestre). */}
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">

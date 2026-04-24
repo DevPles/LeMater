@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { useDistritos, useBairros, useUbs } from "@/hooks/useLocalidades";
 
 type Mode = "login" | "register";
 
@@ -61,6 +62,11 @@ export default function RegistrationModal({
   const [cidade, setCidade] = useState("");
   const [uf, setUf] = useState("");
   const [ubs, setUbs] = useState("");
+  // IDs estruturados (preenchidos quando o bairro/UBS casa com o catálogo)
+  const [districtId, setDistrictId] = useState<string | null>(null);
+  const [neighborhoodId, setNeighborhoodId] = useState<string | null>(null);
+  const [healthUnitId, setHealthUnitId] = useState<string | null>(null);
+  const [ubsManual, setUbsManual] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
   const [cepError, setCepError] = useState("");
   const [endereco, setEndereco] = useState("");
@@ -74,30 +80,47 @@ export default function RegistrationModal({
   const [submitting, setSubmitting] = useState(false);
   const [submitErro, setSubmitErro] = useState<string | null>(null);
 
-  // Mapeamento simplificado bairro → UBS (Ribeirão Preto e região).
-  // Em produção, substituir por consulta ao backend.
-  const UBS_POR_BAIRRO: Record<string, string> = {
-    "Centro": "UBS Central",
-    "Campos Elíseos": "UBS Campos Elíseos",
-    "Ipiranga": "UBS Ipiranga",
-    "Vila Tibério": "UBS Vila Tibério",
-    "Sumarezinho": "UBS Sumarezinho",
-    "Jardim Paulista": "UBS Jardim Paulista",
-    "Jardim Paulistano": "UBS Jardim Paulista",
-    "Vila Virgínia": "UBS Vila Virgínia",
-    "Quintino Facci": "UBS Quintino Facci",
-    "Adão do Carmo": "UBS Adão do Carmo Leonel",
-    "Monte Alegre": "UBS Monte Alegre",
-    "Castelo Branco": "UBS Castelo Branco",
-  };
+  // Catálogo geográfico (banco) — encadeado por cidade → distrito → bairro → UBS
+  const { data: distritosCatalogo } = useDistritos(cidade || null);
+  const { data: bairrosCatalogo } = useBairros(cidade || null, districtId);
+  const { data: ubsCatalogo } = useUbs(cidade || null, districtId, neighborhoodId);
 
-  const ubsParaBairro = (b: string) => {
-    if (!b) return "";
-    // procura por chave que apareça no nome do bairro (case-insensitive)
-    const bLow = b.toLowerCase();
-    const hit = Object.entries(UBS_POR_BAIRRO).find(([k]) => bLow.includes(k.toLowerCase()));
-    return hit ? hit[1] : `UBS de referência (${b})`;
-  };
+  const temDistritos = distritosCatalogo.length > 1;
+
+  // Quando o ViaCEP preenche o bairro, tentamos casar com o catálogo
+  // para deduzir distrito e bairro_id automaticamente.
+  useEffect(() => {
+    if (!cidade || !bairro || distritosCatalogo.length === 0) return;
+    // Se já temos districtId+neighborhoodId, não precisamos refazer
+    if (neighborhoodId) return;
+
+    const casaBairro = async () => {
+      const { data: nbhMatch } = await supabase
+        .from("neighborhoods")
+        .select("id, district_id")
+        .eq("cidade", cidade)
+        .ilike("nome", bairro)
+        .maybeSingle();
+      if (nbhMatch) {
+        setNeighborhoodId(nbhMatch.id);
+        if (nbhMatch.district_id) setDistrictId(nbhMatch.district_id);
+      }
+    };
+    casaBairro();
+  }, [cidade, bairro, distritosCatalogo.length, neighborhoodId]);
+
+  // Sugestão automática da UBS: se há exatamente uma UBS no bairro/distrito
+  // selecionado e o usuário ainda não escolheu manualmente, pré-seleciona.
+  useEffect(() => {
+    if (ubsManual) return;
+    if (ubsCatalogo.length === 1) {
+      setUbs(ubsCatalogo[0].nome);
+      setHealthUnitId(ubsCatalogo[0].id);
+    } else if (ubsCatalogo.length > 1 && !healthUnitId) {
+      // Múltiplas opções → limpa para o usuário escolher
+      setUbs("");
+    }
+  }, [ubsCatalogo, ubsManual, healthUnitId]);
 
   const formatarCep = (v: string) => {
     const d = v.replace(/\D/g, "").slice(0, 8);
@@ -119,14 +142,22 @@ export default function RegistrationModal({
         setCidade("");
         setUf("");
         setUbs("");
+        setDistrictId(null);
+        setNeighborhoodId(null);
+        setHealthUnitId(null);
         return;
       }
       const b = data.bairro || "";
       const c = data.localidade || "";
+      // Reset do vínculo estruturado — será refeito pelo effect ao casar com o catálogo
+      setDistrictId(null);
+      setNeighborhoodId(null);
+      setHealthUnitId(null);
+      setUbs("");
+      setUbsManual(false);
       setBairro(b);
       setCidade(c);
       setUf(data.uf || "");
-      setUbs(ubsParaBairro(b));
       // Preenche o endereço se estiver vazio
       if (!endereco && data.logradouro) {
         setEndereco(`${data.logradouro}${b ? `, ${b}` : ""}`);
@@ -137,6 +168,7 @@ export default function RegistrationModal({
       setCepLoading(false);
     }
   };
+
 
 
   // Step 2 fields (pregnancy)
@@ -214,6 +246,8 @@ export default function RegistrationModal({
             bairro: bairro || null,
             cidade: cidade || "Ribeirão Preto",
             unidade_saude: ubs || null,
+            district_id: districtId,
+            health_unit_id: healthUnitId,
             data_nascimento: dataNasc || null,
             ...(dumIso ? { dum: dumIso } : {}),
           })
@@ -530,7 +564,10 @@ export default function RegistrationModal({
                       value={bairro}
                       onChange={(e) => {
                         setBairro(e.target.value);
-                        setUbs(ubsParaBairro(e.target.value));
+                        setNeighborhoodId(null);
+                        setHealthUnitId(null);
+                        setUbs("");
+                        setUbsManual(false);
                       }}
                       className={inputClass}
                     />
@@ -546,10 +583,110 @@ export default function RegistrationModal({
                 </div>
               )}
 
-              {ubs && (
-                <div className="bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl px-3 py-2">
-                  <p className="text-[10px] uppercase tracking-wide text-white/60">UBS de referência</p>
-                  <p className="text-[#f0c040] text-sm font-bold">{ubs}</p>
+              {/* Distrito sanitário (só aparece se a cidade tem >1 distrito) */}
+              {cidade && temDistritos && (
+                <div>
+                  <Label className={labelClass}>
+                    Distrito sanitário {!districtId && <span className="text-[#f0c040]">— selecione</span>}
+                  </Label>
+                  <select
+                    value={districtId ?? ""}
+                    onChange={(e) => {
+                      setDistrictId(e.target.value || null);
+                      setNeighborhoodId(null);
+                      setHealthUnitId(null);
+                      setUbs("");
+                      setUbsManual(false);
+                    }}
+                    className={`${inputClass} appearance-none`}
+                  >
+                    <option value="" className="text-[#1a1557]">Selecione o distrito</option>
+                    {distritosCatalogo.map((d) => (
+                      <option key={d.id} value={d.id} className="text-[#1a1557]">
+                        {d.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* UBS — select dependente do banco */}
+              {cidade && (
+                <div>
+                  <Label className={labelClass}>UBS de referência</Label>
+                  {!ubsManual ? (
+                    <>
+                      <select
+                        value={healthUnitId ?? ""}
+                        onChange={(e) => {
+                          const id = e.target.value;
+                          if (id === "__manual__") {
+                            setUbsManual(true);
+                            setHealthUnitId(null);
+                            setUbs("");
+                            return;
+                          }
+                          const found = ubsCatalogo.find((u) => u.id === id);
+                          setHealthUnitId(id || null);
+                          setUbs(found?.nome ?? "");
+                        }}
+                        className={`${inputClass} appearance-none`}
+                        disabled={temDistritos && !districtId}
+                      >
+                        <option value="" className="text-[#1a1557]">
+                          {temDistritos && !districtId
+                            ? "Selecione o distrito primeiro"
+                            : ubsCatalogo.length === 0
+                              ? "Nenhuma UBS catalogada — digite manualmente"
+                              : "Selecione a UBS"}
+                        </option>
+                        {ubsCatalogo.map((u) => (
+                          <option key={u.id} value={u.id} className="text-[#1a1557]">
+                            {u.nome}
+                          </option>
+                        ))}
+                        {ubsCatalogo.length > 0 && (
+                          <option value="__manual__" className="text-[#1a1557]">
+                            + Outra UBS (digitar)
+                          </option>
+                        )}
+                      </select>
+                      {ubsCatalogo.length === 0 && (!temDistritos || districtId) && (
+                        <button
+                          type="button"
+                          onClick={() => setUbsManual(true)}
+                          className="mt-1 text-[10px] text-[#f0c040] hover:underline"
+                        >
+                          + Digitar nome da UBS manualmente
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        value={ubs}
+                        onChange={(e) => setUbs(e.target.value)}
+                        placeholder="Digite o nome da UBS"
+                        className={inputClass}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUbsManual(false);
+                          setUbs("");
+                          setHealthUnitId(null);
+                        }}
+                        className="text-[10px] text-white/60 hover:text-[#f0c040] underline whitespace-nowrap self-center"
+                      >
+                        usar lista
+                      </button>
+                    </div>
+                  )}
+                  {ubs && !ubsManual && (
+                    <p className="mt-1 text-[10px] text-[#f0c040]/80">
+                      Selecionada: <span className="font-bold">{ubs}</span>
+                    </p>
+                  )}
                 </div>
               )}
 
