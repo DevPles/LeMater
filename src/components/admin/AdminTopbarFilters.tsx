@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAdminFilters } from "@/contexts/AdminFiltersContext";
 import { DRS_XIII_CIDADES } from "@/lib/drs-xiii";
 import type { AdminProfile, AdminAlert } from "@/utils/admin-filters";
