@@ -10,8 +10,8 @@ type State = {
 };
 
 /**
- * Carrega TODAS as gestantes + todos os alertas ativos (uma chamada por gestante via RPC).
- * É a fonte única de dados das seções de Visão geral, Gestantes e Comunicação.
+ * Carrega TODAS as gestantes + todos os alertas ativos em UMA única chamada agregada.
+ * Antes fazia N+1 (uma RPC por gestante) — agora usa get_all_active_alerts.
  */
 export function useAdminData(): State {
   const [profiles, setProfiles] = useState<AdminProfile[]>([]);
@@ -20,31 +20,20 @@ export function useAdminData(): State {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data: profs } = await supabase
-      .from("profiles")
-      .select(
-        "user_id, nome, email, telefone, cidade, bairro, unidade_saude, data_nascimento, dum, numero_gestacoes, numero_partos, numero_abortos",
-      )
-      .order("nome", { ascending: true })
-      .limit(1000);
 
-    const list = (profs ?? []) as AdminProfile[];
-    setProfiles(list);
+    const [profsRes, alertsRes] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select(
+          "user_id, nome, email, telefone, cidade, bairro, unidade_saude, data_nascimento, dum, numero_gestacoes, numero_partos, numero_abortos",
+        )
+        .order("nome", { ascending: true })
+        .limit(1000),
+      supabase.rpc("get_all_active_alerts"),
+    ]);
 
-    // Carrega alertas em paralelo via RPC
-    const alertResults = await Promise.all(
-      list.map((p) =>
-        supabase
-          .rpc("get_active_alerts", { _gestante_id: p.user_id })
-          .then(({ data }) =>
-            ((data ?? []) as Omit<AdminAlert, "gestante_id">[]).map((a) => ({
-              ...a,
-              gestante_id: p.user_id,
-            })),
-          ),
-      ),
-    );
-    setAlerts(alertResults.flat());
+    setProfiles(((profsRes.data ?? []) as AdminProfile[]));
+    setAlerts(((alertsRes.data ?? []) as AdminAlert[]));
     setLoading(false);
   }, []);
 
