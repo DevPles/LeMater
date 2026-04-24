@@ -708,6 +708,12 @@ export default function RegistrationModal({
                 </motion.div>
               )}
 
+              {submitErro && (
+                <p className="text-red-300 text-xs bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">
+                  {submitErro}
+                </p>
+              )}
+
               <div className="flex gap-3 mt-4">
                 <button
                   type="button"
@@ -720,9 +726,10 @@ export default function RegistrationModal({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleFinish}
-                  className="flex-1 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-base py-3 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors"
+                  disabled={submitting}
+                  className="flex-1 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-base py-3 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Finalizar
+                  {submitting ? "Criando conta..." : "Finalizar"}
                 </motion.button>
               </div>
             </motion.div>
