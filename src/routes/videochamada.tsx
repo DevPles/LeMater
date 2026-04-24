@@ -86,22 +86,18 @@ function AgendamentosPage() {
   }, [slots, filtroEsp]);
 
   const reservar = async (slotId: string) => {
+    if (!userId) {
+      setMsg("Faça login para reservar.");
+      return;
+    }
     setBooking(slotId);
     setMsg(null);
-    // Para o MVP sem auth de gestante, fazemos reserva direta com gestante_id demo.
-    // Em produção, a função book_slot usa auth.uid().
-    const { error } = await supabase
-      .from("appointment_slots")
-      .update({
-        status: "reservado",
-        gestante_id: DEMO_GESTANTE_ID,
-        reservado_em: new Date().toISOString(),
-      })
-      .eq("id", slotId)
-      .eq("status", "disponivel");
-
+    // book_slot é SECURITY DEFINER e usa auth.uid() para garantir rastreabilidade
+    const { data, error } = await supabase.rpc("book_slot", { _slot_id: slotId });
     if (error) {
       setMsg("Não foi possível reservar: " + error.message);
+    } else if (Array.isArray(data) && data[0] && !data[0].success) {
+      setMsg(data[0].message ?? "Horário indisponível");
     } else {
       setMsg("Horário reservado com sucesso!");
     }
