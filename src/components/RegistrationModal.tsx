@@ -272,7 +272,7 @@ export default function RegistrationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 w-[calc(100vw-1rem)] max-w-md max-h-[85vh] p-0 rounded-2xl relative overflow-hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fixed">
+      <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 w-[calc(100vw-1rem)] max-w-md max-h-[85vh] p-0 rounded-2xl relative overflow-hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fixed [&>button]:text-white [&>button]:opacity-100 [&>button]:z-20">
         {/* Rising particles / bokeh animation - confined inside the modal */}
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-2xl">
           {Array.from({ length: 18 }).map((_, i) => {
