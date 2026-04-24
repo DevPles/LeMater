@@ -320,7 +320,8 @@ export default function RegistrationModal({
           </DialogTitle>
         </DialogHeader>
 
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
+          <div className="relative z-10 contents">
           {mode === "login" && (
             <motion.div
               key="login"
