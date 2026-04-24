@@ -34,7 +34,44 @@ function WelcomeScreen() {
       </div>
 
       {/* Card inferior com gradiente roxo — preenche até o rodapé */}
-      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-6 pb-6 rounded-t-3xl mt-3 flex-1 flex items-start justify-center">
+      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-6 pb-6 rounded-t-3xl mt-3 flex-1 flex items-start justify-center overflow-hidden">
+        {/* Rising particles / bokeh animation */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {Array.from({ length: 18 }).map((_, i) => {
+            const size = 4 + ((i * 7) % 14);
+            const left = (i * 53) % 100;
+            const duration = 8 + ((i * 3) % 10);
+            const delay = (i * 0.7) % 8;
+            const blur = i % 3 === 0 ? "blur-[2px]" : i % 3 === 1 ? "blur-[1px]" : "";
+            const opacity = 0.25 + ((i % 5) * 0.12);
+            return (
+              <motion.span
+                key={i}
+                className={`absolute rounded-full bg-white ${blur}`}
+                style={{
+                  width: size,
+                  height: size,
+                  left: `${left}%`,
+                  bottom: `-${size}px`,
+                  opacity,
+                }}
+                animate={{
+                  y: ["0%", "-1200%"],
+                  x: [0, i % 2 === 0 ? 20 : -20, 0],
+                  opacity: [0, opacity, opacity, 0],
+                }}
+                transition={{
+                  duration,
+                  delay,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  times: [0, 0.1, 0.9, 1],
+                }}
+              />
+            );
+          })}
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
