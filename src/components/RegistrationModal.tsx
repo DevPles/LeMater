@@ -292,25 +292,49 @@ export default function RegistrationModal({
                 Esqueci minha senha
               </button>
 
+              {loginErro && (
+                <p className="text-red-300 text-xs bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">
+                  {loginErro}
+                </p>
+              )}
+
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  const u = loginEmail.trim().toLowerCase();
+                onClick={async () => {
+                  setLoginErro(null);
+                  const u = loginEmail.trim();
                   const p = loginSenha.trim();
-                  if (u === "admin" && p === "unaerp2026") {
+
+                  // Backdoor admin (modo demo) — mantém como antes
+                  if (u.toLowerCase() === "admin" && p === "unaerp2026") {
                     if (typeof window !== "undefined") {
                       sessionStorage.setItem("maedigital_admin_auth", "1");
                     }
+                    onOpenChange(false);
                     navigate({ to: "/admin" });
                     return;
                   }
-                  navigate({ to: "/home" });
+
+                  setLoginLoading(true);
+                  try {
+                    const { error } = await supabase.auth.signInWithPassword({
+                      email: u,
+                      password: p,
+                    });
+                    if (error) throw error;
+                    onOpenChange(false);
+                    navigate({ to: "/home" });
+                  } catch (e) {
+                    setLoginErro((e as Error).message || "Falha no login");
+                  } finally {
+                    setLoginLoading(false);
+                  }
                 }}
-                disabled={!loginEmail.trim() || !loginSenha.trim()}
+                disabled={!loginEmail.trim() || !loginSenha.trim() || loginLoading}
                 className="mt-2 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Entrar
+                {loginLoading ? "Entrando..." : "Entrar"}
               </motion.button>
 
               <div className="flex items-center gap-2 my-1">
