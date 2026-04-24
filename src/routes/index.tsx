@@ -23,18 +23,18 @@ function WelcomeScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-blue-100 to-[#1a4ba8] flex flex-col">
+    <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-white via-blue-100 to-[#1a4ba8] flex flex-col">
       {/* Logo do hospital no topo */}
-      <div className="flex items-center justify-center px-8 pt-8 pb-4">
+      <div className="flex-1 flex items-center justify-center px-8 pt-4 pb-2 min-h-0">
         <img
           src="/images/hospital-bonini-logo.png"
           alt="Hospital Electro Bonini - UNAERP"
-          className="w-full max-w-xs object-contain"
+          className="w-full max-w-[260px] max-h-full object-contain"
         />
       </div>
 
       {/* Card inferior com gradiente roxo */}
-      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-8 pb-10 rounded-t-3xl mt-auto">
+      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-5 pb-6 rounded-t-3xl">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -45,7 +45,7 @@ function WelcomeScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-4xl font-bold font-display text-white mb-2 tracking-tight"
+            className="text-3xl font-bold font-display text-white mb-1 tracking-tight"
           >
             Mãe Digital
           </motion.h1>
@@ -54,7 +54,7 @@ function WelcomeScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="text-white/90 text-base mb-3"
+            className="text-white/90 text-sm mb-2"
           >
             Cartão Digital da Gestante
           </motion.p>
@@ -63,11 +63,11 @@ function WelcomeScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
-            className="relative rounded-full px-5 py-2 mb-6 overflow-hidden bg-gradient-to-br from-white/25 via-white/10 to-white/5 backdrop-blur-xl border border-white/30 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),inset_0_-1px_0_0_rgba(255,255,255,0.1),0_8px_32px_-4px_rgba(240,192,64,0.25)]"
+            className="relative rounded-full px-4 py-1.5 mb-4 overflow-hidden bg-gradient-to-br from-white/25 via-white/10 to-white/5 backdrop-blur-xl border border-white/30 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),inset_0_-1px_0_0_rgba(255,255,255,0.1),0_8px_32px_-4px_rgba(240,192,64,0.25)]"
           >
             <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent rounded-t-full pointer-events-none" />
             <span className="absolute -inset-x-2 -top-1 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent pointer-events-none" />
-            <span className="relative text-[#f0c040] text-xs font-semibold tracking-wider uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+            <span className="relative text-[#f0c040] text-[11px] font-semibold tracking-wider uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
               Uma iniciativa UNAERP
             </span>
           </motion.div>
@@ -82,7 +82,7 @@ function WelcomeScreen() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => openModal("login")}
-              className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-base px-8 py-4 rounded-full shadow-xl shadow-[#f0c040]/40 transition-colors flex-1"
+              className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm px-6 py-3 rounded-full shadow-xl shadow-[#f0c040]/40 transition-colors flex-1"
             >
               Entrar
             </motion.button>
@@ -91,7 +91,7 @@ function WelcomeScreen() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => openModal("register")}
-              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-base px-8 py-4 rounded-full backdrop-blur-sm transition-colors flex-1"
+              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm px-6 py-3 rounded-full backdrop-blur-sm transition-colors flex-1"
             >
               Cadastrar
             </motion.button>
