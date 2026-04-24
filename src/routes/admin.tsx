@@ -67,7 +67,12 @@ function AdminShell() {
 
   const filtered = useMemo(() => applyFilters(profiles, alerts, filters), [profiles, alerts, filters]);
 
-  const showTopbar = ["visao", "gestantes", "epidemiologia", "comunicacao"].includes(section);
+  const isGestantes = section.startsWith("gestantes-");
+  const isEpi = section.startsWith("epi-");
+  const isComunicacao = section.startsWith("comunicacao-");
+  const isConfig = section.startsWith("config-");
+
+  const showTopbar = section === "visao" || isGestantes || isEpi || isComunicacao;
 
   return (
     <AdminLayout
@@ -93,24 +98,29 @@ function AdminShell() {
           alerts={alerts}
           loading={loading}
           onGoTo={(s) =>
-            setSection(s === "gestantes" ? "gestantes" : s === "comunicacao" ? "comunicacao" : "epidemiologia")
+            setSection(
+              s === "gestantes"
+                ? "gestantes-lista"
+                : s === "comunicacao"
+                  ? "comunicacao-campanhas"
+                  : "epi-drs",
+            )
           }
         />
       )}
-      {section === "gestantes" && (
+      {isGestantes && (
         <GestantesSection
           profiles={profiles}
           alerts={alerts}
           loading={loading}
-          onAbrirComunicacao={() => setSection("comunicacao")}
+          onAbrirComunicacao={() => setSection("comunicacao-campanhas")}
         />
       )}
-      {section === "epidemiologia" && <RelatoriosEpidemiologicosTab />}
-      {section === "comunicacao" && <ComunicacaoSection profiles={profiles} alerts={alerts} />}
-      {section === "parametros" && <ParametrosTab />}
-      {section === "dados" && <DadosClinicosTab />}
-      {section === "profissionais" && <ProfissionaisTab />}
-      {section === "telas" && <TelasTab />}
+      {isEpi && <RelatoriosEpidemiologicosTab />}
+      {isComunicacao && <ComunicacaoSection profiles={profiles} alerts={alerts} />}
+      {section === "config-parametros" && <ParametrosTab />}
+      {section === "config-profissionais" && <ProfissionaisTab />}
+      {section === "config-telas" && <TelasTab />}
     </AdminLayout>
   );
 }
