@@ -85,7 +85,7 @@ function HomePage() {
             </p>
           )}
         </div>
-        <UserAvatar name={nomeCompleto} week={currentWeek} />
+        <UserAvatar name={nomeCompleto} week={currentWeek} photoUrl={profile?.foto_url} />
       </motion.div>
 
       <div className="space-y-5">
