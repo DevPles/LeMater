@@ -500,7 +500,7 @@ export default function RegistrationModal({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col gap-2"
+              className="relative z-10 flex flex-col gap-2"
             >
               {/* Foto */}
               <div className="flex flex-col items-center gap-1 mb-1">
@@ -813,7 +813,7 @@ export default function RegistrationModal({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="flex flex-col gap-4"
+              className="relative z-10 flex flex-col gap-4"
             >
               <div>
                 <Label className={labelClass}>Data da última menstruação (DUM)</Label>
@@ -921,7 +921,7 @@ export default function RegistrationModal({
               whileTap={{ scale: 0.98 }}
               type="button"
               onClick={() => setMode("login")}
-              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm py-2.5 rounded-full backdrop-blur-sm transition-colors"
+              className="relative z-10 bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm py-2.5 rounded-full backdrop-blur-sm transition-colors"
             >
               Entrar
             </motion.button>
@@ -929,7 +929,6 @@ export default function RegistrationModal({
             </>
           )}
         </AnimatePresence>
-        </div>
       </DialogContent>
     </Dialog>
   );
