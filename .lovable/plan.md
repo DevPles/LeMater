@@ -1,214 +1,158 @@
-## Visão do redesign
+# Catálogo geográfico DRS-XIII (cidade → distrito → bairro → UBS)
 
-Hoje o Admin é um amontoado de 6 abas, cada uma com filtros próprios (ou nenhum), **mocks misturados com dados reais**, e push/WhatsApp atrelado **gestante por gestante**. Vou reorganizar em torno de **quatro princípios**:
+## Objetivo
 
-1. **Zero dados mocados** — tudo passa a vir exclusivamente do banco. Os arrays `gestantesMock`, `EXAMES_LISTA`, `VACINAS_LISTA`, `CONDICOES_ALTO_RISCO`, `SINAIS_CRITICOS` são **deletados** do `admin.tsx`. Listas de exames/vacinas/condições passam a vir das tabelas de regras (`reference_ranges`, `exam_criteria`, `vaccine_schedule`, `vaccine_schedule_extra`, `image_exam_schedule`). Listas de cidades/bairros vêm do dataset real (`profiles`) — `DRS_XIII_CIDADES` permanece só como referência para autocomplete no cadastro.
-2. **Filtros globais unificados** — uma única barra de filtros (cidade, bairro, UBS, faixa etária, trimestre, condição clínica, tipo de alerta, período) que se aplica a TODAS as áreas: gestão, relatórios, epidemiologia e comunicação. O admin filtra uma vez e o sistema inteiro passa a operar sobre aquele recorte.
-3. **Sidebar de navegação** — substitui as abas horizontais (que já não cabem em 1067px). Mais escalável.
-4. **Comunicação em massa por grupos dinâmicos** — área dedicada para criar grupos de envio (push e WhatsApp) baseados em filtros de alerta, salvar grupos recorrentes ("Gestantes 3º trim com PA alterada", "Atrasadas em USG morfológica", "Adolescentes < 18 sem dTpa") e disparar campanhas em lote.
+Substituir os campos livres atuais (`profiles.cidade/bairro/unidade_saude`) por uma hierarquia oficial e navegável: **cidade → (distrito, se houver) → bairro → UBS**. O cadastro vira encadeado, com selects dependentes alimentados pelo banco. O usuário ainda pode digitar manualmente quando algo não estiver na lista (ex.: UBS nova).
 
 ---
 
-## Política de dados (estrita)
+## 1. Modelo de dados
 
-| Categoria | Antes | Depois |
-|---|---|---|
-| Lista de gestantes | `gestantesMock` (10 fakes) | `profiles` filtrado por role `gestante` |
-| Idade | hardcoded no mock | calculada de `data_nascimento` |
-| Semanas gestacionais | hardcoded | calculada de `dum` |
-| Cidade / bairro / UBS | mock | `profiles.cidade/bairro/unidade_saude` |
-| Risco | string fixa | derivado de `get_active_alerts` (severidade máx) |
-| Sinais clínicos / condições | arrays constantes | medições reais + critérios em `reference_ranges` |
-| Exames pendentes | array fixo | cruzamento `exam_criteria`/`image_exam_schedule` × `exam_results`/`image_exam_results` |
-| Vacinas pendentes | array fixo | cruzamento `vaccine_schedule` × `vaccinations` |
-| Cidades para filtro | extraídas do mock | `SELECT DISTINCT cidade FROM profiles` |
-| Histórico de push | `useState` em memória | `notification_campaigns` + `notification_deliveries` |
-
-Se uma seção não tiver dados reais ainda (ex.: nenhuma gestante cadastrada), exibe **empty state explicativo** ("Nenhuma gestante cadastrada ainda. Os dados aparecerão aqui assim que as primeiras gestantes se registrarem"), nunca dados de exemplo.
-
----
-
-## Nova estrutura
+Quatro tabelas novas em `public`, todas com RLS:
 
 ```text
-┌────────────────────────────┬────────────────────────────────────────┐
-│  SIDEBAR                   │  TOPBAR (filtros globais sempre visíveis) │
-│  ──────────                │  ────────────────────────────────────────│
-│  Visão geral (dashboard)   │  Cidade ▾  Bairro ▾  UBS ▾  Idade ▾     │
-│  Gestantes                 │  Trimestre ▾  Condição ▾  Período 📅    │
-│  Epidemiologia             │  [Salvar como grupo]  [Limpar]  N=42    │
-│  Comunicação ★ NOVA        │                                          │
-│   ├ Campanhas              │  ─────────────────────────────────────── │
-│   ├ Grupos dinâmicos       │  CONTEÚDO DA SEÇÃO ATIVA                 │
-│   └ Histórico              │                                          │
-│  Parâmetros clínicos       │                                          │
-│  Dados clínicos (auditoria)│                                          │
-│  Profissionais             │                                          │
-│  Conteúdo das telas        │                                          │
-└────────────────────────────┴────────────────────────────────────────┘
+districts
+  id (uuid)
+  cidade (text)              -- ex: "Ribeirão Preto"
+  nome (text)                -- ex: "Sede", "Bonfim Paulista"
+  UNIQUE (cidade, nome)
+
+neighborhoods
+  id (uuid)
+  cidade (text)
+  district_id (uuid NULL)    -- nullable: bairro pode não pertencer a distrito
+  nome (text)                -- ex: "Centro", "Campos Elíseos"
+  UNIQUE (cidade, district_id, nome)
+
+health_units                 -- UBS / UBSF / NASF
+  id (uuid)
+  cidade (text)
+  district_id (uuid NULL)
+  neighborhood_id (uuid NULL)
+  nome (text)                -- ex: "UBS Vila Albertina"
+  cnes (text NULL)           -- código CNES quando conhecido
+  tipo (text NULL)           -- "UBS", "UBSF", "USF", "AME"...
+  endereco (text NULL)
+  ativo (boolean default true)
+  UNIQUE (cidade, nome)
 ```
 
-A topbar de filtros é **um único componente compartilhado**, alimentado por um Context (`AdminFiltersContext`). Cada seção lê o mesmo recorte filtrado — não existe mais filtro local duplicado.
+E duas novas colunas opcionais em `profiles` para guardar o vínculo estruturado (mantemos `cidade/bairro/unidade_saude` como texto para compatibilidade e exibição):
 
----
-
-## Seção 1 — Visão geral (nova landing do admin)
-
-Dashboard executivo com 4 KPIs grandes + 4 mini-charts, **100% via Supabase**, sempre respondendo aos filtros globais:
-- Gestantes no recorte | Alto risco | Alertas ativos hoje | Cobertura vacinal PNI %
-- Mini: novos cadastros últimos 30 dias, alertas por tipo (vital/lab/imagem/vacina), distribuição por trimestre, top 5 condições
-
-Atalhos rápidos: "Ver gestantes com alerta", "Disparar campanha para este recorte", "Exportar Excel".
-
----
-
-## Seção 2 — Gestantes (substitui a aba "Gestão" atual)
-
-- **Deleta `gestantesMock`, `EXAMES_LISTA`, `VACINAS_LISTA`, `CONDICOES_ALTO_RISCO`, `SINAIS_CRITICOS`, type `Gestante`, `parseDpp`, `riscoStyles`, `riscoLabel`, `CIDADES`, `sugerirMensagemPush(g: Gestante)`** do `admin.tsx`.
-- Passa a ler `profiles` + `get_active_alerts` reais.
-- Tabela com: nome, idade (calc), semanas gestacionais (calc da DUM), cidade/bairro/UBS, paridade (G/P/A), nº alertas ativos, severidade máxima.
-- Linha clicável → drawer lateral com detalhes (medições, exames, vacinas, alertas) — auditoria, sem edição.
-- Botões: "Adicionar ao grupo de envio" / "Disparar push individual" / "WhatsApp individual" — usando `profiles.telefone` real.
-- Empty state quando não há gestantes.
-
----
-
-## Seção 3 — Epidemiologia
-
-Mantém o `RelatoriosEpidemiologicosTab` atual, mas:
-- **Remove os filtros locais duplicados** — passa a consumir o Context global.
-- Adiciona corte por **condição clínica** e **tipo de alerta** que vêm do filtro global.
-- Botão de exportação Excel passa a respeitar o recorte.
-
----
-
-## Seção 4 — Comunicação (parte nova mais importante)
-
-### 4a. Grupos dinâmicos
-Um grupo é uma **regra salva** (não lista estática). Exemplo: "todas as gestantes com alerta de PA alterada nas últimas 2 semanas em Ribeirão Preto". Toda vez que o admin abre o grupo, ele é **recalculado em tempo real** via `get_active_alerts` + filtros — nunca lista cacheada.
-
-UI:
-- Lista de grupos salvos (cards com: nome, regra resumida, quantidade atual de gestantes calculada na hora).
-- Botão "Criar grupo do recorte atual" — pega filtros globais + filtros adicionais de comunicação.
-- Filtros adicionais exclusivos:
-  - Severidade do alerta (atenção/urgente)
-  - Origem do alerta (medição/exame/imagem/vacina)
-  - Parâmetro específico (ex.: só PA sistólica > 140)
-  - "Tem WhatsApp cadastrado" (sim/não)
-
-### 4b. Campanhas
-1. Seleciona um grupo (ou usa o recorte atual).
-2. Vê preview das gestantes reais que receberão.
-3. Escolhe canal: **Push interno**, **WhatsApp**, ou ambos.
-4. Compõe mensagem:
-   - Templates pré-prontos por tipo de alerta (sugestão automática multi-destinatário).
-   - Variáveis: `{{primeiro_nome}}`, `{{semanas}}`, `{{ubs}}`, `{{exame_pendente}}` — substituídas com dados reais.
-   - Preview com a primeira gestante real substituída.
-5. Confirma → registra em `notification_campaigns` + `notification_deliveries` (uma linha por gestante).
-6. WhatsApp em massa via `wa.me` com confirmação a cada envio (sem API oficial — Twilio fica para fase 2).
-
-### 4c. Histórico
-Tabela real de campanhas (`notification_campaigns`): data, grupo alvo, canal, mensagem, total enviado, total entregue. Filtro por período e canal. **Substitui completamente o `pushHistorico` em `useState` atual.**
-
----
-
-## Seção 5 — Parâmetros clínicos
-Mantém intocada (5 sub-abas: Vitais, Lab, Imagem, PNI, Extras). Filtros globais não se aplicam aqui (é configuração).
-
-## Seção 6 — Dados clínicos (auditoria)
-Mantém intocada (read-only por gestante).
-
-## Seção 7 — Profissionais e Seção 8 — Conteúdo das telas
-Mantêm como estão (já são 100% banco).
-
----
-
-## Mudanças no banco
-
-Uma migração nova:
-
-```sql
--- Grupos dinâmicos (regra salva, não lista estática)
-CREATE TABLE notification_groups (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  nome TEXT NOT NULL,
-  descricao TEXT,
-  filtros JSONB NOT NULL,
-  criado_por UUID REFERENCES auth.users,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Campanhas executadas
-CREATE TABLE notification_campaigns (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  group_id UUID REFERENCES notification_groups,
-  filtros_snapshot JSONB NOT NULL,
-  canal TEXT NOT NULL CHECK (canal IN ('push','whatsapp','ambos')),
-  titulo TEXT,
-  mensagem TEXT NOT NULL,
-  template_origem TEXT,
-  total_destinatarios INT NOT NULL,
-  enviado_por UUID REFERENCES auth.users,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- Entregas individuais (rastreabilidade)
-CREATE TABLE notification_deliveries (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id UUID REFERENCES notification_campaigns ON DELETE CASCADE,
-  gestante_id UUID NOT NULL,
-  canal TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pendente',
-  enviado_em TIMESTAMPTZ,
-  lido_em TIMESTAMPTZ,
-  erro TEXT
-);
-
-CREATE INDEX IF NOT EXISTS idx_profiles_telefone ON profiles(telefone) WHERE telefone IS NOT NULL;
+```text
+profiles
+  + district_id (uuid NULL)
+  + health_unit_id (uuid NULL)
 ```
 
-RLS: tudo só para `admin` (CRUD). Gestante vê apenas suas próprias `notification_deliveries`.
+### RLS
+
+- `SELECT`: liberado para `authenticated` (gestante precisa ler para preencher cadastro).
+- `INSERT/UPDATE/DELETE`: apenas `admin` (via `has_role`).
+
+---
+
+## 2. Conteúdo inicial (seed)
+
+Conforme combinado, popular **todas as 26 cidades da DRS-XIII**. Estratégia para manter qualidade:
+
+- **Ribeirão Preto** (sede): cobertura completa — distritos `Sede` e `Bonfim Paulista`, ~80 bairros principais, ~50 UBS/UBSF reais com CNES quando disponível (fonte: portal SMS-RP / CNES DataSUS).
+- **Demais 25 cidades**: cidade + 1 distrito padrão "Sede" + UBS principais conhecidas (geralmente 1–8 por município, fonte CNES DataSUS). Cidades com distritos relevantes (ex.: Cruz das Posses em Sertãozinho) ganham distrito próprio.
+- Bairros das cidades menores: deixados vazios inicialmente — admin completa via UI conforme demanda. O cadastro permite digitar bairro livre se a lista estiver vazia.
+
+Seed entra como `INSERT … ON CONFLICT DO NOTHING` em uma migration única, isolada do schema, para poder reexecutar sem risco.
+
+---
+
+## 3. Topbar de filtros do admin
+
+Reordenar e encadear (já está parcialmente feito):
+
+`Cidade → Distrito → Bairro → UBS → demais filtros`
+
+- Distrito **só aparece** se a(s) cidade(s) selecionada(s) tiverem mais de um distrito cadastrado.
+- Bairro lista apenas bairros das cidades (e distrito, se filtrado) selecionados.
+- UBS lista apenas unidades das cidades/distrito/bairro selecionados.
+- Mudança em nível superior reseta automaticamente os inferiores.
+
+Adicionar `distrito` e `health_unit_id` ao `AdminFiltersContext`.
+
+---
+
+## 4. Cadastro da gestante (`RegistrationModal`)
+
+Substituir os campos atuais por um bloco encadeado:
+
+```text
+[ Cidade        ▼ ]   ← combobox com busca, lista DRS-XIII
+[ Distrito      ▼ ]   ← aparece só se a cidade tiver >1 distrito
+[ Bairro        ▼ ]   ← combobox com busca; rodapé "+ Adicionar novo bairro"
+[ UBS           ▼ ]   ← combobox com busca; rodapé "+ Outra UBS (digitar)"
+```
+
+Comportamento:
+
+- ViaCEP continua preenchendo `cidade` e `bairro` automaticamente. Se o bairro retornado existir na lista da cidade → seleciona. Se não existir → entra como texto livre e mostra hint discreto "bairro novo, será revisado".
+- Selecionar cidade carrega distritos/bairros/UBS via TanStack Query (cache compartilhado, `staleTime` longo).
+- "+ Outra UBS" abre input livre — gravamos em `unidade_saude` (texto) e deixamos `health_unit_id` nulo. Admin recebe esses casos numa visão "UBS pendentes de catalogação" (futuro, fora do escopo agora).
+- Removemos o mapeamento hardcoded bairro→UBS atual do modal (hoje em `RegistrationModal.tsx` linhas 77–96).
+
+---
+
+## 5. Tela admin para gerenciar o catálogo
+
+Nova subseção na sidebar dentro de **Configuração**:
+
+```text
+Configuração
+ └─ Localidades & UBS
+      ├─ Cidades (read-only, lista DRS-XIII)
+      ├─ Distritos
+      ├─ Bairros
+      └─ UBS / unidades de saúde
+```
+
+Cada aba: tabela com busca, criar/editar/desativar, vínculo com nível pai. Permite ao admin manter o catálogo vivo sem deploy.
+
+---
+
+## 6. Migração de dados existentes
+
+Script idempotente dentro da migration:
+
+1. Para cada `profiles.cidade` distinto que bata com DRS-XIII, manter como está.
+2. Tentar casar `profiles.bairro` com `neighborhoods.nome` da mesma cidade → preencher `neighborhoods` se faltar e setar `district_id` quando óbvio (ex.: "Bonfim Paulista" em RP vira distrito).
+3. Tentar casar `profiles.unidade_saude` com `health_units.nome` da cidade → setar `profiles.health_unit_id`. Quando não casar, deixar nulo (texto preservado em `unidade_saude`).
+
+Sem perda de dados — campos texto continuam autoritativos até o vínculo estruturado ser preenchido.
 
 ---
 
 ## Detalhes técnicos
 
-**Arquivos novos:**
-- `src/contexts/AdminFiltersContext.tsx`
-- `src/components/admin/AdminLayout.tsx`
-- `src/components/admin/AdminTopbarFilters.tsx`
-- `src/components/admin/sections/VisaoGeralSection.tsx`
-- `src/components/admin/sections/GestantesSection.tsx`
-- `src/components/admin/sections/ComunicacaoSection.tsx`
-- `src/components/admin/comunicacao/GruposDinamicos.tsx`
-- `src/components/admin/comunicacao/Campanhas.tsx`
-- `src/components/admin/comunicacao/HistoricoCampanhas.tsx`
-- `src/utils/admin-filters.ts` — `applyFiltersToProfiles(filters, profiles, alerts)`
-- `src/hooks/useAdminData.ts` — fetch unificado de profiles+alerts+exams+vacc+measurements
-- `supabase/migrations/...notification_system.sql`
+- **Tabelas e seed**: uma migration de schema (DDL + RLS + índices em `cidade`, `district_id`, `neighborhood_id`) + uma migration separada só com os `INSERT ON CONFLICT` do seed, para facilitar reexecução/correção.
+- **Hooks de leitura**: `useCidades()`, `useDistritos(cidade)`, `useBairros(cidade, districtId?)`, `useUbs(cidade, districtId?, neighborhoodId?)` — todos com TanStack Query, `staleTime: 10min`, chave incluindo os filtros.
+- **Combobox**: usar shadcn `Command` + `Popover` (já no projeto) para busca rápida em listas longas, sem ícones (constraint do projeto).
+- **Tipos**: novos tipos virão do `types.ts` regenerado após a migration. Componentes consomem via tipos do client Supabase.
+- **Compatibilidade**: filtros antigos do admin continuam funcionando contra `cidade/bairro/unidade_saude` (texto) — o novo `health_unit_id` é usado para precisão quando disponível, com fallback no texto.
+- **Sem ícones** em qualquer UI nova (memória do projeto).
 
-**Arquivos editados:**
-- `src/routes/admin.tsx` — **redução de ~85%**: deleta TODOS os mocks (`gestantesMock`, listas constantes, type `Gestante` e helpers que dependem dele), passa a renderizar só `<AdminLayout>` + roteamento interno por seção.
-- `src/components/admin/RelatoriosEpidemiologicosTab.tsx` — remove filtros locais, lê do Context.
-- `src/components/admin/DadosClinicosTab.tsx` — seletor de gestante respeita o filtro global.
+---
 
-**Comunicação WhatsApp em massa:** abordagem `wa.me` com botão "Enviar próxima" entre cada gestante. Cada clique grava `notification_deliveries.status = 'enviado'`. Aviso visual: "Twilio para envio automático real pode ser ativado em fase 2."
+## O que NÃO entra agora
 
-**Push:** continua in-app (registra `notification_deliveries`). Web Push API com VAPID fica para fase 2.
-
-**Responsividade:** sidebar vira drawer em < 768px. Filtros globais viram sheet lateral com badge "Filtros (3)".
+- Importação massiva de bairros das 25 cidades menores (fica para o admin completar sob demanda).
+- Tela de "UBS pendentes de catalogação" baseada nos textos livres salvos por gestantes.
+- Geocoding/mapa por UBS.
+- Vínculo profissional ↔ UBS.
 
 ---
 
 ## Ordem de execução
 
-1. Migration: `notification_groups`, `notification_campaigns`, `notification_deliveries` + RLS.
-2. `AdminFiltersContext` + `useAdminData` + `applyFiltersToProfiles`.
-3. `AdminLayout` (sidebar + topbar) e **limpeza completa de mocks** no `admin.tsx`.
-4. `VisaoGeralSection` + `GestantesSection` (substituindo os mocks por queries reais).
-5. Refator de `RelatoriosEpidemiologicosTab` para consumir Context.
-6. `ComunicacaoSection` com Grupos, Campanhas, Histórico.
-7. Ajustes mobile + QA visual.
-
-Tamanho total: 1 migration + ~11 arquivos novos + 3 editados. **Resultado final: nenhuma constante de dados clínicos/gestantes hardcoded em todo o app, exceto `DRS_XIII_CIDADES` (referência geográfica fixa) e `RP_BAIRROS` (autocomplete de cadastro).**
+1. Migration: criar tabelas + RLS + índices + colunas em `profiles`.
+2. Migration: seed das 26 cidades, distritos, bairros principais e UBS conhecidas.
+3. Hooks de leitura + types regenerados.
+4. Atualizar `AdminFiltersContext` + topbar (adicionar distrito e UBS encadeados ao banco).
+5. Refatorar `RegistrationModal` para selects encadeados com fallback manual.
+6. Subseção admin "Localidades & UBS" para CRUD.
