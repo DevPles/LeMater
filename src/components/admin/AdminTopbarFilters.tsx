@@ -190,6 +190,7 @@ export function AdminTopbarFilters({ profiles, alerts, totalFiltrado }: Props) {
           onChange={(v) => patch({ periodoFim: v || null })}
         />
       </div>
+      )}
     </div>
   );
 }
