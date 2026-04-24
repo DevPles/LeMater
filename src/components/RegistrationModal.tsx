@@ -272,8 +272,8 @@ export default function RegistrationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 w-[calc(100vw-1rem)] max-w-md max-h-[85vh] overflow-y-auto p-3 sm:p-4 rounded-2xl relative">
-        {/* Rising particles / bokeh animation */}
+      <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 w-[calc(100vw-1rem)] max-w-md max-h-[85vh] p-0 rounded-2xl relative overflow-hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fixed">
+        {/* Rising particles / bokeh animation - confined inside the modal */}
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-2xl">
           {Array.from({ length: 18 }).map((_, i) => {
             const size = 4 + ((i * 7) % 14);
@@ -294,7 +294,7 @@ export default function RegistrationModal({
                   opacity,
                 }}
                 animate={{
-                  y: ["0%", "-1200%"],
+                  y: ["0%", "-700%"],
                   x: [0, i % 2 === 0 ? 20 : -20, 0],
                   opacity: [0, opacity, opacity, 0],
                 }}
@@ -309,6 +309,7 @@ export default function RegistrationModal({
             );
           })}
         </div>
+        <div className="relative z-10 p-3 sm:p-4 overflow-y-auto max-h-[85vh]">
 
         <DialogHeader className="relative z-10">
           <DialogTitle className="text-[#f0c040] text-xl font-display text-center">
