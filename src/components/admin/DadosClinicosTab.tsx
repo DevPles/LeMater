@@ -285,7 +285,186 @@ function VacinasEditor() {
   );
 }
 
-/* ============ Alertas calculados ============ */
+/* ============ Exames de imagem (com upload) ============ */
+type ImageSchedule = { id: string; tipo_exame: string; semana_min: number; semana_max: number };
+type ImageResult = {
+  id: string;
+  tipo_exame: string;
+  data_exame: string;
+  semana_gestacional: number | null;
+  status: string;
+  laudo_texto: string | null;
+  imagem_path: string | null;
+  observacao: string | null;
+};
+
+function ImagemEditor() {
+  const [schedule, setSchedule] = useState<ImageSchedule[]>([]);
+  const [list, setList] = useState<ImageResult[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [form, setForm] = useState({
+    tipo_exame: "",
+    semana_gestacional: "",
+    status: "normal",
+    laudo_texto: "",
+    observacao: "",
+  });
+  const [file, setFile] = useState<File | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    const [s, r] = await Promise.all([
+      supabase.from("image_exam_schedule").select("id, tipo_exame, semana_min, semana_max").order("semana_min"),
+      supabase
+        .from("image_exam_results")
+        .select("*")
+        .eq("gestante_id", DEMO_GESTANTE_ID)
+        .order("data_exame", { ascending: false })
+        .limit(50),
+    ]);
+    if (s.data) setSchedule(s.data as ImageSchedule[]);
+    if (r.data) setList(r.data as ImageResult[]);
+    setLoading(false);
+  };
+  useEffect(() => {
+    load();
+  }, []);
+
+  const create = async () => {
+    if (!form.tipo_exame) return alert("Selecione o tipo de exame.");
+    setUploading(true);
+    let imagem_path: string | null = null;
+
+    try {
+      if (file) {
+        const ext = file.name.split(".").pop() || "bin";
+        const path = `${DEMO_GESTANTE_ID}/${Date.now()}_${form.tipo_exame.replace(/\s+/g, "_")}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("image-exams").upload(path, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+        if (upErr) throw upErr;
+        imagem_path = path;
+      }
+
+      const { error } = await supabase.from("image_exam_results").insert({
+        gestante_id: DEMO_GESTANTE_ID,
+        tipo_exame: form.tipo_exame,
+        semana_gestacional: form.semana_gestacional ? Number(form.semana_gestacional) : null,
+        status: form.status,
+        laudo_texto: form.laudo_texto || null,
+        observacao: form.observacao || null,
+        imagem_path,
+      });
+      if (error) throw error;
+
+      setForm({ tipo_exame: "", semana_gestacional: "", status: "normal", laudo_texto: "", observacao: "" });
+      setFile(null);
+      await load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao salvar");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const verImagem = async (path: string) => {
+    const { data, error } = await supabase.storage.from("image-exams").createSignedUrl(path, 300);
+    if (error || !data?.signedUrl) return alert("Não foi possível gerar URL.");
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+      <FormCard title="Novo exame de imagem">
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Tipo de exame</label>
+          <select
+            value={form.tipo_exame}
+            onChange={(e) => setForm({ ...form, tipo_exame: e.target.value })}
+            className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
+          >
+            <option value="">Selecione...</option>
+            {schedule.map((s) => (
+              <option key={s.id} value={s.tipo_exame}>
+                {s.tipo_exame} (sem {s.semana_min}-{s.semana_max})
+              </option>
+            ))}
+          </select>
+        </div>
+        <Field label="Semana gestacional" value={form.semana_gestacional} onChange={(v) => setForm({ ...form, semana_gestacional: v })} placeholder="22" />
+        <SelectField
+          label="Status"
+          value={form.status}
+          onChange={(v) => setForm({ ...form, status: v })}
+          options={[
+            { value: "normal", label: "Normal" },
+            { value: "alterado", label: "Alterado (gera alerta)" },
+            { value: "pendente", label: "Pendente" },
+          ]}
+        />
+        <div>
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Imagem / PDF do laudo</label>
+          <input
+            type="file"
+            accept="image/*,application/pdf"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            className="w-full text-xs"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="text-xs font-semibold text-muted-foreground mb-1 block">Laudo (texto)</label>
+          <textarea
+            rows={2}
+            value={form.laudo_texto}
+            onChange={(e) => setForm({ ...form, laudo_texto: e.target.value })}
+            className="w-full text-sm rounded-xl border border-border bg-background p-3"
+            placeholder="Descrição do laudo médico"
+          />
+        </div>
+        <Field label="Observação" value={form.observacao} onChange={(v) => setForm({ ...form, observacao: v })} placeholder="opcional" />
+        <SubmitButton onClick={create} label={uploading ? "Enviando..." : "Registrar exame de imagem"} />
+      </FormCard>
+
+      <ListCard title={`Exames de imagem (${list.length})`} loading={loading} empty={list.length === 0}>
+        {list.map((e) => (
+          <li key={e.id} className="p-3 text-xs">
+            <p className="font-bold text-foreground">
+              {e.tipo_exame}{" "}
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] ${
+                  e.status === "alterado"
+                    ? "bg-red-100 text-red-700"
+                    : e.status === "pendente"
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-green-100 text-green-700"
+                }`}
+              >
+                {e.status}
+              </span>
+              {e.semana_gestacional !== null && (
+                <span className="text-muted-foreground"> • semana {e.semana_gestacional}</span>
+              )}
+            </p>
+            <p className="text-muted-foreground">{new Date(e.data_exame).toLocaleDateString("pt-BR")}</p>
+            {e.laudo_texto && <p className="text-muted-foreground italic mt-0.5">{e.laudo_texto}</p>}
+            {e.observacao && <p className="text-muted-foreground/80 mt-0.5">Obs: {e.observacao}</p>}
+            {e.imagem_path && (
+              <button
+                type="button"
+                onClick={() => verImagem(e.imagem_path!)}
+                className="mt-1 text-[10px] font-semibold text-[#1a1557] hover:underline"
+              >
+                Ver imagem / laudo →
+              </button>
+            )}
+          </li>
+        ))}
+      </ListCard>
+    </motion.div>
+  );
+}
 type Alerta = {
   id: string;
   origem: string;
