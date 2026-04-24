@@ -81,15 +81,25 @@ export function AdminTopbarFilters({ profiles, alerts, totalFiltrado }: Props) {
             {totalFiltrado} gestante{totalFiltrado === 1 ? "" : "s"}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={reset}
-          className="text-[11px] font-semibold text-muted-foreground hover:text-foreground underline"
-        >
-          Limpar tudo
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setHidden((v) => !v)}
+            className="text-[11px] font-semibold px-3 h-7 rounded-lg border border-border bg-background hover:bg-muted text-foreground transition-colors"
+          >
+            {hidden ? "Mostrar filtros" : "Ocultar filtros"}
+          </button>
+          <button
+            type="button"
+            onClick={reset}
+            className="text-[11px] font-semibold px-3 h-7 rounded-lg bg-[#1a1557] hover:bg-[#1a1557]/90 text-white transition-colors"
+          >
+            Limpar tudo
+          </button>
+        </div>
       </div>
 
+      {!hidden && (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
         {/* 1. Geografia: cidade → bairro → UBS (nessa ordem) */}
         <CidadesPopover
