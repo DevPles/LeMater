@@ -213,44 +213,7 @@ export function RelatoriosEpidemiologicosTab() {
         </p>
       </div>
 
-      {/* Filtros */}
-      <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
-        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Filtros</p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
-          <div>
-            <label className="font-semibold text-muted-foreground mb-1 block">Cidades DRS-XIII</label>
-            <select
-              multiple
-              value={cidadesSel}
-              onChange={(e) =>
-                setCidadesSel(Array.from(e.target.selectedOptions).map((o) => o.value))
-              }
-              className="w-full h-24 rounded-xl border border-border bg-background px-2 py-1 text-xs"
-            >
-              {DRS_XIII_CIDADES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-            <p className="text-[10px] text-muted-foreground mt-1">Ctrl/Cmd + clique para múltiplas</p>
-          </div>
-          <SelectFilter label="Bairro" value={bairroSel} onChange={setBairroSel} options={["todos", ...bairrosDisp]} />
-          <SelectFilter label="UBS / Unidade" value={ubsSel} onChange={setUbsSel} options={["todas", ...ubsDisp]} />
-          <SelectFilter
-            label="Faixa etária"
-            value={faixaSel}
-            onChange={setFaixaSel}
-            options={["todas", "<18", "18-34", "≥35"]}
-          />
-          <SelectFilter
-            label="Trimestre"
-            value={trimSel}
-            onChange={setTrimSel}
-            options={["todos", "1º", "2º", "3º"]}
-          />
-        </div>
-      </div>
+      {/* Filtros internos removidos — esta aba consome os filtros globais do topbar (cidade → bairro → UBS, idade, trimestre). */}
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
