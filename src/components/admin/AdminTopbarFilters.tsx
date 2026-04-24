@@ -71,9 +71,6 @@ export function AdminTopbarFilters({ profiles, alerts, totalFiltrado }: Props) {
           <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
             Filtros globais
           </span>
-          <span className="text-[10px] text-muted-foreground">
-            Hierarquia: cidade → bairro → UBS
-          </span>
           {activeCount > 0 && (
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#f0c040] text-[#1a1557]">
               {activeCount} ativo{activeCount > 1 ? "s" : ""}
