@@ -5,9 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 interface UserAvatarProps {
   name?: string;
   week?: number;
+  photoUrl?: string | null;
 }
 
-export function UserAvatar({ name = "Mamãe", week }: UserAvatarProps) {
+export function UserAvatar({ name = "Mamãe", week, photoUrl }: UserAvatarProps) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const initials = name
@@ -26,9 +27,13 @@ export function UserAvatar({ name = "Mamãe", week }: UserAvatarProps) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center shadow-sm hover:opacity-90 transition-opacity"
+        className="w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center shadow-sm hover:opacity-90 transition-opacity overflow-hidden"
       >
-        {initials}
+        {photoUrl ? (
+          <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
+        ) : (
+          initials
+        )}
       </button>
 
       {open && (
@@ -42,6 +47,13 @@ export function UserAvatar({ name = "Mamãe", week }: UserAvatarProps) {
               </p>
             </div>
             <div className="py-1">
+              <Link
+                to="/perfil"
+                onClick={() => setOpen(false)}
+                className="block px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+              >
+                Meu Perfil
+              </Link>
               <Link
                 to="/cartao"
                 onClick={() => setOpen(false)}
