@@ -206,18 +206,17 @@ export default function RegistrationModal({
       // Atualiza profile com todos os dados demográficos coletados no cadastro
       const { data: sess } = await supabase.auth.getSession();
       if (sess.session) {
-        const profileUpdate: Record<string, unknown> = {
-          nome: nome.trim(),
-          telefone: whatsapp || null,
-          bairro: bairro || null,
-          cidade: cidade || "Ribeirão Preto",
-          unidade_saude: ubs || null,
-          data_nascimento: dataNasc || null,
-        };
-        if (dumIso) profileUpdate.dum = dumIso;
         await supabase
           .from("profiles")
-          .update(profileUpdate)
+          .update({
+            nome: nome.trim(),
+            telefone: whatsapp || null,
+            bairro: bairro || null,
+            cidade: cidade || "Ribeirão Preto",
+            unidade_saude: ubs || null,
+            data_nascimento: dataNasc || null,
+            ...(dumIso ? { dum: dumIso } : {}),
+          })
           .eq("user_id", sess.session.user.id);
       }
       onOpenChange(false);
