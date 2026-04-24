@@ -274,7 +274,7 @@ export default function RegistrationModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 w-[calc(100vw-1rem)] max-w-md max-h-[85vh] overflow-y-auto p-3 sm:p-4 rounded-2xl relative">
         {/* Rising particles / bokeh animation */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-2xl">
           {Array.from({ length: 18 }).map((_, i) => {
             const size = 4 + ((i * 7) % 14);
             const left = (i * 53) % 100;
@@ -320,7 +320,6 @@ export default function RegistrationModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="relative z-10">
         <AnimatePresence mode="wait">
           {mode === "login" && (
             <motion.div
@@ -328,7 +327,7 @@ export default function RegistrationModal({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="flex flex-col gap-3 pt-2"
+              className="relative z-10 flex flex-col gap-3 pt-2"
             >
               <div className="flex flex-col gap-2">
                 <div>
@@ -442,7 +441,7 @@ export default function RegistrationModal({
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.5 }}
-              className="flex flex-col items-center justify-center py-12 gap-4"
+              className="relative z-10 flex flex-col items-center justify-center py-12 gap-4"
             >
               <motion.div
                 animate={{
@@ -501,7 +500,7 @@ export default function RegistrationModal({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col gap-2"
+              className="relative z-10 flex flex-col gap-2"
             >
               {/* Foto */}
               <div className="flex flex-col items-center gap-1 mb-1">
@@ -814,7 +813,7 @@ export default function RegistrationModal({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="flex flex-col gap-4"
+              className="relative z-10 flex flex-col gap-4"
             >
               <div>
                 <Label className={labelClass}>Data da última menstruação (DUM)</Label>
@@ -922,7 +921,7 @@ export default function RegistrationModal({
               whileTap={{ scale: 0.98 }}
               type="button"
               onClick={() => setMode("login")}
-              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm py-2.5 rounded-full backdrop-blur-sm transition-colors"
+              className="relative z-10 bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm py-2.5 rounded-full backdrop-blur-sm transition-colors"
             >
               Entrar
             </motion.button>
@@ -930,7 +929,6 @@ export default function RegistrationModal({
             </>
           )}
         </AnimatePresence>
-        </div>
       </DialogContent>
     </Dialog>
   );
