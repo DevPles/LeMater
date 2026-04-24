@@ -154,21 +154,74 @@ export default function RegistrationModal({
     }
   };
 
-  const handleStep1Continue = () => {
+  const handleStep1Continue = async () => {
+    setSubmitErro(null);
     if (!nome.trim()) return;
+
     if (gestante === true) {
+      // Validações para criar conta no Supabase já no step1 → 2
+      if (!email.trim()) return setSubmitErro("Informe um e-mail.");
+      if (senhaCadastro.length < 6) return setSubmitErro("Senha precisa ter ao menos 6 caracteres.");
       setShowCelebration(true);
       setTimeout(() => {
         setShowCelebration(false);
         setStep(2);
       }, 2500);
-    } else {
+      return;
+    }
+
+    // Não-gestante: cria conta simples e leva para home
+    if (!email.trim() || senhaCadastro.length < 6) {
+      return setSubmitErro("Informe e-mail e senha (mínimo 6 caracteres) para criar sua conta.");
+    }
+    await criarContaENavegar(null);
+  };
+
+  const criarContaENavegar = async (dumIso: string | null) => {
+    setSubmitting(true);
+    setSubmitErro(null);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: senhaCadastro,
+        options: {
+          data: { nome: nome.trim(), dum: dumIso ?? "" },
+          emailRedirectTo: window.location.origin + "/home",
+        },
+      });
+      if (error) {
+        // Se email já existe, tenta login direto
+        if (/registered|exists|already/i.test(error.message)) {
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password: senhaCadastro,
+          });
+          if (signInErr) throw signInErr;
+        } else {
+          throw error;
+        }
+      }
+      // Se gestante e DUM informada, garante que o profile tem a DUM (caso o trigger não tenha pegado)
+      if (dumIso) {
+        const { data: sess } = await supabase.auth.getSession();
+        if (sess.session) {
+          await supabase
+            .from("profiles")
+            .update({ dum: dumIso, nome: nome.trim() })
+            .eq("user_id", sess.session.user.id);
+        }
+      }
+      onOpenChange(false);
       navigate({ to: "/home" });
+    } catch (e) {
+      setSubmitErro((e as Error).message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleFinish = () => {
-    navigate({ to: "/home" });
+  const handleFinish = async () => {
+    await criarContaENavegar(dum || null);
   };
 
   const inputClass =
