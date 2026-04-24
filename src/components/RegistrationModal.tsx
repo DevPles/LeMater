@@ -294,8 +294,8 @@ export default function RegistrationModal({
                   opacity,
                 }}
                 animate={{
-                  y: [0, -700],
-                  x: [0, i % 2 === 0 ? 20 : -20, 0],
+                  y: [0, -180],
+                  x: [0, i % 2 === 0 ? 15 : -15, 0],
                   opacity: [0, opacity, opacity, 0],
                 }}
                 transition={{
