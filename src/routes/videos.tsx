@@ -347,31 +347,88 @@ function VideosPage() {
                   </span>
                 )}
               </div>
-              <div id="reel-comentarios" className="border-t border-border pt-3 scroll-mt-4">
-                <h4 className="text-sm font-semibold text-foreground mb-2">Comentários</h4>
-                <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
-                  {(comments[selected.id] || []).length === 0 && (
-                    <p className="text-xs text-muted-foreground">Seja a primeira a comentar.</p>
-                  )}
-                  {(comments[selected.id] || []).map((c, idx) => (
-                    <div key={idx} className="bg-muted rounded-lg p-2 text-xs text-foreground">{c}</div>
-                  ))}
+              {selected.category !== "Reels" && (
+                <div className="border-t border-border pt-3">
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Comentários</h4>
+                  <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
+                    {(comments[selected.id] || []).length === 0 && (
+                      <p className="text-xs text-muted-foreground">Seja a primeira a comentar.</p>
+                    )}
+                    {(comments[selected.id] || []).map((c, idx) => (
+                      <div key={idx} className="bg-muted rounded-lg p-2 text-xs text-foreground">{c}</div>
+                    ))}
+                  </div>
+                  <Textarea
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    placeholder="Escreva um comentário..."
+                    className="text-sm mb-2"
+                    rows={2}
+                  />
+                  <Button onClick={submitComment} className="w-full" disabled={!draft.trim()}>
+                    Publicar comentário
+                  </Button>
                 </div>
-                <Textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  placeholder="Escreva um comentário..."
-                  className="text-sm mb-2"
-                  rows={2}
-                />
-                <Button onClick={submitComment} className="w-full" disabled={!draft.trim()}>
-                  Publicar comentário
-                </Button>
-              </div>
+              )}
             </>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Sheet de comentários estilo Instagram (apenas para Reels) */}
+      <Sheet open={commentsOpen} onOpenChange={setCommentsOpen}>
+        <SheetContent
+          side="bottom"
+          className="rounded-t-2xl max-h-[80vh] flex flex-col p-0 gap-0"
+        >
+          <SheetHeader className="px-4 py-3 border-b border-border">
+            <SheetTitle className="text-center text-base">Comentários</SheetTitle>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+            {selected && (comments[selected.id] || []).length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Seja a primeira a comentar 💕
+              </p>
+            )}
+            {selected &&
+              (comments[selected.id] || []).map((c, idx) => (
+                <div
+                  key={idx}
+                  className="bg-muted rounded-2xl px-3 py-2 text-sm text-foreground"
+                >
+                  {c}
+                </div>
+              ))}
+          </div>
+
+          <div className="border-t border-border p-3 flex items-end gap-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <Textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="Adicione um comentário..."
+              className="text-sm min-h-10 max-h-32 resize-none flex-1 rounded-2xl"
+              rows={1}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  submitComment();
+                }
+              }}
+            />
+            <button
+              onClick={submitComment}
+              disabled={!draft.trim()}
+              className="text-sm font-semibold text-primary disabled:text-muted-foreground px-2 py-2"
+            >
+              Publicar
+            </button>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
     </div>
   );
 }
