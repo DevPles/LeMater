@@ -126,6 +126,7 @@ function SalaPage() {
   const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
   const helloTimerRef = useRef<number | null>(null);
   const connectTimeoutRef = useRef<number | null>(null);
+  const remotoConectadoRef = useRef(false);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -142,6 +143,10 @@ function SalaPage() {
   useEffect(() => {
     isProfDonoRef.current = isProfDono;
   }, [isProfDono]);
+
+  useEffect(() => {
+    remotoConectadoRef.current = remotoConectado;
+  }, [remotoConectado]);
 
   // ----- carrega sessão e dados do slot -----
   useEffect(() => {
@@ -393,7 +398,8 @@ function SalaPage() {
       if (!remoteStreamRef.current) {
         remoteStreamRef.current = new MediaStream();
       }
-      e.streams[0]?.getTracks().forEach((t) => {
+      const tracks = e.streams[0]?.getTracks().length ? e.streams[0].getTracks() : [e.track];
+      tracks.forEach((t) => {
         if (!remoteStreamRef.current!.getTracks().find((x) => x.id === t.id)) {
           remoteStreamRef.current!.addTrack(t);
         }
@@ -404,6 +410,7 @@ function SalaPage() {
         remoteVideoRef.current.play().catch(() => { /* ignore autoplay issues */ });
       }
       setRemotoConectado(true);
+      remotoConectadoRef.current = true;
 
       // Profissional inicia gravação assim que o remoto conecta (uma vez só)
       if (
