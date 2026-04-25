@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { WhatsAppIcon, InstagramIcon, FacebookIcon, LinkIcon } from "@/components/SocialIcons";
 
 export const Route = createFileRoute("/videos")({
   head: () => ({
