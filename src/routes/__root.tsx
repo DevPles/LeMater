@@ -1,5 +1,7 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { BottomNav } from "@/components/BottomNav";
+import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
