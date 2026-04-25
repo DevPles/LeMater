@@ -395,10 +395,19 @@ function SalaPage() {
       if (!pc) return;
 
       if (payload.type === "hello") {
-        // Quem já estava na sala se torna initiator
-        if (!isInitiatorRef.current) {
+        // Quem tiver o peerId "menor" se torna initiator (decisão determinística).
+        // Quem já estava na sala normalmente recebe o hello do recém-chegado.
+        const meSmaller = peerIdRef.current < payload.from;
+        if (meSmaller && !isInitiatorRef.current) {
           isInitiatorRef.current = true;
           await enviarOffer();
+        } else if (!meSmaller) {
+          // Reenvia hello para garantir que o outro saiba que estamos aqui
+          channelRef.current?.send({
+            type: "broadcast",
+            event: "signal",
+            payload: { type: "hello", from: peerIdRef.current } as SignalPayload,
+          });
         }
         return;
       }
