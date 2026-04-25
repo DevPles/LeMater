@@ -36,6 +36,7 @@ type Slot = {
 };
 
 function ProfissionalPage() {
+  const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -51,119 +52,21 @@ function ProfissionalPage() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  if (!ready) return <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">Carregando...</div>;
-  if (!session) return <LoginScreen />;
-  return <Dashboard session={session} />;
-}
-
-function LoginScreen() {
-  const [mode, setMode] = useState<"login" | "signup">("login");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErro(null);
-    setLoading(true);
-    try {
-      if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password: senha,
-          options: { emailRedirectTo: window.location.origin + "/profissional" },
-        });
-        if (error) throw error;
-        setErro("Conta criada! Verifique seu email para confirmar (se necessário) e faça login.");
-      }
-    } catch (e) {
-      setErro((e as Error).message);
-    } finally {
-      setLoading(false);
+  // Sem login? Manda para a tela inicial (login comum).
+  useEffect(() => {
+    if (ready && !session) {
+      navigate({ to: "/" });
     }
-  };
+  }, [ready, session, navigate]);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-card rounded-2xl border border-border p-6 space-y-5"
-      >
-        <div className="text-center">
-          <p className="text-[11px] uppercase tracking-wider text-[#1a1557] font-bold">MãeDigital</p>
-          <h1 className="text-2xl font-bold font-display text-foreground mt-1">Portal do Profissional</h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            Acesse para publicar seus horários de atendimento.
-          </p>
-        </div>
-
-        <div className="flex gap-1 bg-muted rounded-full p-1">
-          <button
-            type="button"
-            onClick={() => setMode("login")}
-            className={`flex-1 py-1.5 rounded-full text-xs font-semibold ${
-              mode === "login" ? "bg-white text-[#1a1557] shadow-sm" : "text-muted-foreground"
-            }`}
-          >
-            Entrar
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("signup")}
-            className={`flex-1 py-1.5 rounded-full text-xs font-semibold ${
-              mode === "signup" ? "bg-white text-[#1a1557] shadow-sm" : "text-muted-foreground"
-            }`}
-          >
-            Criar conta
-          </button>
-        </div>
-
-        <form onSubmit={submit} className="space-y-3">
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Email</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-10 text-sm rounded-xl border border-border bg-background px-3"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Senha</label>
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              className="w-full h-10 text-sm rounded-xl border border-border bg-background px-3"
-            />
-          </div>
-
-          {erro && <p className="text-xs text-red-700 bg-red-50 px-3 py-2 rounded-lg">{erro}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full h-10 rounded-full bg-[#1a1557] text-white text-sm font-bold hover:bg-[#241e7a] disabled:opacity-50"
-          >
-            {loading ? "..." : mode === "login" ? "Entrar" : "Criar conta"}
-          </button>
-        </form>
-
-        <p className="text-[11px] text-center text-muted-foreground">
-          Após criar conta, peça ao administrador para vincular seu perfil profissional e
-          conceder permissões.
-        </p>
-      </motion.div>
-    </div>
-  );
+  if (!ready || !session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+        Carregando...
+      </div>
+    );
+  }
+  return <Dashboard session={session} />;
 }
 
 function Dashboard({ session }: { session: Session }) {
