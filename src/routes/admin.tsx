@@ -122,6 +122,7 @@ function AdminShell() {
       {section === "config-parametros" && <ParametrosTab />}
       {section === "config-profissionais" && <ProfissionaisTab />}
       {section === "config-telas" && <TelasTab />}
+      {section === "consultas-gravacoes" && <GravacoesTab />}
     </AdminLayout>
   );
 }
