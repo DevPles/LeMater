@@ -246,11 +246,7 @@ function VideosPage() {
                     </button>
 
                     <button
-                      onClick={() => {
-                        document
-                          .getElementById("reel-comentarios")
-                          ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }}
+                      onClick={() => setCommentsOpen(true)}
                       className="flex flex-col items-center gap-0.5 group"
                       aria-label="Comentar"
                     >
