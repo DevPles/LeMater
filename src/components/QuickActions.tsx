@@ -28,12 +28,12 @@ function PlayMark() {
   );
 }
 
-// Coração com pulso (batimento) — alternativa ao estetoscópio para Consulta
+// Linha de sinal vital (ECG) — simples, traçando continuamente
 function StethoscopeMark() {
   return (
     <svg viewBox="0 0 24 24" className="w-9 h-9 text-current" fill="none">
       <motion.path
-        d="M12 20 C12 20 4 14.5 4 9.5 A4 4 0 0 1 12 7 A4 4 0 0 1 20 9.5 C20 14.5 12 20 12 20 Z"
+        d="M3 12 H8 L10 7 L13 17 L15 12 H21"
         stroke="currentColor"
         strokeWidth="1.75"
         strokeLinejoin="round"
@@ -41,16 +41,6 @@ function StethoscopeMark() {
         initial={{ pathLength: 0, opacity: 0.3 }}
         animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
         transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.path
-        d="M6.5 12 H9 L10.5 9.5 L12.5 14 L14 12 H17.5"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        initial={{ pathLength: 0, opacity: 0.3 }}
-        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
-        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
       />
     </svg>
   );
