@@ -8,14 +8,14 @@ const actions = [
   { to: "/alertas", label: "Alertas", color: "bg-warm text-foreground", hasPlay: false },
 ] as const;
 
-// Triângulo de play minimalista, centralizado atrás do label, com respiração sutil
+// Triângulo de play minimalista, com respiração sutil
 function PlayMark() {
   return (
     <motion.svg
       viewBox="0 0 24 24"
-      className="absolute inset-0 m-auto w-8 h-8 text-current"
+      className="w-5 h-5 text-current"
       fill="currentColor"
-      animate={{ opacity: [0.15, 0.35, 0.15], scale: [1, 1.06, 1] }}
+      animate={{ opacity: [0.55, 1, 0.55], scale: [1, 1.08, 1] }}
       transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
     >
       <polygon points="9,7 9,17 17,12" />
@@ -34,9 +34,9 @@ export function QuickActions() {
           transition={{ delay: 0.1 * i }}
         >
           <Link to={to} className="flex flex-col items-center gap-2">
-            <div className={`relative w-16 h-16 rounded-full ${color} flex items-center justify-center shadow-sm overflow-hidden`}>
+            <div className={`relative w-16 h-16 rounded-full ${color} flex flex-col items-center justify-center gap-0.5 shadow-sm overflow-hidden`}>
               {hasPlay && <PlayMark />}
-              <span className="relative text-[10px] font-bold leading-tight text-center">{label}</span>
+              <span className="text-[10px] font-bold leading-tight text-center">{label}</span>
             </div>
           </Link>
         </motion.div>
