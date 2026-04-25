@@ -9,6 +9,28 @@ import { useDistritos, useBairros, useUbs } from "@/hooks/useLocalidades";
 
 type Mode = "login" | "register";
 
+function EyeToggleIcon({ open }: { open: boolean }) {
+  if (open) {
+    // eye-off (senha visível -> clique para ocultar)
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M3 3l18 18" />
+        <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+        <path d="M9.9 5.1A10.5 10.5 0 0 1 12 5c5 0 9 4 10 7-.4 1.1-1.2 2.4-2.4 3.6" />
+        <path d="M6.1 6.1C3.9 7.6 2.4 9.7 2 12c1 3 5 7 10 7 1.6 0 3-.4 4.3-1" />
+      </svg>
+    );
+  }
+  // eye (senha oculta -> clique para mostrar)
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" />
+      <circle cx="12" cy="12" r="2.5" />
+    </svg>
+  );
+}
+
+
 function calcGestationalAge(lmpDate: Date): { weeks: number; days: number } {
   const now = new Date();
   const diffMs = now.getTime() - lmpDate.getTime();
@@ -364,9 +386,9 @@ export default function RegistrationModal({
                       type="button"
                       onClick={() => setShowLoginPassword((v) => !v)}
                       aria-label={showLoginPassword ? "Ocultar senha" : "Mostrar senha"}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#f0c040] hover:text-[#e5b535] text-base leading-none transition-colors"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#f0c040] hover:text-[#e5b535] transition-colors p-1"
                     >
-                      {showLoginPassword ? "🙈" : "👁"}
+                      <EyeToggleIcon open={showLoginPassword} />
                     </button>
                   </div>
                 </div>
