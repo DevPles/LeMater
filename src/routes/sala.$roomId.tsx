@@ -36,6 +36,15 @@ type SignalPayload =
 const ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
+  {
+    urls: [
+      "turn:openrelay.metered.ca:80",
+      "turn:openrelay.metered.ca:443",
+      "turn:openrelay.metered.ca:443?transport=tcp",
+    ],
+    username: "openrelayproject",
+    credential: "openrelayproject",
+  },
 ];
 
 function fmtTempo(seg: number) {
@@ -60,6 +69,19 @@ function pickRecorderMime(): string | undefined {
     }
   }
   return undefined;
+}
+
+async function pedirMidiaLocal() {
+  const preferida: MediaStreamConstraints = {
+    video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
+    audio: { echoCancellation: true, noiseSuppression: true },
+  };
+  try {
+    return await navigator.mediaDevices.getUserMedia(preferida);
+  } catch (e) {
+    console.warn("getUserMedia preferida falhou, tentando modo compatível", e);
+    return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  }
 }
 
 function SalaPage() {
@@ -102,6 +124,9 @@ function SalaPage() {
   const helloReplySentRef = useRef(false);
   const politeRef = useRef(false);
   const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
+  const helloTimerRef = useRef<number | null>(null);
+  const connectTimeoutRef = useRef<number | null>(null);
+  const remotoConectadoRef = useRef(false);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -118,6 +143,10 @@ function SalaPage() {
   useEffect(() => {
     isProfDonoRef.current = isProfDono;
   }, [isProfDono]);
+
+  useEffect(() => {
+    remotoConectadoRef.current = remotoConectado;
+  }, [remotoConectado]);
 
   // ----- carrega sessão e dados do slot -----
   useEffect(() => {
@@ -285,6 +314,14 @@ function SalaPage() {
       window.clearInterval(tickRef.current);
       tickRef.current = null;
     }
+    if (helloTimerRef.current) {
+      window.clearInterval(helloTimerRef.current);
+      helloTimerRef.current = null;
+    }
+    if (connectTimeoutRef.current) {
+      window.clearTimeout(connectTimeoutRef.current);
+      connectTimeoutRef.current = null;
+    }
     gravacaoIniciadaRef.current = false;
     isInitiatorRef.current = false;
     remotePeerIdRef.current = null;
@@ -329,7 +366,12 @@ function SalaPage() {
   }, []);
 
   const criarPeerConnection = useCallback((stream: MediaStream) => {
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    const pc = new RTCPeerConnection({
+      iceServers: ICE_SERVERS,
+      iceTransportPolicy: "all",
+      bundlePolicy: "max-bundle",
+      rtcpMuxPolicy: "require",
+    });
 
     stream.getAudioTracks().forEach((track) => {
       pc.addTransceiver(track, { direction: "sendrecv", streams: [stream] });
@@ -356,7 +398,8 @@ function SalaPage() {
       if (!remoteStreamRef.current) {
         remoteStreamRef.current = new MediaStream();
       }
-      e.streams[0]?.getTracks().forEach((t) => {
+      const tracks = e.streams[0]?.getTracks().length ? e.streams[0].getTracks() : [e.track];
+      tracks.forEach((t) => {
         if (!remoteStreamRef.current!.getTracks().find((x) => x.id === t.id)) {
           remoteStreamRef.current!.addTrack(t);
         }
@@ -367,6 +410,7 @@ function SalaPage() {
         remoteVideoRef.current.play().catch(() => { /* ignore autoplay issues */ });
       }
       setRemotoConectado(true);
+      remotoConectadoRef.current = true;
 
       // Profissional inicia gravação assim que o remoto conecta (uma vez só)
       if (
@@ -386,8 +430,26 @@ function SalaPage() {
 
     pc.onconnectionstatechange = () => {
       const st = pc.connectionState;
-      if (st === "failed" || st === "disconnected") {
+      console.info("webrtc connection", st, pc.iceConnectionState);
+      if (st === "connected") {
+        if (connectTimeoutRef.current) {
+          window.clearTimeout(connectTimeoutRef.current);
+          connectTimeoutRef.current = null;
+        }
+      }
+      if (st === "failed") {
+        void pc.restartIce();
+      }
+      if (st === "failed" || st === "disconnected" || st === "closed") {
+        remotoConectadoRef.current = false;
         setRemotoConectado(false);
+      }
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      console.info("webrtc ice", pc.iceConnectionState);
+      if (pc.iceConnectionState === "failed") {
+        void pc.restartIce();
       }
     };
 
@@ -492,6 +554,7 @@ function SalaPage() {
       }
 
       if (payload.type === "bye") {
+        remotoConectadoRef.current = false;
         setRemotoConectado(false);
       }
     },
@@ -505,10 +568,10 @@ function SalaPage() {
     setErro(null);
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: { echoCancellation: true, noiseSuppression: true },
-      });
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new DOMException("Navegador sem suporte a câmera/microfone", "NotSupportedError");
+      }
+      const stream = await pedirMidiaLocal();
       if (stream.getAudioTracks().length === 0) {
         throw new DOMException("Microfone não encontrado", "NotFoundError");
       }
@@ -542,12 +605,26 @@ function SalaPage() {
         });
       });
 
-      // Anuncia presença — quem já estiver lá vira initiator
-      channel.send({
+      const anunciarPresenca = () => channel.send({
         type: "broadcast",
         event: "signal",
         payload: { type: "hello", from: peerIdRef.current } as SignalPayload,
       });
+      void anunciarPresenca();
+      helloTimerRef.current = window.setInterval(() => {
+        if (remotePeerIdRef.current || remotoConectadoRef.current) {
+          if (helloTimerRef.current) window.clearInterval(helloTimerRef.current);
+          helloTimerRef.current = null;
+          return;
+        }
+        void anunciarPresenca();
+      }, 1500);
+
+      connectTimeoutRef.current = window.setTimeout(() => {
+        if (!remotoConectadoRef.current && !remotePeerIdRef.current) {
+          setErro("Ainda não encontrei o outro participante. Confira se os dois entraram pelo mesmo link e mantenham esta tela aberta.");
+        }
+      }, 12000);
 
       // cronômetro
       const t0 = Date.now();
