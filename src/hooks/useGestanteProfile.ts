@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 
+export type BebeSexo = "masculino" | "feminino" | "neutro" | null;
+
 export type GestanteProfile = {
   id: string;
   user_id: string;
@@ -10,6 +12,7 @@ export type GestanteProfile = {
   dum: string | null; // ISO date
   telefone: string | null;
   foto_url: string | null;
+  bebe_sexo: BebeSexo;
 };
 
 /** Calcula semanas completas entre a DUM e hoje. */
@@ -63,7 +66,7 @@ export function useGestanteProfile() {
     async function fetchProfile(userId: string) {
       const { data } = await supabase
         .from("profiles")
-        .select("id,user_id,nome,email,dum,telefone,foto_url")
+        .select("id,user_id,nome,email,dum,telefone,foto_url,bebe_sexo")
         .eq("user_id", userId)
         .maybeSingle();
       if (active) setProfile((data as GestanteProfile | null) ?? null);
