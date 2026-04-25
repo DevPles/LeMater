@@ -61,6 +61,11 @@ const MENU: MenuGroup[] = [
     ],
   },
   {
+    id: "consultas",
+    label: "Consultas",
+    items: [{ key: "consultas-gravacoes", label: "Gravações", badge: "NOVA" }],
+  },
+  {
     id: "config",
     label: "Configuração",
     items: [
