@@ -243,6 +243,34 @@ function VideosPage() {
                       </span>
                     </button>
 
+                    <button
+                      onClick={() => {
+                        document
+                          .getElementById("reel-comentarios")
+                          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
+                      className="flex flex-col items-center gap-0.5 group"
+                      aria-label="Comentar"
+                    >
+                      <svg
+                        aria-hidden
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] transition-transform group-active:scale-110"
+                      >
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                      </svg>
+                      <span className="text-[11px] font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                        {(comments[selected.id] || []).length}
+                      </span>
+                    </button>
+
                     <div className="flex flex-col items-center gap-0.5">
                       <span aria-hidden className="text-xl leading-none text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                         ◐
@@ -321,7 +349,7 @@ function VideosPage() {
                   </span>
                 )}
               </div>
-              <div className="border-t border-border pt-3">
+              <div id="reel-comentarios" className="border-t border-border pt-3 scroll-mt-4">
                 <h4 className="text-sm font-semibold text-foreground mb-2">Comentários</h4>
                 <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
                   {(comments[selected.id] || []).length === 0 && (
