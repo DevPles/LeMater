@@ -195,7 +195,7 @@ function SalaPage() {
       interfaceConfigOverwrite: {
         SHOW_JITSI_WATERMARK: false,
         SHOW_WATERMARK_FOR_GUESTS: false,
-        DEFAULT_BACKGROUND: "#0a0820",
+        DEFAULT_BACKGROUND: "#2a1f1d",
         DISABLE_VIDEO_BACKGROUND: true,
         MOBILE_APP_PROMO: false,
         HIDE_INVITE_MORE_HEADER: true,
