@@ -547,6 +547,19 @@ function SalaPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Reatribui srcObject quando os elementos <video> montam (após setEmSala(true))
+  useEffect(() => {
+    if (!emSala) return;
+    if (localVideoRef.current && localStreamRef.current && localVideoRef.current.srcObject !== localStreamRef.current) {
+      localVideoRef.current.srcObject = localStreamRef.current;
+      localVideoRef.current.play().catch(() => { /* noop */ });
+    }
+    if (remoteVideoRef.current && remoteStreamRef.current && remoteVideoRef.current.srcObject !== remoteStreamRef.current) {
+      remoteVideoRef.current.srcObject = remoteStreamRef.current;
+      remoteVideoRef.current.play().catch(() => { /* noop */ });
+    }
+  }, [emSala, remotoConectado]);
+
   // ----- render -----
   if (loading) {
     return (
