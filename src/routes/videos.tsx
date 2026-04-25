@@ -349,7 +349,7 @@ function VideosPage() {
                   </span>
                 )}
               </div>
-              <div className="border-t border-border pt-3">
+              <div id="reel-comentarios" className="border-t border-border pt-3 scroll-mt-4">
                 <h4 className="text-sm font-semibold text-foreground mb-2">Comentários</h4>
                 <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
                   {(comments[selected.id] || []).length === 0 && (
