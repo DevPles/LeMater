@@ -145,6 +145,7 @@ export function QuickActions() {
               {icon === "play" && <PlayMark />}
               {icon === "stethoscope" && <StethoscopeMark />}
               {icon === "card" && <CardMark />}
+              {icon === "bell" && <BellMark />}
               <span className="text-[10px] font-bold leading-tight text-center">{label}</span>
             </div>
           </Link>
