@@ -266,33 +266,43 @@ function VideosPage() {
                           </span>
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent align="end" side="top" className="w-44 p-2">
-                        <button
-                          onClick={() => shareTo("whatsapp", selected)}
-                          className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
-                        >
-                          WhatsApp
-                        </button>
-                        <button
-                          onClick={() => shareTo("instagram", selected)}
-                          className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
-                        >
-                          Instagram
-                        </button>
-                        <button
-                          onClick={() => shareTo("facebook", selected)}
-                          className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
-                        >
-                          Facebook
-                        </button>
-                        <button
-                          onClick={() => shareTo("copy", selected)}
-                          className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
-                        >
-                          Copiar link
-                        </button>
+                      <PopoverContent align="end" side="top" className="w-auto p-2">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => shareTo("whatsapp", selected)}
+                            className="p-2 rounded-xl hover:bg-muted transition-colors"
+                            aria-label="Compartilhar no WhatsApp"
+                            title="WhatsApp"
+                          >
+                            <WhatsAppIcon size={28} />
+                          </button>
+                          <button
+                            onClick={() => shareTo("instagram", selected)}
+                            className="p-2 rounded-xl hover:bg-muted transition-colors"
+                            aria-label="Compartilhar no Instagram"
+                            title="Instagram"
+                          >
+                            <InstagramIcon size={28} />
+                          </button>
+                          <button
+                            onClick={() => shareTo("facebook", selected)}
+                            className="p-2 rounded-xl hover:bg-muted transition-colors"
+                            aria-label="Compartilhar no Facebook"
+                            title="Facebook"
+                          >
+                            <FacebookIcon size={28} />
+                          </button>
+                          <button
+                            onClick={() => shareTo("copy", selected)}
+                            className="p-2 rounded-xl hover:bg-muted transition-colors text-foreground"
+                            aria-label="Copiar link"
+                            title="Copiar link"
+                          >
+                            <LinkIcon size={28} />
+                          </button>
+                        </div>
                         {shareFeedback && (
-                          <p className="text-[11px] text-primary mt-1 px-3">{shareFeedback}</p>
+                          <p className="text-[11px] text-primary mt-1 px-1 text-center">{shareFeedback}</p>
                         )}
                       </PopoverContent>
                     </Popover>
