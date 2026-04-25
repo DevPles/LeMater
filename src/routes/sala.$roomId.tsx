@@ -425,14 +425,15 @@ function SalaPage() {
       if (!pc) return;
 
       if (payload.type === "hello") {
-        // Quem tiver o peerId "menor" se torna initiator (decisão determinística).
-        // Quem já estava na sala normalmente recebe o hello do recém-chegado.
+        remotePeerIdRef.current = payload.from;
         const meSmaller = peerIdRef.current < payload.from;
-        if (meSmaller && !isInitiatorRef.current) {
+        politeRef.current = !meSmaller;
+
+        if (meSmaller && !offerSentRef.current) {
           isInitiatorRef.current = true;
           await enviarOffer();
-        } else if (!meSmaller) {
-          // Reenvia hello para garantir que o outro saiba que estamos aqui
+        } else if (!meSmaller && !helloReplySentRef.current) {
+          helloReplySentRef.current = true;
           channelRef.current?.send({
             type: "broadcast",
             event: "signal",
@@ -443,6 +444,15 @@ function SalaPage() {
       }
 
       if (payload.type === "offer") {
+        remotePeerIdRef.current = payload.from;
+        const offerCollision =
+          makingOfferRef.current || pc.signalingState !== "stable";
+        ignoreOfferRef.current = !politeRef.current && offerCollision;
+        if (ignoreOfferRef.current) return;
+
+        if (offerCollision) {
+          await pc.setLocalDescription({ type: "rollback" });
+        }
         await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
         for (const c of pendingIceRef.current) {
           try {
@@ -450,26 +460,27 @@ function SalaPage() {
           } catch { /* noop */ }
         }
         pendingIceRef.current = [];
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
+        await pc.setLocalDescription();
         channelRef.current?.send({
           type: "broadcast",
           event: "signal",
           payload: {
             type: "answer",
             from: peerIdRef.current,
-            sdp: answer,
+            sdp: pc.localDescription!,
           } as SignalPayload,
         });
         return;
       }
 
       if (payload.type === "answer") {
+        if (pc.signalingState !== "have-local-offer") return;
         await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
         return;
       }
 
       if (payload.type === "ice") {
+        if (ignoreOfferRef.current) return;
         if (pc.remoteDescription && pc.remoteDescription.type) {
           try {
             await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
