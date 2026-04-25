@@ -166,9 +166,9 @@ function PerfilPage() {
       >
         <Link
           to="/home"
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border border-border bg-card text-foreground hover:bg-muted transition-colors shadow-sm"
         >
-          ← Voltar
+          <span aria-hidden="true">←</span> Voltar
         </Link>
         <h1 className="text-2xl font-bold font-display text-foreground mt-2">
           Meu Perfil
