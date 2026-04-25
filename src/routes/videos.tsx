@@ -418,8 +418,11 @@ function VideosPage() {
                     {(comments[selected.id] || []).length === 0 && (
                       <p className="text-xs text-muted-foreground">Seja a primeira a comentar.</p>
                     )}
-                    {(comments[selected.id] || []).map((c, idx) => (
-                      <div key={idx} className="bg-muted rounded-lg p-2 text-xs text-foreground">{c}</div>
+                    {(comments[selected.id] || []).map((c) => (
+                      <div key={c.id} className="bg-muted rounded-lg p-2 text-xs text-foreground">
+                        <span className="font-semibold">{c.authorName}: </span>
+                        {c.text}
+                      </div>
                     ))}
                   </div>
                   <Textarea
