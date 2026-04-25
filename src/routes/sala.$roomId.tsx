@@ -71,6 +71,19 @@ function pickRecorderMime(): string | undefined {
   return undefined;
 }
 
+async function pedirMidiaLocal() {
+  const preferida: MediaStreamConstraints = {
+    video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
+    audio: { echoCancellation: true, noiseSuppression: true },
+  };
+  try {
+    return await navigator.mediaDevices.getUserMedia(preferida);
+  } catch (e) {
+    console.warn("getUserMedia preferida falhou, tentando modo compatível", e);
+    return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  }
+}
+
 function SalaPage() {
   const { roomId } = Route.useParams();
   const navigate = useNavigate();
@@ -546,10 +559,10 @@ function SalaPage() {
     setErro(null);
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: { echoCancellation: true, noiseSuppression: true },
-      });
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new DOMException("Navegador sem suporte a câmera/microfone", "NotSupportedError");
+      }
+      const stream = await pedirMidiaLocal();
       if (stream.getAudioTracks().length === 0) {
         throw new DOMException("Microfone não encontrado", "NotFoundError");
       }
@@ -583,12 +596,26 @@ function SalaPage() {
         });
       });
 
-      // Anuncia presença — quem já estiver lá vira initiator
-      channel.send({
+      const anunciarPresenca = () => channel.send({
         type: "broadcast",
         event: "signal",
         payload: { type: "hello", from: peerIdRef.current } as SignalPayload,
       });
+      void anunciarPresenca();
+      helloTimerRef.current = window.setInterval(() => {
+        if (remotePeerIdRef.current || remotoConectado) {
+          if (helloTimerRef.current) window.clearInterval(helloTimerRef.current);
+          helloTimerRef.current = null;
+          return;
+        }
+        void anunciarPresenca();
+      }, 1500);
+
+      connectTimeoutRef.current = window.setTimeout(() => {
+        if (!remotoConectado && !remotePeerIdRef.current) {
+          setErro("Ainda não encontrei o outro participante. Confira se os dois entraram pelo mesmo link e mantenham esta tela aberta.");
+        }
+      }, 12000);
 
       // cronômetro
       const t0 = Date.now();
