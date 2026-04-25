@@ -20,12 +20,22 @@ export function ProfissionaisTab() {
     email: "",
     senha: "",
     nome: "",
+    cpf: "",
     especialidade: "",
     registro: "",
     bio: "",
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+
+  const normalizeCpf = (v: string) => v.replace(/\D/g, "");
+  const formatCpf = (v: string) => {
+    const d = normalizeCpf(v).slice(0, 11);
+    if (d.length <= 3) return d;
+    if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+    if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+    return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+  };
 
   const load = async () => {
     setLoading(true);
