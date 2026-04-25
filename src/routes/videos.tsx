@@ -60,6 +60,8 @@ function VideosPage() {
   const [selected, setSelected] = useState<Video | null>(null);
   const [comments, setComments] = useState<Record<number, string[]>>({});
   const [draft, setDraft] = useState("");
+  const [likedIds, setLikedIds] = useState<Record<number, boolean>>({});
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
 
   const isReels = activeCategory === "Reels";
   const items = isReels ? reels : videos.filter(v => v.category === activeCategory);
@@ -68,6 +70,40 @@ function VideosPage() {
     if (!selected || !draft.trim()) return;
     setComments(prev => ({ ...prev, [selected.id]: [...(prev[selected.id] || []), draft.trim()] }));
     setDraft("");
+  };
+
+  const toggleLike = (id: number) => {
+    setLikedIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const getLikeCount = (v: Video) => (v.likes ?? 0) + (likedIds[v.id] ? 1 : 0);
+
+  const shareTo = async (network: "whatsapp" | "instagram" | "facebook" | "copy", v: Video) => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const text = `Olha esse reel no MãeDigital: "${v.title}" — ${v.author}`;
+    const fullText = `${text} ${url}`.trim();
+
+    if (network === "whatsapp") {
+      window.open(`https://wa.me/?text=${encodeURIComponent(fullText)}`, "_blank");
+    } else if (network === "facebook") {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`, "_blank");
+    } else if (network === "instagram") {
+      try {
+        await navigator.clipboard.writeText(fullText);
+        setShareFeedback("Texto copiado! Cole no Instagram 💕");
+      } catch {
+        setShareFeedback("Não foi possível copiar o texto.");
+      }
+      setTimeout(() => setShareFeedback(null), 2500);
+    } else if (network === "copy") {
+      try {
+        await navigator.clipboard.writeText(fullText);
+        setShareFeedback("Link copiado!");
+      } catch {
+        setShareFeedback("Não foi possível copiar.");
+      }
+      setTimeout(() => setShareFeedback(null), 2500);
+    }
   };
 
   return (
