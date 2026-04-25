@@ -242,17 +242,18 @@ function VideosPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/10 to-transparent" />
                   </button>
 
-                  <span className={`pointer-events-none absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${reel.isGestante ? "bg-[#f0c040] text-[#1a1557]" : "bg-primary text-primary-foreground"}`}>
-                    {reel.isGestante ? "GESTANTE" : "PROFISSIONAL"}
-                  </span>
-                  <span className="pointer-events-none absolute top-2 right-2 bg-foreground/70 text-primary-foreground text-[10px] px-2 py-0.5 rounded-lg">{reel.duration}</span>
+                  <div className="pointer-events-center absolute top-2 left-2 right-2 flex items-center justify-between gap-2 pointer-events-none">
+                    <div className={`flex items-center gap-1.5 px-1.5 py-0.5 rounded-full ${reel.isGestante ? "bg-[#f0c040]/90" : "bg-primary/90"}`}>
+                      <AuthorAvatar name={reel.author} isGestante={reel.isGestante} size="xs" />
+                      <p className={`text-[10px] font-semibold truncate max-w-[90px] pr-1 ${reel.isGestante ? "text-[#1a1557]" : "text-primary-foreground"}`}>
+                        {reel.author}
+                      </p>
+                    </div>
+                    <span className="bg-foreground/70 text-primary-foreground text-[10px] px-2 py-0.5 rounded-lg flex-shrink-0">{reel.duration}</span>
+                  </div>
 
                   <div className="pointer-events-none absolute bottom-3 left-3 right-3">
-                    <div className="flex items-center gap-1.5">
-                      <AuthorAvatar name={reel.author} isGestante={reel.isGestante} size="xs" />
-                      <p className="text-[10px] font-semibold text-primary-foreground truncate">{reel.author}</p>
-                    </div>
-                    <div className="mt-1.5 flex items-center gap-3 text-[10px] font-semibold text-primary-foreground/90">
+                    <div className="flex items-center gap-3 text-[10px] font-semibold text-primary-foreground/90">
                       <span className="flex items-center gap-1">
                         <span aria-hidden>{liked ? "♥" : "♡"}</span>
                         {formatCount(getLikeCount(reel))}
