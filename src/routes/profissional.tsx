@@ -221,9 +221,60 @@ function Dashboard({ session }: { session: Session }) {
             className="bg-card border border-border rounded-2xl p-5 space-y-3"
           >
             <h2 className="text-base font-bold font-display text-foreground">Publicar novo horário</h2>
+            <p className="text-xs text-muted-foreground -mt-1">
+              Descreva o que você está oferecendo para que a gestante saiba antes de reservar.
+            </p>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                  Tipo de atendimento *
+                </label>
+                <select
+                  value={novoSlot.tipo_atendimento}
+                  onChange={(e) => setNovoSlot({ ...novoSlot, tipo_atendimento: e.target.value })}
+                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
+                >
+                  {TIPOS_ATENDIMENTO.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                  Título / tema *
+                </label>
+                <input
+                  type="text"
+                  maxLength={120}
+                  placeholder="Ex.: Orientação sobre amamentação"
+                  value={novoSlot.titulo}
+                  onChange={(e) => setNovoSlot({ ...novoSlot, titulo: e.target.value })}
+                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                Descrição (opcional)
+              </label>
+              <textarea
+                rows={3}
+                maxLength={500}
+                placeholder="Detalhes do que será oferecido, público-alvo, o que levar, etc."
+                value={novoSlot.descricao}
+                onChange={(e) => setNovoSlot({ ...novoSlot, descricao: e.target.value })}
+                className="w-full text-sm rounded-xl border border-border bg-background px-3 py-2 resize-none"
+              />
+              <p className="text-[10px] text-muted-foreground text-right mt-1">
+                {novoSlot.descricao.length}/500
+              </p>
+            </div>
+
             <div className="grid sm:grid-cols-4 gap-3">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Data</label>
+                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Data *</label>
                 <input
                   type="date"
                   value={novoSlot.data}
@@ -232,7 +283,7 @@ function Dashboard({ session }: { session: Session }) {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Hora</label>
+                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Hora *</label>
                 <input
                   type="time"
                   value={novoSlot.hora}
