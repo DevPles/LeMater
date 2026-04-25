@@ -385,7 +385,7 @@ function SalaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0820] text-white/70 text-sm">
+      <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground text-sm">
         Carregando sala...
       </div>
     );
@@ -393,7 +393,7 @@ function SalaPage() {
 
   if (erro) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6 text-center bg-[#0a0820] text-white">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6 text-center bg-background text-foreground">
         <p className="text-base font-semibold">{erro}</p>
         <button
           onClick={() => navigate({ to: isProfDono ? "/profissional" : "/videochamada" })}
