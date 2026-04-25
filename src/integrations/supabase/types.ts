@@ -547,6 +547,7 @@ export type Database = {
       profiles: {
         Row: {
           bairro: string | null
+          bebe_sexo: string | null
           cidade: string | null
           cpf: string | null
           created_at: string
@@ -569,6 +570,7 @@ export type Database = {
         }
         Insert: {
           bairro?: string | null
+          bebe_sexo?: string | null
           cidade?: string | null
           cpf?: string | null
           created_at?: string
@@ -591,6 +593,7 @@ export type Database = {
         }
         Update: {
           bairro?: string | null
+          bebe_sexo?: string | null
           cidade?: string | null
           cpf?: string | null
           created_at?: string

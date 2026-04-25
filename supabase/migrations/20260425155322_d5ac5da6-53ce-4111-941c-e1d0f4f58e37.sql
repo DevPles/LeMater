@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS bebe_sexo TEXT CHECK (bebe_sexo IN ('masculino','feminino','neutro'));
