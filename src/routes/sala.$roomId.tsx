@@ -500,7 +500,7 @@ function SalaPage() {
     setRemotoConectado(false);
     setTempo(0);
     setTimeout(() => {
-      navigate({ to: isProfDono ? "/profissional" : "/agendamentos" });
+      navigate({ to: isProfDono ? "/profissional" : "/videochamada" });
     }, 800);
   }, [statusGrav, finalizarGravacao, limpar, navigate, isProfDono]);
 
