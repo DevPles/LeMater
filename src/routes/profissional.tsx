@@ -34,7 +34,21 @@ type Slot = {
   gestante_id: string | null;
   observacao: string | null;
   room_id: string | null;
+  titulo: string | null;
+  descricao: string | null;
+  tipo_atendimento: string | null;
 };
+
+const TIPOS_ATENDIMENTO = [
+  "Consulta médica obstétrica",
+  "Consulta de enfermagem",
+  "Visita do agente comunitário de saúde",
+  "Orientação nutricional",
+  "Orientação psicológica",
+  "Orientação sobre amamentação",
+  "Orientação geral pré-natal",
+  "Outro",
+] as const;
 
 const SALA_ANTECEDENCIA_MS = 15 * 60 * 1000;
 const SALA_TOLERANCIA_MS = 30 * 60 * 1000;
