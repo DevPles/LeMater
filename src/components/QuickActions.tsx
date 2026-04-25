@@ -114,6 +114,7 @@ export function QuickActions() {
             <div className={`relative w-16 h-16 rounded-full ${color} flex flex-col items-center justify-center gap-0.5 shadow-sm overflow-hidden`}>
               {icon === "play" && <PlayMark />}
               {icon === "stethoscope" && <StethoscopeMark />}
+              {icon === "card" && <CardMark />}
               <span className="text-[10px] font-bold leading-tight text-center">{label}</span>
             </div>
           </Link>
