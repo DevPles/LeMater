@@ -5,9 +5,9 @@ type IconKind = "play" | "stethoscope" | "card" | "bell" | null;
 
 const actions: { to: string; label: string; color: string; icon: IconKind }[] = [
   { to: "/videos", label: "Vídeos", color: "bg-coral-light text-primary", icon: "play" },
-  { to: "/videochamada", label: "Consulta", color: "bg-mint-light text-accent-foreground", icon: "stethoscope" },
-  { to: "/cartao", label: "Cartão", color: "bg-blush text-foreground", icon: "card" },
-  { to: "/alertas", label: "Alertas", color: "bg-warm text-foreground", icon: "bell" },
+  { to: "/videochamada", label: "Consulta", color: "bg-mint-light text-mint-dark", icon: "stethoscope" },
+  { to: "/cartao", label: "Cartão", color: "bg-blush text-blush-dark", icon: "card" },
+  { to: "/alertas", label: "Alertas", color: "bg-warm text-warm-dark", icon: "bell" },
 ];
 
 // Play minimalista moderno: traço se desenhando em loop contínuo
