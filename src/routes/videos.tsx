@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { WhatsAppIcon, InstagramIcon, FacebookIcon, LinkIcon } from "@/components/SocialIcons";
+import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 
 export const Route = createFileRoute("/videos")({
   head: () => ({
@@ -58,11 +59,24 @@ function formatCount(n: number) {
   return String(n);
 }
 
+type Comment = {
+  id: string;
+  authorName: string;
+  authorAvatar: string | null;
+  authorInitials: string;
+  text: string;
+  likes: number;
+  liked: boolean;
+};
+
 function VideosPage() {
+  const { profile } = useGestanteProfile();
   const [activeCategory, setActiveCategory] = useState("Reels");
   const [selected, setSelected] = useState<Video | null>(null);
-  const [comments, setComments] = useState<Record<number, string[]>>({});
+  const [comments, setComments] = useState<Record<number, Comment[]>>({});
   const [draft, setDraft] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
   const [likedIds, setLikedIds] = useState<Record<number, boolean>>({});
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -70,10 +84,60 @@ function VideosPage() {
   const isReels = activeCategory === "Reels";
   const items = isReels ? reels : videos.filter(v => v.category === activeCategory);
 
+  const currentName =
+    profile?.nome?.trim() || profile?.email?.split("@")[0] || "Você";
+  const currentAvatar = profile?.foto_url ?? null;
+  const currentInitials = currentName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   const submitComment = () => {
     if (!selected || !draft.trim()) return;
-    setComments(prev => ({ ...prev, [selected.id]: [...(prev[selected.id] || []), draft.trim()] }));
+    const newComment: Comment = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      authorName: currentName,
+      authorAvatar: currentAvatar,
+      authorInitials: currentInitials,
+      text: draft.trim(),
+      likes: 0,
+      liked: false,
+    };
+    setComments((prev) => ({
+      ...prev,
+      [selected.id]: [...(prev[selected.id] || []), newComment],
+    }));
     setDraft("");
+  };
+
+  const toggleCommentLike = (videoId: number, commentId: string) => {
+    setComments((prev) => ({
+      ...prev,
+      [videoId]: (prev[videoId] || []).map((c) =>
+        c.id === commentId
+          ? { ...c, liked: !c.liked, likes: c.liked ? c.likes - 1 : c.likes + 1 }
+          : c,
+      ),
+    }));
+  };
+
+  const startEdit = (c: Comment) => {
+    setEditingId(c.id);
+    setEditingText(c.text);
+  };
+
+  const saveEdit = (videoId: number) => {
+    if (!editingId || !editingText.trim()) return;
+    setComments((prev) => ({
+      ...prev,
+      [videoId]: (prev[videoId] || []).map((c) =>
+        c.id === editingId ? { ...c, text: editingText.trim() } : c,
+      ),
+    }));
+    setEditingId(null);
+    setEditingText("");
   };
 
   const toggleLike = (id: number) => {
@@ -354,8 +418,11 @@ function VideosPage() {
                     {(comments[selected.id] || []).length === 0 && (
                       <p className="text-xs text-muted-foreground">Seja a primeira a comentar.</p>
                     )}
-                    {(comments[selected.id] || []).map((c, idx) => (
-                      <div key={idx} className="bg-muted rounded-lg p-2 text-xs text-foreground">{c}</div>
+                    {(comments[selected.id] || []).map((c) => (
+                      <div key={c.id} className="bg-muted rounded-lg p-2 text-xs text-foreground">
+                        <span className="font-semibold">{c.authorName}: </span>
+                        {c.text}
+                      </div>
                     ))}
                   </div>
                   <Textarea
@@ -392,14 +459,84 @@ function VideosPage() {
               </p>
             )}
             {selected &&
-              (comments[selected.id] || []).map((c, idx) => (
-                <div
-                  key={idx}
-                  className="bg-muted rounded-2xl px-3 py-2 text-sm text-foreground"
-                >
-                  {c}
-                </div>
-              ))}
+              (comments[selected.id] || []).map((c) => {
+                const isMine = c.authorName === currentName;
+                const isEditing = editingId === c.id;
+                return (
+                  <div key={c.id} className="flex items-start gap-2.5 py-1">
+                    {/* Avatar */}
+                    <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xs font-bold overflow-hidden flex-shrink-0">
+                      {c.authorAvatar ? (
+                        <img src={c.authorAvatar} alt={c.authorName} className="w-full h-full object-cover" />
+                      ) : (
+                        c.authorInitials
+                      )}
+                    </div>
+
+                    {/* Conteúdo */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs">
+                        <span className="font-semibold text-foreground">{c.authorName}</span>
+                      </p>
+
+                      {isEditing ? (
+                        <div className="mt-1 flex flex-col gap-1.5">
+                          <Textarea
+                            value={editingText}
+                            onChange={(e) => setEditingText(e.target.value)}
+                            className="text-sm min-h-10 max-h-32 resize-none rounded-xl"
+                            rows={2}
+                            autoFocus
+                          />
+                          <div className="flex items-center gap-3 text-[11px] font-semibold">
+                            <button
+                              onClick={() => selected && saveEdit(selected.id)}
+                              disabled={!editingText.trim()}
+                              className="text-primary disabled:text-muted-foreground"
+                            >
+                              Salvar
+                            </button>
+                            <button
+                              onClick={() => { setEditingId(null); setEditingText(""); }}
+                              className="text-muted-foreground"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-sm text-foreground break-words whitespace-pre-wrap">{c.text}</p>
+                          <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground">
+                            {c.likes > 0 && <span>{c.likes} {c.likes === 1 ? "curtida" : "curtidas"}</span>}
+                            {isMine && (
+                              <button
+                                onClick={() => startEdit(c)}
+                                className="font-medium hover:text-foreground transition-colors"
+                              >
+                                Editar
+                              </button>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Botão curtir comentário */}
+                    {!isEditing && (
+                      <button
+                        onClick={() => selected && toggleCommentLike(selected.id, c.id)}
+                        className="flex-shrink-0 p-1"
+                        aria-label="Curtir comentário"
+                      >
+                        <span aria-hidden className={`text-base leading-none ${c.liked ? "text-primary" : "text-muted-foreground"}`}>
+                          {c.liked ? "♥" : "♡"}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
           </div>
 
           <div className="border-t border-border p-3 flex items-end gap-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
