@@ -11,6 +11,7 @@ export type AdminSection =
   | "comunicacao-campanhas"
   | "comunicacao-grupos"
   | "comunicacao-templates"
+  | "consultas-gravacoes"
   | "config-parametros"
   | "config-profissionais"
   | "config-telas";
