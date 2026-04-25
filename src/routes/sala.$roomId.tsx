@@ -296,6 +296,14 @@ function SalaPage() {
       window.clearInterval(tickRef.current);
       tickRef.current = null;
     }
+    if (helloTimerRef.current) {
+      window.clearInterval(helloTimerRef.current);
+      helloTimerRef.current = null;
+    }
+    if (connectTimeoutRef.current) {
+      window.clearTimeout(connectTimeoutRef.current);
+      connectTimeoutRef.current = null;
+    }
     gravacaoIniciadaRef.current = false;
     isInitiatorRef.current = false;
     remotePeerIdRef.current = null;
@@ -340,7 +348,12 @@ function SalaPage() {
   }, []);
 
   const criarPeerConnection = useCallback((stream: MediaStream) => {
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    const pc = new RTCPeerConnection({
+      iceServers: ICE_SERVERS,
+      iceTransportPolicy: "all",
+      bundlePolicy: "max-bundle",
+      rtcpMuxPolicy: "require",
+    });
 
     stream.getAudioTracks().forEach((track) => {
       pc.addTransceiver(track, { direction: "sendrecv", streams: [stream] });
@@ -397,8 +410,25 @@ function SalaPage() {
 
     pc.onconnectionstatechange = () => {
       const st = pc.connectionState;
-      if (st === "failed" || st === "disconnected") {
+      console.info("webrtc connection", st, pc.iceConnectionState);
+      if (st === "connected") {
+        if (connectTimeoutRef.current) {
+          window.clearTimeout(connectTimeoutRef.current);
+          connectTimeoutRef.current = null;
+        }
+      }
+      if (st === "failed") {
+        void pc.restartIce();
+      }
+      if (st === "failed" || st === "disconnected" || st === "closed") {
         setRemotoConectado(false);
+      }
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      console.info("webrtc ice", pc.iceConnectionState);
+      if (pc.iceConnectionState === "failed") {
+        void pc.restartIce();
       }
     };
 
