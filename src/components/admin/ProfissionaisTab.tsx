@@ -110,7 +110,16 @@ export function ProfissionaisTab() {
       setForm({ email: "", senha: "", nome: "", cpf: "", especialidade: "", registro: "", bio: "" });
       await load();
     } catch (e) {
-      setMsg("Erro: " + (e as Error).message);
+      const raw = (e as Error).message || "";
+      let amigavel = raw;
+      if (/known to be weak|pwned|compromised|breach/i.test(raw)) {
+        amigavel = "Senha muito fraca ou já vazada em outros sites. Escolha outra (mín. 8 caracteres, misture letras, números e símbolos).";
+      } else if (/password.*should be at least|at least 6 characters|password.*length/i.test(raw)) {
+        amigavel = "A senha precisa ter no mínimo 6 caracteres.";
+      } else if (/already registered|exists|duplicate/i.test(raw)) {
+        amigavel = "Este e-mail já está cadastrado.";
+      }
+      setMsg("Erro: " + amigavel);
     } finally {
       setSaving(false);
     }
@@ -138,7 +147,12 @@ export function ProfissionaisTab() {
 
         <div className="grid sm:grid-cols-2 gap-3">
           <Input label="Email de acesso *" value={form.email} onChange={(v) => setForm({ ...form, email: v })} type="email" />
-          <Input label="Senha provisória *" value={form.senha} onChange={(v) => setForm({ ...form, senha: v })} type="password" />
+          <PasswordInput
+            label="Senha provisória *"
+            value={form.senha}
+            onChange={(v) => setForm({ ...form, senha: v })}
+            hint="Mínimo 8 caracteres. Evite senhas óbvias (123456, senha, etc.)."
+          />
           <Input label="Nome completo *" value={form.nome} onChange={(v) => setForm({ ...form, nome: v })} />
           <Input label="CPF" value={form.cpf} onChange={(v) => setForm({ ...form, cpf: formatCpf(v) })} placeholder="000.000.000-00" />
           <Input label="Especialidade *" value={form.especialidade} onChange={(v) => setForm({ ...form, especialidade: v })} placeholder="Obstetra, Enfermeiro Obstétrico..." />
@@ -232,6 +246,42 @@ function Input({
         onChange={(e) => onChange(e.target.value)}
         className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
       />
+    </div>
+  );
+}
+
+function PasswordInput({
+  label,
+  value,
+  onChange,
+  hint,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  hint?: string;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div>
+      <label className="text-xs font-semibold text-muted-foreground mb-1 block">{label}</label>
+      <div className="relative">
+        <input
+          type={show ? "text" : "password"}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3 pr-10"
+        />
+        <button
+          type="button"
+          onClick={() => setShow((v) => !v)}
+          aria-label={show ? "Ocultar senha" : "Mostrar senha"}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-base leading-none text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {show ? "🙈" : "👁"}
+        </button>
+      </div>
+      {hint && <p className="text-[10px] text-muted-foreground mt-1">{hint}</p>}
     </div>
   );
 }
