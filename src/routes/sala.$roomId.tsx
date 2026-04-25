@@ -619,7 +619,7 @@ function SalaPage() {
             </Button>
 
             <button
-              onClick={() => navigate({ to: isProfDono ? "/profissional" : "/agendamentos" })}
+              onClick={() => navigate({ to: isProfDono ? "/profissional" : "/videochamada" })}
               className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Voltar
