@@ -95,6 +95,12 @@ function SalaPage() {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const peerIdRef = useRef<string>(crypto.randomUUID());
   const isInitiatorRef = useRef(false);
+  const remotePeerIdRef = useRef<string | null>(null);
+  const makingOfferRef = useRef(false);
+  const ignoreOfferRef = useRef(false);
+  const offerSentRef = useRef(false);
+  const helloReplySentRef = useRef(false);
+  const politeRef = useRef(false);
   const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -281,6 +287,12 @@ function SalaPage() {
     }
     gravacaoIniciadaRef.current = false;
     isInitiatorRef.current = false;
+    remotePeerIdRef.current = null;
+    makingOfferRef.current = false;
+    ignoreOfferRef.current = false;
+    offerSentRef.current = false;
+    helloReplySentRef.current = false;
+    politeRef.current = false;
     pendingIceRef.current = [];
     try {
       pcRef.current?.getSenders().forEach((s) => {
@@ -316,8 +328,15 @@ function SalaPage() {
     }
   }, []);
 
-  const criarPeerConnection = useCallback(() => {
+  const criarPeerConnection = useCallback((stream: MediaStream) => {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+
+    stream.getAudioTracks().forEach((track) => {
+      pc.addTransceiver(track, { direction: "sendrecv", streams: [stream] });
+    });
+    stream.getVideoTracks().forEach((track) => {
+      pc.addTransceiver(track, { direction: "sendrecv", streams: [stream] });
+    });
 
     pc.onicecandidate = (e) => {
       if (e.candidate && channelRef.current) {
@@ -378,17 +397,25 @@ function SalaPage() {
   const enviarOffer = useCallback(async () => {
     const pc = pcRef.current;
     if (!pc || !channelRef.current) return;
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    channelRef.current.send({
-      type: "broadcast",
-      event: "signal",
-      payload: {
-        type: "offer",
-        from: peerIdRef.current,
-        sdp: offer,
-      } as SignalPayload,
-    });
+    if (offerSentRef.current || pc.signalingState !== "stable") return;
+
+    try {
+      makingOfferRef.current = true;
+      await pc.setLocalDescription();
+      if (pc.localDescription?.type !== "offer") return;
+      offerSentRef.current = true;
+      channelRef.current.send({
+        type: "broadcast",
+        event: "signal",
+        payload: {
+          type: "offer",
+          from: peerIdRef.current,
+          sdp: pc.localDescription,
+        } as SignalPayload,
+      });
+    } finally {
+      makingOfferRef.current = false;
+    }
   }, []);
 
   const tratarSinal = useCallback(
@@ -398,14 +425,15 @@ function SalaPage() {
       if (!pc) return;
 
       if (payload.type === "hello") {
-        // Quem tiver o peerId "menor" se torna initiator (decisão determinística).
-        // Quem já estava na sala normalmente recebe o hello do recém-chegado.
+        remotePeerIdRef.current = payload.from;
         const meSmaller = peerIdRef.current < payload.from;
-        if (meSmaller && !isInitiatorRef.current) {
+        politeRef.current = !meSmaller;
+
+        if (meSmaller && !offerSentRef.current) {
           isInitiatorRef.current = true;
           await enviarOffer();
-        } else if (!meSmaller) {
-          // Reenvia hello para garantir que o outro saiba que estamos aqui
+        } else if (!meSmaller && !helloReplySentRef.current) {
+          helloReplySentRef.current = true;
           channelRef.current?.send({
             type: "broadcast",
             event: "signal",
@@ -416,6 +444,15 @@ function SalaPage() {
       }
 
       if (payload.type === "offer") {
+        remotePeerIdRef.current = payload.from;
+        const offerCollision =
+          makingOfferRef.current || pc.signalingState !== "stable";
+        ignoreOfferRef.current = !politeRef.current && offerCollision;
+        if (ignoreOfferRef.current) return;
+
+        if (offerCollision) {
+          await pc.setLocalDescription({ type: "rollback" });
+        }
         await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
         for (const c of pendingIceRef.current) {
           try {
@@ -423,26 +460,27 @@ function SalaPage() {
           } catch { /* noop */ }
         }
         pendingIceRef.current = [];
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
+        await pc.setLocalDescription();
         channelRef.current?.send({
           type: "broadcast",
           event: "signal",
           payload: {
             type: "answer",
             from: peerIdRef.current,
-            sdp: answer,
+            sdp: pc.localDescription!,
           } as SignalPayload,
         });
         return;
       }
 
       if (payload.type === "answer") {
+        if (pc.signalingState !== "have-local-offer") return;
         await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
         return;
       }
 
       if (payload.type === "ice") {
+        if (ignoreOfferRef.current) return;
         if (pc.remoteDescription && pc.remoteDescription.type) {
           try {
             await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
@@ -471,14 +509,19 @@ function SalaPage() {
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: { echoCancellation: true, noiseSuppression: true },
       });
+      if (stream.getAudioTracks().length === 0) {
+        throw new DOMException("Microfone não encontrado", "NotFoundError");
+      }
+      if (stream.getVideoTracks().length === 0) {
+        throw new DOMException("Câmera não encontrada", "NotFoundError");
+      }
       localStreamRef.current = stream;
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
 
-      const pc = criarPeerConnection();
+      const pc = criarPeerConnection(stream);
       pcRef.current = pc;
-      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
 
       const channel = supabase.channel(`room_${slot.room_id}`, {
         config: { broadcast: { self: false, ack: false } },
@@ -486,7 +529,11 @@ function SalaPage() {
       channelRef.current = channel;
 
       channel.on("broadcast", { event: "signal" }, ({ payload }) => {
-        void tratarSinal(payload as SignalPayload);
+        void tratarSinal(payload as SignalPayload).catch((err) => {
+          console.error("webrtc signal", err);
+          setErro("A conexão de vídeo falhou. Saia e entre novamente na sala.");
+          setRemotoConectado(false);
+        });
       });
 
       await new Promise<void>((resolve) => {
