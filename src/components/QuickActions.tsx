@@ -8,31 +8,26 @@ const actions = [
   { to: "/alertas", label: "Alertas", color: "bg-warm text-foreground", hasEqualizer: false },
 ] as const;
 
-// Equalizer animado contínuo — 4 barras com timings desencontrados
-function Equalizer() {
-  const bars = [
-    { delay: 0, duration: 0.9, heights: ["20%", "85%", "40%"] },
-    { delay: 0.15, duration: 1.1, heights: ["70%", "25%", "90%"] },
-    { delay: 0.3, duration: 0.8, heights: ["35%", "95%", "55%"] },
-    { delay: 0.45, duration: 1.0, heights: ["80%", "30%", "65%"] },
-  ];
-
+// Ícone de vídeo minimalista — triângulo de play com anel pulsante contínuo
+function PlayPulse() {
   return (
-    <div className="absolute top-1.5 right-1.5 flex items-end gap-[2px] h-3 w-3.5">
-      {bars.map((bar, idx) => (
-        <motion.span
-          key={idx}
-          className="flex-1 bg-current rounded-full origin-bottom"
-          animate={{ height: bar.heights }}
-          transition={{
-            duration: bar.duration,
-            delay: bar.delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          style={{ height: "30%" }}
-        />
-      ))}
+    <div className="absolute top-1.5 right-1.5 w-4 h-4">
+      {/* Anel externo pulsando (ripple) */}
+      <motion.span
+        className="absolute inset-0 rounded-full border border-current"
+        animate={{ scale: [1, 1.6], opacity: [0.7, 0] }}
+        transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
+      />
+      {/* Disco sólido com triângulo de play */}
+      <motion.div
+        className="absolute inset-0 rounded-full bg-current flex items-center justify-center"
+        animate={{ scale: [1, 1.08, 1] }}
+        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <svg viewBox="0 0 10 10" className="w-2 h-2 text-coral-light" fill="currentColor">
+          <polygon points="3,2 3,8 8,5" />
+        </svg>
+      </motion.div>
     </div>
   );
 }
