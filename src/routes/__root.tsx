@@ -1,8 +1,20 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { BottomNav } from "@/components/BottomNav";
+import { ProfissionalNav } from "@/components/ProfissionalNav";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
+import { useUserRole } from "@/hooks/useUserRole";
 import appCss from "../styles.css?url";
+
+// Rotas que profissionais NÃO podem acessar (são exclusivas da gestante)
+const PROFISSIONAL_BLOCKED = [
+  "/home",
+  "/cartao",
+  "/alertas",
+  "/videochamada",
+  "/gestacao",
+  "/perfil",
+];
 
 function NotFoundComponent() {
   return (
@@ -68,8 +80,25 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const location = useLocation();
-  const hideNav = location.pathname === "/" || location.pathname.startsWith("/admin");
+  const navigate = useNavigate();
   const { profile } = useGestanteProfile();
+  const { isProfissional, isAdmin, loading: roleLoading } = useUserRole();
+
+  const hideAllNav = location.pathname === "/" || location.pathname.startsWith("/admin");
+
+  // Profissional vê apenas a nav restrita (Agenda + Vídeos)
+  const showProfissionalNav =
+    !hideAllNav && isProfissional && !isAdmin;
+  // Gestante vê a BottomNav padrão
+  const showGestanteNav = !hideAllNav && !isProfissional;
+
+  // Redireciona profissionais que tentam acessar telas de gestante
+  useEffect(() => {
+    if (roleLoading || !isProfissional || isAdmin) return;
+    if (PROFISSIONAL_BLOCKED.includes(location.pathname)) {
+      navigate({ to: "/profissional" });
+    }
+  }, [roleLoading, isProfissional, isAdmin, location.pathname, navigate]);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -82,7 +111,8 @@ function RootComponent() {
   return (
     <>
       <Outlet />
-      {!hideNav && <BottomNav />}
+      {showGestanteNav && <BottomNav />}
+      {showProfissionalNav && <ProfissionalNav />}
     </>
   );
 }
