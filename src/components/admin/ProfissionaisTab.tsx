@@ -110,7 +110,16 @@ export function ProfissionaisTab() {
       setForm({ email: "", senha: "", nome: "", cpf: "", especialidade: "", registro: "", bio: "" });
       await load();
     } catch (e) {
-      setMsg("Erro: " + (e as Error).message);
+      const raw = (e as Error).message || "";
+      let amigavel = raw;
+      if (/known to be weak|pwned|compromised|breach/i.test(raw)) {
+        amigavel = "Senha muito fraca ou já vazada em outros sites. Escolha outra (mín. 8 caracteres, misture letras, números e símbolos).";
+      } else if (/password.*should be at least|at least 6 characters|password.*length/i.test(raw)) {
+        amigavel = "A senha precisa ter no mínimo 6 caracteres.";
+      } else if (/already registered|exists|duplicate/i.test(raw)) {
+        amigavel = "Este e-mail já está cadastrado.";
+      }
+      setMsg("Erro: " + amigavel);
     } finally {
       setSaving(false);
     }
