@@ -33,7 +33,20 @@ type Slot = {
   status: string;
   gestante_id: string | null;
   observacao: string | null;
+  room_id: string | null;
+  recording_path: string | null;
 };
+
+const SALA_ANTECEDENCIA_MS = 15 * 60 * 1000;
+const SALA_TOLERANCIA_MS = 30 * 60 * 1000;
+
+function podeEntrarSala(s: Slot) {
+  if (!s.room_id || s.status !== "reservado") return false;
+  const inicio = new Date(s.data_hora).getTime();
+  const fim = inicio + s.duracao_min * 60 * 1000 + SALA_TOLERANCIA_MS;
+  const agora = Date.now();
+  return agora >= inicio - SALA_ANTECEDENCIA_MS && agora <= fim;
+}
 
 function ProfissionalPage() {
   const navigate = useNavigate();
