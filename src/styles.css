@@ -2,7 +2,8 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-@import "@livekit/components-styles";
+@import "@livekit/components-styles/dist/general/index.css";
+@import "@livekit/components-styles/dist/general/prefabs/index.css";
 
 @custom-variant dark (&:is(.dark *));
 
