@@ -30,7 +30,7 @@ export function BabySize({ week }: { week: number }) {
       animate={{ scale: 1, opacity: 1 }}
       transition={{ delay: 0.2 }}
     >
-      <LiquidCard className="p-5">
+      <LiquidCard className="p-5" bgOpacity={0.55}>
         <p className="text-sm text-accent-foreground font-medium mb-2">Tamanho do bebê</p>
         <div className="flex items-center gap-4">
           <div
