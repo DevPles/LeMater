@@ -3,10 +3,23 @@ import { createMiddleware } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
+import { supabase as browserSupabase } from './client'
 
 
+// Client-side: forward Supabase access token as Authorization header
+const forwardSupabaseAuth = createMiddleware({ type: 'function' }).client(
+  async ({ next }) => {
+    const { data } = await browserSupabase.auth.getSession()
+    const token = data.session?.access_token
+    return next({
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+  }
+)
 
-export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
+export const requireSupabaseAuth = createMiddleware({ type: 'function' })
+  .middleware([forwardSupabaseAuth])
+  .server(
   async ({ next }) => {
     
     const SUPABASE_URL = process.env.SUPABASE_URL;
