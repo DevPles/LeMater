@@ -59,11 +59,24 @@ function formatCount(n: number) {
   return String(n);
 }
 
+type Comment = {
+  id: string;
+  authorName: string;
+  authorAvatar: string | null;
+  authorInitials: string;
+  text: string;
+  likes: number;
+  liked: boolean;
+};
+
 function VideosPage() {
+  const { profile } = useGestanteProfile();
   const [activeCategory, setActiveCategory] = useState("Reels");
   const [selected, setSelected] = useState<Video | null>(null);
-  const [comments, setComments] = useState<Record<number, string[]>>({});
+  const [comments, setComments] = useState<Record<number, Comment[]>>({});
   const [draft, setDraft] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
   const [likedIds, setLikedIds] = useState<Record<number, boolean>>({});
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -71,10 +84,60 @@ function VideosPage() {
   const isReels = activeCategory === "Reels";
   const items = isReels ? reels : videos.filter(v => v.category === activeCategory);
 
+  const currentName =
+    profile?.nome?.trim() || profile?.email?.split("@")[0] || "Você";
+  const currentAvatar = profile?.foto_url ?? null;
+  const currentInitials = currentName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   const submitComment = () => {
     if (!selected || !draft.trim()) return;
-    setComments(prev => ({ ...prev, [selected.id]: [...(prev[selected.id] || []), draft.trim()] }));
+    const newComment: Comment = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      authorName: currentName,
+      authorAvatar: currentAvatar,
+      authorInitials: currentInitials,
+      text: draft.trim(),
+      likes: 0,
+      liked: false,
+    };
+    setComments((prev) => ({
+      ...prev,
+      [selected.id]: [...(prev[selected.id] || []), newComment],
+    }));
     setDraft("");
+  };
+
+  const toggleCommentLike = (videoId: number, commentId: string) => {
+    setComments((prev) => ({
+      ...prev,
+      [videoId]: (prev[videoId] || []).map((c) =>
+        c.id === commentId
+          ? { ...c, liked: !c.liked, likes: c.liked ? c.likes - 1 : c.likes + 1 }
+          : c,
+      ),
+    }));
+  };
+
+  const startEdit = (c: Comment) => {
+    setEditingId(c.id);
+    setEditingText(c.text);
+  };
+
+  const saveEdit = (videoId: number) => {
+    if (!editingId || !editingText.trim()) return;
+    setComments((prev) => ({
+      ...prev,
+      [videoId]: (prev[videoId] || []).map((c) =>
+        c.id === editingId ? { ...c, text: editingText.trim() } : c,
+      ),
+    }));
+    setEditingId(null);
+    setEditingText("");
   };
 
   const toggleLike = (id: number) => {
