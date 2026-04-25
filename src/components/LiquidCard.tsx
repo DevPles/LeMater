@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils";
 interface LiquidCardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   rounded?: "2xl" | "3xl";
+  /** Background opacity (0–1). Default 0.85. Use lower values for a more transparent card. */
+  bgOpacity?: number;
   /** kept for backward compat — ignored */
   withCoralDroplet?: boolean;
 }
