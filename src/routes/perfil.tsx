@@ -160,6 +160,47 @@ function PerfilPage() {
     }
   }
 
+  async function handleSelectSexo(novo: "masculino" | "feminino" | "neutro") {
+    if (!session || savingTema) return;
+    const anterior = bebeSexo;
+    setBebeSexo(novo);
+
+    // Aplica imediatamente o tema no <html>
+    if (typeof document !== "undefined") {
+      const root = document.documentElement;
+      root.classList.remove("theme-boy", "theme-girl");
+      if (novo === "masculino") root.classList.add("theme-boy");
+      else if (novo === "feminino") root.classList.add("theme-girl");
+    }
+
+    setSavingTema(true);
+    setMsg(null);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ bebe_sexo: novo })
+        .eq("user_id", session.user.id);
+      if (error) throw error;
+      setMsg({
+        type: "ok",
+        text:
+          novo === "masculino"
+            ? "Tema azul aplicado — é um menino! 💙"
+            : novo === "feminino"
+              ? "Tema rosa aplicado — é uma menina! 💗"
+              : "Tema padrão restaurado.",
+      });
+    } catch (err: any) {
+      // reverte em caso de erro
+      setBebeSexo(anterior);
+      setMsg({
+        type: "err",
+        text: err?.message || "Erro ao salvar a preferência de cor.",
+      });
+    } finally {
+      setSavingTema(false);
+    }
+  }
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
       <motion.div
