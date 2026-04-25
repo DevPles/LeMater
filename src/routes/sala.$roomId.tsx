@@ -328,11 +328,15 @@ function SalaPage() {
     }
   }, []);
 
-  const criarPeerConnection = useCallback(() => {
+  const criarPeerConnection = useCallback((stream: MediaStream) => {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
-    pc.addTransceiver("audio", { direction: "sendrecv" });
-    pc.addTransceiver("video", { direction: "sendrecv" });
+    stream.getAudioTracks().forEach((track) => {
+      pc.addTransceiver(track, { direction: "sendrecv", streams: [stream] });
+    });
+    stream.getVideoTracks().forEach((track) => {
+      pc.addTransceiver(track, { direction: "sendrecv", streams: [stream] });
+    });
 
     pc.onicecandidate = (e) => {
       if (e.candidate && channelRef.current) {
@@ -499,9 +503,8 @@ function SalaPage() {
         localVideoRef.current.srcObject = stream;
       }
 
-      const pc = criarPeerConnection();
+      const pc = criarPeerConnection(stream);
       pcRef.current = pc;
-      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
 
       const channel = supabase.channel(`room_${slot.room_id}`, {
         config: { broadcast: { self: false, ack: false } },
