@@ -279,6 +279,9 @@ function SalaPage() {
       window.clearInterval(tickRef.current);
       tickRef.current = null;
     }
+    gravacaoIniciadaRef.current = false;
+    isInitiatorRef.current = false;
+    pendingIceRef.current = [];
     try {
       pcRef.current?.getSenders().forEach((s) => {
         try {
