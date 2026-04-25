@@ -4,6 +4,7 @@ import { BabySize } from "@/components/BabySize";
 import { QuickActions } from "@/components/QuickActions";
 import { TipCard } from "@/components/TipCard";
 import { UserAvatar } from "@/components/UserAvatar";
+import { FlyingStork } from "@/components/FlyingStork";
 import { motion } from "framer-motion";
 import { useScreenContent } from "@/hooks/useScreenContent";
 import { HOME_DEFAULT } from "@/components/admin/TelasTab";
@@ -68,7 +69,8 @@ function HomePage() {
   const tipsToShow = tipsFiltered.length > 0 ? tipsFiltered : tipsAll;
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto relative">
+      <FlyingStork />
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
