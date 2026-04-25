@@ -7,7 +7,7 @@ const actions: { to: string; label: string; color: string; icon: IconKind }[] = 
   { to: "/videos", label: "Vídeos", color: "bg-coral-light text-primary", icon: "play" },
   { to: "/videochamada", label: "Consulta", color: "bg-mint-light text-accent-foreground", icon: "stethoscope" },
   { to: "/cartao", label: "Cartão", color: "bg-blush text-foreground", icon: "card" },
-  { to: "/alertas", label: "Alertas", color: "bg-warm text-foreground", icon: null },
+  { to: "/alertas", label: "Alertas", color: "bg-warm text-foreground", icon: "bell" },
 ];
 
 // Play minimalista moderno: traço se desenhando em loop contínuo
