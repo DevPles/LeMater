@@ -8,17 +8,21 @@ const actions = [
   { to: "/alertas", label: "Alertas", color: "bg-warm text-foreground", hasPlay: false },
 ] as const;
 
-// Triângulo de play minimalista, com respiração sutil
+// Triângulo de play minimalista (apenas contorno), animação em loop contínuo
 function PlayMark() {
   return (
     <motion.svg
       viewBox="0 0 24 24"
-      className="w-5 h-5 text-current"
-      fill="currentColor"
-      animate={{ opacity: [0.55, 1, 0.55], scale: [1, 1.08, 1] }}
-      transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+      className="w-7 h-7 text-current"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinejoin="round"
+      strokeLinecap="round"
+      animate={{ scale: [1, 1.15, 1] }}
+      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
     >
-      <polygon points="9,7 9,17 17,12" />
+      <polygon points="8,5 8,19 19,12" />
     </motion.svg>
   );
 }
