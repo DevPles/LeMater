@@ -140,6 +140,7 @@ export function ProfissionaisTab() {
           <Input label="Email de acesso *" value={form.email} onChange={(v) => setForm({ ...form, email: v })} type="email" />
           <Input label="Senha provisória *" value={form.senha} onChange={(v) => setForm({ ...form, senha: v })} type="password" />
           <Input label="Nome completo *" value={form.nome} onChange={(v) => setForm({ ...form, nome: v })} />
+          <Input label="CPF" value={form.cpf} onChange={(v) => setForm({ ...form, cpf: formatCpf(v) })} placeholder="000.000.000-00" />
           <Input label="Especialidade *" value={form.especialidade} onChange={(v) => setForm({ ...form, especialidade: v })} placeholder="Obstetra, Enfermeiro Obstétrico..." />
           <Input label="Registro (CRM/COREN)" value={form.registro} onChange={(v) => setForm({ ...form, registro: v })} />
           <div className="sm:col-span-2">
