@@ -412,19 +412,19 @@ function SalaPage() {
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   return (
-    <div className="fixed inset-0 bg-[#0a0820] text-white flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-background text-foreground flex flex-col overflow-hidden">
       {/* Header compacto */}
-      <header className="flex-shrink-0 bg-[#1a1557]/95 backdrop-blur border-b border-white/10">
+      <header className="flex-shrink-0 bg-card border-b border-border shadow-sm">
         <div className="px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
           <div className="min-w-0 flex items-center gap-3">
-            <div className="hidden sm:flex w-9 h-9 rounded-full bg-primary/20 items-center justify-center text-primary font-bold text-xs">
+            <div className="hidden sm:flex w-9 h-9 rounded-full bg-coral-light items-center justify-center text-primary font-bold text-xs">
               {(outroNome || "?").slice(0, 2).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] uppercase tracking-wider text-white/50 font-bold leading-none">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold leading-none">
                 {emSala ? "Em chamada" : "Sala de consulta"}
               </p>
-              <p className="text-sm font-bold truncate">
+              <p className="text-sm font-bold truncate text-foreground">
                 {emSala ? outroNome || "Aguardando..." : `${dt.toLocaleDateString("pt-BR")} • ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
               </p>
             </div>
@@ -432,23 +432,23 @@ function SalaPage() {
 
           <div className="flex items-center gap-2">
             {emSala && (
-              <span className="text-xs font-mono font-bold text-white/80 bg-white/5 px-2 py-1 rounded">
+              <span className="text-xs font-mono font-bold text-foreground bg-secondary px-2 py-1 rounded">
                 {fmtTempo(tempo)}
               </span>
             )}
             {statusGrav === "gravando" && (
-              <span className="text-[10px] font-bold bg-red-600 px-2 py-1 rounded-full flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-white bg-destructive px-2 py-1 rounded-full flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                 REC
               </span>
             )}
             {statusGrav === "enviando" && (
-              <span className="text-[10px] font-bold bg-amber-500 px-2 py-1 rounded-full">
+              <span className="text-[10px] font-bold text-warm-dark bg-warm px-2 py-1 rounded-full">
                 SALVANDO
               </span>
             )}
             {statusGrav === "enviado" && (
-              <span className="text-[10px] font-bold bg-green-600 px-2 py-1 rounded-full">
+              <span className="text-[10px] font-bold text-mint-dark bg-mint-light px-2 py-1 rounded-full">
                 SALVO
               </span>
             )}
@@ -457,7 +457,7 @@ function SalaPage() {
                 await sairESalvar();
                 navigate({ to: isProfDono ? "/profissional" : "/videochamada" });
               }}
-              className="bg-red-600 hover:bg-red-700 transition-colors text-white px-3 sm:px-4 py-1.5 rounded-full text-xs font-bold"
+              className="bg-primary hover:opacity-90 transition-opacity text-primary-foreground px-3 sm:px-4 py-1.5 rounded-full text-xs font-bold"
             >
               {emSala ? "Encerrar" : "Sair"}
             </button>
@@ -465,7 +465,7 @@ function SalaPage() {
         </div>
 
         {msgGrav && emSala && (
-          <div className="px-4 py-1.5 bg-white/5 text-[11px] text-white/70 border-t border-white/5">
+          <div className="px-4 py-1.5 bg-secondary text-[11px] text-muted-foreground border-t border-border">
             {msgGrav}
           </div>
         )}
@@ -473,14 +473,14 @@ function SalaPage() {
 
       {/* Conteúdo */}
       {!emSala ? (
-        <div className="flex-1 overflow-y-auto flex items-center justify-center p-4 sm:p-6">
-          <div className="max-w-md w-full bg-white/[0.04] rounded-3xl p-6 sm:p-8 space-y-5 border border-white/10 shadow-2xl">
+        <div className="flex-1 overflow-y-auto flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-background via-blush to-warm">
+          <div className="max-w-md w-full bg-card rounded-3xl p-6 sm:p-8 space-y-5 border border-border shadow-xl">
             <div className="text-center space-y-2">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/15 flex items-center justify-center text-primary text-2xl font-bold">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-coral-light flex items-center justify-center text-primary text-2xl font-bold">
                 {(outroNome || "?").slice(0, 2).toUpperCase()}
               </div>
-              <h1 className="text-xl font-bold">{outroNome || "Sala de consulta"}</h1>
-              <p className="text-xs text-white/60">
+              <h1 className="text-xl font-bold text-foreground">{outroNome || "Sala de consulta"}</h1>
+              <p className="text-xs text-muted-foreground">
                 {dt.toLocaleDateString("pt-BR")} às{" "}
                 {dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                 {" • "}
@@ -489,11 +489,11 @@ function SalaPage() {
             </div>
 
             {isGestante && !isProfDono && (
-              <div className="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-3.5">
-                <p className="text-[11px] text-amber-300 font-bold uppercase tracking-wide mb-1">
+              <div className="bg-warm border border-warm-dark/20 rounded-2xl p-3.5">
+                <p className="text-[11px] text-warm-dark font-bold uppercase tracking-wide mb-1">
                   Aviso de gravação
                 </p>
-                <p className="text-xs text-white/75 leading-relaxed">
+                <p className="text-xs text-foreground/75 leading-relaxed">
                   Esta consulta poderá ser gravada para fins clínicos. Os arquivos ficam
                   restritos ao profissional e à equipe administrativa.
                 </p>
@@ -501,26 +501,26 @@ function SalaPage() {
             )}
 
             {isProfDono && !mobile && canRecordScreen() && (
-              <div className="bg-blue-500/10 border border-blue-500/25 rounded-2xl p-3.5">
-                <p className="text-[11px] text-blue-300 font-bold uppercase tracking-wide mb-1">
+              <div className="bg-mint-light border border-mint-dark/20 rounded-2xl p-3.5">
+                <p className="text-[11px] text-mint-dark font-bold uppercase tracking-wide mb-1">
                   Antes de entrar
                 </p>
-                <p className="text-xs text-white/75 leading-relaxed">
+                <p className="text-xs text-foreground/75 leading-relaxed">
                   A gravação iniciará automaticamente. O navegador pedirá para você{" "}
-                  <strong className="text-white">compartilhar a aba</strong> — selecione a
-                  aba atual e marque <strong className="text-white">"Compartilhar áudio"</strong>.
+                  <strong className="text-foreground">compartilhar a aba</strong> — selecione a
+                  aba atual e marque <strong className="text-foreground">"Compartilhar áudio"</strong>.
                 </p>
               </div>
             )}
 
             {isProfDono && (mobile || !canRecordScreen()) && (
-              <div className="bg-orange-500/10 border border-orange-500/25 rounded-2xl p-3.5">
-                <p className="text-[11px] text-orange-300 font-bold uppercase tracking-wide mb-1">
+              <div className="bg-coral-light border border-primary/20 rounded-2xl p-3.5">
+                <p className="text-[11px] text-primary font-bold uppercase tracking-wide mb-1">
                   Gravação indisponível
                 </p>
-                <p className="text-xs text-white/75 leading-relaxed">
+                <p className="text-xs text-foreground/75 leading-relaxed">
                   Este dispositivo não suporta gravação automática.
-                  Para gravar a consulta, acesse de um <strong className="text-white">computador</strong> usando Chrome, Edge ou Firefox.
+                  Para gravar a consulta, acesse de um <strong className="text-foreground">computador</strong> usando Chrome, Edge ou Firefox.
                 </p>
               </div>
             )}
@@ -533,7 +533,7 @@ function SalaPage() {
             </button>
             <button
               onClick={() => navigate({ to: isProfDono ? "/profissional" : "/videochamada" })}
-              className="w-full text-white/60 hover:text-white font-semibold py-2 rounded-2xl text-xs transition-colors"
+              className="w-full text-muted-foreground hover:text-foreground font-semibold py-2 rounded-2xl text-xs transition-colors"
             >
               Cancelar
             </button>
@@ -542,7 +542,7 @@ function SalaPage() {
       ) : (
         <div
           ref={jitsiContainerRef}
-          className="flex-1 w-full bg-black overflow-hidden"
+          className="flex-1 w-full bg-foreground/90 overflow-hidden"
         />
       )}
     </div>
