@@ -64,11 +64,18 @@ export function ProfissionaisTab() {
     }
     setSaving(true);
     try {
-      // 1. Cria conta no auth (passa cpf nos metadados para o trigger handle_new_user)
+      // 1. Cria conta no auth — sinaliza tipo_usuario=profissional para que o trigger
+      // handle_new_user atribua diretamente a role 'profissional' (e não 'gestante').
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email: form.email,
         password: form.senha,
-        options: { data: { nome: form.nome, cpf: cpfDigits } },
+        options: {
+          data: {
+            nome: form.nome,
+            cpf: cpfDigits,
+            tipo_usuario: "profissional",
+          },
+        },
       });
       if (signupErr) throw signupErr;
       const userId = signupData.user?.id;
@@ -85,7 +92,7 @@ export function ProfissionaisTab() {
       });
       if (profErr) throw profErr;
 
-      // 2b. Garante que o CPF foi gravado em profiles (caso o trigger ainda não tenha)
+      // 2b. Garante que o CPF foi gravado em profiles
       if (cpfDigits) {
         await supabase
           .from("profiles")
@@ -93,17 +100,14 @@ export function ProfissionaisTab() {
           .eq("user_id", userId);
       }
 
-      // 3. Concede role 'profissional' (RLS exige admin; chamada será feita pelo admin)
-      // Como o admin atual usa sessionStorage e não tem JWT, usamos a função has_role:
-      // este insert pode falhar se quem chama não tiver role admin no banco.
-      // Para o MVP, fazemos a chamada e mostramos mensagem.
-      const { error: roleErr } = await supabase.from("user_roles").insert({
-        user_id: userId,
-        role: "profissional",
+      // 3. Garantia extra: chama RPC segura que promove o usuário a profissional
+      // e remove a role 'gestante' caso tenha sido atribuída automaticamente.
+      // Funciona mesmo sem JWT de admin porque a função valida via tabela professionals.
+      const { error: promoteErr } = await supabase.rpc("promote_to_professional", {
+        _user_id: userId,
       });
-      if (roleErr) {
-        // Não bloqueia, apenas avisa
-        console.warn("Atenção: papel 'profissional' não atribuído via RLS:", roleErr.message);
+      if (promoteErr) {
+        console.warn("Atenção: não foi possível confirmar papel 'profissional':", promoteErr.message);
       }
 
       setMsg("Profissional cadastrado com sucesso. Avise para confirmar o email.");
