@@ -333,19 +333,27 @@ function SalaPage() {
     pc.ontrack = (e) => {
       if (!remoteStreamRef.current) {
         remoteStreamRef.current = new MediaStream();
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = remoteStreamRef.current;
-        }
       }
       e.streams[0]?.getTracks().forEach((t) => {
         if (!remoteStreamRef.current!.getTracks().find((x) => x.id === t.id)) {
           remoteStreamRef.current!.addTrack(t);
         }
       });
+      // Atribui o stream ao elemento <video> remoto (pode ter acabado de montar)
+      if (remoteVideoRef.current && remoteVideoRef.current.srcObject !== remoteStreamRef.current) {
+        remoteVideoRef.current.srcObject = remoteStreamRef.current;
+        remoteVideoRef.current.play().catch(() => { /* ignore autoplay issues */ });
+      }
       setRemotoConectado(true);
 
-      // Profissional inicia gravação assim que o remoto conecta
-      if (isProfDono && statusGrav === "parado" && localStreamRef.current) {
+      // Profissional inicia gravação assim que o remoto conecta (uma vez só)
+      if (
+        isProfDonoRef.current &&
+        !gravacaoIniciadaRef.current &&
+        statusGravRef.current === "parado" &&
+        localStreamRef.current
+      ) {
+        gravacaoIniciadaRef.current = true;
         const combined = new MediaStream([
           ...localStreamRef.current.getTracks(),
           ...remoteStreamRef.current!.getTracks(),
@@ -362,7 +370,7 @@ function SalaPage() {
     };
 
     return pc;
-  }, [isProfDono, statusGrav, iniciarGravacao]);
+  }, [iniciarGravacao]);
 
   const enviarOffer = useCallback(async () => {
     const pc = pcRef.current;
