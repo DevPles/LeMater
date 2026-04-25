@@ -419,11 +419,6 @@ function PerfilPage() {
         </form>
       </motion.div>
     </div>
-
-        {savingTema && (
-          <p className="text-xs text-muted-foreground mt-3">Salvando preferência...</p>
-        )}
-      </motion.div>
-    </div>
   );
+}
 }
