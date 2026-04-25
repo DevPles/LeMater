@@ -27,6 +27,7 @@ type SlotComProf = {
   status: string;
   gestante_id: string | null;
   professional_id: string;
+  room_id: string | null;
   professionals: {
     id: string;
     nome: string;
@@ -35,6 +36,7 @@ type SlotComProf = {
 };
 
 function AgendamentosPage() {
+  const navigate = useNavigate();
   const { session } = useGestanteProfile();
   const userId = session?.user?.id ?? null;
   const [slots, setSlots] = useState<SlotComProf[]>([]);
