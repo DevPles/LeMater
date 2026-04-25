@@ -101,6 +101,17 @@ function SalaPage() {
   const chunksRef = useRef<Blob[]>([]);
   const recStartRef = useRef<number>(0);
   const tickRef = useRef<number | null>(null);
+  const statusGravRef = useRef<typeof statusGrav>("parado");
+  const isProfDonoRef = useRef(false);
+  const gravacaoIniciadaRef = useRef(false);
+
+  useEffect(() => {
+    statusGravRef.current = statusGrav;
+  }, [statusGrav]);
+
+  useEffect(() => {
+    isProfDonoRef.current = isProfDono;
+  }, [isProfDono]);
 
   // ----- carrega sessão e dados do slot -----
   useEffect(() => {
