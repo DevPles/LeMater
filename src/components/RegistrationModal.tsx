@@ -341,7 +341,7 @@ export default function RegistrationModal({
             >
               <div className="flex flex-col gap-2">
                 <div>
-                  <Label className={labelClass}>E-mail ou CPF</Label>
+                  <Label className={labelClass}>E-mail, CPF ou registro</Label>
                   <Input
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
@@ -407,17 +407,32 @@ export default function RegistrationModal({
                   try {
                     let emailParaLogin = u;
 
-                    if (looksLikeCpf(u)) {
+                    if (u.includes("@")) {
+                      // E-mail: usa direto
+                      emailParaLogin = u;
+                    } else if (looksLikeCpf(u)) {
+                      // CPF (11 dígitos)
                       const { data: resolvedEmail, error: resolveError } = await supabase.rpc(
                         "resolve_login_email_by_cpf",
                         { _cpf: normalizeCpf(u) },
                       );
-
                       if (resolveError) throw resolveError;
                       if (!resolvedEmail) {
                         throw new Error("CPF não encontrado. Tente entrar com seu e-mail ou finalize o cadastro.");
                       }
-
+                      emailParaLogin = resolvedEmail;
+                    } else {
+                      // Tenta resolver como registro de conselho de classe (CRM/COREN/etc)
+                      const { data: resolvedEmail, error: resolveError } = await supabase.rpc(
+                        "resolve_login_email_by_registro",
+                        { _registro: u },
+                      );
+                      if (resolveError) throw resolveError;
+                      if (!resolvedEmail) {
+                        throw new Error(
+                          "Não encontramos uma conta com esse e-mail, CPF ou registro profissional.",
+                        );
+                      }
                       emailParaLogin = resolvedEmail;
                     }
 
