@@ -58,6 +58,48 @@ function StethoscopeMark() {
   );
 }
 
+// Cartão de saúde minimalista: contorno + linhas se desenhando em loop
+function CardMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-9 h-9 text-current" fill="none">
+      {/* Contorno do cartão */}
+      <motion.rect
+        x="3.5"
+        y="6"
+        width="17"
+        height="12"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
+      />
+      {/* Cruz médica */}
+      <motion.path
+        d="M8 13 H12 M10 11 V15"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+      />
+      {/* Linhas de informação */}
+      <motion.path
+        d="M14 11 H17 M14 14 H17"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+      />
+    </svg>
+  );
+}
+
 export function QuickActions() {
   return (
     <div className="grid grid-cols-4 gap-3">
