@@ -95,6 +95,12 @@ function SalaPage() {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const peerIdRef = useRef<string>(crypto.randomUUID());
   const isInitiatorRef = useRef(false);
+  const remotePeerIdRef = useRef<string | null>(null);
+  const makingOfferRef = useRef(false);
+  const ignoreOfferRef = useRef(false);
+  const offerSentRef = useRef(false);
+  const helloReplySentRef = useRef(false);
+  const politeRef = useRef(false);
   const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -281,6 +287,12 @@ function SalaPage() {
     }
     gravacaoIniciadaRef.current = false;
     isInitiatorRef.current = false;
+    remotePeerIdRef.current = null;
+    makingOfferRef.current = false;
+    ignoreOfferRef.current = false;
+    offerSentRef.current = false;
+    helloReplySentRef.current = false;
+    politeRef.current = false;
     pendingIceRef.current = [];
     try {
       pcRef.current?.getSenders().forEach((s) => {
