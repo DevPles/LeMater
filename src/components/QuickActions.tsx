@@ -100,6 +100,36 @@ function CardMark() {
   );
 }
 
+
+// Sino de alerta minimalista: contorno + badeço se desenhando em loop
+function BellMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-9 h-9 text-current" fill="none">
+      {/* Corpo do sino */}
+      <motion.path
+        d="M6 16 V11 A6 6 0 0 1 18 11 V16 L19.5 17.5 H4.5 L6 16 Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
+      />
+      {/* Badeço */}
+      <motion.path
+        d="M10.5 20 A1.5 1.5 0 0 0 13.5 20"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+      />
+    </svg>
+  );
+}
+
 export function QuickActions() {
   return (
     <div className="grid grid-cols-4 gap-3">
