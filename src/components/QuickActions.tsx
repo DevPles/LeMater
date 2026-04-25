@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 const actions = [
   { to: "/videos", label: "Vídeos", color: "bg-coral-light text-primary", hasPlay: true },
-  { to: "/videochamada", label: "Chamada", color: "bg-mint-light text-accent-foreground", hasPlay: false },
+  { to: "/videochamada", label: "Consulta", color: "bg-mint-light text-accent-foreground", hasPlay: false },
   { to: "/cartao", label: "Cartão", color: "bg-blush text-foreground", hasPlay: false },
   { to: "/alertas", label: "Alertas", color: "bg-warm text-foreground", hasPlay: false },
 ] as const;
