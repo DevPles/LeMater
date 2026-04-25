@@ -151,8 +151,16 @@ function SalaPage() {
     setConectando(true);
     setErro(null);
     try {
+      const { data: sess } = await supabase.auth.getSession();
+      const accessToken = sess.session?.access_token;
+      if (!accessToken) {
+        setErro("Sessão expirada. Faça login novamente.");
+        return;
+      }
+
       const { token: tk, wsUrl: url } = await obterToken({
         data: { roomId: slot.room_id },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
       setToken(tk);
       setWsUrl(url);
