@@ -364,9 +364,9 @@ export default function RegistrationModal({
                       type="button"
                       onClick={() => setShowLoginPassword((v) => !v)}
                       aria-label={showLoginPassword ? "Ocultar senha" : "Mostrar senha"}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#f0c040] hover:text-[#e5b535] text-base leading-none transition-colors"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#f0c040] hover:text-[#e5b535] transition-colors p-1"
                     >
-                      {showLoginPassword ? "🙈" : "👁"}
+                      <EyeToggleIcon open={showLoginPassword} />
                     </button>
                   </div>
                 </div>
