@@ -421,13 +421,26 @@ export default function RegistrationModal({
                       emailParaLogin = resolvedEmail;
                     }
 
-                    const { error } = await supabase.auth.signInWithPassword({
+                    const { data: signInData, error } = await supabase.auth.signInWithPassword({
                       email: emailParaLogin,
                       password: p,
                     });
                     if (error) throw error;
                     onOpenChange(false);
-                    navigate({ to: "/home" });
+
+                    // Detecta papel do usuário para direcionar à área correta
+                    const userId = signInData.user?.id;
+                    let destino: "/profissional" | "/admin" | "/home" = "/home";
+                    if (userId) {
+                      const { data: roles } = await supabase
+                        .from("user_roles")
+                        .select("role")
+                        .eq("user_id", userId);
+                      const list = (roles ?? []).map((r) => r.role as string);
+                      if (list.includes("admin")) destino = "/admin";
+                      else if (list.includes("profissional")) destino = "/profissional";
+                    }
+                    navigate({ to: destino });
                   } catch (e) {
                     setLoginErro((e as Error).message || "Falha no login");
                   } finally {
