@@ -50,11 +50,14 @@ function AgendamentosPage() {
     setLoading(true);
     setMsg(null);
     if (tab === "disponiveis") {
+      // Mostra slots disponíveis que ainda não terminaram (considera 2h de janela retroativa
+      // para cobrir slots em andamento ou recém-iniciados que o profissional acabou de liberar)
+      const limite = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
       const { data, error } = await supabase
         .from("appointment_slots")
         .select("*, professionals(id, nome, especialidade)")
         .eq("status", "disponivel")
-        .gte("data_hora", new Date().toISOString())
+        .gte("data_hora", limite)
         .order("data_hora", { ascending: true });
       if (error) console.error(error);
       if (data) setSlots(data as SlotComProf[]);
