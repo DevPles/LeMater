@@ -1,92 +1,115 @@
-## Plano: videochamada nativa que funciona em celular e PC desde já
+## Objetivo
 
-Substituir o Jitsi por uma sala de vídeo nossa, feita com **WebRTC nativo do navegador + Supabase Realtime para sinalização**. Funciona em Chrome/Edge/Firefox no PC e em Safari/Chrome no celular (Android e iPhone) sem precisar instalar nada.
+Substituir a integração Jitsi por **LiveKit Cloud**, que oferece 10.000 minutos grátis por mês, SDK React oficial, funciona perfeitamente em mobile (iOS/Android) e roda **embutido dentro do próprio app** (sem abrir outra aba).
 
-## Como vai funcionar para o usuário
+## Por que LiveKit
 
-**No PC** (profissional ou gestante):
-- Abre `/sala/{id}`, navegador pede permissão de câmera/microfone, clica em "Entrar".
-- Vê o vídeo do outro grande no centro, próprio vídeo num quadradinho no canto inferior direito.
-- Barra inferior com 3 botões grandes: **Microfone**, **Câmera**, **Encerrar**.
-- Topo: nome do outro participante, cronômetro `00:42`, badge `REC` quando estiver gravando.
+- **10.000 minutos/mês grátis** (≈ 166 horas de chamada)
+- SDK React pronto (`@livekit/components-react`) — não precisa montar UI do zero
+- Servidores TURN/STUN globais incluídos → funciona em 4G/5G e Wi-Fi corporativo
+- Open source: dá pra migrar pra self-hosted depois sem trocar código
+- Áudio/vídeo HD, baixa latência
 
-**No celular** (Android / iPhone, navegador):
-- Mesma tela, layout responsivo: vídeo remoto ocupa a tela toda, mini-vídeo no canto, controles na parte de baixo (área segura do iPhone respeitada).
-- Funciona em modo retrato e paisagem.
-- iOS exige HTTPS (já temos no domínio Lovable) e que o usuário toque um botão antes de começar (já fazemos com o "Entrar na sala") — ambas condições atendidas.
+## O que você precisa fazer (1 vez)
 
-## Compatibilidade real (testado em produção por milhões de apps)
+1. Criar conta grátis em https://cloud.livekit.io
+2. Criar um projeto (ex: "MaeDigital")
+3. Copiar 3 valores do painel: **API Key**, **API Secret** e **WebSocket URL** (algo como `wss://maedigital-xyz.livekit.cloud`)
+4. Me passar via tela de secrets do Lovable
 
-| Dispositivo | Chamada de vídeo | Áudio | Gravação |
-|---|---|---|---|
-| Chrome/Edge/Firefox PC | ✅ | ✅ | ✅ (lado profissional) |
-| Safari macOS | ✅ | ✅ | ✅ |
-| Chrome Android | ✅ | ✅ | ✅ |
-| Safari iPhone/iPad (iOS 14.3+) | ✅ | ✅ | ⚠️ (gravação mais limitada — fica do lado do profissional, que normalmente está no desktop) |
-
-## Como funciona por baixo (técnico)
+## Arquitetura
 
 ```text
-Profissional (PC ou celular)        Gestante (celular ou PC)
-        |                                    |
-        |-- entra em /sala/{roomId} ---------|
-        |                                    |
-        |   Supabase Realtime channel "room_<roomId>"
-        |   <-------- sinalização --------->
-        |   (offer / answer / ICE candidates via broadcast)
-        |                                    |
-        |======= WebRTC P2P (vídeo + áudio) =|
-        |                                    |
-        |  MediaRecorder grava local+remoto
-        |  Upload .webm -> bucket consultation-recordings
+Gestante (browser)                    Profissional (browser)
+       |                                       |
+       |  1. Pede token ao backend             |
+       v                                       v
+  [Server function: gerarTokenLiveKit]  ←  RLS valida quem pode entrar
+       |                                       |
+       |  2. Conecta com token + WS URL        |
+       v                                       v
+              [LiveKit Cloud]
+         (servidor de mídia + TURN)
 ```
 
-1. **Mídia local**: `getUserMedia({ video: { facingMode: 'user' }, audio: true })` — pede câmera frontal e microfone (uma vez).
-2. **Sinalização**: cada sala usa um channel Supabase Realtime (`room_<roomId>`). Os 2 lados trocam SDP `offer`/`answer` e ICE candidates por `broadcast`. Já temos Supabase Realtime configurado.
-3. **Conexão P2P**: `RTCPeerConnection` com STUN público do Google (`stun:stun.l.google.com:19302`). O segundo a entrar gera a offer; o primeiro responde.
-4. **Gravação** (lado do profissional, quando o navegador suporta `MediaRecorder`):
-   - Combina os tracks locais + remotos num único `MediaStream`.
-   - `MediaRecorder` grava em `.webm` (ou `.mp4` no Safari).
-   - Upload final para `consultation-recordings` (bucket já existe), grava `recording_path`, `recording_duration_seg`, marca slot como `realizado`.
-   - Se o navegador não suportar gravação, a chamada acontece normalmente, só não grava (mostra aviso discreto).
+- **Backend** gera token JWT assinado com a API Secret (nunca exposto ao cliente)
+- **Frontend** usa o token para entrar na sala via WebRTC
+- **RLS** garante que só profissional dono e gestante reservada entram
 
-## UI da nova sala
+## Mudanças no código
 
-```text
-+-------------------------------------------------+
-| PE  SALA DE CONSULTA       [00:42] [REC] [Sair] |
-+-------------------------------------------------+
-|                                                 |
-|                                       +-------+ |
-|        VÍDEO REMOTO (full)            | EU    | |
-|                                       | (mini)| |
-|                                       +-------+ |
-|                                                 |
-+-------------------------------------------------+
-|       [ MIC ]   [ CÂMERA ]   [ ENCERRAR ]       |
-+-------------------------------------------------+
-```
+### 1. Dependências
+Instalar:
+- `livekit-client` (cliente WebRTC)
+- `@livekit/components-react` (componentes React prontos)
+- `@livekit/components-styles` (CSS dos componentes)
+- `livekit-server-sdk` (geração de token no backend)
 
-Tudo com tokens do sistema: `bg-card`, `bg-primary`, `bg-coral-light`, `bg-destructive`. Mesma paleta creme/coral do resto do app.
+### 2. Secrets (você cadastra)
+- `LIVEKIT_API_KEY` (server-only)
+- `LIVEKIT_API_SECRET` (server-only)
+- `VITE_LIVEKIT_URL` (público, WS URL — pode ir no client)
 
-## Quando publicar nas lojas (Google Play / App Store)
+### 3. Server function nova: `src/utils/livekit.functions.ts`
+- `gerarTokenSala({ roomId })` → valida sessão do usuário, confere via Supabase se ele é o profissional dono ou a gestante reservada do slot, gera token JWT do LiveKit com identidade e nome corretos, retorna `{ token, wsUrl }`
+- Usa `requireSupabaseAuth` middleware
+- Tempo de validade do token: 2h
 
-Quando o app for empacotado via **Capacitor** (caminho padrão), essa sala continua funcionando sem reescrever nada:
+### 4. Refatorar `src/routes/sala.$roomId.tsx`
+- Remover todo código Jitsi (script loader, JitsiMeetExternalAPI, etc.)
+- Manter tela de pré-entrada (com nome, horário, dicas)
+- Ao clicar "Entrar", chamar a server function pra pegar token
+- Renderizar `<LiveKitRoom>` do SDK com:
+  - `<VideoConference />` (UI completa pronta: vídeos, mic, câmera, chat, hangup, tile view)
+  - Tema customizado pra combinar com o app (cores coral/blush)
+  - Callback `onDisconnected` → volta pra rota apropriada
+- Manter cronômetro de duração no header
+- Manter validação de permissão (gestante reservada ou profissional dono)
 
-- Capacitor roda o React dentro de um WebView (Chrome WebView no Android, WKWebView no iOS).
-- WebRTC é totalmente suportado nos dois.
-- Só adiciona-se permissões de câmera/mic no `AndroidManifest.xml` e `Info.plist`.
-- Esforço quando chegar a hora: ~1 dia, sem mexer em nada da videochamada.
+### 5. UI customizada
+Em vez do `<VideoConference />` padrão do LiveKit (que tem visual genérico), usar componentes individuais para manter identidade visual:
+- `<ParticipantTile />` para cada participante
+- `<ControlBar controls={{ microphone: true, camera: true, leave: true, chat: false, screenShare: false }} />`
+- Sem botão de gravação (seguindo decisão anterior)
 
-## Limitação honesta única
+### 6. Limpeza
+- `src/routes/profissional.tsx`: remover referência a `recording_path` no tipo `Slot` (já não usamos)
+- Verificar se há outros lugares que carregam o script Jitsi e remover
 
-WebRTC P2P puro funciona em ~95% das redes. Em redes corporativas com firewall muito fechado pode falhar — nesses casos raros seria preciso um servidor TURN (pago, ~5 dólares/mês). Não é problema para gestantes em casa / 4G / Wi-Fi residencial. Se aparecer no futuro, adiciona-se TURN sem mexer no resto.
+## Detalhes técnicos importantes
 
-## Arquivos a alterar
+- **Permissões mobile**: LiveKit pede acesso a câmera/mic via `getUserMedia` padrão; iOS Safari exige interação do usuário (clique no botão "Entrar") — já garantido pelo fluxo atual
+- **TURN automático**: LiveKit Cloud já provê servidores TURN, então funciona em 4G sem configuração adicional
+- **Identidade do participante**: usar `user_id` do Supabase como `identity` no token (único) e `nome` do profile como `name` (exibido)
+- **Nome da sala LiveKit**: usar `slot.room_id` (UUID já existente no banco)
+- **Tokens não vão pro banco**: gerados sob demanda a cada entrada na sala
+- **Sem cron/limpeza**: LiveKit fecha sala automaticamente quando todos saem
 
-- **`src/routes/sala.$roomId.tsx`** — reescrita completa: remove tudo do Jitsi (script externo, `JitsiMeetExternalAPI`, `getDisplayMedia`), adiciona WebRTC + signaling Supabase + UI nova responsiva PC/mobile.
+## Fluxo do usuário (sem mudanças visíveis grandes)
 
-## Resumo
+1. Profissional/gestante abre `/sala/{roomId}` → vê tela de pré-entrada (igual hoje)
+2. Clica "Entrar na sala" → backend gera token (≈ 200ms)
+3. Tela transiciona pra interface de vídeo embutida
+4. Vê o outro participante quando ele entrar, fala, encerra
+5. Ao clicar "Sair" → volta pra `/profissional` ou `/videochamada`
 
-Saída: Jitsi (iframe pesado, complexo, prompt chato de "compartilhar aba", design não combina).
-Entrada: WebRTC nativo + Supabase Realtime — funciona já em PC e celular hoje, com a cara do sistema, sem dependências, sem chaves, e continua funcionando quando virar app nas lojas.
+## Custo real esperado
+
+Com plano grátis (10.000 min/mês):
+- 100 consultas de 30min = 3.000 min → **dentro do grátis**
+- 300 consultas de 30min = 9.000 min → **dentro do grátis**
+- Acima disso: $0.005/participante-minuto (≈ R$0,025/min com 2 pessoas)
+
+## Riscos e mitigações
+
+- **Risco**: Usuário com rede muito restrita (firewall corporativo bloqueando UDP completo). **Mitigação**: LiveKit faz fallback automático pra TCP/443 (TURN over TLS), que passa em quase qualquer rede.
+- **Risco**: iOS Safari < 14 não suporta. **Mitigação**: 99%+ dos iPhones em uso já estão em iOS 15+; mostramos mensagem clara se navegador incompatível.
+- **Risco**: Conta LiveKit fica suspensa. **Mitigação**: monitoramos no painel; se acontecer, ativar billing leva 5 min e mantém serviço.
+
+## Próximos passos após aprovação
+
+1. Você cria a conta no LiveKit Cloud
+2. Eu peço os 3 secrets via tela de secrets
+3. Você cola os valores
+4. Eu instalo as deps, crio a server function e refatoro a sala
+5. Testamos juntos no PC e celular
