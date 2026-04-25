@@ -28,32 +28,47 @@ function PlayMark() {
   );
 }
 
-// Estetoscópio minimalista: forma essencial, traço fino
+// Estetoscópio minimalista com animação de desenho contínuo
 function StethoscopeMark() {
   return (
     <svg viewBox="0 0 24 24" className="w-8 h-8 text-current" fill="none">
-      <path
+      <motion.path
         d="M8 4 V11 A4 4 0 0 0 16 11 V4"
         stroke="currentColor"
         strokeWidth="1.25"
         strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
       />
-      <path
+      <motion.path
         d="M12 15 V17"
         stroke="currentColor"
         strokeWidth="1.25"
         strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
       />
-      <circle cx="12" cy="19" r="1.75" stroke="currentColor" strokeWidth="1.25" />
+      <motion.circle
+        cx="12"
+        cy="19"
+        r="1.75"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+      />
     </svg>
   );
 }
 
-// Cartão minimalista: apenas contorno e uma linha
+// Cartão minimalista com animação de desenho contínuo
 function CardMark() {
   return (
     <svg viewBox="0 0 24 24" className="w-8 h-8 text-current" fill="none">
-      <rect
+      <motion.rect
         x="4"
         y="7"
         width="16"
@@ -61,31 +76,43 @@ function CardMark() {
         rx="2"
         stroke="currentColor"
         strokeWidth="1.25"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
       />
-      <path
+      <motion.path
         d="M4 11 H20"
         stroke="currentColor"
         strokeWidth="1.25"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
       />
     </svg>
   );
 }
 
-// Sino minimalista: contorno limpo, sem detalhes
+// Sino minimalista com animação de desenho contínuo
 function BellMark() {
   return (
     <svg viewBox="0 0 24 24" className="w-8 h-8 text-current" fill="none">
-      <path
+      <motion.path
         d="M7 16 V11 A5 5 0 0 1 17 11 V16 H7 Z"
         stroke="currentColor"
         strokeWidth="1.25"
         strokeLinejoin="round"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
       />
-      <path
+      <motion.path
         d="M10.5 19 A1.5 1.5 0 0 0 13.5 19"
         stroke="currentColor"
         strokeWidth="1.25"
         strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
       />
     </svg>
   );
