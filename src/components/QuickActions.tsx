@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 
-type IconKind = "play" | "stethoscope" | null;
+type IconKind = "play" | "stethoscope" | "card" | null;
 
 const actions: { to: string; label: string; color: string; icon: IconKind }[] = [
   { to: "/videos", label: "Vídeos", color: "bg-coral-light text-primary", icon: "play" },
   { to: "/videochamada", label: "Consulta", color: "bg-mint-light text-accent-foreground", icon: "stethoscope" },
-  { to: "/cartao", label: "Cartão", color: "bg-blush text-foreground", icon: null },
+  { to: "/cartao", label: "Cartão", color: "bg-blush text-foreground", icon: "card" },
   { to: "/alertas", label: "Alertas", color: "bg-warm text-foreground", icon: null },
 ];
 
@@ -58,6 +58,48 @@ function StethoscopeMark() {
   );
 }
 
+// Cartão de saúde minimalista: contorno + linhas se desenhando em loop
+function CardMark() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-9 h-9 text-current" fill="none">
+      {/* Contorno do cartão */}
+      <motion.rect
+        x="3.5"
+        y="6"
+        width="17"
+        height="12"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
+      />
+      {/* Cruz médica */}
+      <motion.path
+        d="M8 13 H12 M10 11 V15"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+      />
+      {/* Linhas de informação */}
+      <motion.path
+        d="M14 11 H17 M14 14 H17"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        initial={{ pathLength: 0, opacity: 0.3 }}
+        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+      />
+    </svg>
+  );
+}
+
 export function QuickActions() {
   return (
     <div className="grid grid-cols-4 gap-3">
@@ -72,6 +114,7 @@ export function QuickActions() {
             <div className={`relative w-16 h-16 rounded-full ${color} flex flex-col items-center justify-center gap-0.5 shadow-sm overflow-hidden`}>
               {icon === "play" && <PlayMark />}
               {icon === "stethoscope" && <StethoscopeMark />}
+              {icon === "card" && <CardMark />}
               <span className="text-[10px] font-bold leading-tight text-center">{label}</span>
             </div>
           </Link>
