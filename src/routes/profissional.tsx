@@ -359,14 +359,25 @@ function Dashboard({ session }: { session: Session }) {
                         : "bg-muted text-muted-foreground";
                 return (
                   <li key={s.id} className="p-3 flex items-center justify-between gap-3 flex-wrap">
-                    <div className="text-xs">
-                      <p className="font-bold text-foreground">
+                    <div className="text-xs flex-1 min-w-[200px]">
+                      {s.titulo && (
+                        <p className="font-bold text-foreground text-sm mb-0.5">{s.titulo}</p>
+                      )}
+                      {s.tipo_atendimento && (
+                        <p className="text-[10px] uppercase tracking-wide font-semibold text-primary mb-1">
+                          {s.tipo_atendimento}
+                        </p>
+                      )}
+                      <p className="font-semibold text-foreground">
                         {dt.toLocaleDateString("pt-BR")} às{" "}
                         {dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                       </p>
                       <p className="text-muted-foreground">
                         {s.duracao_min} min • {s.modalidade === "videochamada" ? "Vídeo" : "Presencial"}
                       </p>
+                      {s.descricao && (
+                        <p className="text-muted-foreground mt-1 line-clamp-2">{s.descricao}</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColor}`}>
