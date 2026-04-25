@@ -217,9 +217,6 @@ function SalaPage() {
         <div className="min-h-full flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-2xl shadow-md max-w-md w-full p-6 sm:p-8">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-coral-light flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">📹</span>
-              </div>
               <h1 className="text-2xl font-bold text-foreground mb-1">
                 Sala de consulta
               </h1>
