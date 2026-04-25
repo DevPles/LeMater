@@ -429,6 +429,3 @@ function VideosPage() {
     </div>
   );
 }
-    </div>
-  );
-}
