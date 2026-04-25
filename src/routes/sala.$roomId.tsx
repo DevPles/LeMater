@@ -162,13 +162,19 @@ function SalaPage() {
         setTempo(Math.floor((Date.now() - t0) / 1000));
       }, 1000);
       setEmSala(true);
-    } catch (e) {
+    } catch (e: unknown) {
       console.error("livekit token", e);
-      setErro(
-        e instanceof Error
-          ? e.message
-          : "Não foi possível iniciar a videochamada.",
-      );
+      let msg = "Não foi possível iniciar a videochamada.";
+      if (e instanceof Response) {
+        try {
+          msg = (await e.text()) || msg;
+        } catch {
+          // ignore
+        }
+      } else if (e instanceof Error) {
+        msg = e.message;
+      }
+      setErro(msg);
     } finally {
       setConectando(false);
     }
