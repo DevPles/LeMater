@@ -28,37 +28,29 @@ function PlayMark() {
   );
 }
 
-// Estetoscópio minimalista com animação de desenho contínuo
+// Coração com pulso (batimento) — alternativa ao estetoscópio para Consulta
 function StethoscopeMark() {
   return (
-    <svg viewBox="0 0 24 24" className="w-8 h-8 text-current" fill="none">
+    <svg viewBox="0 0 24 24" className="w-9 h-9 text-current" fill="none">
       <motion.path
-        d="M8 4 V11 A4 4 0 0 0 16 11 V4"
+        d="M12 20 C12 20 4 14.5 4 9.5 A4 4 0 0 1 12 7 A4 4 0 0 1 20 9.5 C20 14.5 12 20 12 20 Z"
         stroke="currentColor"
-        strokeWidth="1.25"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
         strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0.3 }}
         animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
         transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.path
-        d="M12 15 V17"
+        d="M6.5 12 H9 L10.5 9.5 L12.5 14 L14 12 H17.5"
         stroke="currentColor"
-        strokeWidth="1.25"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
         strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0.3 }}
         animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
-        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-      />
-      <motion.circle
-        cx="12"
-        cy="19"
-        r="1.75"
-        stroke="currentColor"
-        strokeWidth="1.25"
-        initial={{ pathLength: 0, opacity: 0.3 }}
-        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
-        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
       />
     </svg>
   );
@@ -67,7 +59,7 @@ function StethoscopeMark() {
 // Cartão minimalista com animação de desenho contínuo
 function CardMark() {
   return (
-    <svg viewBox="0 0 24 24" className="w-8 h-8 text-current" fill="none">
+    <svg viewBox="0 0 24 24" className="w-9 h-9 text-current" fill="none">
       <motion.rect
         x="4"
         y="7"
@@ -75,7 +67,7 @@ function CardMark() {
         height="11"
         rx="2"
         stroke="currentColor"
-        strokeWidth="1.25"
+        strokeWidth="1.75"
         initial={{ pathLength: 0, opacity: 0.3 }}
         animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
         transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
@@ -83,7 +75,7 @@ function CardMark() {
       <motion.path
         d="M4 11 H20"
         stroke="currentColor"
-        strokeWidth="1.25"
+        strokeWidth="1.75"
         initial={{ pathLength: 0, opacity: 0.3 }}
         animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
         transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
@@ -95,12 +87,13 @@ function CardMark() {
 // Sino minimalista com animação de desenho contínuo
 function BellMark() {
   return (
-    <svg viewBox="0 0 24 24" className="w-8 h-8 text-current" fill="none">
+    <svg viewBox="0 0 24 24" className="w-9 h-9 text-current" fill="none">
       <motion.path
         d="M7 16 V11 A5 5 0 0 1 17 11 V16 H7 Z"
         stroke="currentColor"
-        strokeWidth="1.25"
+        strokeWidth="1.75"
         strokeLinejoin="round"
+        strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0.3 }}
         animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
         transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
@@ -108,7 +101,7 @@ function BellMark() {
       <motion.path
         d="M10.5 19 A1.5 1.5 0 0 0 13.5 19"
         stroke="currentColor"
-        strokeWidth="1.25"
+        strokeWidth="1.75"
         strokeLinecap="round"
         initial={{ pathLength: 0, opacity: 0.3 }}
         animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
