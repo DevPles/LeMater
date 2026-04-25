@@ -421,4 +421,3 @@ function PerfilPage() {
     </div>
   );
 }
-}
