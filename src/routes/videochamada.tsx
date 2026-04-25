@@ -1,9 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
+
+const SALA_ANTECEDENCIA_MS = 15 * 60 * 1000;
+const SALA_TOLERANCIA_MS = 30 * 60 * 1000;
 
 export const Route = createFileRoute("/videochamada")({
   head: () => ({
@@ -24,6 +27,7 @@ type SlotComProf = {
   status: string;
   gestante_id: string | null;
   professional_id: string;
+  room_id: string | null;
   professionals: {
     id: string;
     nome: string;
@@ -32,6 +36,7 @@ type SlotComProf = {
 };
 
 function AgendamentosPage() {
+  const navigate = useNavigate();
   const { session } = useGestanteProfile();
   const userId = session?.user?.id ?? null;
   const [slots, setSlots] = useState<SlotComProf[]>([]);
@@ -213,17 +218,34 @@ function AgendamentosPage() {
                         {booking === s.id ? "..." : "Marcar"}
                       </button>
                     ) : (
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${
-                          s.status === "reservado"
-                            ? "bg-amber-100 text-amber-700"
-                            : s.status === "realizado"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {s.status}
-                      </span>
+                      <div className="flex flex-col items-end gap-1">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${
+                            s.status === "reservado"
+                              ? "bg-amber-100 text-amber-700"
+                              : s.status === "realizado"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {s.status}
+                        </span>
+                        {s.status === "reservado" && s.room_id && (() => {
+                          const inicio = new Date(s.data_hora).getTime();
+                          const fim = inicio + s.duracao_min * 60 * 1000 + SALA_TOLERANCIA_MS;
+                          const agora = Date.now();
+                          const podeEntrar = agora >= inicio - SALA_ANTECEDENCIA_MS && agora <= fim;
+                          if (!podeEntrar) return null;
+                          return (
+                            <button
+                              onClick={() => navigate({ to: "/sala/$roomId", params: { roomId: s.room_id! } })}
+                              className="bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-full hover:opacity-90"
+                            >
+                              Entrar na consulta
+                            </button>
+                          );
+                        })()}
+                      </div>
                     )}
                   </div>
                 </LiquidCard>

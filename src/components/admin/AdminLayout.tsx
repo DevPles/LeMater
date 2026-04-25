@@ -11,6 +11,7 @@ export type AdminSection =
   | "comunicacao-campanhas"
   | "comunicacao-grupos"
   | "comunicacao-templates"
+  | "consultas-gravacoes"
   | "config-parametros"
   | "config-profissionais"
   | "config-telas";
@@ -58,6 +59,11 @@ const MENU: MenuGroup[] = [
       { key: "comunicacao-grupos", label: "Grupos dinâmicos" },
       { key: "comunicacao-templates", label: "Templates" },
     ],
+  },
+  {
+    id: "consultas",
+    label: "Consultas",
+    items: [{ key: "consultas-gravacoes", label: "Gravações", badge: "NOVA" }],
   },
   {
     id: "config",

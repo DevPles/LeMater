@@ -84,7 +84,10 @@ function RootComponent() {
   const { profile } = useGestanteProfile();
   const { isProfissional, isAdmin, loading: roleLoading } = useUserRole();
 
-  const hideAllNav = location.pathname === "/" || location.pathname.startsWith("/admin");
+  const hideAllNav =
+    location.pathname === "/" ||
+    location.pathname.startsWith("/admin") ||
+    location.pathname.startsWith("/sala");
 
   // Profissional vê apenas a nav restrita (Agenda + Vídeos)
   const showProfissionalNav =

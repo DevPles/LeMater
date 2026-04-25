@@ -19,6 +19,7 @@ import { Route as CartaoRouteImport } from './routes/cartao'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SalaRoomIdRouteImport } from './routes/sala.$roomId'
 
 const VideosRoute = VideosRouteImport.update({
   id: '/videos',
@@ -70,6 +71,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SalaRoomIdRoute = SalaRoomIdRouteImport.update({
+  id: '/sala/$roomId',
+  path: '/sala/$roomId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/profissional': typeof ProfissionalRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
+  '/sala/$roomId': typeof SalaRoomIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/profissional': typeof ProfissionalRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
+  '/sala/$roomId': typeof SalaRoomIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/profissional': typeof ProfissionalRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
+  '/sala/$roomId': typeof SalaRoomIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/profissional'
     | '/videochamada'
     | '/videos'
+    | '/sala/$roomId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/profissional'
     | '/videochamada'
     | '/videos'
+    | '/sala/$roomId'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/profissional'
     | '/videochamada'
     | '/videos'
+    | '/sala/$roomId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   ProfissionalRoute: typeof ProfissionalRoute
   VideochamadaRoute: typeof VideochamadaRoute
   VideosRoute: typeof VideosRoute
+  SalaRoomIdRoute: typeof SalaRoomIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sala/$roomId': {
+      id: '/sala/$roomId'
+      path: '/sala/$roomId'
+      fullPath: '/sala/$roomId'
+      preLoaderRoute: typeof SalaRoomIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfissionalRoute: ProfissionalRoute,
   VideochamadaRoute: VideochamadaRoute,
   VideosRoute: VideosRoute,
+  SalaRoomIdRoute: SalaRoomIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
