@@ -509,6 +509,12 @@ function SalaPage() {
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: { echoCancellation: true, noiseSuppression: true },
       });
+      if (stream.getAudioTracks().length === 0) {
+        throw new DOMException("Microfone não encontrado", "NotFoundError");
+      }
+      if (stream.getVideoTracks().length === 0) {
+        throw new DOMException("Câmera não encontrada", "NotFoundError");
+      }
       localStreamRef.current = stream;
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
@@ -523,7 +529,11 @@ function SalaPage() {
       channelRef.current = channel;
 
       channel.on("broadcast", { event: "signal" }, ({ payload }) => {
-        void tratarSinal(payload as SignalPayload);
+        void tratarSinal(payload as SignalPayload).catch((err) => {
+          console.error("webrtc signal", err);
+          setErro("A conexão de vídeo falhou. Saia e entre novamente na sala.");
+          setRemotoConectado(false);
+        });
       });
 
       await new Promise<void>((resolve) => {
