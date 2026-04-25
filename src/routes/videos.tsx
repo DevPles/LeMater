@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -160,33 +161,16 @@ function VideosPage() {
                   </span>
                   <span className="pointer-events-none absolute top-2 right-2 bg-foreground/70 text-primary-foreground text-[10px] px-2 py-0.5 rounded-lg">{reel.duration}</span>
 
-                  <div className="pointer-events-none absolute bottom-12 left-3 right-3">
+                  <div className="pointer-events-none absolute bottom-3 left-3 right-3">
                     <h3 className="font-semibold text-xs text-primary-foreground line-clamp-2">{reel.title}</h3>
                     <p className="text-[10px] text-primary-foreground/80 mt-1">{reel.author}</p>
-                  </div>
-
-                  <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-1">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); toggleLike(reel.id); }}
-                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold transition-colors ${liked ? "bg-primary text-primary-foreground" : "bg-white/85 text-foreground"}`}
-                        aria-label="Curtir"
-                      >
+                    <div className="mt-1.5 flex items-center gap-3 text-[10px] font-semibold text-primary-foreground/90">
+                      <span className="flex items-center gap-1">
                         <span aria-hidden>{liked ? "♥" : "♡"}</span>
-                        <span>{formatCount(getLikeCount(reel))}</span>
-                      </button>
-                      <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/85 text-foreground text-[10px] font-semibold">
-                        <span aria-hidden>👁</span>
-                        <span>{formatCount(reel.views ?? 0)}</span>
+                        {formatCount(getLikeCount(reel))}
                       </span>
+                      <span>{formatCount(reel.views ?? 0)} views</span>
                     </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setSelected(reel); }}
-                      className="px-2 py-1 rounded-full bg-white/85 text-foreground text-[10px] font-semibold"
-                      aria-label="Compartilhar"
-                    >
-                      ↗
-                    </button>
                   </div>
                 </motion.div>
               );
@@ -233,67 +217,97 @@ function VideosPage() {
               <DialogHeader>
                 <DialogTitle className="text-left text-base">{selected.title}</DialogTitle>
               </DialogHeader>
-              <div className={`${selected.category === "Reels" ? "aspect-[9/16]" : "aspect-video"} rounded-xl bg-gradient-to-br ${selected.gradient} flex items-center justify-center relative`}>
+              <div className={`${selected.category === "Reels" ? "aspect-[9/16]" : "aspect-video"} rounded-xl bg-gradient-to-br ${selected.gradient} flex items-center justify-center relative overflow-hidden`}>
                 <span className="text-5xl text-foreground/30">▶</span>
-                <span className="absolute bottom-2 right-2 bg-foreground/70 text-primary-foreground text-xs px-2 py-1 rounded-lg">{selected.duration}</span>
+                <span className="absolute bottom-2 left-2 bg-foreground/70 text-primary-foreground text-xs px-2 py-1 rounded-lg">{selected.duration}</span>
+
+                {/* Coluna de ações estilo Instagram/TikTok — apenas para Reels */}
+                {selected.category === "Reels" && (
+                  <div className="absolute right-2 bottom-3 flex flex-col items-center gap-4">
+                    <button
+                      onClick={() => toggleLike(selected.id)}
+                      className="flex flex-col items-center gap-0.5 group"
+                      aria-label="Curtir"
+                    >
+                      <span
+                        aria-hidden
+                        className={`text-2xl leading-none transition-transform group-active:scale-125 ${
+                          likedIds[selected.id] ? "text-primary" : "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+                        }`}
+                      >
+                        {likedIds[selected.id] ? "♥" : "♡"}
+                      </span>
+                      <span className="text-[11px] font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                        {formatCount(getLikeCount(selected))}
+                      </span>
+                    </button>
+
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span aria-hidden className="text-xl leading-none text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                        ◐
+                      </span>
+                      <span className="text-[11px] font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                        {formatCount(selected.views ?? 0)}
+                      </span>
+                    </div>
+
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          className="flex flex-col items-center gap-0.5"
+                          aria-label="Compartilhar"
+                        >
+                          <span aria-hidden className="text-2xl leading-none text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                            ↗
+                          </span>
+                          <span className="text-[11px] font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                            Enviar
+                          </span>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent align="end" side="top" className="w-44 p-2">
+                        <button
+                          onClick={() => shareTo("whatsapp", selected)}
+                          className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
+                        >
+                          WhatsApp
+                        </button>
+                        <button
+                          onClick={() => shareTo("instagram", selected)}
+                          className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
+                        >
+                          Instagram
+                        </button>
+                        <button
+                          onClick={() => shareTo("facebook", selected)}
+                          className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
+                        >
+                          Facebook
+                        </button>
+                        <button
+                          onClick={() => shareTo("copy", selected)}
+                          className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-muted transition-colors"
+                        >
+                          Copiar link
+                        </button>
+                        {shareFeedback && (
+                          <p className="text-[11px] text-primary mt-1 px-3">{shareFeedback}</p>
+                        )}
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                )}
               </div>
+
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-foreground">{selected.author}</p>
                   <p className="text-xs text-muted-foreground">{selected.role}</p>
                 </div>
-                <span className="text-[11px] text-muted-foreground">
-                  {formatCount(selected.views ?? 0)} visualizações
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => toggleLike(selected.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                    likedIds[selected.id] ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-muted/70"
-                  }`}
-                >
-                  <span aria-hidden className="text-base">{likedIds[selected.id] ? "♥" : "♡"}</span>
-                  <span>{formatCount(getLikeCount(selected))}</span>
-                  <span className="text-xs font-normal opacity-80">curtidas</span>
-                </button>
-              </div>
-
-              <div className="border-t border-border pt-3">
-                <h4 className="text-sm font-semibold text-foreground mb-2">Compartilhar nas redes</h4>
-                <div className="grid grid-cols-4 gap-2">
-                  <button
-                    onClick={() => shareTo("whatsapp", selected)}
-                    className="flex flex-col items-center justify-center gap-1 py-2 rounded-xl bg-[#25D366]/10 text-[#075E54] text-[11px] font-semibold hover:bg-[#25D366]/20 transition-colors"
-                  >
-                    <span aria-hidden className="text-base">💬</span>
-                    WhatsApp
-                  </button>
-                  <button
-                    onClick={() => shareTo("instagram", selected)}
-                    className="flex flex-col items-center justify-center gap-1 py-2 rounded-xl bg-gradient-to-br from-[#feda75]/30 via-[#d62976]/20 to-[#4f5bd5]/20 text-foreground text-[11px] font-semibold hover:opacity-90 transition-opacity"
-                  >
-                    <span aria-hidden className="text-base">📸</span>
-                    Instagram
-                  </button>
-                  <button
-                    onClick={() => shareTo("facebook", selected)}
-                    className="flex flex-col items-center justify-center gap-1 py-2 rounded-xl bg-[#1877F2]/10 text-[#1877F2] text-[11px] font-semibold hover:bg-[#1877F2]/20 transition-colors"
-                  >
-                    <span aria-hidden className="text-base">f</span>
-                    Facebook
-                  </button>
-                  <button
-                    onClick={() => shareTo("copy", selected)}
-                    className="flex flex-col items-center justify-center gap-1 py-2 rounded-xl bg-muted text-foreground text-[11px] font-semibold hover:bg-muted/70 transition-colors"
-                  >
-                    <span aria-hidden className="text-base">🔗</span>
-                    Copiar
-                  </button>
-                </div>
-                {shareFeedback && (
-                  <p className="text-[11px] text-primary mt-2 text-center">{shareFeedback}</p>
+                {selected.category !== "Reels" && (
+                  <span className="text-[11px] text-muted-foreground">
+                    {formatCount(selected.views ?? 0)} visualizações
+                  </span>
                 )}
               </div>
               <div className="border-t border-border pt-3">
