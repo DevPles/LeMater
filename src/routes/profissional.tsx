@@ -34,7 +34,6 @@ type Slot = {
   gestante_id: string | null;
   observacao: string | null;
   room_id: string | null;
-  recording_path: string | null;
 };
 
 const SALA_ANTECEDENCIA_MS = 15 * 60 * 1000;
