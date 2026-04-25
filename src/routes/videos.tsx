@@ -59,6 +59,25 @@ function formatCount(n: number) {
   return String(n);
 }
 
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function AuthorAvatar({ name, isGestante, size = "sm" }: { name: string; isGestante?: boolean; size?: "sm" | "xs" }) {
+  const dim = size === "xs" ? "w-5 h-5 text-[9px]" : "w-6 h-6 text-[10px]";
+  const bg = isGestante ? "bg-[#f0c040] text-[#1a1557]" : "bg-primary text-primary-foreground";
+  return (
+    <div className={`${dim} ${bg} rounded-full flex items-center justify-center font-bold flex-shrink-0`}>
+      {getInitials(name)}
+    </div>
+  );
+}
+
 type Comment = {
   id: string;
   authorName: string;
@@ -229,8 +248,10 @@ function VideosPage() {
                   <span className="pointer-events-none absolute top-2 right-2 bg-foreground/70 text-primary-foreground text-[10px] px-2 py-0.5 rounded-lg">{reel.duration}</span>
 
                   <div className="pointer-events-none absolute bottom-3 left-3 right-3">
-                    <h3 className="font-semibold text-xs text-primary-foreground line-clamp-2">{reel.title}</h3>
-                    <p className="text-[10px] text-primary-foreground/80 mt-1">{reel.author}</p>
+                    <div className="flex items-center gap-1.5">
+                      <AuthorAvatar name={reel.author} isGestante={reel.isGestante} size="xs" />
+                      <p className="text-[10px] font-semibold text-primary-foreground truncate">{reel.author}</p>
+                    </div>
                     <div className="mt-1.5 flex items-center gap-3 text-[10px] font-semibold text-primary-foreground/90">
                       <span className="flex items-center gap-1">
                         <span aria-hidden>{liked ? "♥" : "♡"}</span>
@@ -266,7 +287,10 @@ function VideosPage() {
                 </div>
                 <div className="p-3">
                   <h3 className="font-semibold text-xs text-foreground line-clamp-2">{video.title}</h3>
-                  <p className="text-[10px] text-muted-foreground mt-1">{video.author}</p>
+                  <div className="mt-1.5 flex items-center gap-1.5">
+                    <AuthorAvatar name={video.author} isGestante={video.isGestante} size="xs" />
+                    <p className="text-[10px] font-medium text-foreground truncate">{video.author}</p>
+                  </div>
                 </div>
               </motion.button>
             ))}
