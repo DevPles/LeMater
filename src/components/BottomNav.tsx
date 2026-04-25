@@ -3,7 +3,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 const navItems = [
   { to: "/home", label: "Início" },
   { to: "/videos", label: "Vídeos" },
-  { to: "/videochamada", label: "Chamada" },
+  { to: "/videochamada", label: "Consulta" },
   { to: "/cartao", label: "Cartão" },
   { to: "/alertas", label: "Alertas" },
 ] as const;
