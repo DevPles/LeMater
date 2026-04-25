@@ -34,7 +34,21 @@ type Slot = {
   gestante_id: string | null;
   observacao: string | null;
   room_id: string | null;
+  titulo: string | null;
+  descricao: string | null;
+  tipo_atendimento: string | null;
 };
+
+const TIPOS_ATENDIMENTO = [
+  "Consulta médica obstétrica",
+  "Consulta de enfermagem",
+  "Visita do agente comunitário de saúde",
+  "Orientação nutricional",
+  "Orientação psicológica",
+  "Orientação sobre amamentação",
+  "Orientação geral pré-natal",
+  "Outro",
+] as const;
 
 const SALA_ANTECEDENCIA_MS = 15 * 60 * 1000;
 const SALA_TOLERANCIA_MS = 30 * 60 * 1000;
@@ -91,6 +105,9 @@ function Dashboard({ session }: { session: Session }) {
     hora: "",
     duracao_min: 30,
     modalidade: "videochamada",
+    tipo_atendimento: TIPOS_ATENDIMENTO[0] as string,
+    titulo: "",
+    descricao: "",
   });
   const [msg, setMsg] = useState<string | null>(null);
   const [filtroStatus, setFiltroStatus] = useState<"todos" | "disponivel" | "reservado" | "realizado">("todos");
@@ -129,6 +146,8 @@ function Dashboard({ session }: { session: Session }) {
     setMsg(null);
     if (!prof) return setMsg("Você ainda não tem perfil profissional. Solicite ao admin.");
     if (!novoSlot.data || !novoSlot.hora) return setMsg("Informe data e hora.");
+    if (!novoSlot.titulo.trim()) return setMsg("Informe um título para o atendimento.");
+    if (!novoSlot.tipo_atendimento) return setMsg("Selecione o tipo de atendimento.");
     const dt = new Date(`${novoSlot.data}T${novoSlot.hora}:00`);
     if (isNaN(dt.getTime())) return setMsg("Data/hora inválida.");
 
@@ -138,9 +157,20 @@ function Dashboard({ session }: { session: Session }) {
       duracao_min: novoSlot.duracao_min,
       modalidade: novoSlot.modalidade,
       status: "disponivel",
+      titulo: novoSlot.titulo.trim().slice(0, 120),
+      descricao: novoSlot.descricao.trim().slice(0, 500) || null,
+      tipo_atendimento: novoSlot.tipo_atendimento,
     });
     if (error) return setMsg("Erro: " + error.message);
-    setNovoSlot({ data: "", hora: "", duracao_min: 30, modalidade: "videochamada" });
+    setNovoSlot({
+      data: "",
+      hora: "",
+      duracao_min: 30,
+      modalidade: "videochamada",
+      tipo_atendimento: TIPOS_ATENDIMENTO[0],
+      titulo: "",
+      descricao: "",
+    });
     setMsg("Horário publicado!");
     await load();
   };
@@ -191,9 +221,60 @@ function Dashboard({ session }: { session: Session }) {
             className="bg-card border border-border rounded-2xl p-5 space-y-3"
           >
             <h2 className="text-base font-bold font-display text-foreground">Publicar novo horário</h2>
+            <p className="text-xs text-muted-foreground -mt-1">
+              Descreva o que você está oferecendo para que a gestante saiba antes de reservar.
+            </p>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                  Tipo de atendimento *
+                </label>
+                <select
+                  value={novoSlot.tipo_atendimento}
+                  onChange={(e) => setNovoSlot({ ...novoSlot, tipo_atendimento: e.target.value })}
+                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
+                >
+                  {TIPOS_ATENDIMENTO.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                  Título / tema *
+                </label>
+                <input
+                  type="text"
+                  maxLength={120}
+                  placeholder="Ex.: Orientação sobre amamentação"
+                  value={novoSlot.titulo}
+                  onChange={(e) => setNovoSlot({ ...novoSlot, titulo: e.target.value })}
+                  className="w-full h-9 text-sm rounded-xl border border-border bg-background px-3"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                Descrição (opcional)
+              </label>
+              <textarea
+                rows={3}
+                maxLength={500}
+                placeholder="Detalhes do que será oferecido, público-alvo, o que levar, etc."
+                value={novoSlot.descricao}
+                onChange={(e) => setNovoSlot({ ...novoSlot, descricao: e.target.value })}
+                className="w-full text-sm rounded-xl border border-border bg-background px-3 py-2 resize-none"
+              />
+              <p className="text-[10px] text-muted-foreground text-right mt-1">
+                {novoSlot.descricao.length}/500
+              </p>
+            </div>
+
             <div className="grid sm:grid-cols-4 gap-3">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Data</label>
+                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Data *</label>
                 <input
                   type="date"
                   value={novoSlot.data}
@@ -202,7 +283,7 @@ function Dashboard({ session }: { session: Session }) {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Hora</label>
+                <label className="text-xs font-semibold text-muted-foreground mb-1 block">Hora *</label>
                 <input
                   type="time"
                   value={novoSlot.hora}
@@ -278,14 +359,25 @@ function Dashboard({ session }: { session: Session }) {
                         : "bg-muted text-muted-foreground";
                 return (
                   <li key={s.id} className="p-3 flex items-center justify-between gap-3 flex-wrap">
-                    <div className="text-xs">
-                      <p className="font-bold text-foreground">
+                    <div className="text-xs flex-1 min-w-[200px]">
+                      {s.titulo && (
+                        <p className="font-bold text-foreground text-sm mb-0.5">{s.titulo}</p>
+                      )}
+                      {s.tipo_atendimento && (
+                        <p className="text-[10px] uppercase tracking-wide font-semibold text-primary mb-1">
+                          {s.tipo_atendimento}
+                        </p>
+                      )}
+                      <p className="font-semibold text-foreground">
                         {dt.toLocaleDateString("pt-BR")} às{" "}
                         {dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                       </p>
                       <p className="text-muted-foreground">
                         {s.duracao_min} min • {s.modalidade === "videochamada" ? "Vídeo" : "Presencial"}
                       </p>
+                      {s.descricao && (
+                        <p className="text-muted-foreground mt-1 line-clamp-2">{s.descricao}</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColor}`}>
