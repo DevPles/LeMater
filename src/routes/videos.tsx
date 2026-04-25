@@ -161,33 +161,16 @@ function VideosPage() {
                   </span>
                   <span className="pointer-events-none absolute top-2 right-2 bg-foreground/70 text-primary-foreground text-[10px] px-2 py-0.5 rounded-lg">{reel.duration}</span>
 
-                  <div className="pointer-events-none absolute bottom-12 left-3 right-3">
+                  <div className="pointer-events-none absolute bottom-3 left-3 right-3">
                     <h3 className="font-semibold text-xs text-primary-foreground line-clamp-2">{reel.title}</h3>
                     <p className="text-[10px] text-primary-foreground/80 mt-1">{reel.author}</p>
-                  </div>
-
-                  <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-1">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); toggleLike(reel.id); }}
-                        className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold transition-colors ${liked ? "bg-primary text-primary-foreground" : "bg-white/85 text-foreground"}`}
-                        aria-label="Curtir"
-                      >
+                    <div className="mt-1.5 flex items-center gap-3 text-[10px] font-semibold text-primary-foreground/90">
+                      <span className="flex items-center gap-1">
                         <span aria-hidden>{liked ? "♥" : "♡"}</span>
-                        <span>{formatCount(getLikeCount(reel))}</span>
-                      </button>
-                      <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/85 text-foreground text-[10px] font-semibold">
-                        <span aria-hidden>👁</span>
-                        <span>{formatCount(reel.views ?? 0)}</span>
+                        {formatCount(getLikeCount(reel))}
                       </span>
+                      <span>{formatCount(reel.views ?? 0)} views</span>
                     </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setSelected(reel); }}
-                      className="px-2 py-1 rounded-full bg-white/85 text-foreground text-[10px] font-semibold"
-                      aria-label="Compartilhar"
-                    >
-                      ↗
-                    </button>
                   </div>
                 </motion.div>
               );
