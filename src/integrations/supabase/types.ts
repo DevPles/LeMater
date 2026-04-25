@@ -42,6 +42,7 @@ export type Database = {
         Row: {
           created_at: string
           data_hora: string
+          descricao: string | null
           duracao_min: number
           gestante_id: string | null
           gravacao_finalizada_em: string | null
@@ -55,11 +56,14 @@ export type Database = {
           reservado_em: string | null
           room_id: string | null
           status: string
+          tipo_atendimento: string | null
+          titulo: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           data_hora: string
+          descricao?: string | null
           duracao_min?: number
           gestante_id?: string | null
           gravacao_finalizada_em?: string | null
@@ -73,11 +77,14 @@ export type Database = {
           reservado_em?: string | null
           room_id?: string | null
           status?: string
+          tipo_atendimento?: string | null
+          titulo?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           data_hora?: string
+          descricao?: string | null
           duracao_min?: number
           gestante_id?: string | null
           gravacao_finalizada_em?: string | null
@@ -91,6 +98,8 @@ export type Database = {
           reservado_em?: string | null
           room_id?: string | null
           status?: string
+          tipo_atendimento?: string | null
+          titulo?: string | null
           updated_at?: string
         }
         Relationships: [
