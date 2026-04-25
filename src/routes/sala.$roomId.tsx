@@ -25,6 +25,18 @@ type SlotInfo = {
   recording_path: string | null;
 };
 
+function isMobileDevice() {
+  if (typeof navigator === "undefined") return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent,
+  );
+}
+
+function canRecordScreen() {
+  if (typeof navigator === "undefined") return false;
+  return !!(navigator.mediaDevices && (navigator.mediaDevices as any).getDisplayMedia);
+}
+
 function SalaPage() {
   const { roomId } = Route.useParams();
   const navigate = useNavigate();
@@ -32,11 +44,17 @@ function SalaPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isProfDono, setIsProfDono] = useState(false);
   const [isGestante, setIsGestante] = useState(false);
+  const [outroNome, setOutroNome] = useState<string>("");
+  const [meuNome, setMeuNome] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [emSala, setEmSala] = useState(false);
-  const [statusGrav, setStatusGrav] = useState<"parado" | "gravando" | "enviando" | "enviado" | "erro">("parado");
+  const [statusGrav, setStatusGrav] = useState<
+    "indisponivel" | "parado" | "gravando" | "enviando" | "enviado" | "erro"
+  >("parado");
   const [msgGrav, setMsgGrav] = useState<string | null>(null);
+  const [tempo, setTempo] = useState<number>(0); // segundos em chamada
+  const [mobile] = useState(isMobileDevice());
 
   const jitsiContainerRef = useRef<HTMLDivElement | null>(null);
   const jitsiApiRef = useRef<any>(null);
@@ -44,6 +62,7 @@ function SalaPage() {
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
   const streamRef = useRef<MediaStream | null>(null);
+  const tickRef = useRef<number | null>(null);
 
   // Carrega sessão e dados do slot
   useEffect(() => {
@@ -60,7 +79,9 @@ function SalaPage() {
 
       const { data: s, error } = await supabase
         .from("appointment_slots")
-        .select("id, room_id, data_hora, duracao_min, status, gestante_id, professional_id, recording_path")
+        .select(
+          "id, room_id, data_hora, duracao_min, status, gestante_id, professional_id, recording_path",
+        )
         .eq("room_id", roomId)
         .maybeSingle();
 
@@ -75,24 +96,49 @@ function SalaPage() {
       // Checa se é o profissional dono
       const { data: prof } = await supabase
         .from("professionals")
-        .select("id")
-        .eq("user_id", uid)
+        .select("id, nome, user_id")
+        .eq("id", s.professional_id)
         .maybeSingle();
-      const profDono = !!prof && (prof as { id: string }).id === s.professional_id;
+      const profDono = !!prof && (prof as { user_id: string }).user_id === uid;
       setIsProfDono(profDono);
       setIsGestante(s.gestante_id === uid);
+
+      // Nomes para exibir no Jitsi
+      let nomeGestante = "Gestante";
+      if (s.gestante_id) {
+        const { data: gp } = await supabase
+          .from("profiles")
+          .select("nome")
+          .eq("user_id", s.gestante_id)
+          .maybeSingle();
+        if (gp?.nome) nomeGestante = gp.nome;
+      }
+      const nomeProf = (prof as { nome?: string } | null)?.nome ?? "Profissional";
+
+      if (profDono) {
+        setMeuNome(nomeProf);
+        setOutroNome(nomeGestante);
+      } else {
+        setMeuNome(nomeGestante);
+        setOutroNome(nomeProf);
+      }
 
       if (!profDono && s.gestante_id !== uid) {
         setErro("Você não tem permissão para entrar nesta sala.");
       }
+
+      // Define disponibilidade de gravação
+      if (profDono && (mobile || !canRecordScreen())) {
+        setStatusGrav("indisponivel");
+      }
+
       setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [roomId, navigate]);
+  }, [roomId, navigate, mobile]);
 
-  // Carrega script externo do Jitsi
   const loadJitsiScript = (): Promise<void> =>
     new Promise((resolve, reject) => {
       if ((window as any).JitsiMeetExternalAPI) return resolve();
@@ -107,10 +153,11 @@ function SalaPage() {
   const entrarSala = async () => {
     if (!slot) return;
     setEmSala(true);
+    setMsgGrav(null);
 
     try {
       await loadJitsiScript();
-    } catch (e) {
+    } catch {
       setErro("Não foi possível carregar a sala. Verifique sua conexão.");
       setEmSala(false);
       return;
@@ -119,7 +166,6 @@ function SalaPage() {
     if (!jitsiContainerRef.current) return;
 
     const roomName = `maedigital-${slot.room_id}`;
-    const displayName = isProfDono ? "Profissional" : "Gestante";
 
     // @ts-ignore - JitsiMeetExternalAPI vem do script externo
     const api = new window.JitsiMeetExternalAPI("meet.jit.si", {
@@ -127,28 +173,51 @@ function SalaPage() {
       parentNode: jitsiContainerRef.current,
       width: "100%",
       height: "100%",
-      userInfo: { displayName },
+      userInfo: { displayName: meuNome },
       configOverwrite: {
         prejoinPageEnabled: false,
         startWithAudioMuted: false,
         startWithVideoMuted: false,
         disableDeepLinking: true,
+        disableInviteFunctions: true,
+        enableClosePage: false,
+        toolbarButtons: [
+          "microphone",
+          "camera",
+          "tileview",
+          "fullscreen",
+          "hangup",
+          "chat",
+          "settings",
+          "raisehand",
+        ],
       },
       interfaceConfigOverwrite: {
         SHOW_JITSI_WATERMARK: false,
         SHOW_WATERMARK_FOR_GUESTS: false,
-        DEFAULT_BACKGROUND: "#1a1557",
+        DEFAULT_BACKGROUND: "#0a0820",
+        DISABLE_VIDEO_BACKGROUND: true,
+        MOBILE_APP_PROMO: false,
+        HIDE_INVITE_MORE_HEADER: true,
       },
     });
     jitsiApiRef.current = api;
 
+    // Cronômetro de chamada
+    startTimeRef.current = Date.now();
+    setTempo(0);
+    if (tickRef.current) window.clearInterval(tickRef.current);
+    tickRef.current = window.setInterval(() => {
+      setTempo(Math.floor((Date.now() - startTimeRef.current) / 1000));
+    }, 1000);
+
     api.addListener("readyToClose", async () => {
       await sairESalvar();
+      navigate({ to: isProfDono ? "/profissional" : "/videochamada" });
     });
 
-    // Auto-iniciar gravação se for o profissional dono
-    if (isProfDono) {
-      // pequena espera para o usuário escolher a aba
+    // Auto-iniciar gravação se for o profissional dono e suportado
+    if (isProfDono && !mobile && canRecordScreen()) {
       setTimeout(() => {
         iniciarGravacao();
       }, 1500);
@@ -158,24 +227,26 @@ function SalaPage() {
   const iniciarGravacao = async () => {
     if (!slot || !isProfDono) return;
     if (recorderRef.current) return;
+    if (!canRecordScreen()) {
+      setStatusGrav("indisponivel");
+      setMsgGrav("Gravação não suportada neste navegador.");
+      return;
+    }
 
     try {
-      setMsgGrav("Selecione a aba/tela da consulta para iniciar a gravação...");
-      // @ts-ignore - getDisplayMedia tipos
-      const stream: MediaStream = await navigator.mediaDevices.getDisplayMedia({
+      setMsgGrav("Selecione a aba/janela da consulta para iniciar a gravação...");
+      const stream: MediaStream = await (navigator.mediaDevices as any).getDisplayMedia({
         video: { frameRate: 15 },
         audio: true,
       });
 
-      // Tenta capturar áudio do microfone também e mesclar
       let micStream: MediaStream | null = null;
       try {
         micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
       } catch {
-        // sem permissão de mic — segue só com áudio do compartilhamento
+        // segue sem mic
       }
 
-      // Combinar tracks
       const tracks: MediaStreamTrack[] = [
         ...stream.getVideoTracks(),
         ...stream.getAudioTracks(),
@@ -197,18 +268,16 @@ function SalaPage() {
         if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
       };
 
-      // Se o usuário parar o compartilhamento pela barra do navegador
       stream.getVideoTracks()[0].addEventListener("ended", () => {
         if (recorderRef.current && recorderRef.current.state !== "inactive") {
           finalizarGravacaoEEnviar();
         }
       });
 
-      recorder.start(5000); // chunk a cada 5s
+      recorder.start(5000);
       recorderRef.current = recorder;
-      startTimeRef.current = Date.now();
       setStatusGrav("gravando");
-      setMsgGrav("🔴 Gravação em andamento");
+      setMsgGrav(null);
 
       await supabase
         .from("appointment_slots")
@@ -216,7 +285,8 @@ function SalaPage() {
         .eq("id", slot.id);
     } catch (e: any) {
       setStatusGrav("erro");
-      setMsgGrav("Não foi possível iniciar a gravação: " + (e?.message ?? "erro desconhecido"));
+      const msg = e?.message ?? "erro desconhecido";
+      setMsgGrav("Gravação não iniciada: " + msg);
     }
   };
 
@@ -258,12 +328,11 @@ function SalaPage() {
             .eq("id", slot!.id);
 
           setStatusGrav("enviado");
-          setMsgGrav(`✓ Gravação salva (${Math.floor(dur / 60)}min ${dur % 60}s)`);
+          setMsgGrav(`Gravação salva (${Math.floor(dur / 60)}min ${dur % 60}s)`);
         } catch (e: any) {
           setStatusGrav("erro");
           setMsgGrav("Erro ao salvar: " + (e?.message ?? "desconhecido"));
         } finally {
-          // Para tracks
           streamRef.current?.getTracks().forEach((t) => t.stop());
           streamRef.current = null;
           recorderRef.current = null;
@@ -275,6 +344,10 @@ function SalaPage() {
   };
 
   const sairESalvar = async () => {
+    if (tickRef.current) {
+      window.clearInterval(tickRef.current);
+      tickRef.current = null;
+    }
     if (recorderRef.current && recorderRef.current.state !== "inactive") {
       await finalizarGravacaoEEnviar();
     }
@@ -289,9 +362,9 @@ function SalaPage() {
     setEmSala(false);
   };
 
-  // Cleanup ao sair da rota
   useEffect(() => {
     return () => {
+      if (tickRef.current) window.clearInterval(tickRef.current);
       if (recorderRef.current && recorderRef.current.state !== "inactive") {
         try {
           recorderRef.current.stop();
@@ -312,7 +385,7 @@ function SalaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
+      <div className="min-h-screen flex items-center justify-center bg-[#0a0820] text-white/70 text-sm">
         Carregando sala...
       </div>
     );
@@ -320,11 +393,11 @@ function SalaPage() {
 
   if (erro) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6 text-center">
-        <p className="text-base font-semibold text-foreground">{erro}</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6 text-center bg-[#0a0820] text-white">
+        <p className="text-base font-semibold">{erro}</p>
         <button
           onClick={() => navigate({ to: isProfDono ? "/profissional" : "/videochamada" })}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-bold"
+          className="px-5 py-2.5 bg-primary text-primary-foreground rounded-full text-sm font-bold"
         >
           Voltar
         </button>
@@ -335,96 +408,142 @@ function SalaPage() {
   if (!slot) return null;
 
   const dt = new Date(slot.data_hora);
+  const fmtTempo = (s: number) =>
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   return (
-    <div className="min-h-screen bg-[#0a0820] text-white flex flex-col">
-      {/* Header */}
-      <div className="bg-[#1a1557] px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
-        <div className="min-w-0">
-          <p className="text-[10px] uppercase tracking-wide text-white/60 font-bold">Consulta</p>
-          <p className="text-sm font-bold truncate">
-            {dt.toLocaleDateString("pt-BR")} às{" "}
-            {dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-            {" • "}
-            {slot.duracao_min}min
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {statusGrav === "gravando" && (
-            <span className="text-[10px] font-bold bg-red-600 px-2 py-1 rounded-full animate-pulse">
-              ● REC
-            </span>
-          )}
-          {statusGrav === "enviando" && (
-            <span className="text-[10px] font-bold bg-amber-500 px-2 py-1 rounded-full">
-              ENVIANDO
-            </span>
-          )}
-          {statusGrav === "enviado" && (
-            <span className="text-[10px] font-bold bg-green-600 px-2 py-1 rounded-full">
-              SALVO
-            </span>
-          )}
-          <button
-            onClick={async () => {
-              await sairESalvar();
-              navigate({ to: isProfDono ? "/profissional" : "/videochamada" });
-            }}
-            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-full text-xs font-bold"
-          >
-            Encerrar
-          </button>
-        </div>
-      </div>
+    <div className="fixed inset-0 bg-[#0a0820] text-white flex flex-col overflow-hidden">
+      {/* Header compacto */}
+      <header className="flex-shrink-0 bg-[#1a1557]/95 backdrop-blur border-b border-white/10">
+        <div className="px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
+          <div className="min-w-0 flex items-center gap-3">
+            <div className="hidden sm:flex w-9 h-9 rounded-full bg-primary/20 items-center justify-center text-primary font-bold text-xs">
+              {(outroNome || "?").slice(0, 2).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-wider text-white/50 font-bold leading-none">
+                {emSala ? "Em chamada" : "Sala de consulta"}
+              </p>
+              <p className="text-sm font-bold truncate">
+                {emSala ? outroNome || "Aguardando..." : `${dt.toLocaleDateString("pt-BR")} • ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
+              </p>
+            </div>
+          </div>
 
-      {msgGrav && (
-        <div className="px-4 py-2 bg-white/5 text-xs text-white/80 border-b border-white/10">
-          {msgGrav}
+          <div className="flex items-center gap-2">
+            {emSala && (
+              <span className="text-xs font-mono font-bold text-white/80 bg-white/5 px-2 py-1 rounded">
+                {fmtTempo(tempo)}
+              </span>
+            )}
+            {statusGrav === "gravando" && (
+              <span className="text-[10px] font-bold bg-red-600 px-2 py-1 rounded-full flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                REC
+              </span>
+            )}
+            {statusGrav === "enviando" && (
+              <span className="text-[10px] font-bold bg-amber-500 px-2 py-1 rounded-full">
+                SALVANDO
+              </span>
+            )}
+            {statusGrav === "enviado" && (
+              <span className="text-[10px] font-bold bg-green-600 px-2 py-1 rounded-full">
+                SALVO
+              </span>
+            )}
+            <button
+              onClick={async () => {
+                await sairESalvar();
+                navigate({ to: isProfDono ? "/profissional" : "/videochamada" });
+              }}
+              className="bg-red-600 hover:bg-red-700 transition-colors text-white px-3 sm:px-4 py-1.5 rounded-full text-xs font-bold"
+            >
+              {emSala ? "Encerrar" : "Sair"}
+            </button>
+          </div>
         </div>
-      )}
 
+        {msgGrav && emSala && (
+          <div className="px-4 py-1.5 bg-white/5 text-[11px] text-white/70 border-t border-white/5">
+            {msgGrav}
+          </div>
+        )}
+      </header>
+
+      {/* Conteúdo */}
       {!emSala ? (
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="max-w-md w-full bg-white/5 rounded-2xl p-6 space-y-4 border border-white/10">
-            <h1 className="text-xl font-bold">Sala de consulta</h1>
+        <div className="flex-1 overflow-y-auto flex items-center justify-center p-4 sm:p-6">
+          <div className="max-w-md w-full bg-white/[0.04] rounded-3xl p-6 sm:p-8 space-y-5 border border-white/10 shadow-2xl">
+            <div className="text-center space-y-2">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/15 flex items-center justify-center text-primary text-2xl font-bold">
+                {(outroNome || "?").slice(0, 2).toUpperCase()}
+              </div>
+              <h1 className="text-xl font-bold">{outroNome || "Sala de consulta"}</h1>
+              <p className="text-xs text-white/60">
+                {dt.toLocaleDateString("pt-BR")} às{" "}
+                {dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                {" • "}
+                {slot.duracao_min} min
+              </p>
+            </div>
+
             {isGestante && !isProfDono && (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
-                <p className="text-xs text-amber-200 font-semibold mb-1">Aviso de gravação</p>
-                <p className="text-xs text-white/70">
-                  Esta consulta poderá ser gravada para fins clínicos e auditoria.
-                  Os arquivos ficam restritos ao profissional responsável e à equipe administrativa.
+              <div className="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-3.5">
+                <p className="text-[11px] text-amber-300 font-bold uppercase tracking-wide mb-1">
+                  Aviso de gravação
+                </p>
+                <p className="text-xs text-white/75 leading-relaxed">
+                  Esta consulta poderá ser gravada para fins clínicos. Os arquivos ficam
+                  restritos ao profissional e à equipe administrativa.
                 </p>
               </div>
             )}
-            {isProfDono && (
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 space-y-2">
-                <p className="text-xs text-blue-200 font-semibold">Antes de entrar</p>
-                <p className="text-xs text-white/70">
-                  A gravação iniciará automaticamente. O navegador pedirá para você
-                  <strong> compartilhar a aba da consulta</strong> — selecione a aba atual
-                  e marque “Compartilhar áudio da aba”.
+
+            {isProfDono && !mobile && canRecordScreen() && (
+              <div className="bg-blue-500/10 border border-blue-500/25 rounded-2xl p-3.5">
+                <p className="text-[11px] text-blue-300 font-bold uppercase tracking-wide mb-1">
+                  Antes de entrar
+                </p>
+                <p className="text-xs text-white/75 leading-relaxed">
+                  A gravação iniciará automaticamente. O navegador pedirá para você{" "}
+                  <strong className="text-white">compartilhar a aba</strong> — selecione a
+                  aba atual e marque <strong className="text-white">"Compartilhar áudio"</strong>.
                 </p>
               </div>
             )}
-            <p className="text-sm text-white/80">
-              {isProfDono ? "Você entrará como profissional." : "Você entrará como gestante."}
-            </p>
+
+            {isProfDono && (mobile || !canRecordScreen()) && (
+              <div className="bg-orange-500/10 border border-orange-500/25 rounded-2xl p-3.5">
+                <p className="text-[11px] text-orange-300 font-bold uppercase tracking-wide mb-1">
+                  Gravação indisponível
+                </p>
+                <p className="text-xs text-white/75 leading-relaxed">
+                  Este dispositivo não suporta gravação automática.
+                  Para gravar a consulta, acesse de um <strong className="text-white">computador</strong> usando Chrome, Edge ou Firefox.
+                </p>
+              </div>
+            )}
+
             <button
               onClick={entrarSala}
-              className="w-full bg-primary hover:opacity-90 text-primary-foreground font-bold py-3 rounded-full"
+              className="w-full bg-primary hover:opacity-90 transition-opacity text-primary-foreground font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-primary/20"
             >
               Entrar na sala
             </button>
             <button
               onClick={() => navigate({ to: isProfDono ? "/profissional" : "/videochamada" })}
-              className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2 rounded-full text-sm"
+              className="w-full text-white/60 hover:text-white font-semibold py-2 rounded-2xl text-xs transition-colors"
             >
-              Voltar
+              Cancelar
             </button>
           </div>
         </div>
       ) : (
-        <div ref={jitsiContainerRef} className="flex-1 w-full bg-black" style={{ minHeight: "70vh" }} />
+        <div
+          ref={jitsiContainerRef}
+          className="flex-1 w-full bg-black overflow-hidden"
+        />
       )}
     </div>
   );
