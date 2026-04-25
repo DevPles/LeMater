@@ -26,27 +26,34 @@ type Video = {
   category: string;
   gradient: string;
   isGestante?: boolean;
+  likes?: number;
+  views?: number;
 };
 
 const videos: Video[] = [
-  { id: 1, title: "Preparação para o parto normal", author: "Dra. Ana Costa", role: "Obstetra", duration: "12:30", category: "Parto", gradient: "from-coral-light to-blush" },
-  { id: 2, title: "Alimentação saudável no 2º trimestre", author: "Enf. Carlos Silva", role: "Enfermeiro Obstétrico", duration: "8:45", category: "Nutrição", gradient: "from-mint-light to-warm" },
-  { id: 3, title: "Exercícios seguros na gestação", author: "Dra. Beatriz Mendes", role: "Fisioterapeuta", duration: "15:20", category: "Exercícios", gradient: "from-warm to-coral-light" },
-  { id: 4, title: "Primeiros cuidados com a amamentação", author: "Enf. Paula Rocha", role: "Enfermeira Obstétrica", duration: "10:15", category: "Amamentação", gradient: "from-blush to-coral-light" },
-  { id: 5, title: "Sinais de alerta no terceiro trimestre", author: "Dr. Roberto Lima", role: "Obstetra", duration: "7:50", category: "Parto", gradient: "from-mint-light to-blush" },
-  { id: 6, title: "Recuperação no pós-parto", author: "Dra. Fernanda Reis", role: "Obstetra", duration: "11:00", category: "Pós-parto", gradient: "from-coral-light to-mint-light" },
+  { id: 1, title: "Preparação para o parto normal", author: "Dra. Ana Costa", role: "Obstetra", duration: "12:30", category: "Parto", gradient: "from-coral-light to-blush", likes: 128, views: 2340 },
+  { id: 2, title: "Alimentação saudável no 2º trimestre", author: "Enf. Carlos Silva", role: "Enfermeiro Obstétrico", duration: "8:45", category: "Nutrição", gradient: "from-mint-light to-warm", likes: 86, views: 1520 },
+  { id: 3, title: "Exercícios seguros na gestação", author: "Dra. Beatriz Mendes", role: "Fisioterapeuta", duration: "15:20", category: "Exercícios", gradient: "from-warm to-coral-light", likes: 215, views: 3890 },
+  { id: 4, title: "Primeiros cuidados com a amamentação", author: "Enf. Paula Rocha", role: "Enfermeira Obstétrica", duration: "10:15", category: "Amamentação", gradient: "from-blush to-coral-light", likes: 174, views: 2980 },
+  { id: 5, title: "Sinais de alerta no terceiro trimestre", author: "Dr. Roberto Lima", role: "Obstetra", duration: "7:50", category: "Parto", gradient: "from-mint-light to-blush", likes: 92, views: 1740 },
+  { id: 6, title: "Recuperação no pós-parto", author: "Dra. Fernanda Reis", role: "Obstetra", duration: "11:00", category: "Pós-parto", gradient: "from-coral-light to-mint-light", likes: 143, views: 2210 },
 ];
 
 const reels: Video[] = [
-  { id: 101, title: "Dica rápida: posições para aliviar dor lombar", author: "Dra. Beatriz Mendes", role: "Fisioterapeuta", duration: "0:45", category: "Reels", gradient: "from-coral-light to-blush" },
-  { id: 102, title: "Minha rotina de chás no 3º trimestre 🌿", author: "Juliana M.", role: "Gestante 32 semanas", duration: "0:38", category: "Reels", gradient: "from-mint-light to-warm", isGestante: true },
-  { id: 103, title: "3 lanches saudáveis em 60 segundos", author: "Enf. Carlos Silva", role: "Enfermeiro Obstétrico", duration: "1:00", category: "Reels", gradient: "from-mint-light to-warm" },
-  { id: 104, title: "Como organizei a mala da maternidade 💕", author: "Camila R.", role: "Gestante 38 semanas", duration: "0:52", category: "Reels", gradient: "from-blush to-coral-light", isGestante: true },
-  { id: 105, title: "Pega correta na amamentação", author: "Enf. Paula Rocha", role: "Enfermeira Obstétrica", duration: "0:50", category: "Reels", gradient: "from-blush to-coral-light" },
-  { id: 106, title: "Meu chá revelação caseiro 🎀", author: "Beatriz S.", role: "Gestante 28 semanas", duration: "0:42", category: "Reels", gradient: "from-warm to-blush", isGestante: true },
-  { id: 107, title: "Respiração para o trabalho de parto", author: "Dra. Ana Costa", role: "Obstetra", duration: "0:55", category: "Reels", gradient: "from-warm to-mint-light" },
-  { id: 108, title: "Exercícios que me ajudaram com a dor nas costas", author: "Patrícia L.", role: "Gestante 25 semanas", duration: "0:48", category: "Reels", gradient: "from-coral-light to-mint-light", isGestante: true },
+  { id: 101, title: "Dica rápida: posições para aliviar dor lombar", author: "Dra. Beatriz Mendes", role: "Fisioterapeuta", duration: "0:45", category: "Reels", gradient: "from-coral-light to-blush", likes: 312, views: 5420 },
+  { id: 102, title: "Minha rotina de chás no 3º trimestre 🌿", author: "Juliana M.", role: "Gestante 32 semanas", duration: "0:38", category: "Reels", gradient: "from-mint-light to-warm", isGestante: true, likes: 187, views: 2840 },
+  { id: 103, title: "3 lanches saudáveis em 60 segundos", author: "Enf. Carlos Silva", role: "Enfermeiro Obstétrico", duration: "1:00", category: "Reels", gradient: "from-mint-light to-warm", likes: 256, views: 4120 },
+  { id: 104, title: "Como organizei a mala da maternidade 💕", author: "Camila R.", role: "Gestante 38 semanas", duration: "0:52", category: "Reels", gradient: "from-blush to-coral-light", isGestante: true, likes: 421, views: 6780 },
+  { id: 105, title: "Pega correta na amamentação", author: "Enf. Paula Rocha", role: "Enfermeira Obstétrica", duration: "0:50", category: "Reels", gradient: "from-blush to-coral-light", likes: 198, views: 3340 },
+  { id: 106, title: "Meu chá revelação caseiro 🎀", author: "Beatriz S.", role: "Gestante 28 semanas", duration: "0:42", category: "Reels", gradient: "from-warm to-blush", isGestante: true, likes: 356, views: 5210 },
+  { id: 107, title: "Respiração para o trabalho de parto", author: "Dra. Ana Costa", role: "Obstetra", duration: "0:55", category: "Reels", gradient: "from-warm to-mint-light", likes: 289, views: 4680 },
+  { id: 108, title: "Exercícios que me ajudaram com a dor nas costas", author: "Patrícia L.", role: "Gestante 25 semanas", duration: "0:48", category: "Reels", gradient: "from-coral-light to-mint-light", isGestante: true, likes: 234, views: 3920 },
 ];
+
+function formatCount(n: number) {
+  if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".0", "") + "k";
+  return String(n);
+}
 
 function VideosPage() {
   const [activeCategory, setActiveCategory] = useState("Reels");
