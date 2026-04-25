@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 
-type IconKind = "play" | "stethoscope" | null;
+type IconKind = "play" | "stethoscope" | "card" | null;
 
 const actions: { to: string; label: string; color: string; icon: IconKind }[] = [
   { to: "/videos", label: "Vídeos", color: "bg-coral-light text-primary", icon: "play" },
   { to: "/videochamada", label: "Consulta", color: "bg-mint-light text-accent-foreground", icon: "stethoscope" },
-  { to: "/cartao", label: "Cartão", color: "bg-blush text-foreground", icon: null },
+  { to: "/cartao", label: "Cartão", color: "bg-blush text-foreground", icon: "card" },
   { to: "/alertas", label: "Alertas", color: "bg-warm text-foreground", icon: null },
 ];
 
