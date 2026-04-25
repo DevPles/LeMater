@@ -13,7 +13,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-3 left-2 right-2 z-50 rounded-[28px] border px-1 pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-6 left-2 right-2 z-50 rounded-[28px] border px-1 pb-[env(safe-area-inset-bottom)]"
       style={{
         background: "oklch(1 0 0 / 0.88)",
         borderColor: "oklch(0 0 0 / 0.06)",
