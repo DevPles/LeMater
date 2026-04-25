@@ -35,7 +35,9 @@ function PerfilPage() {
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const [bebeSexo, setBebeSexo] = useState<"masculino" | "feminino" | "neutro">("neutro");
   const [saving, setSaving] = useState(false);
+  const [savingTema, setSavingTema] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(
     null,
@@ -46,6 +48,7 @@ function PerfilPage() {
       setNome(profile.nome ?? "");
       setTelefone(profile.telefone ? formatPhone(profile.telefone) : "");
       setFotoUrl(profile.foto_url ?? null);
+      setBebeSexo((profile.bebe_sexo as "masculino" | "feminino" | "neutro") ?? "neutro");
     }
   }, [profile]);
 
