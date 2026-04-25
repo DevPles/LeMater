@@ -138,7 +138,12 @@ export function ProfissionaisTab() {
 
         <div className="grid sm:grid-cols-2 gap-3">
           <Input label="Email de acesso *" value={form.email} onChange={(v) => setForm({ ...form, email: v })} type="email" />
-          <Input label="Senha provisória *" value={form.senha} onChange={(v) => setForm({ ...form, senha: v })} type="password" />
+          <PasswordInput
+            label="Senha provisória *"
+            value={form.senha}
+            onChange={(v) => setForm({ ...form, senha: v })}
+            hint="Mínimo 8 caracteres. Evite senhas óbvias (123456, senha, etc.)."
+          />
           <Input label="Nome completo *" value={form.nome} onChange={(v) => setForm({ ...form, nome: v })} />
           <Input label="CPF" value={form.cpf} onChange={(v) => setForm({ ...form, cpf: formatCpf(v) })} placeholder="000.000.000-00" />
           <Input label="Especialidade *" value={form.especialidade} onChange={(v) => setForm({ ...form, especialidade: v })} placeholder="Obstetra, Enfermeiro Obstétrico..." />
