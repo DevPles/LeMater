@@ -59,6 +59,25 @@ function formatCount(n: number) {
   return String(n);
 }
 
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function AuthorAvatar({ name, isGestante, size = "sm" }: { name: string; isGestante?: boolean; size?: "sm" | "xs" }) {
+  const dim = size === "xs" ? "w-5 h-5 text-[9px]" : "w-6 h-6 text-[10px]";
+  const bg = isGestante ? "bg-[#f0c040] text-[#1a1557]" : "bg-primary text-primary-foreground";
+  return (
+    <div className={`${dim} ${bg} rounded-full flex items-center justify-center font-bold flex-shrink-0`}>
+      {getInitials(name)}
+    </div>
+  );
+}
+
 type Comment = {
   id: string;
   authorName: string;
