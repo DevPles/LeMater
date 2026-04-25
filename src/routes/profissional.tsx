@@ -105,6 +105,9 @@ function Dashboard({ session }: { session: Session }) {
     hora: "",
     duracao_min: 30,
     modalidade: "videochamada",
+    tipo_atendimento: TIPOS_ATENDIMENTO[0] as string,
+    titulo: "",
+    descricao: "",
   });
   const [msg, setMsg] = useState<string | null>(null);
   const [filtroStatus, setFiltroStatus] = useState<"todos" | "disponivel" | "reservado" | "realizado">("todos");
@@ -143,6 +146,8 @@ function Dashboard({ session }: { session: Session }) {
     setMsg(null);
     if (!prof) return setMsg("Você ainda não tem perfil profissional. Solicite ao admin.");
     if (!novoSlot.data || !novoSlot.hora) return setMsg("Informe data e hora.");
+    if (!novoSlot.titulo.trim()) return setMsg("Informe um título para o atendimento.");
+    if (!novoSlot.tipo_atendimento) return setMsg("Selecione o tipo de atendimento.");
     const dt = new Date(`${novoSlot.data}T${novoSlot.hora}:00`);
     if (isNaN(dt.getTime())) return setMsg("Data/hora inválida.");
 
@@ -152,9 +157,20 @@ function Dashboard({ session }: { session: Session }) {
       duracao_min: novoSlot.duracao_min,
       modalidade: novoSlot.modalidade,
       status: "disponivel",
+      titulo: novoSlot.titulo.trim().slice(0, 120),
+      descricao: novoSlot.descricao.trim().slice(0, 500) || null,
+      tipo_atendimento: novoSlot.tipo_atendimento,
     });
     if (error) return setMsg("Erro: " + error.message);
-    setNovoSlot({ data: "", hora: "", duracao_min: 30, modalidade: "videochamada" });
+    setNovoSlot({
+      data: "",
+      hora: "",
+      duracao_min: 30,
+      modalidade: "videochamada",
+      tipo_atendimento: TIPOS_ATENDIMENTO[0],
+      titulo: "",
+      descricao: "",
+    });
     setMsg("Horário publicado!");
     await load();
   };
