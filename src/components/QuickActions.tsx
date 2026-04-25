@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 
-type IconKind = "play" | "stethoscope" | "card" | null;
+type IconKind = "play" | "stethoscope" | "card" | "bell" | null;
 
 const actions: { to: string; label: string; color: string; icon: IconKind }[] = [
   { to: "/videos", label: "Vídeos", color: "bg-coral-light text-primary", icon: "play" },
