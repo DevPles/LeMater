@@ -331,6 +331,9 @@ function SalaPage() {
   const criarPeerConnection = useCallback(() => {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
+    pc.addTransceiver("audio", { direction: "sendrecv" });
+    pc.addTransceiver("video", { direction: "sendrecv" });
+
     pc.onicecandidate = (e) => {
       if (e.candidate && channelRef.current) {
         channelRef.current.send({
@@ -390,17 +393,25 @@ function SalaPage() {
   const enviarOffer = useCallback(async () => {
     const pc = pcRef.current;
     if (!pc || !channelRef.current) return;
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    channelRef.current.send({
-      type: "broadcast",
-      event: "signal",
-      payload: {
-        type: "offer",
-        from: peerIdRef.current,
-        sdp: offer,
-      } as SignalPayload,
-    });
+    if (offerSentRef.current || pc.signalingState !== "stable") return;
+
+    try {
+      makingOfferRef.current = true;
+      await pc.setLocalDescription();
+      if (pc.localDescription?.type !== "offer") return;
+      offerSentRef.current = true;
+      channelRef.current.send({
+        type: "broadcast",
+        event: "signal",
+        payload: {
+          type: "offer",
+          from: peerIdRef.current,
+          sdp: pc.localDescription,
+        } as SignalPayload,
+      });
+    } finally {
+      makingOfferRef.current = false;
+    }
   }, []);
 
   const tratarSinal = useCallback(
