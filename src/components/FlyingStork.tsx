@@ -39,10 +39,10 @@ export function FlyingStork() {
             width: b.size,
             height: b.size,
             left: b.left,
-            bottom: -b.size,
+            bottom: `-${b.size}px`,
           }}
           animate={{
-            y: [0, -window.innerHeight - b.size * 2],
+            y: [`0vh`, `-120vh`],
             x: [0, b.drift, -b.drift, 0],
             scale: [1, 1.1, 0.95, 1],
           }}
