@@ -51,6 +51,9 @@
   --color-mint-light: var(--mint-light);
   --color-warm: var(--warm);
   --color-blush: var(--blush);
+  --color-mint-dark: var(--mint-dark);
+  --color-blush-dark: var(--blush-dark);
+  --color-warm-dark: var(--warm-dark);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
 }
