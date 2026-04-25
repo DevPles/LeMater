@@ -1,7 +1,9 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { BottomNav } from "@/components/BottomNav";
+import { ProfissionalNav } from "@/components/ProfissionalNav";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
+import { useUserRole } from "@/hooks/useUserRole";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -68,8 +70,16 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const location = useLocation();
-  const hideNav = location.pathname === "/" || location.pathname.startsWith("/admin");
   const { profile } = useGestanteProfile();
+  const { isProfissional, isAdmin } = useUserRole();
+
+  const hideAllNav = location.pathname === "/" || location.pathname.startsWith("/admin");
+
+  // Profissional vê apenas a nav restrita (Agenda + Vídeos)
+  const showProfissionalNav =
+    !hideAllNav && isProfissional && !isAdmin;
+  // Gestante vê a BottomNav padrão
+  const showGestanteNav = !hideAllNav && !isProfissional;
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -82,7 +92,8 @@ function RootComponent() {
   return (
     <>
       <Outlet />
-      {!hideNav && <BottomNav />}
+      {showGestanteNav && <BottomNav />}
+      {showProfissionalNav && <ProfissionalNav />}
     </>
   );
 }
