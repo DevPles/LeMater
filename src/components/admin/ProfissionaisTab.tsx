@@ -57,13 +57,18 @@ export function ProfissionaisTab() {
       setMsg("Preencha email, senha, nome e especialidade.");
       return;
     }
+    const cpfDigits = normalizeCpf(form.cpf);
+    if (form.cpf && cpfDigits.length !== 11) {
+      setMsg("CPF inválido. Informe os 11 dígitos ou deixe em branco.");
+      return;
+    }
     setSaving(true);
     try {
-      // 1. Cria conta no auth
+      // 1. Cria conta no auth (passa cpf nos metadados para o trigger handle_new_user)
       const { data: signupData, error: signupErr } = await supabase.auth.signUp({
         email: form.email,
         password: form.senha,
-        options: { data: { nome: form.nome } },
+        options: { data: { nome: form.nome, cpf: cpfDigits } },
       });
       if (signupErr) throw signupErr;
       const userId = signupData.user?.id;
@@ -80,6 +85,14 @@ export function ProfissionaisTab() {
       });
       if (profErr) throw profErr;
 
+      // 2b. Garante que o CPF foi gravado em profiles (caso o trigger ainda não tenha)
+      if (cpfDigits) {
+        await supabase
+          .from("profiles")
+          .update({ cpf: cpfDigits })
+          .eq("user_id", userId);
+      }
+
       // 3. Concede role 'profissional' (RLS exige admin; chamada será feita pelo admin)
       // Como o admin atual usa sessionStorage e não tem JWT, usamos a função has_role:
       // este insert pode falhar se quem chama não tiver role admin no banco.
@@ -94,7 +107,7 @@ export function ProfissionaisTab() {
       }
 
       setMsg("Profissional cadastrado com sucesso. Avise para confirmar o email.");
-      setForm({ email: "", senha: "", nome: "", especialidade: "", registro: "", bio: "" });
+      setForm({ email: "", senha: "", nome: "", cpf: "", especialidade: "", registro: "", bio: "" });
       await load();
     } catch (e) {
       setMsg("Erro: " + (e as Error).message);
