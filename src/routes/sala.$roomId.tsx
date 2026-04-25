@@ -23,29 +23,52 @@ type SlotInfo = {
   status: string;
   gestante_id: string | null;
   professional_id: string;
-  recording_path: string | null;
 };
 
-type SignalPayload =
-  | { type: "hello"; from: string }
-  | { type: "offer"; from: string; sdp: RTCSessionDescriptionInit }
-  | { type: "answer"; from: string; sdp: RTCSessionDescriptionInit }
-  | { type: "ice"; from: string; candidate: RTCIceCandidateInit }
-  | { type: "bye"; from: string };
+// Tipos mínimos para a Jitsi External API (carregada por <script> no runtime)
+type JitsiAPI = {
+  dispose: () => void;
+  executeCommand: (cmd: string, ...args: unknown[]) => void;
+  addListener: (evt: string, fn: (...args: unknown[]) => void) => void;
+};
+type JitsiAPICtor = new (
+  domain: string,
+  options: Record<string, unknown>,
+) => JitsiAPI;
+declare global {
+  interface Window {
+    JitsiMeetExternalAPI?: JitsiAPICtor;
+  }
+}
 
-const ICE_SERVERS: RTCIceServer[] = [
-  { urls: "stun:stun.l.google.com:19302" },
-  { urls: "stun:stun1.l.google.com:19302" },
-  {
-    urls: [
-      "turn:openrelay.metered.ca:80",
-      "turn:openrelay.metered.ca:443",
-      "turn:openrelay.metered.ca:443?transport=tcp",
-    ],
-    username: "openrelayproject",
-    credential: "openrelayproject",
-  },
-];
+const JITSI_DOMAIN = "meet.jit.si";
+const JITSI_SCRIPT_URL = "https://meet.jit.si/external_api.js";
+
+let jitsiScriptPromise: Promise<void> | null = null;
+function carregarScriptJitsi(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if (window.JitsiMeetExternalAPI) return Promise.resolve();
+  if (jitsiScriptPromise) return jitsiScriptPromise;
+  jitsiScriptPromise = new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${JITSI_SCRIPT_URL}"]`,
+    );
+    if (existing) {
+      existing.addEventListener("load", () => resolve());
+      existing.addEventListener("error", () =>
+        reject(new Error("Falha ao carregar Jitsi")),
+      );
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = JITSI_SCRIPT_URL;
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("Falha ao carregar Jitsi"));
+    document.head.appendChild(s);
+  });
+  return jitsiScriptPromise;
+}
 
 function fmtTempo(seg: number) {
   const m = Math.floor(seg / 60).toString().padStart(2, "0");
@@ -53,43 +76,11 @@ function fmtTempo(seg: number) {
   return `${m}:${s}`;
 }
 
-function pickRecorderMime(): string | undefined {
-  if (typeof MediaRecorder === "undefined") return undefined;
-  const candidates = [
-    "video/webm;codecs=vp9,opus",
-    "video/webm;codecs=vp8,opus",
-    "video/webm",
-    "video/mp4",
-  ];
-  for (const m of candidates) {
-    try {
-      if (MediaRecorder.isTypeSupported(m)) return m;
-    } catch {
-      /* noop */
-    }
-  }
-  return undefined;
-}
-
-async function pedirMidiaLocal() {
-  const preferida: MediaStreamConstraints = {
-    video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
-    audio: { echoCancellation: true, noiseSuppression: true },
-  };
-  try {
-    return await navigator.mediaDevices.getUserMedia(preferida);
-  } catch (e) {
-    console.warn("getUserMedia preferida falhou, tentando modo compatível", e);
-    return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-  }
-}
-
 function SalaPage() {
   const { roomId } = Route.useParams();
   const navigate = useNavigate();
 
   const [slot, setSlot] = useState<SlotInfo | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
   const [isProfDono, setIsProfDono] = useState(false);
   const [outroNome, setOutroNome] = useState<string>("");
   const [meuNome, setMeuNome] = useState<string>("");
@@ -98,55 +89,11 @@ function SalaPage() {
 
   const [emSala, setEmSala] = useState(false);
   const [conectando, setConectando] = useState(false);
-  const [remotoConectado, setRemotoConectado] = useState(false);
-  const [micOn, setMicOn] = useState(true);
-  const [camOn, setCamOn] = useState(true);
   const [tempo, setTempo] = useState(0);
 
-  const [statusGrav, setStatusGrav] = useState<
-    "indisponivel" | "parado" | "gravando" | "enviando" | "enviado" | "erro"
-  >("parado");
-  const [msgGrav, setMsgGrav] = useState<string | null>(null);
-
-  const localVideoRef = useRef<HTMLVideoElement | null>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
-
-  const localStreamRef = useRef<MediaStream | null>(null);
-  const remoteStreamRef = useRef<MediaStream | null>(null);
-  const pcRef = useRef<RTCPeerConnection | null>(null);
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const peerIdRef = useRef<string>(crypto.randomUUID());
-  const isInitiatorRef = useRef(false);
-  const remotePeerIdRef = useRef<string | null>(null);
-  const makingOfferRef = useRef(false);
-  const ignoreOfferRef = useRef(false);
-  const offerSentRef = useRef(false);
-  const helloReplySentRef = useRef(false);
-  const politeRef = useRef(false);
-  const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
-  const helloTimerRef = useRef<number | null>(null);
-  const connectTimeoutRef = useRef<number | null>(null);
-  const remotoConectadoRef = useRef(false);
-
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const recStartRef = useRef<number>(0);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const apiRef = useRef<JitsiAPI | null>(null);
   const tickRef = useRef<number | null>(null);
-  const statusGravRef = useRef<typeof statusGrav>("parado");
-  const isProfDonoRef = useRef(false);
-  const gravacaoIniciadaRef = useRef(false);
-
-  useEffect(() => {
-    statusGravRef.current = statusGrav;
-  }, [statusGrav]);
-
-  useEffect(() => {
-    isProfDonoRef.current = isProfDono;
-  }, [isProfDono]);
-
-  useEffect(() => {
-    remotoConectadoRef.current = remotoConectado;
-  }, [remotoConectado]);
 
   // ----- carrega sessão e dados do slot -----
   useEffect(() => {
@@ -158,13 +105,11 @@ function SalaPage() {
         navigate({ to: "/" });
         return;
       }
-      if (cancelled) return;
-      setUserId(uid);
 
       const { data: s, error } = await supabase
         .from("appointment_slots")
         .select(
-          "id, room_id, data_hora, duracao_min, status, gestante_id, professional_id, recording_path",
+          "id, room_id, data_hora, duracao_min, status, gestante_id, professional_id",
         )
         .eq("room_id", roomId)
         .maybeSingle();
@@ -182,7 +127,8 @@ function SalaPage() {
         .select("id, nome, user_id")
         .eq("id", s.professional_id)
         .maybeSingle();
-      const profDono = !!prof && (prof as { user_id: string }).user_id === uid;
+      const profDono =
+        !!prof && (prof as { user_id: string }).user_id === uid;
       setIsProfDono(profDono);
 
       let nomeGestante = "Gestante";
@@ -194,7 +140,8 @@ function SalaPage() {
           .maybeSingle();
         if (gp?.nome) nomeGestante = gp.nome;
       }
-      const nomeProf = (prof as { nome?: string } | null)?.nome ?? "Profissional";
+      const nomeProf =
+        (prof as { nome?: string } | null)?.nome ?? "Profissional";
 
       if (profDono) {
         setMeuNome(nomeProf);
@@ -208,10 +155,6 @@ function SalaPage() {
         setErro("Você não tem permissão para entrar nesta sala.");
       }
 
-      if (profDono && typeof MediaRecorder === "undefined") {
-        setStatusGrav("indisponivel");
-      }
-
       setLoading(false);
     })();
     return () => {
@@ -219,482 +162,110 @@ function SalaPage() {
     };
   }, [roomId, navigate]);
 
-  // ----- gravação (lado profissional) -----
-  const iniciarGravacao = useCallback(
-    (combined: MediaStream) => {
-      if (!isProfDono || !slot) return;
-      if (typeof MediaRecorder === "undefined") {
-        setStatusGrav("indisponivel");
-        return;
-      }
-      try {
-        const mime = pickRecorderMime();
-        const recorder = mime
-          ? new MediaRecorder(combined, { mimeType: mime })
-          : new MediaRecorder(combined);
-        chunksRef.current = [];
-        recorder.ondataavailable = (e) => {
-          if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
-        };
-        recorder.onerror = () => {
-          setStatusGrav("erro");
-          setMsgGrav("Erro durante a gravação.");
-        };
-        recorder.start(2000);
-        recorderRef.current = recorder;
-        recStartRef.current = Date.now();
-        setStatusGrav("gravando");
-        void supabase
-          .from("appointment_slots")
-          .update({ gravacao_iniciada_em: new Date().toISOString() })
-          .eq("id", slot.id);
-      } catch (e) {
-        console.error("rec start", e);
-        setStatusGrav("erro");
-        setMsgGrav("Não foi possível iniciar a gravação.");
-      }
-    },
-    [isProfDono, slot],
-  );
-
-  const finalizarGravacao = useCallback(async () => {
-    const recorder = recorderRef.current;
-    if (!recorder || !slot) return;
-    if (recorder.state === "inactive") return;
-
-    setStatusGrav("enviando");
-
-    await new Promise<void>((resolve) => {
-      recorder.onstop = () => resolve();
-      try {
-        recorder.stop();
-      } catch {
-        resolve();
-      }
-    });
-
-    const blob = new Blob(chunksRef.current, {
-      type: recorder.mimeType || "video/webm",
-    });
-    const ext = (recorder.mimeType || "video/webm").includes("mp4") ? "mp4" : "webm";
-    const path = `${slot.id}/${Date.now()}.${ext}`;
-    const duracaoSeg = Math.floor((Date.now() - recStartRef.current) / 1000);
-
-    try {
-      const { error: upErr } = await supabase.storage
-        .from("consultation-recordings")
-        .upload(path, blob, {
-          contentType: blob.type,
-          upsert: false,
-        });
-      if (upErr) throw upErr;
-
-      await supabase
-        .from("appointment_slots")
-        .update({
-          recording_path: path,
-          recording_duration_seg: duracaoSeg,
-          gravacao_finalizada_em: new Date().toISOString(),
-          status: "realizado",
-        })
-        .eq("id", slot.id);
-
-      setStatusGrav("enviado");
-      setMsgGrav("Gravação salva com sucesso.");
-    } catch (e) {
-      console.error("upload rec", e);
-      setStatusGrav("erro");
-      setMsgGrav("Falha ao enviar a gravação.");
-    }
-  }, [slot]);
-
-  // ----- WebRTC -----
   const limpar = useCallback(() => {
     if (tickRef.current) {
       window.clearInterval(tickRef.current);
       tickRef.current = null;
     }
-    if (helloTimerRef.current) {
-      window.clearInterval(helloTimerRef.current);
-      helloTimerRef.current = null;
-    }
-    if (connectTimeoutRef.current) {
-      window.clearTimeout(connectTimeoutRef.current);
-      connectTimeoutRef.current = null;
-    }
-    gravacaoIniciadaRef.current = false;
-    isInitiatorRef.current = false;
-    remotePeerIdRef.current = null;
-    makingOfferRef.current = false;
-    ignoreOfferRef.current = false;
-    offerSentRef.current = false;
-    helloReplySentRef.current = false;
-    politeRef.current = false;
-    pendingIceRef.current = [];
     try {
-      pcRef.current?.getSenders().forEach((s) => {
-        try {
-          s.track?.stop();
-        } catch { /* noop */ }
-      });
-    } catch { /* noop */ }
-    try {
-      pcRef.current?.close();
-    } catch { /* noop */ }
-    pcRef.current = null;
-
-    localStreamRef.current?.getTracks().forEach((t) => t.stop());
-    localStreamRef.current = null;
-    remoteStreamRef.current = null;
-
-    if (localVideoRef.current) localVideoRef.current.srcObject = null;
-    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
-
-    if (channelRef.current) {
-      try {
-        channelRef.current.send({
-          type: "broadcast",
-          event: "signal",
-          payload: { type: "bye", from: peerIdRef.current } as SignalPayload,
-        });
-      } catch { /* noop */ }
-      try {
-        supabase.removeChannel(channelRef.current);
-      } catch { /* noop */ }
-      channelRef.current = null;
+      apiRef.current?.dispose();
+    } catch {
+      /* noop */
     }
+    apiRef.current = null;
   }, []);
 
-  const criarPeerConnection = useCallback((stream: MediaStream) => {
-    const pc = new RTCPeerConnection({
-      iceServers: ICE_SERVERS,
-      iceTransportPolicy: "all",
-      bundlePolicy: "max-bundle",
-      rtcpMuxPolicy: "require",
-    });
-
-    stream.getAudioTracks().forEach((track) => {
-      pc.addTransceiver(track, { direction: "sendrecv", streams: [stream] });
-    });
-    stream.getVideoTracks().forEach((track) => {
-      pc.addTransceiver(track, { direction: "sendrecv", streams: [stream] });
-    });
-
-    pc.onicecandidate = (e) => {
-      if (e.candidate && channelRef.current) {
-        channelRef.current.send({
-          type: "broadcast",
-          event: "signal",
-          payload: {
-            type: "ice",
-            from: peerIdRef.current,
-            candidate: e.candidate.toJSON(),
-          } as SignalPayload,
-        });
-      }
-    };
-
-    pc.ontrack = (e) => {
-      if (!remoteStreamRef.current) {
-        remoteStreamRef.current = new MediaStream();
-      }
-      const tracks = e.streams[0]?.getTracks().length ? e.streams[0].getTracks() : [e.track];
-      tracks.forEach((t) => {
-        if (!remoteStreamRef.current!.getTracks().find((x) => x.id === t.id)) {
-          remoteStreamRef.current!.addTrack(t);
-        }
-      });
-      // Atribui o stream ao elemento <video> remoto (pode ter acabado de montar)
-      if (remoteVideoRef.current && remoteVideoRef.current.srcObject !== remoteStreamRef.current) {
-        remoteVideoRef.current.srcObject = remoteStreamRef.current;
-        remoteVideoRef.current.play().catch(() => { /* ignore autoplay issues */ });
-      }
-      setRemotoConectado(true);
-      remotoConectadoRef.current = true;
-
-      // Profissional inicia gravação assim que o remoto conecta (uma vez só)
-      if (
-        isProfDonoRef.current &&
-        !gravacaoIniciadaRef.current &&
-        statusGravRef.current === "parado" &&
-        localStreamRef.current
-      ) {
-        gravacaoIniciadaRef.current = true;
-        const combined = new MediaStream([
-          ...localStreamRef.current.getTracks(),
-          ...remoteStreamRef.current!.getTracks(),
-        ]);
-        iniciarGravacao(combined);
-      }
-    };
-
-    pc.onconnectionstatechange = () => {
-      const st = pc.connectionState;
-      console.info("webrtc connection", st, pc.iceConnectionState);
-      if (st === "connected") {
-        if (connectTimeoutRef.current) {
-          window.clearTimeout(connectTimeoutRef.current);
-          connectTimeoutRef.current = null;
-        }
-      }
-      if (st === "failed") {
-        void pc.restartIce();
-      }
-      if (st === "failed" || st === "disconnected" || st === "closed") {
-        remotoConectadoRef.current = false;
-        setRemotoConectado(false);
-      }
-    };
-
-    pc.oniceconnectionstatechange = () => {
-      console.info("webrtc ice", pc.iceConnectionState);
-      if (pc.iceConnectionState === "failed") {
-        void pc.restartIce();
-      }
-    };
-
-    return pc;
-  }, [iniciarGravacao]);
-
-  const enviarOffer = useCallback(async () => {
-    const pc = pcRef.current;
-    if (!pc || !channelRef.current) return;
-    if (offerSentRef.current || pc.signalingState !== "stable") return;
-
-    try {
-      makingOfferRef.current = true;
-      await pc.setLocalDescription();
-      if (pc.localDescription?.type !== "offer") return;
-      offerSentRef.current = true;
-      channelRef.current.send({
-        type: "broadcast",
-        event: "signal",
-        payload: {
-          type: "offer",
-          from: peerIdRef.current,
-          sdp: pc.localDescription,
-        } as SignalPayload,
-      });
-    } finally {
-      makingOfferRef.current = false;
-    }
-  }, []);
-
-  const tratarSinal = useCallback(
-    async (payload: SignalPayload) => {
-      if (payload.from === peerIdRef.current) return;
-      const pc = pcRef.current;
-      if (!pc) return;
-
-      if (payload.type === "hello") {
-        remotePeerIdRef.current = payload.from;
-        const meSmaller = peerIdRef.current < payload.from;
-        politeRef.current = !meSmaller;
-
-        if (meSmaller && !offerSentRef.current) {
-          isInitiatorRef.current = true;
-          await enviarOffer();
-        } else if (!meSmaller && !helloReplySentRef.current) {
-          helloReplySentRef.current = true;
-          channelRef.current?.send({
-            type: "broadcast",
-            event: "signal",
-            payload: { type: "hello", from: peerIdRef.current } as SignalPayload,
-          });
-        }
-        return;
-      }
-
-      if (payload.type === "offer") {
-        remotePeerIdRef.current = payload.from;
-        const offerCollision =
-          makingOfferRef.current || pc.signalingState !== "stable";
-        ignoreOfferRef.current = !politeRef.current && offerCollision;
-        if (ignoreOfferRef.current) return;
-
-        if (offerCollision) {
-          await pc.setLocalDescription({ type: "rollback" });
-        }
-        await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-        for (const c of pendingIceRef.current) {
-          try {
-            await pc.addIceCandidate(new RTCIceCandidate(c));
-          } catch { /* noop */ }
-        }
-        pendingIceRef.current = [];
-        await pc.setLocalDescription();
-        channelRef.current?.send({
-          type: "broadcast",
-          event: "signal",
-          payload: {
-            type: "answer",
-            from: peerIdRef.current,
-            sdp: pc.localDescription!,
-          } as SignalPayload,
-        });
-        return;
-      }
-
-      if (payload.type === "answer") {
-        if (pc.signalingState !== "have-local-offer") return;
-        await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-        return;
-      }
-
-      if (payload.type === "ice") {
-        if (ignoreOfferRef.current) return;
-        if (pc.remoteDescription && pc.remoteDescription.type) {
-          try {
-            await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
-          } catch { /* noop */ }
-        } else {
-          pendingIceRef.current.push(payload.candidate);
-        }
-        return;
-      }
-
-      if (payload.type === "bye") {
-        remotoConectadoRef.current = false;
-        setRemotoConectado(false);
-      }
-    },
-    [enviarOffer],
-  );
-
-  const entrarSala = useCallback(async () => {
-    if (!slot) return;
-    setConectando(true);
-    setMsgGrav(null);
-    setErro(null);
-
-    try {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        throw new DOMException("Navegador sem suporte a câmera/microfone", "NotSupportedError");
-      }
-      const stream = await pedirMidiaLocal();
-      if (stream.getAudioTracks().length === 0) {
-        throw new DOMException("Microfone não encontrado", "NotFoundError");
-      }
-      if (stream.getVideoTracks().length === 0) {
-        throw new DOMException("Câmera não encontrada", "NotFoundError");
-      }
-      localStreamRef.current = stream;
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
-      }
-
-      const pc = criarPeerConnection(stream);
-      pcRef.current = pc;
-
-      const channel = supabase.channel(`room_${slot.room_id}`, {
-        config: { broadcast: { self: false, ack: false } },
-      });
-      channelRef.current = channel;
-
-      channel.on("broadcast", { event: "signal" }, ({ payload }) => {
-        void tratarSinal(payload as SignalPayload).catch((err) => {
-          console.error("webrtc signal", err);
-          setErro("A conexão de vídeo falhou. Saia e entre novamente na sala.");
-          setRemotoConectado(false);
-        });
-      });
-
-      await new Promise<void>((resolve) => {
-        channel.subscribe((status) => {
-          if (status === "SUBSCRIBED") resolve();
-        });
-      });
-
-      const anunciarPresenca = () => channel.send({
-        type: "broadcast",
-        event: "signal",
-        payload: { type: "hello", from: peerIdRef.current } as SignalPayload,
-      });
-      void anunciarPresenca();
-      helloTimerRef.current = window.setInterval(() => {
-        if (remotePeerIdRef.current || remotoConectadoRef.current) {
-          if (helloTimerRef.current) window.clearInterval(helloTimerRef.current);
-          helloTimerRef.current = null;
-          return;
-        }
-        void anunciarPresenca();
-      }, 1500);
-
-      connectTimeoutRef.current = window.setTimeout(() => {
-        if (!remotoConectadoRef.current && !remotePeerIdRef.current) {
-          setErro("Ainda não encontrei o outro participante. Confira se os dois entraram pelo mesmo link e mantenham esta tela aberta.");
-        }
-      }, 12000);
-
-      // cronômetro
-      const t0 = Date.now();
-      tickRef.current = window.setInterval(() => {
-        setTempo(Math.floor((Date.now() - t0) / 1000));
-      }, 1000);
-
-      setEmSala(true);
-      setConectando(false);
-    } catch (e) {
-      console.error("entrar sala", e);
-      const msg =
-        (e as Error)?.name === "NotAllowedError"
-          ? "Permissão de câmera/microfone negada. Libere o acesso e tente novamente."
-          : "Não foi possível acessar câmera ou microfone.";
-      setErro(msg);
-      setConectando(false);
-      limpar();
-    }
-  }, [slot, criarPeerConnection, tratarSinal, limpar]);
-
-  const encerrar = useCallback(async () => {
-    if (statusGrav === "gravando") {
-      await finalizarGravacao();
-    }
+  const sairESair = useCallback(() => {
     limpar();
     setEmSala(false);
-    setRemotoConectado(false);
     setTempo(0);
-    setTimeout(() => {
-      navigate({ to: isProfDono ? "/profissional" : "/videochamada" });
-    }, 800);
-  }, [statusGrav, finalizarGravacao, limpar, navigate, isProfDono]);
+    navigate({ to: isProfDono ? "/profissional" : "/videochamada" });
+  }, [limpar, navigate, isProfDono]);
 
-  const toggleMic = useCallback(() => {
-    const stream = localStreamRef.current;
-    if (!stream) return;
-    const next = !micOn;
-    stream.getAudioTracks().forEach((t) => (t.enabled = next));
-    setMicOn(next);
-  }, [micOn]);
+  // ----- monta o Jitsi quando entra na sala -----
+  useEffect(() => {
+    if (!emSala || !slot) return;
+    let disposed = false;
 
-  const toggleCam = useCallback(() => {
-    const stream = localStreamRef.current;
-    if (!stream) return;
-    const next = !camOn;
-    stream.getVideoTracks().forEach((t) => (t.enabled = next));
-    setCamOn(next);
-  }, [camOn]);
+    (async () => {
+      try {
+        await carregarScriptJitsi();
+        if (disposed) return;
+        if (!window.JitsiMeetExternalAPI || !containerRef.current) {
+          throw new Error("Jitsi indisponível");
+        }
+        // Nome de sala único e difícil de adivinhar
+        const roomName = `maedigital-${slot.room_id}`;
+        const api = new window.JitsiMeetExternalAPI(JITSI_DOMAIN, {
+          roomName,
+          parentNode: containerRef.current,
+          width: "100%",
+          height: "100%",
+          userInfo: { displayName: meuNome || "Participante" },
+          configOverwrite: {
+            prejoinPageEnabled: false,
+            disableDeepLinking: true,
+            startWithAudioMuted: false,
+            startWithVideoMuted: false,
+            disableInviteFunctions: true,
+            enableClosePage: false,
+            toolbarButtons: [
+              "microphone",
+              "camera",
+              "tileview",
+              "fullscreen",
+              "hangup",
+              "settings",
+              "chat",
+            ],
+          },
+          interfaceConfigOverwrite: {
+            MOBILE_APP_PROMO: false,
+            SHOW_JITSI_WATERMARK: false,
+            SHOW_WATERMARK_FOR_GUESTS: false,
+            DISABLE_VIDEO_BACKGROUND: true,
+            DEFAULT_BACKGROUND: "#000000",
+            DEFAULT_REMOTE_DISPLAY_NAME: outroNome || "Participante",
+          },
+        });
+        apiRef.current = api;
+
+        api.addListener("readyToClose", sairESair);
+        api.addListener("videoConferenceLeft", sairESair);
+      } catch (e) {
+        console.error("jitsi init", e);
+        setErro(
+          "Não foi possível iniciar a videochamada. Verifique sua conexão e tente novamente.",
+        );
+        setEmSala(false);
+      }
+    })();
+
+    return () => {
+      disposed = true;
+      limpar();
+    };
+  }, [emSala, slot, meuNome, outroNome, sairESair, limpar]);
+
+  const entrarSala = useCallback(() => {
+    if (!slot) return;
+    setConectando(true);
+    setErro(null);
+    // cronômetro
+    const t0 = Date.now();
+    tickRef.current = window.setInterval(() => {
+      setTempo(Math.floor((Date.now() - t0) / 1000));
+    }, 1000);
+    setEmSala(true);
+    setConectando(false);
+  }, [slot]);
 
   // limpeza ao desmontar
   useEffect(() => {
     return () => {
       limpar();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Reatribui srcObject quando os elementos <video> montam (após setEmSala(true))
-  useEffect(() => {
-    if (!emSala) return;
-    if (localVideoRef.current && localStreamRef.current && localVideoRef.current.srcObject !== localStreamRef.current) {
-      localVideoRef.current.srcObject = localStreamRef.current;
-      localVideoRef.current.play().catch(() => { /* noop */ });
-    }
-    if (remoteVideoRef.current && remoteStreamRef.current && remoteVideoRef.current.srcObject !== remoteStreamRef.current) {
-      remoteVideoRef.current.srcObject = remoteStreamRef.current;
-      remoteVideoRef.current.play().catch(() => { /* noop */ });
-    }
-  }, [emSala, remotoConectado]);
+  }, [limpar]);
 
   // ----- render -----
   if (loading) {
@@ -712,7 +283,9 @@ function SalaPage() {
     return (
       <div className="fixed inset-0 bg-background flex items-center justify-center p-4">
         <div className="bg-card border border-border rounded-2xl p-6 max-w-md w-full shadow-sm text-center">
-          <h1 className="text-xl font-bold mb-2 text-foreground">Não foi possível entrar</h1>
+          <h1 className="text-xl font-bold mb-2 text-foreground">
+            Não foi possível entrar
+          </h1>
           <p className="text-muted-foreground mb-5">{erro}</p>
           <Button onClick={() => navigate({ to: "/" })} className="w-full">
             Voltar
@@ -761,21 +334,6 @@ function SalaPage() {
                   <li>Procure um lugar silencioso e bem iluminado</li>
                 </ul>
               </div>
-
-              {isProfDono && statusGrav !== "indisponivel" && (
-                <div className="bg-warm border border-coral/20 rounded-lg p-3 text-foreground text-xs">
-                  <p className="font-semibold mb-0.5">Esta consulta será gravada</p>
-                  <p className="text-muted-foreground">
-                    A gravação inicia automaticamente quando a gestante conectar.
-                  </p>
-                </div>
-              )}
-
-              {isProfDono && statusGrav === "indisponivel" && (
-                <div className="bg-muted border border-border rounded-lg p-3 text-xs text-muted-foreground">
-                  Seu navegador não suporta gravação. A consulta acontecerá normalmente, mas não será gravada.
-                </div>
-              )}
             </div>
 
             <Button
@@ -787,7 +345,9 @@ function SalaPage() {
             </Button>
 
             <button
-              onClick={() => navigate({ to: isProfDono ? "/profissional" : "/videochamada" })}
+              onClick={() =>
+                navigate({ to: isProfDono ? "/profissional" : "/videochamada" })
+              }
               className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Voltar
@@ -811,9 +371,7 @@ function SalaPage() {
             <p className="text-sm font-semibold text-foreground truncate">
               {outroNome || "Conectando..."}
             </p>
-            <p className="text-[10px] text-muted-foreground">
-              {remotoConectado ? "Em chamada" : "Aguardando conexão..."}
-            </p>
+            <p className="text-[10px] text-muted-foreground">Em chamada</p>
           </div>
         </div>
 
@@ -821,115 +379,21 @@ function SalaPage() {
           <span className="text-xs font-mono font-semibold text-foreground bg-muted px-2 py-1 rounded">
             {fmtTempo(tempo)}
           </span>
-          {statusGrav === "gravando" && (
-            <span className="text-[10px] font-bold text-white bg-destructive px-2 py-1 rounded-full flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              REC
-            </span>
-          )}
-          {statusGrav === "enviando" && (
-            <span className="text-[10px] font-bold text-foreground bg-warm px-2 py-1 rounded-full">
-              SALVANDO
-            </span>
-          )}
-          {statusGrav === "enviado" && (
-            <span className="text-[10px] font-bold text-foreground bg-mint px-2 py-1 rounded-full">
-              SALVO
-            </span>
-          )}
-        </div>
-      </header>
-
-      {/* área de vídeo */}
-      <div className="flex-1 relative bg-black overflow-hidden">
-        {/* vídeo remoto */}
-        <video
-          ref={remoteVideoRef}
-          autoPlay
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover bg-black"
-        />
-
-        {/* placeholder enquanto remoto não conecta */}
-        {!remotoConectado && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-coral-light/20 to-blush text-center p-6 z-10">
-            <div className="w-20 h-20 rounded-full bg-card border-2 border-border flex items-center justify-center mb-4 shadow-md">
-              <div className="w-6 h-6 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-            </div>
-            <p className="text-foreground font-semibold mb-1">
-              Aguardando {outroNome || "o outro participante"}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              A chamada começa quando os dois estiverem na sala.
-            </p>
-          </div>
-        )}
-
-        {/* vídeo local (PIP) */}
-        <div className="absolute bottom-24 right-3 sm:bottom-28 sm:right-4 w-24 h-32 sm:w-36 sm:h-48 rounded-xl overflow-hidden border-2 border-card shadow-lg bg-muted z-10">
-          <video
-            ref={localVideoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover scale-x-[-1]"
-          />
-          {!camOn && (
-            <div className="absolute inset-0 bg-muted flex items-center justify-center">
-              <span className="text-xs text-muted-foreground font-semibold">
-                Câmera off
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* mensagem de gravação */}
-        {msgGrav && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-card border border-border text-foreground text-xs px-3 py-2 rounded-full shadow-md z-20">
-            {msgGrav}
-          </div>
-        )}
-      </div>
-
-      {/* controles */}
-      <div
-        className="flex-shrink-0 bg-card border-t border-border z-20"
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}
-      >
-        <div className="flex items-center justify-center gap-3 sm:gap-6 py-3 sm:py-4 px-4">
           <button
-            onClick={toggleMic}
-            aria-label={micOn ? "Desligar microfone" : "Ligar microfone"}
-            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
-              micOn
-                ? "bg-muted text-foreground hover:bg-muted/80"
-                : "bg-destructive text-white"
-            }`}
-          >
-            {micOn ? "MIC" : "MUDO"}
-          </button>
-
-          <button
-            onClick={toggleCam}
-            aria-label={camOn ? "Desligar câmera" : "Ligar câmera"}
-            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
-              camOn
-                ? "bg-muted text-foreground hover:bg-muted/80"
-                : "bg-destructive text-white"
-            }`}
-          >
-            {camOn ? "CAM" : "OFF"}
-          </button>
-
-          <button
-            onClick={encerrar}
-            aria-label="Encerrar chamada"
-            className="w-14 h-12 sm:w-20 sm:h-14 rounded-full bg-destructive text-white font-bold text-xs sm:text-sm hover:bg-destructive/90 transition-all shadow-md"
+            onClick={sairESair}
+            className="text-[11px] font-bold text-white bg-destructive px-3 py-1.5 rounded-full hover:opacity-90"
           >
             SAIR
           </button>
         </div>
-      </div>
+      </header>
+
+      {/* área Jitsi */}
+      <div
+        ref={containerRef}
+        className="flex-1 bg-black"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}
+      />
     </div>
   );
 }

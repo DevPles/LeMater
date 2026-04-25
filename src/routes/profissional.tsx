@@ -300,11 +300,6 @@ function Dashboard({ session }: { session: Session }) {
                           Entrar na sala
                         </button>
                       )}
-                      {s.recording_path && (
-                        <span className="text-[10px] font-semibold text-green-700">
-                          ● gravado
-                        </span>
-                      )}
                       {s.status === "reservado" && (
                         <button
                           onClick={() => marcarRealizado(s.id)}
