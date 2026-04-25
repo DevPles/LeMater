@@ -344,6 +344,93 @@ function PerfilPage() {
           </button>
         </form>
       </motion.div>
+
+      {/* Tema do app conforme o sexo do bebê */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="bg-card rounded-2xl border border-border p-5 shadow-sm mt-4"
+      >
+        <h2 className="text-base font-semibold font-display text-foreground">
+          Cor do app
+        </h2>
+        <p className="text-xs text-muted-foreground mt-1">
+          Quando souber o sexo do bebê, escolha abaixo. Toda a interface se ajusta automaticamente.
+        </p>
+
+        <div className="grid grid-cols-3 gap-2 mt-4">
+          <button
+            type="button"
+            onClick={() => handleSelectSexo("masculino")}
+            disabled={savingTema}
+            aria-pressed={bebeSexo === "masculino"}
+            className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition disabled:opacity-50 ${
+              bebeSexo === "masculino"
+                ? "border-[oklch(0.62_0.13_245)] ring-2 ring-[oklch(0.62_0.13_245)]/40 bg-[oklch(0.94_0.04_240)]"
+                : "border-border bg-background hover:bg-muted"
+            }`}
+          >
+            <span
+              className="block w-10 h-10 rounded-full shadow-sm"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.72 0.12 245), oklch(0.55 0.14 245))",
+              }}
+              aria-hidden="true"
+            />
+            <span className="text-xs font-medium text-foreground">Menino</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSelectSexo("feminino")}
+            disabled={savingTema}
+            aria-pressed={bebeSexo === "feminino"}
+            className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition disabled:opacity-50 ${
+              bebeSexo === "feminino"
+                ? "border-[oklch(0.7_0.15_350)] ring-2 ring-[oklch(0.7_0.15_350)]/40 bg-[oklch(0.95_0.04_350)]"
+                : "border-border bg-background hover:bg-muted"
+            }`}
+          >
+            <span
+              className="block w-10 h-10 rounded-full shadow-sm"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.82 0.1 350), oklch(0.62 0.16 350))",
+              }}
+              aria-hidden="true"
+            />
+            <span className="text-xs font-medium text-foreground">Menina</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSelectSexo("neutro")}
+            disabled={savingTema}
+            aria-pressed={bebeSexo === "neutro"}
+            className={`flex flex-col items-center gap-2 rounded-xl border p-3 transition disabled:opacity-50 ${
+              bebeSexo === "neutro"
+                ? "border-primary ring-2 ring-primary/40 bg-secondary"
+                : "border-border bg-background hover:bg-muted"
+            }`}
+          >
+            <span
+              className="block w-10 h-10 rounded-full shadow-sm"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.85 0.08 60), oklch(0.7 0.13 25))",
+              }}
+              aria-hidden="true"
+            />
+            <span className="text-xs font-medium text-foreground">Padrão</span>
+          </button>
+        </div>
+
+        {savingTema && (
+          <p className="text-xs text-muted-foreground mt-3">Salvando preferência...</p>
+        )}
+      </motion.div>
     </div>
   );
 }
