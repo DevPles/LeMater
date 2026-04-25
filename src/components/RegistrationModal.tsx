@@ -341,7 +341,7 @@ export default function RegistrationModal({
             >
               <div className="flex flex-col gap-2">
                 <div>
-                  <Label className={labelClass}>E-mail ou CPF</Label>
+                  <Label className={labelClass}>E-mail, CPF ou registro</Label>
                   <Input
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
