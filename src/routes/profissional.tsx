@@ -288,10 +288,23 @@ function Dashboard({ session }: { session: Session }) {
                         {s.duracao_min} min • {s.modalidade === "videochamada" ? "Vídeo" : "Presencial"}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColor}`}>
                         {s.status}
                       </span>
+                      {podeEntrarSala(s) && (
+                        <button
+                          onClick={() => navigate({ to: "/sala/$roomId", params: { roomId: s.room_id! } })}
+                          className="text-[10px] font-bold bg-primary text-primary-foreground px-3 py-1 rounded-full hover:opacity-90"
+                        >
+                          Entrar na sala
+                        </button>
+                      )}
+                      {s.recording_path && (
+                        <span className="text-[10px] font-semibold text-green-700">
+                          ● gravado
+                        </span>
+                      )}
                       {s.status === "reservado" && (
                         <button
                           onClick={() => marcarRealizado(s.id)}
