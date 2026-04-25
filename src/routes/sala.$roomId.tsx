@@ -441,6 +441,7 @@ function SalaPage() {
         void pc.restartIce();
       }
       if (st === "failed" || st === "disconnected" || st === "closed") {
+        remotoConectadoRef.current = false;
         setRemotoConectado(false);
       }
     };
@@ -553,6 +554,7 @@ function SalaPage() {
       }
 
       if (payload.type === "bye") {
+        remotoConectadoRef.current = false;
         setRemotoConectado(false);
       }
     },
@@ -610,7 +612,7 @@ function SalaPage() {
       });
       void anunciarPresenca();
       helloTimerRef.current = window.setInterval(() => {
-        if (remotePeerIdRef.current || remotoConectado) {
+        if (remotePeerIdRef.current || remotoConectadoRef.current) {
           if (helloTimerRef.current) window.clearInterval(helloTimerRef.current);
           helloTimerRef.current = null;
           return;
@@ -619,7 +621,7 @@ function SalaPage() {
       }, 1500);
 
       connectTimeoutRef.current = window.setTimeout(() => {
-        if (!remotoConectado && !remotePeerIdRef.current) {
+        if (!remotoConectadoRef.current && !remotePeerIdRef.current) {
           setErro("Ainda não encontrei o outro participante. Confira se os dois entraram pelo mesmo link e mantenham esta tela aberta.");
         }
       }, 12000);
