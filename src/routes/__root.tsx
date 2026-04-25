@@ -69,6 +69,15 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const location = useLocation();
   const hideNav = location.pathname === "/" || location.pathname.startsWith("/admin");
+  const { profile } = useGestanteProfile();
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.classList.remove("theme-boy", "theme-girl");
+    if (profile?.bebe_sexo === "masculino") root.classList.add("theme-boy");
+    else if (profile?.bebe_sexo === "feminino") root.classList.add("theme-girl");
+  }, [profile?.bebe_sexo]);
 
   return (
     <>
