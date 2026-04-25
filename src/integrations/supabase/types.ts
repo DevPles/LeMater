@@ -44,11 +44,16 @@ export type Database = {
           data_hora: string
           duracao_min: number
           gestante_id: string | null
+          gravacao_finalizada_em: string | null
+          gravacao_iniciada_em: string | null
           id: string
           modalidade: string
           observacao: string | null
           professional_id: string
+          recording_duration_seg: number | null
+          recording_path: string | null
           reservado_em: string | null
+          room_id: string | null
           status: string
           updated_at: string
         }
@@ -57,11 +62,16 @@ export type Database = {
           data_hora: string
           duracao_min?: number
           gestante_id?: string | null
+          gravacao_finalizada_em?: string | null
+          gravacao_iniciada_em?: string | null
           id?: string
           modalidade?: string
           observacao?: string | null
           professional_id: string
+          recording_duration_seg?: number | null
+          recording_path?: string | null
           reservado_em?: string | null
+          room_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -70,11 +80,16 @@ export type Database = {
           data_hora?: string
           duracao_min?: number
           gestante_id?: string | null
+          gravacao_finalizada_em?: string | null
+          gravacao_iniciada_em?: string | null
           id?: string
           modalidade?: string
           observacao?: string | null
           professional_id?: string
+          recording_duration_seg?: number | null
+          recording_path?: string | null
           reservado_em?: string | null
+          room_id?: string | null
           status?: string
           updated_at?: string
         }
