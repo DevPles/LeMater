@@ -44,7 +44,7 @@ export function QuickActions() {
         >
           <Link to={to} className="flex flex-col items-center gap-2">
             <div className={`relative w-16 h-16 rounded-full ${color} flex items-center justify-center shadow-sm overflow-hidden`}>
-              {hasEqualizer && <Equalizer />}
+              {hasEqualizer && <PlayPulse />}
               <span className="text-[10px] font-bold leading-tight text-center">{label}</span>
             </div>
           </Link>
