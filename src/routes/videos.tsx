@@ -65,6 +65,7 @@ function VideosPage() {
   const [draft, setDraft] = useState("");
   const [likedIds, setLikedIds] = useState<Record<number, boolean>>({});
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+  const [commentsOpen, setCommentsOpen] = useState(false);
 
   const isReels = activeCategory === "Reels";
   const items = isReels ? reels : videos.filter(v => v.category === activeCategory);
