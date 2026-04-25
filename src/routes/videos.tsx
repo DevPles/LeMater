@@ -287,7 +287,10 @@ function VideosPage() {
                 </div>
                 <div className="p-3">
                   <h3 className="font-semibold text-xs text-foreground line-clamp-2">{video.title}</h3>
-                  <p className="text-[10px] text-muted-foreground mt-1">{video.author}</p>
+                  <div className="mt-1.5 flex items-center gap-1.5">
+                    <AuthorAvatar name={video.author} isGestante={video.isGestante} size="xs" />
+                    <p className="text-[10px] font-medium text-foreground truncate">{video.author}</p>
+                  </div>
                 </div>
               </motion.button>
             ))}
