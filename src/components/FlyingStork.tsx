@@ -11,7 +11,7 @@ export function FlyingStork() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+      className="pointer-events-none fixed inset-0 overflow-hidden z-0"
     >
       {/* Trajetória horizontal (loop) */}
       <motion.div
@@ -43,9 +43,9 @@ export function FlyingStork() {
 function Stork() {
   // Paleta: corpo claro (mint-claro), bico/pernas em tom quente, trouxa em blush
   return (
-    <svg
+      <svg
       viewBox="0 0 120 70"
-      className="w-28 h-16 opacity-30"
+      className="w-32 h-20 opacity-60"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.4"

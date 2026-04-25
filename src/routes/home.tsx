@@ -69,43 +69,45 @@ function HomePage() {
   const tipsToShow = tipsFiltered.length > 0 ? tipsFiltered : tipsAll;
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto relative">
+    <>
       <FlyingStork />
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-6 flex items-center justify-between"
-      >
-        <div>
-          <p className="text-sm text-muted-foreground">Olá, {primeiroNome}</p>
-          <h1 className="text-2xl font-bold font-display text-foreground">
-            {content.pageTitle}
-          </h1>
-          {!profile?.dum && (
-            <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 mt-1 inline-block">
-              Cadastre sua DUM para acompanhar sua semana
-            </p>
-          )}
-        </div>
-        <UserAvatar name={nomeCompleto} week={currentWeek} photoUrl={profile?.foto_url} />
-      </motion.div>
+      <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 flex items-center justify-between"
+        >
+          <div>
+            <p className="text-sm text-muted-foreground">Olá, {primeiroNome}</p>
+            <h1 className="text-2xl font-bold font-display text-foreground">
+              {content.pageTitle}
+            </h1>
+            {!profile?.dum && (
+              <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 mt-1 inline-block">
+                Cadastre sua DUM para acompanhar sua semana
+              </p>
+            )}
+          </div>
+          <UserAvatar name={nomeCompleto} week={currentWeek} photoUrl={profile?.foto_url} />
+        </motion.div>
 
-      <div className="space-y-5">
-        <WeekProgress currentWeek={currentWeek} />
-        <BabySize week={currentWeek} />
-        <QuickActions />
+        <div className="space-y-5">
+          <WeekProgress currentWeek={currentWeek} />
+          <BabySize week={currentWeek} />
+          <QuickActions />
 
-        <div>
-          <h3 className="font-display font-semibold text-lg text-foreground mb-3">
-            {content.tipsHeading}
-          </h3>
-          <div className="space-y-3">
-            {tipsToShow.map((tip, i) => (
-              <TipCard key={`${tip.title}-${i}`} {...tip} />
-            ))}
+          <div>
+            <h3 className="font-display font-semibold text-lg text-foreground mb-3">
+              {content.tipsHeading}
+            </h3>
+            <div className="space-y-3">
+              {tipsToShow.map((tip, i) => (
+                <TipCard key={`${tip.title}-${i}`} {...tip} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
