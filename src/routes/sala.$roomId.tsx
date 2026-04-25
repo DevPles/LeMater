@@ -101,6 +101,17 @@ function SalaPage() {
   const chunksRef = useRef<Blob[]>([]);
   const recStartRef = useRef<number>(0);
   const tickRef = useRef<number | null>(null);
+  const statusGravRef = useRef<typeof statusGrav>("parado");
+  const isProfDonoRef = useRef(false);
+  const gravacaoIniciadaRef = useRef(false);
+
+  useEffect(() => {
+    statusGravRef.current = statusGrav;
+  }, [statusGrav]);
+
+  useEffect(() => {
+    isProfDonoRef.current = isProfDono;
+  }, [isProfDono]);
 
   // ----- carrega sessão e dados do slot -----
   useEffect(() => {
@@ -268,6 +279,9 @@ function SalaPage() {
       window.clearInterval(tickRef.current);
       tickRef.current = null;
     }
+    gravacaoIniciadaRef.current = false;
+    isInitiatorRef.current = false;
+    pendingIceRef.current = [];
     try {
       pcRef.current?.getSenders().forEach((s) => {
         try {
@@ -322,19 +336,27 @@ function SalaPage() {
     pc.ontrack = (e) => {
       if (!remoteStreamRef.current) {
         remoteStreamRef.current = new MediaStream();
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = remoteStreamRef.current;
-        }
       }
       e.streams[0]?.getTracks().forEach((t) => {
         if (!remoteStreamRef.current!.getTracks().find((x) => x.id === t.id)) {
           remoteStreamRef.current!.addTrack(t);
         }
       });
+      // Atribui o stream ao elemento <video> remoto (pode ter acabado de montar)
+      if (remoteVideoRef.current && remoteVideoRef.current.srcObject !== remoteStreamRef.current) {
+        remoteVideoRef.current.srcObject = remoteStreamRef.current;
+        remoteVideoRef.current.play().catch(() => { /* ignore autoplay issues */ });
+      }
       setRemotoConectado(true);
 
-      // Profissional inicia gravação assim que o remoto conecta
-      if (isProfDono && statusGrav === "parado" && localStreamRef.current) {
+      // Profissional inicia gravação assim que o remoto conecta (uma vez só)
+      if (
+        isProfDonoRef.current &&
+        !gravacaoIniciadaRef.current &&
+        statusGravRef.current === "parado" &&
+        localStreamRef.current
+      ) {
+        gravacaoIniciadaRef.current = true;
         const combined = new MediaStream([
           ...localStreamRef.current.getTracks(),
           ...remoteStreamRef.current!.getTracks(),
@@ -351,7 +373,7 @@ function SalaPage() {
     };
 
     return pc;
-  }, [isProfDono, statusGrav, iniciarGravacao]);
+  }, [iniciarGravacao]);
 
   const enviarOffer = useCallback(async () => {
     const pc = pcRef.current;
@@ -376,10 +398,19 @@ function SalaPage() {
       if (!pc) return;
 
       if (payload.type === "hello") {
-        // Quem já estava na sala se torna initiator
-        if (!isInitiatorRef.current) {
+        // Quem tiver o peerId "menor" se torna initiator (decisão determinística).
+        // Quem já estava na sala normalmente recebe o hello do recém-chegado.
+        const meSmaller = peerIdRef.current < payload.from;
+        if (meSmaller && !isInitiatorRef.current) {
           isInitiatorRef.current = true;
           await enviarOffer();
+        } else if (!meSmaller) {
+          // Reenvia hello para garantir que o outro saiba que estamos aqui
+          channelRef.current?.send({
+            type: "broadcast",
+            event: "signal",
+            payload: { type: "hello", from: peerIdRef.current } as SignalPayload,
+          });
         }
         return;
       }
@@ -527,6 +558,19 @@ function SalaPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Reatribui srcObject quando os elementos <video> montam (após setEmSala(true))
+  useEffect(() => {
+    if (!emSala) return;
+    if (localVideoRef.current && localStreamRef.current && localVideoRef.current.srcObject !== localStreamRef.current) {
+      localVideoRef.current.srcObject = localStreamRef.current;
+      localVideoRef.current.play().catch(() => { /* noop */ });
+    }
+    if (remoteVideoRef.current && remoteStreamRef.current && remoteVideoRef.current.srcObject !== remoteStreamRef.current) {
+      remoteVideoRef.current.srcObject = remoteStreamRef.current;
+      remoteVideoRef.current.play().catch(() => { /* noop */ });
+    }
+  }, [emSala, remotoConectado]);
 
   // ----- render -----
   if (loading) {
