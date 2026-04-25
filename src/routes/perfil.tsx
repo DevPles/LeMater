@@ -229,55 +229,129 @@ function PerfilPage() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-card rounded-2xl border border-border p-5 shadow-sm"
       >
-        {/* Foto */}
-        <div className="flex flex-col items-center mb-6">
-          <div className="w-24 h-24 rounded-full bg-primary text-primary-foreground font-bold text-2xl flex items-center justify-center overflow-hidden shadow-sm">
-            {fotoUrl ? (
-              <img
-                src={fotoUrl}
-                alt={nome || "Foto de perfil"}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              initials
-            )}
-          </div>
+        {/* Foto + Tema */}
+        <div className="flex items-start gap-4 mb-6">
+          <div className="flex flex-col items-center shrink-0">
+            <div className="w-20 h-20 rounded-full bg-primary text-primary-foreground font-bold text-xl flex items-center justify-center overflow-hidden shadow-sm">
+              {fotoUrl ? (
+                <img
+                  src={fotoUrl}
+                  alt={nome || "Foto de perfil"}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                initials
+              )}
+            </div>
 
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handlePhotoChange}
-          />
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handlePhotoChange}
+            />
 
-          <div className="flex gap-2 mt-4">
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="px-4 py-2 text-sm rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition disabled:opacity-50"
+              className="mt-2 px-2.5 py-1 text-[11px] rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition disabled:opacity-50"
             >
-              {uploading
-                ? "Enviando..."
-                : fotoUrl
-                  ? "Trocar foto"
-                  : "Adicionar foto"}
+              {uploading ? "Enviando..." : fotoUrl ? "Trocar" : "Adicionar"}
             </button>
             {fotoUrl && (
               <button
                 type="button"
                 onClick={handleRemovePhoto}
                 disabled={uploading}
-                className="px-4 py-2 text-sm rounded-full border border-border text-foreground hover:bg-muted transition disabled:opacity-50"
+                className="mt-1 text-[11px] text-muted-foreground hover:text-foreground transition disabled:opacity-50"
               >
                 Remover
               </button>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            JPG ou PNG até 5MB
-          </p>
+
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-foreground">Cor do app</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">
+              Escolha a tonalidade do bebê.
+            </p>
+
+            <div className="grid grid-cols-3 gap-1.5 mt-2">
+              <button
+                type="button"
+                onClick={() => handleSelectSexo("masculino")}
+                disabled={savingTema}
+                aria-pressed={bebeSexo === "masculino"}
+                title="Menino"
+                className={`flex flex-col items-center gap-1 rounded-lg border p-1.5 transition disabled:opacity-50 ${
+                  bebeSexo === "masculino"
+                    ? "border-[oklch(0.62_0.13_245)] ring-2 ring-[oklch(0.62_0.13_245)]/40 bg-[oklch(0.94_0.04_240)]"
+                    : "border-border bg-background hover:bg-muted"
+                }`}
+              >
+                <span
+                  className="block w-6 h-6 rounded-full shadow-sm"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, oklch(0.72 0.12 245), oklch(0.55 0.14 245))",
+                  }}
+                  aria-hidden="true"
+                />
+                <span className="text-[10px] font-medium text-foreground">Menino</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectSexo("feminino")}
+                disabled={savingTema}
+                aria-pressed={bebeSexo === "feminino"}
+                title="Menina"
+                className={`flex flex-col items-center gap-1 rounded-lg border p-1.5 transition disabled:opacity-50 ${
+                  bebeSexo === "feminino"
+                    ? "border-[oklch(0.7_0.15_350)] ring-2 ring-[oklch(0.7_0.15_350)]/40 bg-[oklch(0.95_0.04_350)]"
+                    : "border-border bg-background hover:bg-muted"
+                }`}
+              >
+                <span
+                  className="block w-6 h-6 rounded-full shadow-sm"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, oklch(0.82 0.1 350), oklch(0.62 0.16 350))",
+                  }}
+                  aria-hidden="true"
+                />
+                <span className="text-[10px] font-medium text-foreground">Menina</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectSexo("neutro")}
+                disabled={savingTema}
+                aria-pressed={bebeSexo === "neutro"}
+                title="Padrão"
+                className={`flex flex-col items-center gap-1 rounded-lg border p-1.5 transition disabled:opacity-50 ${
+                  bebeSexo === "neutro"
+                    ? "border-primary ring-2 ring-primary/40 bg-secondary"
+                    : "border-border bg-background hover:bg-muted"
+                }`}
+              >
+                <span
+                  className="block w-6 h-6 rounded-full shadow-sm"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, oklch(0.85 0.08 60), oklch(0.7 0.13 25))",
+                  }}
+                  aria-hidden="true"
+                />
+                <span className="text-[10px] font-medium text-foreground">Padrão</span>
+              </button>
+            </div>
+            {savingTema && (
+              <p className="text-[10px] text-muted-foreground mt-1">Salvando...</p>
+            )}
+          </div>
         </div>
 
         {/* Form */}
