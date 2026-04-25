@@ -11,7 +11,7 @@ const actions = [
 // Play minimalista moderno: traço se desenhando em loop contínuo
 function PlayMark() {
   return (
-    <svg viewBox="0 0 24 24" className="w-7 h-7 text-current" fill="none">
+    <svg viewBox="0 0 24 24" className="w-9 h-9 text-current" fill="none">
       <motion.polygon
         points="9,6 9,18 19,12"
         stroke="currentColor"
