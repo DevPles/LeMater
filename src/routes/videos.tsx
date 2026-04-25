@@ -249,7 +249,6 @@ function VideosPage() {
                         {reel.author}
                       </p>
                     </div>
-                    <span className="bg-foreground/70 text-primary-foreground text-[10px] px-2 py-0.5 rounded-lg flex-shrink-0">{reel.duration}</span>
                   </div>
 
                   <div className="pointer-events-none absolute bottom-3 left-3 right-3">
