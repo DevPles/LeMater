@@ -164,15 +164,17 @@ function PerfilPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-6"
       >
-        <Link
-          to="/home"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border border-border bg-card text-foreground hover:bg-muted transition-colors shadow-sm"
-        >
-          Voltar
-        </Link>
-        <h1 className="text-2xl font-bold font-display text-foreground mt-2">
-          Meu Perfil
-        </h1>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/home"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border border-border bg-card text-foreground hover:bg-muted transition-colors shadow-sm"
+          >
+            Voltar
+          </Link>
+          <h1 className="text-2xl font-bold font-display text-foreground">
+            Meu Perfil
+          </h1>
+        </div>
         <p className="text-sm text-muted-foreground mt-1">
           Gerencie sua foto e seus dados pessoais.
         </p>
