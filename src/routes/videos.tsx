@@ -237,9 +237,64 @@ function VideosPage() {
                 <span className="text-5xl text-foreground/30">▶</span>
                 <span className="absolute bottom-2 right-2 bg-foreground/70 text-primary-foreground text-xs px-2 py-1 rounded-lg">{selected.duration}</span>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">{selected.author}</p>
-                <p className="text-xs text-muted-foreground">{selected.role}</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{selected.author}</p>
+                  <p className="text-xs text-muted-foreground">{selected.role}</p>
+                </div>
+                <span className="text-[11px] text-muted-foreground">
+                  {formatCount(selected.views ?? 0)} visualizações
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => toggleLike(selected.id)}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                    likedIds[selected.id] ? "bg-primary text-primary-foreground" : "bg-muted text-foreground hover:bg-muted/70"
+                  }`}
+                >
+                  <span aria-hidden className="text-base">{likedIds[selected.id] ? "♥" : "♡"}</span>
+                  <span>{formatCount(getLikeCount(selected))}</span>
+                  <span className="text-xs font-normal opacity-80">curtidas</span>
+                </button>
+              </div>
+
+              <div className="border-t border-border pt-3">
+                <h4 className="text-sm font-semibold text-foreground mb-2">Compartilhar nas redes</h4>
+                <div className="grid grid-cols-4 gap-2">
+                  <button
+                    onClick={() => shareTo("whatsapp", selected)}
+                    className="flex flex-col items-center justify-center gap-1 py-2 rounded-xl bg-[#25D366]/10 text-[#075E54] text-[11px] font-semibold hover:bg-[#25D366]/20 transition-colors"
+                  >
+                    <span aria-hidden className="text-base">💬</span>
+                    WhatsApp
+                  </button>
+                  <button
+                    onClick={() => shareTo("instagram", selected)}
+                    className="flex flex-col items-center justify-center gap-1 py-2 rounded-xl bg-gradient-to-br from-[#feda75]/30 via-[#d62976]/20 to-[#4f5bd5]/20 text-foreground text-[11px] font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    <span aria-hidden className="text-base">📸</span>
+                    Instagram
+                  </button>
+                  <button
+                    onClick={() => shareTo("facebook", selected)}
+                    className="flex flex-col items-center justify-center gap-1 py-2 rounded-xl bg-[#1877F2]/10 text-[#1877F2] text-[11px] font-semibold hover:bg-[#1877F2]/20 transition-colors"
+                  >
+                    <span aria-hidden className="text-base">f</span>
+                    Facebook
+                  </button>
+                  <button
+                    onClick={() => shareTo("copy", selected)}
+                    className="flex flex-col items-center justify-center gap-1 py-2 rounded-xl bg-muted text-foreground text-[11px] font-semibold hover:bg-muted/70 transition-colors"
+                  >
+                    <span aria-hidden className="text-base">🔗</span>
+                    Copiar
+                  </button>
+                </div>
+                {shareFeedback && (
+                  <p className="text-[11px] text-primary mt-2 text-center">{shareFeedback}</p>
+                )}
               </div>
               <div className="border-t border-border pt-3">
                 <h4 className="text-sm font-semibold text-foreground mb-2">Comentários</h4>
