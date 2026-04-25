@@ -2,6 +2,17 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import {
+  LiveKitRoom,
+  GridLayout,
+  ParticipantTile,
+  ControlBar,
+  RoomAudioRenderer,
+  useTracks,
+} from "@livekit/components-react";
+import { Track } from "livekit-client";
+import { useServerFn } from "@tanstack/react-start";
+import { gerarTokenSala } from "@/utils/livekit.functions";
 
 export const Route = createFileRoute("/sala/$roomId")({
   head: () => ({
@@ -25,51 +36,6 @@ type SlotInfo = {
   professional_id: string;
 };
 
-// Tipos mínimos para a Jitsi External API (carregada por <script> no runtime)
-type JitsiAPI = {
-  dispose: () => void;
-  executeCommand: (cmd: string, ...args: unknown[]) => void;
-  addListener: (evt: string, fn: (...args: unknown[]) => void) => void;
-};
-type JitsiAPICtor = new (
-  domain: string,
-  options: Record<string, unknown>,
-) => JitsiAPI;
-declare global {
-  interface Window {
-    JitsiMeetExternalAPI?: JitsiAPICtor;
-  }
-}
-
-const JITSI_DOMAIN = "meet.jit.si";
-const JITSI_SCRIPT_URL = "https://meet.jit.si/external_api.js";
-
-let jitsiScriptPromise: Promise<void> | null = null;
-function carregarScriptJitsi(): Promise<void> {
-  if (typeof window === "undefined") return Promise.resolve();
-  if (window.JitsiMeetExternalAPI) return Promise.resolve();
-  if (jitsiScriptPromise) return jitsiScriptPromise;
-  jitsiScriptPromise = new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(
-      `script[src="${JITSI_SCRIPT_URL}"]`,
-    );
-    if (existing) {
-      existing.addEventListener("load", () => resolve());
-      existing.addEventListener("error", () =>
-        reject(new Error("Falha ao carregar Jitsi")),
-      );
-      return;
-    }
-    const s = document.createElement("script");
-    s.src = JITSI_SCRIPT_URL;
-    s.async = true;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error("Falha ao carregar Jitsi"));
-    document.head.appendChild(s);
-  });
-  return jitsiScriptPromise;
-}
-
 function fmtTempo(seg: number) {
   const m = Math.floor(seg / 60).toString().padStart(2, "0");
   const s = (seg % 60).toString().padStart(2, "0");
@@ -79,6 +45,7 @@ function fmtTempo(seg: number) {
 function SalaPage() {
   const { roomId } = Route.useParams();
   const navigate = useNavigate();
+  const obterToken = useServerFn(gerarTokenSala);
 
   const [slot, setSlot] = useState<SlotInfo | null>(null);
   const [isProfDono, setIsProfDono] = useState(false);
@@ -90,9 +57,9 @@ function SalaPage() {
   const [emSala, setEmSala] = useState(false);
   const [conectando, setConectando] = useState(false);
   const [tempo, setTempo] = useState(0);
+  const [token, setToken] = useState<string | null>(null);
+  const [wsUrl, setWsUrl] = useState<string | null>(null);
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const apiRef = useRef<JitsiAPI | null>(null);
   const tickRef = useRef<number | null>(null);
 
   // ----- carrega sessão e dados do slot -----
@@ -167,98 +134,44 @@ function SalaPage() {
       window.clearInterval(tickRef.current);
       tickRef.current = null;
     }
-    try {
-      apiRef.current?.dispose();
-    } catch {
-      /* noop */
-    }
-    apiRef.current = null;
   }, []);
 
   const sairESair = useCallback(() => {
     limpar();
     setEmSala(false);
+    setToken(null);
+    setWsUrl(null);
     setTempo(0);
     navigate({ to: isProfDono ? "/profissional" : "/videochamada" });
   }, [limpar, navigate, isProfDono]);
 
-  // ----- monta o Jitsi quando entra na sala -----
-  useEffect(() => {
-    if (!emSala || !slot) return;
-    let disposed = false;
-
-    (async () => {
-      try {
-        await carregarScriptJitsi();
-        if (disposed) return;
-        if (!window.JitsiMeetExternalAPI || !containerRef.current) {
-          throw new Error("Jitsi indisponível");
-        }
-        // Nome de sala único e difícil de adivinhar
-        const roomName = `maedigital-${slot.room_id}`;
-        const api = new window.JitsiMeetExternalAPI(JITSI_DOMAIN, {
-          roomName,
-          parentNode: containerRef.current,
-          width: "100%",
-          height: "100%",
-          userInfo: { displayName: meuNome || "Participante" },
-          configOverwrite: {
-            prejoinPageEnabled: false,
-            disableDeepLinking: true,
-            startWithAudioMuted: false,
-            startWithVideoMuted: false,
-            disableInviteFunctions: true,
-            enableClosePage: false,
-            toolbarButtons: [
-              "microphone",
-              "camera",
-              "tileview",
-              "fullscreen",
-              "hangup",
-              "settings",
-              "chat",
-            ],
-          },
-          interfaceConfigOverwrite: {
-            MOBILE_APP_PROMO: false,
-            SHOW_JITSI_WATERMARK: false,
-            SHOW_WATERMARK_FOR_GUESTS: false,
-            DISABLE_VIDEO_BACKGROUND: true,
-            DEFAULT_BACKGROUND: "#000000",
-            DEFAULT_REMOTE_DISPLAY_NAME: outroNome || "Participante",
-          },
-        });
-        apiRef.current = api;
-
-        api.addListener("readyToClose", sairESair);
-        api.addListener("videoConferenceLeft", sairESair);
-      } catch (e) {
-        console.error("jitsi init", e);
-        setErro(
-          "Não foi possível iniciar a videochamada. Verifique sua conexão e tente novamente.",
-        );
-        setEmSala(false);
-      }
-    })();
-
-    return () => {
-      disposed = true;
-      limpar();
-    };
-  }, [emSala, slot, meuNome, outroNome, sairESair, limpar]);
-
-  const entrarSala = useCallback(() => {
+  const entrarSala = useCallback(async () => {
     if (!slot) return;
     setConectando(true);
     setErro(null);
-    // cronômetro
-    const t0 = Date.now();
-    tickRef.current = window.setInterval(() => {
-      setTempo(Math.floor((Date.now() - t0) / 1000));
-    }, 1000);
-    setEmSala(true);
-    setConectando(false);
-  }, [slot]);
+    try {
+      const { token: tk, wsUrl: url } = await obterToken({
+        data: { roomId: slot.room_id },
+      });
+      setToken(tk);
+      setWsUrl(url);
+
+      const t0 = Date.now();
+      tickRef.current = window.setInterval(() => {
+        setTempo(Math.floor((Date.now() - t0) / 1000));
+      }, 1000);
+      setEmSala(true);
+    } catch (e) {
+      console.error("livekit token", e);
+      setErro(
+        e instanceof Error
+          ? e.message
+          : "Não foi possível iniciar a videochamada.",
+      );
+    } finally {
+      setConectando(false);
+    }
+  }, [slot, obterToken]);
 
   // limpeza ao desmontar
   useEffect(() => {
@@ -296,7 +209,7 @@ function SalaPage() {
   }
 
   // tela pré-entrada
-  if (!emSala) {
+  if (!emSala || !token || !wsUrl) {
     const dt = slot ? new Date(slot.data_hora) : null;
     return (
       <div className="fixed inset-0 bg-gradient-to-br from-background via-blush to-warm overflow-auto">
@@ -358,10 +271,9 @@ function SalaPage() {
     );
   }
 
-  // tela em chamada
+  // tela em chamada — LiveKit
   return (
     <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
-      {/* header */}
       <header className="flex-shrink-0 bg-card border-b border-border px-3 sm:px-4 py-2 flex items-center justify-between gap-2 z-20">
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold flex-shrink-0">
@@ -388,12 +300,54 @@ function SalaPage() {
         </div>
       </header>
 
-      {/* área Jitsi */}
-      <div
-        ref={containerRef}
-        className="flex-1 bg-black"
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 0)" }}
-      />
+      <div className="flex-1 bg-black overflow-hidden">
+        <LiveKitRoom
+          token={token}
+          serverUrl={wsUrl}
+          connect
+          video
+          audio
+          onDisconnected={sairESair}
+          data-lk-theme="default"
+          style={{ height: "100%" }}
+        >
+          <div className="flex flex-col h-full">
+            <div className="flex-1 overflow-hidden">
+              <VideoArea meuNome={meuNome} />
+            </div>
+            <div className="flex-shrink-0 bg-card border-t border-border">
+              <ControlBar
+                controls={{
+                  microphone: true,
+                  camera: true,
+                  screenShare: false,
+                  chat: false,
+                  leave: true,
+                  settings: false,
+                }}
+                variation="minimal"
+              />
+            </div>
+          </div>
+          <RoomAudioRenderer />
+        </LiveKitRoom>
+      </div>
     </div>
+  );
+}
+
+function VideoArea({ meuNome: _meuNome }: { meuNome: string }) {
+  const tracks = useTracks(
+    [
+      { source: Track.Source.Camera, withPlaceholder: true },
+      { source: Track.Source.ScreenShare, withPlaceholder: false },
+    ],
+    { onlySubscribed: false },
+  );
+
+  return (
+    <GridLayout tracks={tracks} style={{ height: "100%" }}>
+      <ParticipantTile />
+    </GridLayout>
   );
 }
