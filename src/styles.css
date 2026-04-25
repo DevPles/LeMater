@@ -128,6 +128,45 @@
   }
 }
 
+/* === Tema baseado no sexo do bebê === */
+/* Menino: tonalidades de azul */
+.theme-boy {
+  --primary: oklch(0.62 0.13 245);
+  --primary-foreground: oklch(1 0 0);
+  --ring: oklch(0.62 0.13 245);
+  --accent: oklch(0.88 0.06 235);
+  --accent-foreground: oklch(0.25 0.08 245);
+  --secondary: oklch(0.95 0.025 240);
+  --secondary-foreground: oklch(0.3 0.05 245);
+  --coral: oklch(0.62 0.13 245);
+  --coral-light: oklch(0.93 0.045 240);
+  --blush: oklch(0.93 0.045 240);
+  --blush-dark: oklch(0.45 0.12 245);
+  --chart-1: oklch(0.62 0.13 245);
+  --chart-4: oklch(0.7 0.12 230);
+  --sidebar-primary: oklch(0.62 0.13 245);
+  --sidebar-ring: oklch(0.62 0.13 245);
+}
+
+/* Menina: tonalidades de rosa */
+.theme-girl {
+  --primary: oklch(0.7 0.15 350);
+  --primary-foreground: oklch(1 0 0);
+  --ring: oklch(0.7 0.15 350);
+  --accent: oklch(0.9 0.06 350);
+  --accent-foreground: oklch(0.3 0.1 350);
+  --secondary: oklch(0.96 0.025 350);
+  --secondary-foreground: oklch(0.35 0.06 350);
+  --coral: oklch(0.7 0.15 350);
+  --coral-light: oklch(0.94 0.045 350);
+  --blush: oklch(0.94 0.045 350);
+  --blush-dark: oklch(0.5 0.13 350);
+  --chart-1: oklch(0.7 0.15 350);
+  --chart-4: oklch(0.75 0.13 340);
+  --sidebar-primary: oklch(0.7 0.15 350);
+  --sidebar-ring: oklch(0.7 0.15 350);
+}
+
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   :root {
     --glass-nav: oklch(1 0 0 / 0.08);
