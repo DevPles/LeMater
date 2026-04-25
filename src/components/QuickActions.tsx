@@ -28,103 +28,64 @@ function PlayMark() {
   );
 }
 
-// Estetoscópio minimalista: traço se desenhando em loop contínuo
+// Estetoscópio minimalista: forma essencial, traço fino
 function StethoscopeMark() {
   return (
-    <svg viewBox="0 0 24 24" className="w-9 h-9 text-current" fill="none">
-      {/* Tubo em Y + curva até o disco */}
-      <motion.path
-        d="M7 4 V10 A4 4 0 0 0 15 10 V4 M11 14 V16 A4 4 0 0 0 18 16 V14"
+    <svg viewBox="0 0 24 24" className="w-8 h-8 text-current" fill="none">
+      <path
+        d="M8 4 V11 A4 4 0 0 0 16 11 V4"
         stroke="currentColor"
-        strokeWidth="1.75"
+        strokeWidth="1.25"
         strokeLinecap="round"
-        strokeLinejoin="round"
-        initial={{ pathLength: 0, opacity: 0.3 }}
-        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
-        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
       />
-      {/* Disco do estetoscópio */}
-      <motion.circle
-        cx="18"
-        cy="12"
-        r="2"
+      <path
+        d="M12 15 V17"
         stroke="currentColor"
-        strokeWidth="1.75"
-        initial={{ pathLength: 0, opacity: 0.3 }}
-        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
-        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+        strokeWidth="1.25"
+        strokeLinecap="round"
       />
+      <circle cx="12" cy="19" r="1.75" stroke="currentColor" strokeWidth="1.25" />
     </svg>
   );
 }
 
-// Cartão de saúde minimalista: contorno + linhas se desenhando em loop
+// Cartão minimalista: apenas contorno e uma linha
 function CardMark() {
   return (
-    <svg viewBox="0 0 24 24" className="w-9 h-9 text-current" fill="none">
-      {/* Contorno do cartão */}
-      <motion.rect
-        x="3.5"
-        y="6"
-        width="17"
-        height="12"
+    <svg viewBox="0 0 24 24" className="w-8 h-8 text-current" fill="none">
+      <rect
+        x="4"
+        y="7"
+        width="16"
+        height="11"
         rx="2"
         stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-        initial={{ pathLength: 0, opacity: 0.3 }}
-        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
-        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
+        strokeWidth="1.25"
       />
-      {/* Cruz médica */}
-      <motion.path
-        d="M8 13 H12 M10 11 V15"
+      <path
+        d="M4 11 H20"
         stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        initial={{ pathLength: 0, opacity: 0.3 }}
-        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
-        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-      />
-      {/* Linhas de informação */}
-      <motion.path
-        d="M14 11 H17 M14 14 H17"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        initial={{ pathLength: 0, opacity: 0.3 }}
-        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
-        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        strokeWidth="1.25"
       />
     </svg>
   );
 }
 
-
-// Sino de alerta minimalista: contorno + badeço se desenhando em loop
+// Sino minimalista: contorno limpo, sem detalhes
 function BellMark() {
   return (
-    <svg viewBox="0 0 24 24" className="w-9 h-9 text-current" fill="none">
-      {/* Corpo do sino */}
-      <motion.path
-        d="M6 16 V11 A6 6 0 0 1 18 11 V16 L19.5 17.5 H4.5 L6 16 Z"
+    <svg viewBox="0 0 24 24" className="w-8 h-8 text-current" fill="none">
+      <path
+        d="M7 16 V11 A5 5 0 0 1 17 11 V16 H7 Z"
         stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
+        strokeWidth="1.25"
         strokeLinejoin="round"
-        initial={{ pathLength: 0, opacity: 0.3 }}
-        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
-        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut" }}
       />
-      {/* Badeço */}
-      <motion.path
-        d="M10.5 20 A1.5 1.5 0 0 0 13.5 20"
+      <path
+        d="M10.5 19 A1.5 1.5 0 0 0 13.5 19"
         stroke="currentColor"
-        strokeWidth="1.75"
+        strokeWidth="1.25"
         strokeLinecap="round"
-        initial={{ pathLength: 0, opacity: 0.3 }}
-        animate={{ pathLength: [0, 1, 1], opacity: [0.3, 1, 1] }}
-        transition={{ duration: 2.4, times: [0, 0.6, 1], repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
       />
     </svg>
   );
