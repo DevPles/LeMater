@@ -839,6 +839,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      promote_to_professional: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       resolve_login_email_by_cpf: { Args: { _cpf: string }; Returns: string }
       resolve_login_email_by_registro: {
         Args: { _registro: string }
