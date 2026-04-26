@@ -148,6 +148,36 @@ export type Database = {
         }
         Relationships: []
       }
+      consultation_notes: {
+        Row: {
+          appointment_id: string
+          created_at: string
+          gestante_id: string
+          id: string
+          observacoes: string | null
+          professional_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string
+          gestante_id: string
+          id?: string
+          observacoes?: string | null
+          professional_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string
+          gestante_id?: string
+          id?: string
+          observacoes?: string | null
+          professional_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       districts: {
         Row: {
           cidade: string
