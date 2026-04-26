@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import jsPDF from "jspdf";
+import { ConsultationNotesPanel } from "./ConsultationNotesPanel";
 
 type Slot = {
   id: string;
@@ -108,6 +109,13 @@ export function GestanteDetalheModal({
   const [vaccs, setVaccs] = useState<Vacc[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [erro, setErro] = useState<string | null>(null);
+  const [meuUserId, setMeuUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setMeuUserId(data.session?.user?.id ?? null);
+    });
+  }, []);
 
   useEffect(() => {
     let ativo = true;
@@ -872,6 +880,14 @@ export function GestanteDetalheModal({
                     {slot.observacao}
                   </p>
                 </Bloco>
+              )}
+
+              {meuUserId && slot.gestante_id && (
+                <ConsultationNotesPanel
+                  appointmentId={slot.id}
+                  gestanteId={slot.gestante_id}
+                  professionalUserId={meuUserId}
+                />
               )}
             </>
           )}

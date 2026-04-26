@@ -14,6 +14,7 @@ import { Track } from "livekit-client";
 import "@livekit/components-styles";
 import { useServerFn } from "@tanstack/react-start";
 import { gerarTokenSala } from "@/utils/livekit.functions";
+import { ConsultationNotesPanel } from "@/components/profissional/ConsultationNotesPanel";
 
 export const Route = createFileRoute("/sala/$roomId")({
   head: () => ({
@@ -60,6 +61,8 @@ function SalaPage() {
   const [tempo, setTempo] = useState(0);
   const [token, setToken] = useState<string | null>(null);
   const [wsUrl, setWsUrl] = useState<string | null>(null);
+  const [meuUserId, setMeuUserId] = useState<string | null>(null);
+  const [notasAbertas, setNotasAbertas] = useState(false);
 
   const tickRef = useRef<number | null>(null);
 
@@ -73,6 +76,7 @@ function SalaPage() {
         navigate({ to: "/" });
         return;
       }
+      setMeuUserId(uid);
 
       const { data: s, error } = await supabase
         .from("appointment_slots")
@@ -303,6 +307,18 @@ function SalaPage() {
           <span className="text-xs font-mono font-semibold text-foreground bg-muted px-2 py-1 rounded">
             {fmtTempo(tempo)}
           </span>
+          {isProfDono && slot?.gestante_id && (
+            <button
+              onClick={() => setNotasAbertas((v) => !v)}
+              className={`text-[11px] font-bold px-3 py-1.5 rounded-full hover:opacity-90 ${
+                notasAbertas
+                  ? "bg-[#1a1557] text-white"
+                  : "bg-muted text-foreground"
+              }`}
+            >
+              {notasAbertas ? "Fechar notas" : "Anotar consulta"}
+            </button>
+          )}
           <button
             onClick={sairESair}
             className="text-[11px] font-bold text-white bg-destructive px-3 py-1.5 rounded-full hover:opacity-90"
@@ -312,37 +328,54 @@ function SalaPage() {
         </div>
       </header>
 
-      <div className="flex-1 bg-black overflow-hidden">
-        <LiveKitRoom
-          token={token}
-          serverUrl={wsUrl}
-          connect
-          video
-          audio
-          onDisconnected={sairESair}
-          data-lk-theme="default"
-          style={{ height: "100%" }}
-        >
-          <div className="flex flex-col h-full">
-            <div className="flex-1 overflow-hidden">
-              <VideoArea meuNome={meuNome} />
+      <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 bg-black overflow-hidden">
+          <LiveKitRoom
+            token={token}
+            serverUrl={wsUrl}
+            connect
+            video
+            audio
+            onDisconnected={sairESair}
+            data-lk-theme="default"
+            style={{ height: "100%" }}
+          >
+            <div className="flex flex-col h-full">
+              <div className="flex-1 overflow-hidden">
+                <VideoArea meuNome={meuNome} />
+              </div>
+              <div className="flex-shrink-0 bg-card border-t border-border">
+                <ControlBar
+                  controls={{
+                    microphone: true,
+                    camera: true,
+                    screenShare: false,
+                    chat: false,
+                    leave: true,
+                    settings: false,
+                  }}
+                  variation="minimal"
+                />
+              </div>
             </div>
-            <div className="flex-shrink-0 bg-card border-t border-border">
-              <ControlBar
-                controls={{
-                  microphone: true,
-                  camera: true,
-                  screenShare: false,
-                  chat: false,
-                  leave: true,
-                  settings: false,
-                }}
-                variation="minimal"
+            <RoomAudioRenderer />
+          </LiveKitRoom>
+        </div>
+
+        {isProfDono &&
+          notasAbertas &&
+          slot?.gestante_id &&
+          meuUserId &&
+          slot && (
+            <aside className="w-full max-w-sm border-l border-border bg-background flex flex-col overflow-hidden absolute sm:relative inset-0 sm:inset-auto z-30 sm:z-auto">
+              <ConsultationNotesPanel
+                appointmentId={slot.id}
+                gestanteId={slot.gestante_id}
+                professionalUserId={meuUserId}
+                compact
               />
-            </div>
-          </div>
-          <RoomAudioRenderer />
-        </LiveKitRoom>
+            </aside>
+          )}
       </div>
     </div>
   );
