@@ -336,13 +336,24 @@ export function GestanteDetalheModal({
               {slot.modalidade === "videochamada" ? "Vídeo" : "Presencial"}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="bg-white/10 hover:bg-white/20 rounded-full w-8 h-8 text-sm font-bold flex-shrink-0"
-            aria-label="Fechar"
-          >
-            ×
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={exportarPDF}
+              disabled={!profile}
+              className="bg-white text-[#1a1557] hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-3 h-8 text-[11px] font-bold"
+              aria-label="Exportar em PDF"
+              title="Exportar em PDF"
+            >
+              PDF
+            </button>
+            <button
+              onClick={onClose}
+              className="bg-white/10 hover:bg-white/20 rounded-full w-8 h-8 text-sm font-bold"
+              aria-label="Fechar"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         <div className="overflow-y-auto p-5 space-y-5">
