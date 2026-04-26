@@ -61,6 +61,8 @@ function SalaPage() {
   const [tempo, setTempo] = useState(0);
   const [token, setToken] = useState<string | null>(null);
   const [wsUrl, setWsUrl] = useState<string | null>(null);
+  const [meuUserId, setMeuUserId] = useState<string | null>(null);
+  const [notasAbertas, setNotasAbertas] = useState(false);
 
   const tickRef = useRef<number | null>(null);
 
