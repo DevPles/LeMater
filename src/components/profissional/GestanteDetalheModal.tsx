@@ -109,6 +109,13 @@ export function GestanteDetalheModal({
   const [vaccs, setVaccs] = useState<Vacc[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [erro, setErro] = useState<string | null>(null);
+  const [meuUserId, setMeuUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setMeuUserId(data.session?.user?.id ?? null);
+    });
+  }, []);
 
   useEffect(() => {
     let ativo = true;
