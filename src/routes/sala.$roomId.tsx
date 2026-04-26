@@ -76,6 +76,7 @@ function SalaPage() {
         navigate({ to: "/" });
         return;
       }
+      setMeuUserId(uid);
 
       const { data: s, error } = await supabase
         .from("appointment_slots")
