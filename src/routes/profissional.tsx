@@ -208,7 +208,7 @@ function Dashboard({ session }: { session: Session }) {
         </button>
       </div>
 
-      <div className="max-w-3xl mx-auto p-4 space-y-5">
+      <div className="max-w-3xl mx-auto p-4 pb-32 space-y-5">
         {!prof && !loading && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-900">
             Sua conta de auth foi criada, mas ainda não há um perfil profissional vinculado.
@@ -348,7 +348,7 @@ function Dashboard({ session }: { session: Session }) {
           ) : filtered.length === 0 ? (
             <p className="p-6 text-sm text-center text-muted-foreground">Nenhum horário.</p>
           ) : (
-            <div className="max-h-[60vh] overflow-y-auto overscroll-contain">
+            <div className="max-h-[clamp(14rem,42dvh,24rem)] overflow-y-auto overscroll-contain scroll-pb-28">
 
             <ul className="divide-y divide-border">
               {filtered.map((s) => {
