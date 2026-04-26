@@ -881,6 +881,14 @@ export function GestanteDetalheModal({
                   </p>
                 </Bloco>
               )}
+
+              {meuUserId && slot.gestante_id && (
+                <ConsultationNotesPanel
+                  appointmentId={slot.id}
+                  gestanteId={slot.gestante_id}
+                  professionalUserId={meuUserId}
+                />
+              )}
             </>
           )}
         </div>
