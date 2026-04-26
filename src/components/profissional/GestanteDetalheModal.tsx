@@ -565,7 +565,7 @@ export function GestanteDetalheModal({
         doc.setFontSize(9);
         const laudo = e.laudo_texto ?? "Sem laudo descritivo.";
         const lines = doc.splitTextToSize(laudo, contentW - 24);
-        const h = 22 + lines.length * 11 + 8;
+        const h = 26 + lines.length * 11 + 14;
         ensureSpace(h + 4);
         roundedRect(margin, y, contentW, h, 8, C.white, C.line);
         text(e.tipo_exame, margin + 12, y + 16, { size: 10, bold: true, color: C.ink });
@@ -574,8 +574,8 @@ export function GestanteDetalheModal({
         doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
         setText(C.sub);
-        doc.text(lines, margin + 12, y + 30);
-        text(fmtData(e.data_exame), margin + 12, y + h - 8, { size: 7.5, bold: true, color: C.muted });
+        doc.text(lines, margin + 12, y + 32);
+        text(fmtData(e.data_exame), margin + 12, y + h - 6, { size: 7.5, bold: true, color: C.muted });
         y += h + 4;
       });
     }
