@@ -359,9 +359,18 @@ function Dashboard({ session }: { session: Session }) {
                       : s.status === "realizado"
                         ? "bg-green-100 text-green-700"
                         : "bg-muted text-muted-foreground";
+                const podeAbrir = !!s.gestante_id;
                 return (
                   <li key={s.id} className="p-3 flex items-center justify-between gap-3 flex-wrap">
-                    <div className="text-xs flex-1 min-w-[200px]">
+                    <button
+                      type="button"
+                      onClick={() => podeAbrir && setSlotDetalhe(s)}
+                      disabled={!podeAbrir}
+                      className={`text-xs flex-1 min-w-[200px] text-left ${
+                        podeAbrir ? "cursor-pointer hover:bg-muted/30 rounded-lg -m-1 p-1 transition-colors" : "cursor-default"
+                      }`}
+                      title={podeAbrir ? "Ver dados clínicos da gestante" : undefined}
+                    >
                       {s.titulo && (
                         <p className="font-bold text-foreground text-sm mb-0.5">{s.titulo}</p>
                       )}
@@ -380,7 +389,12 @@ function Dashboard({ session }: { session: Session }) {
                       {s.descricao && (
                         <p className="text-muted-foreground mt-1 line-clamp-2">{s.descricao}</p>
                       )}
-                    </div>
+                      {podeAbrir && (
+                        <p className="text-[10px] font-bold text-primary mt-1">
+                          Toque para ver os dados da gestante →
+                        </p>
+                      )}
+                    </button>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColor}`}>
                         {s.status}
@@ -425,6 +439,10 @@ function Dashboard({ session }: { session: Session }) {
           )}
         </div>
       </div>
+
+      {slotDetalhe && (
+        <GestanteDetalheModal slot={slotDetalhe} onClose={() => setSlotDetalhe(null)} />
+      )}
     </div>
   );
 }
