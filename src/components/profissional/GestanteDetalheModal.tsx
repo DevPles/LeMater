@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import jsPDF from "jspdf";
+import { ConsultationNotesPanel } from "./ConsultationNotesPanel";
 
 type Slot = {
   id: string;
