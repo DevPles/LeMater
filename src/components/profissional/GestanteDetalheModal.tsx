@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import jsPDF from "jspdf";
 
 type Slot = {
   id: string;
@@ -180,6 +181,136 @@ export function GestanteDetalheModal({
   const idade = calcularIdade(profile?.data_nascimento ?? null);
   const dt = new Date(slot.data_hora);
 
+  function exportarPDF() {
+    if (!profile) return;
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 40;
+    let y = margin;
+
+    const ensureSpace = (h: number) => {
+      if (y + h > pageH - margin) {
+        doc.addPage();
+        y = margin;
+      }
+    };
+
+    const writeLine = (text: string, opts?: { size?: number; bold?: boolean; color?: [number, number, number] }) => {
+      const size = opts?.size ?? 10;
+      doc.setFontSize(size);
+      doc.setFont("helvetica", opts?.bold ? "bold" : "normal");
+      const [r, g, b] = opts?.color ?? [20, 20, 20];
+      doc.setTextColor(r, g, b);
+      const lines = doc.splitTextToSize(text, pageW - margin * 2);
+      for (const ln of lines) {
+        ensureSpace(size + 4);
+        doc.text(ln, margin, y);
+        y += size + 4;
+      }
+    };
+
+    const sectionTitle = (t: string) => {
+      y += 6;
+      ensureSpace(20);
+      doc.setFillColor(26, 21, 87);
+      doc.rect(margin, y - 10, pageW - margin * 2, 16, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text(t.toUpperCase(), margin + 6, y + 1);
+      y += 14;
+      doc.setTextColor(20, 20, 20);
+    };
+
+    // Cabeçalho
+    doc.setFillColor(26, 21, 87);
+    doc.rect(0, 0, pageW, 60, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("Preparação para o atendimento", margin, 30);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(
+      `${slot.titulo ?? "Atendimento"} • ${dt.toLocaleDateString("pt-BR")} ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} • ${slot.duracao_min} min • ${slot.modalidade === "videochamada" ? "Vídeo" : "Presencial"}`,
+      margin,
+      48,
+    );
+    y = 80;
+
+    sectionTitle("Identificação da gestante");
+    writeLine(profile.nome ?? "Sem nome", { size: 13, bold: true });
+    writeLine(
+      `${idade !== null ? `${idade} anos` : "Idade não informada"}${profile.cidade ? ` • ${profile.cidade}` : ""}${profile.bairro ? ` / ${profile.bairro}` : ""}`,
+    );
+    if (profile.unidade_saude) writeLine(`UBS: ${profile.unidade_saude}`);
+    writeLine(`Telefone: ${profile.telefone || "—"}`);
+    writeLine(`E-mail: ${profile.email || "—"}`);
+    writeLine(`CPF: ${profile.cpf || "—"}`);
+    writeLine(`DUM: ${profile.dum ? fmtData(profile.dum) : "—"}`);
+
+    sectionTitle("Resumo gestacional");
+    writeLine(
+      `Semanas: ${semanas !== null ? semanas : "—"}  •  Gestações: ${profile.numero_gestacoes ?? 0}  •  Partos: ${profile.numero_partos ?? 0}  •  Abortos: ${profile.numero_abortos ?? 0}`,
+    );
+
+    sectionTitle(`Alertas ativos (${alerts.length})`);
+    if (alerts.length === 0) writeLine("Nenhum alerta ativo.", { color: [120, 120, 120] });
+    else {
+      alerts.forEach((a) => {
+        writeLine(`• ${a.titulo} [${a.severidade}]`, { bold: true, color: a.severidade === "urgente" ? [180, 30, 50] : [160, 110, 20] });
+        writeLine(a.mensagem);
+        writeLine(`${a.origem} • ${fmtData(a.data)}`, { size: 8, color: [120, 120, 120] });
+      });
+    }
+
+    sectionTitle(`Últimas medições (${meds.length})`);
+    if (meds.length === 0) writeLine("Nenhuma medição registrada.", { color: [120, 120, 120] });
+    else {
+      meds.forEach((m) => {
+        writeLine(
+          `${fmtData(m.data_medicao)}  •  ${m.parametro}: ${m.valor}${m.semana_gestacional !== null ? `  (sem. ${m.semana_gestacional})` : ""}`,
+        );
+      });
+    }
+
+    sectionTitle(`Exames laboratoriais (${exams.length})`);
+    if (exams.length === 0) writeLine("Nenhum exame laboratorial.", { color: [120, 120, 120] });
+    else {
+      exams.forEach((e) => {
+        writeLine(`${e.tipo_exame} [${e.status}]`, { bold: true });
+        writeLine(`${e.resultado}`);
+        writeLine(`${fmtData(e.data_exame)}`, { size: 8, color: [120, 120, 120] });
+      });
+    }
+
+    sectionTitle(`Exames de imagem (${imgExams.length})`);
+    if (imgExams.length === 0) writeLine("Nenhum exame de imagem.", { color: [120, 120, 120] });
+    else {
+      imgExams.forEach((e) => {
+        writeLine(`${e.tipo_exame} [${e.status}]`, { bold: true });
+        if (e.laudo_texto) writeLine(e.laudo_texto);
+        writeLine(`${fmtData(e.data_exame)}`, { size: 8, color: [120, 120, 120] });
+      });
+    }
+
+    sectionTitle(`Vacinas aplicadas (${vaccs.length})`);
+    if (vaccs.length === 0) writeLine("Nenhuma vacina registrada.", { color: [120, 120, 120] });
+    else {
+      vaccs.forEach((v) => writeLine(`• ${v.vacina} — ${fmtData(v.data_aplicacao)}`));
+    }
+
+    if (slot.observacao) {
+      sectionTitle("Observação do horário");
+      writeLine(slot.observacao);
+    }
+
+    const nomeArq = (profile.nome ?? "gestante").replace(/\s+/g, "_").toLowerCase();
+    doc.save(`atendimento_${nomeArq}_${dt.toISOString().slice(0, 10)}.pdf`);
+  }
+
+
   return (
     <div
       className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4"
@@ -205,13 +336,24 @@ export function GestanteDetalheModal({
               {slot.modalidade === "videochamada" ? "Vídeo" : "Presencial"}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="bg-white/10 hover:bg-white/20 rounded-full w-8 h-8 text-sm font-bold flex-shrink-0"
-            aria-label="Fechar"
-          >
-            ×
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={exportarPDF}
+              disabled={!profile}
+              className="bg-white text-[#1a1557] hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed rounded-full px-3 h-8 text-[11px] font-bold"
+              aria-label="Exportar em PDF"
+              title="Exportar em PDF"
+            >
+              PDF
+            </button>
+            <button
+              onClick={onClose}
+              className="bg-white/10 hover:bg-white/20 rounded-full w-8 h-8 text-sm font-bold"
+              aria-label="Fechar"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         <div className="overflow-y-auto p-5 space-y-5">
