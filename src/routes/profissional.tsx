@@ -348,6 +348,8 @@ function Dashboard({ session }: { session: Session }) {
           ) : filtered.length === 0 ? (
             <p className="p-6 text-sm text-center text-muted-foreground">Nenhum horário.</p>
           ) : (
+            <div className="max-h-[60vh] overflow-y-auto overscroll-contain">
+
             <ul className="divide-y divide-border">
               {filtered.map((s) => {
                 const dt = new Date(s.data_hora);
@@ -415,14 +417,6 @@ function Dashboard({ session }: { session: Session }) {
                           Marcar realizado
                         </button>
                       )}
-                      {s.status === "disponivel" && (
-                        <button
-                          onClick={() => removerSlot(s.id)}
-                          className="text-[10px] font-semibold text-red-700 hover:text-red-900"
-                        >
-                          Excluir
-                        </button>
-                      )}
                       {s.status === "reservado" && (
                         <button
                           onClick={() => cancelarSlot(s.id)}
@@ -431,11 +425,19 @@ function Dashboard({ session }: { session: Session }) {
                           Cancelar
                         </button>
                       )}
+                      <button
+                        onClick={() => removerSlot(s.id)}
+                        className="text-[10px] font-semibold text-red-700 hover:text-red-900"
+                        title="Excluir definitivamente"
+                      >
+                        Excluir
+                      </button>
                     </div>
                   </li>
                 );
               })}
             </ul>
+            </div>
           )}
         </div>
       </div>
