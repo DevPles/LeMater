@@ -540,8 +540,8 @@ export function GestanteDetalheModal({
     } else {
       exams.forEach((e) => {
         doc.setFontSize(9);
-        const resLines = doc.splitTextToSize(e.resultado, contentW - 100);
-        const h = 22 + resLines.length * 11 + 8;
+        const resLines = doc.splitTextToSize(e.resultado, contentW - 24);
+        const h = 26 + resLines.length * 11 + 14;
         ensureSpace(h + 4);
         roundedRect(margin, y, contentW, h, 8, C.white, C.line);
         text(e.tipo_exame, margin + 12, y + 16, { size: 10, bold: true, color: C.ink });
@@ -550,8 +550,8 @@ export function GestanteDetalheModal({
         doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
         setText(C.sub);
-        doc.text(resLines, margin + 12, y + 30);
-        text(fmtData(e.data_exame), margin + 12, y + h - 8, { size: 7.5, bold: true, color: C.muted });
+        doc.text(resLines, margin + 12, y + 32);
+        text(fmtData(e.data_exame), margin + 12, y + h - 6, { size: 7.5, bold: true, color: C.muted });
         y += h + 4;
       });
     }
