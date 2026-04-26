@@ -863,6 +863,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_professional_of_gestante: {
+        Args: { _gestante_id: string; _prof_user_id: string }
+        Returns: boolean
+      }
       promote_to_professional: {
         Args: { _user_id: string }
         Returns: undefined
