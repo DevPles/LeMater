@@ -14,6 +14,7 @@ import { Track } from "livekit-client";
 import "@livekit/components-styles";
 import { useServerFn } from "@tanstack/react-start";
 import { gerarTokenSala } from "@/utils/livekit.functions";
+import { ConsultationNotesPanel } from "@/components/profissional/ConsultationNotesPanel";
 
 export const Route = createFileRoute("/sala/$roomId")({
   head: () => ({
