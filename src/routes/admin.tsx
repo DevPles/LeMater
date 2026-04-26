@@ -13,6 +13,7 @@ import { TelasTab } from "@/components/admin/TelasTab";
 import { ProfissionaisTab } from "@/components/admin/ProfissionaisTab";
 import { ParametrosTab } from "@/components/admin/ParametrosTab";
 import { GravacoesTab } from "@/components/admin/GravacoesTab";
+import { ConsultasTab } from "@/components/admin/ConsultasTab";
 
 import { RelatoriosEpidemiologicosTab } from "@/components/admin/RelatoriosEpidemiologicosTab";
 
@@ -122,6 +123,7 @@ function AdminShell() {
       {section === "config-parametros" && <ParametrosTab />}
       {section === "config-profissionais" && <ProfissionaisTab />}
       {section === "config-telas" && <TelasTab />}
+      {section === "consultas-todas" && <ConsultasTab />}
       {section === "consultas-gravacoes" && <GravacoesTab />}
     </AdminLayout>
   );
