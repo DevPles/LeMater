@@ -181,130 +181,440 @@ export function GestanteDetalheModal({
   const idade = calcularIdade(profile?.data_nascimento ?? null);
   const dt = new Date(slot.data_hora);
 
-  function exportarPDF() {
+  async function carregarFotoBase64(url: string | null): Promise<{ data: string; format: "JPEG" | "PNG" } | null> {
+    if (!url) return null;
+    try {
+      const res = await fetch(url, { mode: "cors" });
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      const fmt: "JPEG" | "PNG" = blob.type.includes("png") ? "PNG" : "JPEG";
+      const data: string = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result as string);
+        r.onerror = reject;
+        r.readAsDataURL(blob);
+      });
+      return { data, format: fmt };
+    } catch {
+      return null;
+    }
+  }
+
+  async function exportarPDF() {
     if (!profile) return;
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
-    const margin = 40;
-    let y = margin;
+    const margin = 36;
+    const contentW = pageW - margin * 2;
+    let y = 0;
+
+    // Paleta moderna
+    const C = {
+      ink: [17, 24, 39] as [number, number, number],
+      sub: [107, 114, 128] as [number, number, number],
+      muted: [156, 163, 175] as [number, number, number],
+      line: [229, 231, 235] as [number, number, number],
+      bg: [249, 250, 251] as [number, number, number],
+      brand: [26, 21, 87] as [number, number, number],
+      brand2: [79, 70, 229] as [number, number, number],
+      coral: [244, 114, 114] as [number, number, number],
+      amber: [217, 119, 6] as [number, number, number],
+      amberBg: [254, 243, 199] as [number, number, number],
+      rose: [190, 18, 60] as [number, number, number],
+      roseBg: [254, 226, 226] as [number, number, number],
+      green: [5, 150, 105] as [number, number, number],
+      greenBg: [209, 250, 229] as [number, number, number],
+      white: [255, 255, 255] as [number, number, number],
+    };
+
+    const setFill = (c: [number, number, number]) => doc.setFillColor(c[0], c[1], c[2]);
+    const setText = (c: [number, number, number]) => doc.setTextColor(c[0], c[1], c[2]);
+    const setDraw = (c: [number, number, number]) => doc.setDrawColor(c[0], c[1], c[2]);
 
     const ensureSpace = (h: number) => {
-      if (y + h > pageH - margin) {
+      if (y + h > pageH - 50) {
+        addFooter();
         doc.addPage();
         y = margin;
       }
     };
 
-    const writeLine = (text: string, opts?: { size?: number; bold?: boolean; color?: [number, number, number] }) => {
+    const addFooter = () => {
+      const total = doc.getNumberOfPages();
+      const pageNum = doc.getCurrentPageInfo().pageNumber;
+      setText(C.muted);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.text(
+        `Documento gerado em ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
+        margin,
+        pageH - 24,
+      );
+      doc.text(`Página ${pageNum} / ${total}`, pageW - margin, pageH - 24, { align: "right" });
+      setDraw(C.line);
+      doc.setLineWidth(0.5);
+      doc.line(margin, pageH - 36, pageW - margin, pageH - 36);
+    };
+
+    const text = (
+      t: string,
+      x: number,
+      yPos: number,
+      opts?: { size?: number; bold?: boolean; color?: [number, number, number]; align?: "left" | "right" | "center"; maxW?: number },
+    ) => {
+      doc.setFontSize(opts?.size ?? 10);
+      doc.setFont("helvetica", opts?.bold ? "bold" : "normal");
+      setText(opts?.color ?? C.ink);
+      if (opts?.maxW) {
+        const lines = doc.splitTextToSize(t, opts.maxW);
+        doc.text(lines, x, yPos, { align: opts?.align });
+        return (opts?.size ?? 10) * 1.2 * lines.length;
+      }
+      doc.text(t, x, yPos, { align: opts?.align });
+      return (opts?.size ?? 10) * 1.2;
+    };
+
+    const writeWrapped = (
+      t: string,
+      x: number,
+      maxW: number,
+      opts?: { size?: number; bold?: boolean; color?: [number, number, number]; lineHeight?: number },
+    ) => {
       const size = opts?.size ?? 10;
+      const lh = opts?.lineHeight ?? size + 4;
       doc.setFontSize(size);
       doc.setFont("helvetica", opts?.bold ? "bold" : "normal");
-      const [r, g, b] = opts?.color ?? [20, 20, 20];
-      doc.setTextColor(r, g, b);
-      const lines = doc.splitTextToSize(text, pageW - margin * 2);
+      setText(opts?.color ?? C.ink);
+      const lines = doc.splitTextToSize(t, maxW);
       for (const ln of lines) {
-        ensureSpace(size + 4);
-        doc.text(ln, margin, y);
-        y += size + 4;
+        ensureSpace(lh);
+        doc.text(ln, x, y);
+        y += lh;
       }
     };
 
-    const sectionTitle = (t: string) => {
-      y += 6;
-      ensureSpace(20);
-      doc.setFillColor(26, 21, 87);
-      doc.rect(margin, y - 10, pageW - margin * 2, 16, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.text(t.toUpperCase(), margin + 6, y + 1);
-      y += 14;
-      doc.setTextColor(20, 20, 20);
+    const roundedRect = (x: number, yy: number, w: number, h: number, r: number, fill: [number, number, number] | null, stroke: [number, number, number] | null) => {
+      if (fill) setFill(fill);
+      if (stroke) {
+        setDraw(stroke);
+        doc.setLineWidth(0.6);
+      }
+      const style = fill && stroke ? "FD" : fill ? "F" : "S";
+      doc.roundedRect(x, yy, w, h, r, r, style);
     };
 
-    // Cabeçalho
-    doc.setFillColor(26, 21, 87);
-    doc.rect(0, 0, pageW, 60, "F");
-    doc.setTextColor(255, 255, 255);
+    const sectionTitle = (t: string, count?: number) => {
+      y += 14;
+      ensureSpace(28);
+      // Barra lateral decorativa
+      setFill(C.coral);
+      doc.rect(margin, y - 8, 3, 14, "F");
+      text(t.toUpperCase(), margin + 10, y + 3, { size: 10, bold: true, color: C.brand });
+      if (count !== undefined) {
+        const w = doc.getTextWidth(String(count)) + 14;
+        const xBadge = margin + 10 + doc.getTextWidth(t.toUpperCase()) + 8;
+        roundedRect(xBadge, y - 6, w, 12, 6, C.bg, C.line);
+        text(String(count), xBadge + w / 2, y + 2, { size: 8, bold: true, color: C.sub, align: "center" });
+      }
+      y += 12;
+      setDraw(C.line);
+      doc.setLineWidth(0.5);
+      doc.line(margin, y, pageW - margin, y);
+      y += 10;
+    };
+
+    const badge = (x: number, yy: number, label: string, kind: "ok" | "warn" | "danger" | "muted") => {
+      const map = {
+        ok: { bg: C.greenBg, fg: C.green },
+        warn: { bg: C.amberBg, fg: C.amber },
+        danger: { bg: C.roseBg, fg: C.rose },
+        muted: { bg: C.bg, fg: C.sub },
+      } as const;
+      const m = map[kind];
+      doc.setFontSize(7.5);
+      doc.setFont("helvetica", "bold");
+      const w = doc.getTextWidth(label.toUpperCase()) + 12;
+      roundedRect(x, yy - 8, w, 12, 6, m.bg, null);
+      setText(m.fg);
+      doc.text(label.toUpperCase(), x + w / 2, yy, { align: "center" });
+      return w;
+    };
+
+    // ===================== HEADER =====================
+    const headerH = 110;
+    setFill(C.brand);
+    doc.rect(0, 0, pageW, headerH, "F");
+    // Acento decorativo
+    setFill(C.brand2);
+    doc.rect(0, headerH - 6, pageW, 6, "F");
+    setFill(C.coral);
+    doc.rect(0, headerH - 3, pageW * 0.35, 3, "F");
+
+    setText(C.white);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("Preparação para o atendimento", margin, 30);
+    doc.setFontSize(8);
+    doc.text("PREPARAÇÃO PARA O ATENDIMENTO", margin, 32);
+    doc.setFontSize(20);
+    doc.text(slot.titulo ?? "Atendimento clínico", margin, 56);
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(
-      `${slot.titulo ?? "Atendimento"} • ${dt.toLocaleDateString("pt-BR")} ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} • ${slot.duracao_min} min • ${slot.modalidade === "videochamada" ? "Vídeo" : "Presencial"}`,
-      margin,
-      48,
-    );
-    y = 80;
+    setText([200, 200, 230]);
+    const headerInfo = `${dt.toLocaleDateString("pt-BR")}  •  ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}  •  ${slot.duracao_min} min  •  ${slot.modalidade === "videochamada" ? "Videochamada" : "Presencial"}`;
+    doc.text(headerInfo, margin, 76);
 
-    sectionTitle("Identificação da gestante");
-    writeLine(profile.nome ?? "Sem nome", { size: 13, bold: true });
-    writeLine(
-      `${idade !== null ? `${idade} anos` : "Idade não informada"}${profile.cidade ? ` • ${profile.cidade}` : ""}${profile.bairro ? ` / ${profile.bairro}` : ""}`,
-    );
-    if (profile.unidade_saude) writeLine(`UBS: ${profile.unidade_saude}`);
-    writeLine(`Telefone: ${profile.telefone || "—"}`);
-    writeLine(`E-mail: ${profile.email || "—"}`);
-    writeLine(`CPF: ${profile.cpf || "—"}`);
-    writeLine(`DUM: ${profile.dum ? fmtData(profile.dum) : "—"}`);
+    if (slot.tipo_atendimento) {
+      doc.setFontSize(9);
+      setText([180, 180, 220]);
+      doc.text(slot.tipo_atendimento, margin, 92);
+    }
 
-    sectionTitle("Resumo gestacional");
-    writeLine(
-      `Semanas: ${semanas !== null ? semanas : "—"}  •  Gestações: ${profile.numero_gestacoes ?? 0}  •  Partos: ${profile.numero_partos ?? 0}  •  Abortos: ${profile.numero_abortos ?? 0}`,
-    );
+    y = headerH + 24;
 
-    sectionTitle(`Alertas ativos (${alerts.length})`);
-    if (alerts.length === 0) writeLine("Nenhum alerta ativo.", { color: [120, 120, 120] });
-    else {
+    // ===================== CARD DA GESTANTE =====================
+    const cardH = 110;
+    ensureSpace(cardH);
+    roundedRect(margin, y, contentW, cardH, 10, C.bg, C.line);
+
+    // Foto
+    const fotoBase = await carregarFotoBase64(profile.foto_url);
+    const fotoSize = 78;
+    const fotoX = margin + 16;
+    const fotoY = y + (cardH - fotoSize) / 2;
+    if (fotoBase) {
+      try {
+        // Círculo de borda
+        setFill(C.white);
+        doc.circle(fotoX + fotoSize / 2, fotoY + fotoSize / 2, fotoSize / 2 + 2, "F");
+        doc.addImage(fotoBase.data, fotoBase.format, fotoX, fotoY, fotoSize, fotoSize, undefined, "FAST");
+      } catch {
+        setFill(C.brand2);
+        doc.circle(fotoX + fotoSize / 2, fotoY + fotoSize / 2, fotoSize / 2, "F");
+        text((profile.nome ?? "?").charAt(0).toUpperCase(), fotoX + fotoSize / 2, fotoY + fotoSize / 2 + 10, {
+          size: 32,
+          bold: true,
+          color: C.white,
+          align: "center",
+        });
+      }
+    } else {
+      setFill(C.brand2);
+      doc.circle(fotoX + fotoSize / 2, fotoY + fotoSize / 2, fotoSize / 2, "F");
+      text((profile.nome ?? "?").charAt(0).toUpperCase(), fotoX + fotoSize / 2, fotoY + fotoSize / 2 + 10, {
+        size: 32,
+        bold: true,
+        color: C.white,
+        align: "center",
+      });
+    }
+
+    // Dados ao lado
+    const dx = fotoX + fotoSize + 20;
+    const dWidth = contentW - (dx - margin) - 16;
+    let dy = y + 26;
+    text(profile.nome ?? "Sem nome", dx, dy, { size: 16, bold: true, color: C.ink });
+    dy += 18;
+    const linha2: string[] = [];
+    if (idade !== null) linha2.push(`${idade} anos`);
+    if (profile.cidade) linha2.push(profile.cidade);
+    if (profile.bairro) linha2.push(profile.bairro);
+    text(linha2.join("  •  ") || "—", dx, dy, { size: 10, color: C.sub, maxW: dWidth });
+    dy += 14;
+    if (profile.unidade_saude) {
+      text(`UBS  ${profile.unidade_saude}`, dx, dy, { size: 9, color: C.sub, maxW: dWidth });
+      dy += 14;
+    }
+    // Mini dados
+    dy += 4;
+    const mini = [
+      profile.telefone ? `Tel  ${profile.telefone}` : null,
+      profile.cpf ? `CPF  ${profile.cpf}` : null,
+    ].filter(Boolean) as string[];
+    text(mini.join("    "), dx, dy, { size: 9, color: C.ink });
+    dy += 12;
+    if (profile.email) text(profile.email, dx, dy, { size: 9, color: C.brand2 });
+
+    y += cardH + 6;
+
+    // ===================== STATS GRID =====================
+    y += 14;
+    ensureSpace(70);
+    const statsLabels: { label: string; value: string; accent: [number, number, number] }[] = [
+      { label: "SEMANAS", value: semanas !== null ? String(semanas) : "—", accent: C.coral },
+      { label: "GESTAÇÕES", value: String(profile.numero_gestacoes ?? 0), accent: C.brand2 },
+      { label: "PARTOS", value: String(profile.numero_partos ?? 0), accent: C.green },
+      { label: "ABORTOS", value: String(profile.numero_abortos ?? 0), accent: C.amber },
+      { label: "DUM", value: profile.dum ? fmtData(profile.dum) : "—", accent: C.brand },
+    ];
+    const gap = 8;
+    const cardW = (contentW - gap * (statsLabels.length - 1)) / statsLabels.length;
+    statsLabels.forEach((s, i) => {
+      const x = margin + i * (cardW + gap);
+      roundedRect(x, y, cardW, 56, 8, C.white, C.line);
+      // accent bar
+      setFill(s.accent);
+      doc.rect(x, y, cardW, 3, "F");
+      text(s.label, x + cardW / 2, y + 18, { size: 7.5, bold: true, color: C.sub, align: "center" });
+      const isLong = s.value.length > 8;
+      text(s.value, x + cardW / 2, y + 40, { size: isLong ? 11 : 18, bold: true, color: C.ink, align: "center" });
+    });
+    y += 56;
+
+    // ===================== ALERTAS =====================
+    sectionTitle("Alertas ativos", alerts.length);
+    if (alerts.length === 0) {
+      writeWrapped("Nenhum alerta clínico ativo no momento.", margin, contentW, { size: 9, color: C.muted });
+    } else {
       alerts.forEach((a) => {
-        writeLine(`• ${a.titulo} [${a.severidade}]`, { bold: true, color: a.severidade === "urgente" ? [180, 30, 50] : [160, 110, 20] });
-        writeLine(a.mensagem);
-        writeLine(`${a.origem} • ${fmtData(a.data)}`, { size: 8, color: [120, 120, 120] });
+        const isUrg = a.severidade === "urgente";
+        const bg = isUrg ? C.roseBg : C.amberBg;
+        const fg = isUrg ? C.rose : C.amber;
+        // Calcular altura
+        doc.setFontSize(9);
+        const msgLines = doc.splitTextToSize(a.mensagem, contentW - 24);
+        const boxH = 38 + msgLines.length * 11;
+        ensureSpace(boxH + 6);
+        roundedRect(margin, y, contentW, boxH, 8, bg, null);
+        // Barra lateral
+        setFill(fg);
+        doc.rect(margin, y, 3, boxH, "F");
+        text(a.titulo, margin + 12, y + 16, { size: 10.5, bold: true, color: fg });
+        badge(margin + 12 + doc.getTextWidth(a.titulo) + 8, y + 14, a.severidade, isUrg ? "danger" : "warn");
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        setText(C.ink);
+        doc.text(msgLines, margin + 12, y + 30);
+        text(`${a.origem.toUpperCase()}  •  ${fmtData(a.data)}`, margin + 12, y + boxH - 8, {
+          size: 7.5,
+          bold: true,
+          color: C.sub,
+        });
+        y += boxH + 6;
       });
     }
 
-    sectionTitle(`Últimas medições (${meds.length})`);
-    if (meds.length === 0) writeLine("Nenhuma medição registrada.", { color: [120, 120, 120] });
-    else {
-      meds.forEach((m) => {
-        writeLine(
-          `${fmtData(m.data_medicao)}  •  ${m.parametro}: ${m.valor}${m.semana_gestacional !== null ? `  (sem. ${m.semana_gestacional})` : ""}`,
-        );
+    // ===================== MEDIÇÕES =====================
+    sectionTitle("Últimas medições", meds.length);
+    if (meds.length === 0) {
+      writeWrapped("Nenhuma medição registrada.", margin, contentW, { size: 9, color: C.muted });
+    } else {
+      // Cabeçalho da tabela
+      ensureSpace(20);
+      setFill(C.bg);
+      doc.rect(margin, y, contentW, 18, "F");
+      const colData = margin + 10;
+      const colParam = margin + 90;
+      const colVal = margin + contentW - 110;
+      const colSem = margin + contentW - 30;
+      text("DATA", colData, y + 12, { size: 7.5, bold: true, color: C.sub });
+      text("PARÂMETRO", colParam, y + 12, { size: 7.5, bold: true, color: C.sub });
+      text("VALOR", colVal, y + 12, { size: 7.5, bold: true, color: C.sub, align: "right" });
+      text("SEM.", colSem, y + 12, { size: 7.5, bold: true, color: C.sub, align: "right" });
+      y += 18;
+      meds.forEach((m, i) => {
+        ensureSpace(18);
+        if (i % 2 === 1) {
+          setFill([252, 252, 253]);
+          doc.rect(margin, y, contentW, 18, "F");
+        }
+        text(fmtData(m.data_medicao), colData, y + 12, { size: 9, color: C.ink });
+        text(m.parametro, colParam, y + 12, { size: 9, color: C.ink });
+        text(String(m.valor), colVal, y + 12, { size: 9, bold: true, color: C.brand, align: "right" });
+        text(m.semana_gestacional !== null ? String(m.semana_gestacional) : "—", colSem, y + 12, {
+          size: 9,
+          color: C.sub,
+          align: "right",
+        });
+        setDraw(C.line);
+        doc.setLineWidth(0.3);
+        doc.line(margin, y + 18, pageW - margin, y + 18);
+        y += 18;
       });
     }
 
-    sectionTitle(`Exames laboratoriais (${exams.length})`);
-    if (exams.length === 0) writeLine("Nenhum exame laboratorial.", { color: [120, 120, 120] });
-    else {
+    // ===================== EXAMES LAB =====================
+    sectionTitle("Exames laboratoriais", exams.length);
+    if (exams.length === 0) {
+      writeWrapped("Nenhum exame laboratorial.", margin, contentW, { size: 9, color: C.muted });
+    } else {
       exams.forEach((e) => {
-        writeLine(`${e.tipo_exame} [${e.status}]`, { bold: true });
-        writeLine(`${e.resultado}`);
-        writeLine(`${fmtData(e.data_exame)}`, { size: 8, color: [120, 120, 120] });
+        doc.setFontSize(9);
+        const resLines = doc.splitTextToSize(e.resultado, contentW - 24);
+        const h = 26 + resLines.length * 11 + 14;
+        ensureSpace(h + 4);
+        roundedRect(margin, y, contentW, h, 8, C.white, C.line);
+        text(e.tipo_exame, margin + 12, y + 16, { size: 10, bold: true, color: C.ink });
+        const kind = e.status === "alterado" ? "danger" : e.status === "normal" ? "ok" : "muted";
+        badge(pageW - margin - 12 - 60, y + 14, e.status, kind);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        setText(C.sub);
+        doc.text(resLines, margin + 12, y + 32);
+        text(fmtData(e.data_exame), margin + 12, y + h - 6, { size: 7.5, bold: true, color: C.muted });
+        y += h + 4;
       });
     }
 
-    sectionTitle(`Exames de imagem (${imgExams.length})`);
-    if (imgExams.length === 0) writeLine("Nenhum exame de imagem.", { color: [120, 120, 120] });
-    else {
+    // ===================== EXAMES IMAGEM =====================
+    sectionTitle("Exames de imagem", imgExams.length);
+    if (imgExams.length === 0) {
+      writeWrapped("Nenhum exame de imagem.", margin, contentW, { size: 9, color: C.muted });
+    } else {
       imgExams.forEach((e) => {
-        writeLine(`${e.tipo_exame} [${e.status}]`, { bold: true });
-        if (e.laudo_texto) writeLine(e.laudo_texto);
-        writeLine(`${fmtData(e.data_exame)}`, { size: 8, color: [120, 120, 120] });
+        doc.setFontSize(9);
+        const laudo = e.laudo_texto ?? "Sem laudo descritivo.";
+        const lines = doc.splitTextToSize(laudo, contentW - 24);
+        const h = 26 + lines.length * 11 + 14;
+        ensureSpace(h + 4);
+        roundedRect(margin, y, contentW, h, 8, C.white, C.line);
+        text(e.tipo_exame, margin + 12, y + 16, { size: 10, bold: true, color: C.ink });
+        const kind = e.status === "alterado" ? "danger" : e.status === "normal" ? "ok" : "muted";
+        badge(pageW - margin - 12 - 60, y + 14, e.status, kind);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        setText(C.sub);
+        doc.text(lines, margin + 12, y + 32);
+        text(fmtData(e.data_exame), margin + 12, y + h - 6, { size: 7.5, bold: true, color: C.muted });
+        y += h + 4;
       });
     }
 
-    sectionTitle(`Vacinas aplicadas (${vaccs.length})`);
-    if (vaccs.length === 0) writeLine("Nenhuma vacina registrada.", { color: [120, 120, 120] });
-    else {
-      vaccs.forEach((v) => writeLine(`• ${v.vacina} — ${fmtData(v.data_aplicacao)}`));
+    // ===================== VACINAS =====================
+    sectionTitle("Vacinas aplicadas", vaccs.length);
+    if (vaccs.length === 0) {
+      writeWrapped("Nenhuma vacina registrada.", margin, contentW, { size: 9, color: C.muted });
+    } else {
+      const colW = (contentW - 8) / 2;
+      vaccs.forEach((v, i) => {
+        const col = i % 2;
+        if (col === 0) ensureSpace(28);
+        const x = margin + col * (colW + 8);
+        roundedRect(x, y, colW, 24, 6, C.bg, C.line);
+        text(v.vacina, x + 10, y + 15, { size: 9.5, bold: true, color: C.ink });
+        text(fmtData(v.data_aplicacao), x + colW - 10, y + 15, { size: 8.5, color: C.sub, align: "right" });
+        if (col === 1 || i === vaccs.length - 1) y += 28;
+      });
     }
 
+    // ===================== OBSERVAÇÃO =====================
     if (slot.observacao) {
       sectionTitle("Observação do horário");
-      writeLine(slot.observacao);
+      doc.setFontSize(9);
+      const obsLines = doc.splitTextToSize(slot.observacao, contentW - 24);
+      const h = obsLines.length * 12 + 16;
+      ensureSpace(h);
+      roundedRect(margin, y, contentW, h, 8, C.amberBg, null);
+      setFill(C.amber);
+      doc.rect(margin, y, 3, h, "F");
+      doc.setFont("helvetica", "normal");
+      setText(C.ink);
+      doc.text(obsLines, margin + 12, y + 14);
+      y += h;
     }
+
+    // Footer da última página
+    addFooter();
 
     const nomeArq = (profile.nome ?? "gestante").replace(/\s+/g, "_").toLowerCase();
     doc.save(`atendimento_${nomeArq}_${dt.toISOString().slice(0, 10)}.pdf`);
