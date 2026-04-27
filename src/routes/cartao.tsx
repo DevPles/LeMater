@@ -149,53 +149,54 @@ function CartaoPage() {
   const [medicoes, setMedicoes] = useState<MedicaoReal[]>([]);
   const [vacinas, setVacinas] = useState<VacinaReal[]>([]);
   const [exames, setExames] = useState<ExameReal[]>([]);
+  const [lancamentoOpen, setLancamentoOpen] = useState(false);
 
-  useEffect(() => {
+  const carregarDados = useCallback(async () => {
     if (!session?.user?.id) return;
     const uid = session.user.id;
-    (async () => {
-      const [mRes, vRes, eRes] = await Promise.all([
-        supabase.from("clinical_measurements")
-          .select("id,parametro,valor,semana_gestacional,data_medicao")
-          .eq("gestante_id", uid)
-          .order("data_medicao", { ascending: true }),
-        supabase.from("vaccinations")
-          .select("id,vacina,data_aplicacao,observacao")
-          .eq("gestante_id", uid)
-          .order("data_aplicacao", { ascending: false }),
-        supabase.from("exam_results")
-          .select("id,tipo_exame,data_exame,status,resultado")
-          .eq("gestante_id", uid)
-          .order("data_exame", { ascending: false }),
-      ]);
-      if (mRes.data) {
-        setMedicoes(mRes.data.map((r: any) => ({
-          id: r.id,
-          data: formatBR(new Date(r.data_medicao + "T00:00:00")),
-          parametro: r.parametro,
-          valor: Number(r.valor),
-          semana: r.semana_gestacional ?? 0,
-        })));
-      }
-      if (vRes.data) {
-        setVacinas(vRes.data.map((r: any) => ({
-          id: r.id,
-          vacina: r.vacina,
-          data: formatBR(new Date(r.data_aplicacao + "T00:00:00")),
-          observacao: r.observacao ?? undefined,
-        })));
-      }
-      if (eRes.data) {
-        setExames(eRes.data.map((r: any) => ({
-          id: r.id,
-          tipo_exame: r.tipo_exame,
-          data: formatBR(new Date(r.data_exame + "T00:00:00")),
-          status: r.status,
-          resultado: r.resultado ?? undefined,
-        })));
-      }
-    })();
+    const [mRes, vRes, eRes] = await Promise.all([
+      supabase.from("clinical_measurements")
+        .select("id,parametro,valor,semana_gestacional,data_medicao")
+        .eq("gestante_id", uid)
+        .order("data_medicao", { ascending: true }),
+      supabase.from("vaccinations")
+        .select("id,vacina,data_aplicacao,observacao")
+        .eq("gestante_id", uid)
+        .order("data_aplicacao", { ascending: false }),
+      supabase.from("exam_results")
+        .select("id,tipo_exame,data_exame,status,resultado")
+        .eq("gestante_id", uid)
+        .order("data_exame", { ascending: false }),
+    ]);
+    if (mRes.data) {
+      setMedicoes(mRes.data.map((r: any) => ({
+        id: r.id,
+        data: formatBR(new Date(r.data_medicao + "T00:00:00")),
+        parametro: r.parametro,
+        valor: Number(r.valor),
+        semana: r.semana_gestacional ?? 0,
+      })));
+    }
+    if (vRes.data) {
+      setVacinas(vRes.data.map((r: any) => ({
+        id: r.id,
+        vacina: r.vacina,
+        data: formatBR(new Date(r.data_aplicacao + "T00:00:00")),
+        observacao: r.observacao ?? undefined,
+      })));
+    }
+    if (eRes.data) {
+      setExames(eRes.data.map((r: any) => ({
+        id: r.id,
+        tipo_exame: r.tipo_exame,
+        data: formatBR(new Date(r.data_exame + "T00:00:00")),
+        status: r.status,
+        resultado: r.resultado ?? undefined,
+      })));
+    }
   }, [session?.user?.id]);
+
+  useEffect(() => { carregarDados(); }, [carregarDados]);
 
   // ====== Info da paciente derivada do banco ======
   const dumBR = profile?.dum
