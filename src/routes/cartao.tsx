@@ -411,7 +411,7 @@ function CartaoPage() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-2 py-2 rounded-full text-[10px] font-semibold leading-tight whitespace-nowrap transition-all ${
+            className={`px-1 py-2 rounded-full text-[9px] font-semibold leading-tight whitespace-nowrap transition-all ${
               tab === t.key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
             }`}
           >
