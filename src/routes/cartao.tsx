@@ -1,13 +1,41 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { useScreenContent } from "@/hooks/useScreenContent";
 import { CARTAO_DEFAULT } from "@/components/admin/TelasTab";
+import { useGestanteProfile } from "@/hooks/useGestanteProfile";
+import jsPDF from "jspdf";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area,
 } from "recharts";
+
+/** Paleta baseada no sexo do bebê — usado também no PDF. */
+function paletaPorSexo(sexo: string | null | undefined) {
+  if (sexo === "masculino") {
+    return {
+      primary: "#2563eb",      // azul
+      primaryLight: "#dbeafe",
+      accent: "#0ea5e9",
+      label: "Menino",
+    };
+  }
+  if (sexo === "feminino") {
+    return {
+      primary: "#db2777",      // rosa
+      primaryLight: "#fce7f3",
+      accent: "#f472b6",
+      label: "Menina",
+    };
+  }
+  return {
+    primary: "#7c3aed",        // roxo neutro
+    primaryLight: "#ede9fe",
+    accent: "#a78bfa",
+    label: "A descobrir",
+  };
+}
 
 export const Route = createFileRoute("/cartao")({
   head: () => ({
