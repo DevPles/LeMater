@@ -1915,104 +1915,97 @@ async function gerarPDFCartao(args: {
       { color: [239, 68, 68], values: pamSerie, name: "PAM (mmHg)" },
     ]);
 
-  // Embaixo: DADOS CLINICOS EM GRADE (toda largura)
+  // Embaixo: TABELAS POR TIPO DE DADO CLINICO (grade)
   const gridY = 18 + chartTopH + 6;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(pr, pg, pb);
-  doc.text("DADOS CLINICOS REGISTRADOS", margin, gridY);
+  doc.text("DADOS CLINICOS POR PARAMETRO", margin, gridY);
   doc.setDrawColor(pr, pg, pb);
   doc.setLineWidth(0.5);
   doc.line(margin, gridY + 2, pageW - margin, gridY + 2);
 
-  // Coleta lista plana ordenada
-  const flat = [...medicoes]
-    .sort((a, b) => {
+  // Agrupa por parametro
+  const porParametro = new Map<string, MedicaoReal[]>();
+  medicoes.forEach(m => {
+    if (!porParametro.has(m.parametro)) porParametro.set(m.parametro, []);
+    porParametro.get(m.parametro)!.push(m);
+  });
+  // Ordena cada lista por data desc (mais recente primeiro)
+  porParametro.forEach((arr) => {
+    arr.sort((a, b) => {
       const da = parseBR(a.data); const db = parseBR(b.data);
-      const tCmp = (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
-      if (tCmp !== 0) return tCmp;
-      return a.parametro.localeCompare(b.parametro);
+      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
     });
+  });
+  const parametros = Array.from(porParametro.keys()).sort();
 
-  if (flat.length) {
-    // Grade tabular: colunas = Data | Sem | Parametro | Valor
-    const cols = 4; // 4 colunas duplicadas em duas tabelas lado a lado
-    const tableCols = ["Data", "Sem", "Parametro", "Valor"];
-    const colWeights = [1.4, 0.7, 2.4, 1];
-    const totalWeight = colWeights.reduce((s, w) => s + w, 0);
-    const tableW = (pageW - margin * 2 - 6) / 2; // duas tabelas
-    const colWs = colWeights.map(w => (tableW * w) / totalWeight);
+  if (parametros.length) {
+    // Grade 4 colunas, distribuida pela largura
+    const cols = 4;
+    const gap = 4;
+    const tBoxW = (pageW - margin * 2 - gap * (cols - 1)) / cols;
+    const tBoxStartY = gridY + 6;
+    const tBoxMaxH = pageH - tBoxStartY - 12;
+    const headerH = 6;
+    const rowH = 4;
+    const titleH = 7;
+    const maxRows = Math.floor((tBoxMaxH - titleH - headerH) / rowH);
 
-    const rowH = 4.6;
-    const headerH = 5.5;
-    const tableMaxY = pageH - 14;
-    const tableY = gridY + 6;
-    const availH = tableMaxY - tableY - headerH;
-    const rowsPerTable = Math.floor(availH / rowH);
-    const totalCapacity = rowsPerTable * 2;
-    const items = flat.slice(0, totalCapacity);
+    parametros.forEach((param, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      // Limite de 2 linhas para nao estourar
+      if (row >= 2) return;
+      const tx = margin + col * (tBoxW + gap);
+      const itensP = porParametro.get(param)!.slice(0, maxRows);
+      const tableH = titleH + headerH + itensP.length * rowH;
+      // Max 2 linhas: usa metade da altura disponivel
+      const ty = tBoxStartY + row * (tBoxMaxH / 2 + 2);
 
-    const drawTable = (tx: number, rows: typeof items) => {
-      // Header
-      doc.setFillColor(pr, pg, pb);
-      doc.rect(tx, tableY, tableW, headerH, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7);
-      let cx = tx + 2;
-      tableCols.forEach((c, ci) => {
-        doc.text(c, cx, tableY + 3.8);
-        cx += colWs[ci];
-      });
-      // Rows
-      rows.forEach((m, ri) => {
-        const ry2 = tableY + headerH + ri * rowH;
-        if (ri % 2 === 0) {
-          doc.setFillColor(248, 248, 252);
-          doc.rect(tx, ry2, tableW, rowH, "F");
-        }
-        doc.setDrawColor(235, 235, 240);
-        doc.setLineWidth(0.1);
-        doc.line(tx, ry2 + rowH, tx + tableW, ry2 + rowH);
-        let xx = tx + 2;
-        const cells = [m.data, `${m.semana}`, m.parametro, String(m.valor)];
-        cells.forEach((cell, ci) => {
-          if (ci === 3) {
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(...dark);
-          } else if (ci === 0 || ci === 1) {
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(pr, pg, pb);
-          } else {
-            doc.setFont("helvetica", "normal");
-            doc.setTextColor(...muted);
-          }
-          doc.setFontSize(6.8);
-          const truncated = doc.splitTextToSize(cell, colWs[ci] - 2)[0] ?? "";
-          doc.text(truncated, xx, ry2 + 3.2);
-          xx += colWs[ci];
-        });
-      });
-      // Borda externa
+      // Caixa
+      doc.setFillColor(255, 255, 255);
       doc.setDrawColor(225, 225, 230);
       doc.setLineWidth(0.3);
-      doc.rect(tx, tableY, tableW, headerH + rows.length * rowH, "S");
-    };
-
-    void cols;
-    drawTable(margin, items.slice(0, rowsPerTable));
-    drawTable(margin + tableW + 6, items.slice(rowsPerTable, rowsPerTable * 2));
-
-    // Aviso se cortou
-    if (flat.length > totalCapacity) {
-      doc.setFont("helvetica", "italic");
+      doc.roundedRect(tx, ty, tBoxW, tableH, 1.5, 1.5, "FD");
+      // Titulo
+      doc.setFillColor(pr, pg, pb);
+      doc.rect(tx, ty, tBoxW, titleH, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      const titleTrunc = doc.splitTextToSize(param.toUpperCase(), tBoxW - 4)[0] ?? param;
+      doc.text(titleTrunc, tx + 2, ty + 4.8);
+      // Header
+      doc.setFillColor(245, 245, 250);
+      doc.rect(tx, ty + titleH, tBoxW, headerH, "F");
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(6.5);
       doc.setTextColor(...muted);
-      doc.text(
-        `+ ${flat.length - totalCapacity} registros adicionais disponiveis no cartao digital online.`,
-        pageW / 2, pageH - 13, { align: "center" },
-      );
-    }
+      const c1W = tBoxW * 0.42;
+      const c2W = tBoxW * 0.22;
+      doc.text("DATA", tx + 2, ty + titleH + 4);
+      doc.text("SEM", tx + 2 + c1W, ty + titleH + 4);
+      doc.text("VALOR", tx + 2 + c1W + c2W, ty + titleH + 4);
+      // Rows
+      itensP.forEach((m, ri) => {
+        const ry3 = ty + titleH + headerH + ri * rowH;
+        if (ri % 2 === 0) {
+          doc.setFillColor(252, 252, 254);
+          doc.rect(tx, ry3, tBoxW, rowH, "F");
+        }
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6.5);
+        doc.setTextColor(...dark);
+        doc.text(m.data, tx + 2, ry3 + 2.8);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(pr, pg, pb);
+        doc.text(`${m.semana}`, tx + 2 + c1W, ry3 + 2.8);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...dark);
+        doc.text(String(m.valor), tx + 2 + c1W + c2W, ry3 + 2.8);
+      });
+    });
   } else {
     doc.setFillColor(248, 248, 252);
     doc.roundedRect(margin, gridY + 6, pageW - margin * 2, 14, 2, 2, "F");
@@ -2020,6 +2013,136 @@ async function gerarPDFCartao(args: {
     doc.setFontSize(9);
     doc.setTextColor(...muted);
     doc.text("Nenhum dado clinico registrado.", pageW / 2, gridY + 14, { align: "center" });
+  }
+
+  // =============================================================
+  // PAGINA 5 - MATRIZ CRUZADA (datas x parametros)
+  // =============================================================
+  if (medicoes.length) {
+    doc.addPage("a4", "landscape");
+    drawBaseFolderPage();
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(pr, pg, pb);
+    doc.text("MATRIZ CRUZADA - EVOLUCAO POR CONSULTA", margin, 13);
+    doc.setDrawColor(pr, pg, pb);
+    doc.setLineWidth(0.5);
+    doc.line(margin, 15, pageW - margin, 15);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...muted);
+    doc.text("Linhas = data da consulta  |  Colunas = parametro clinico  |  Ordenacao mais recente primeiro", margin, 19);
+
+    // Constroi matriz: datas x parametros
+    const datasSet = new Set<string>();
+    medicoes.forEach(m => datasSet.add(m.data));
+    const datas = Array.from(datasSet).sort((a, b) => {
+      const da = parseBR(a); const db = parseBR(b);
+      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+    });
+    const matrix = new Map<string, Map<string, string | number>>();
+    datas.forEach(d => matrix.set(d, new Map()));
+    medicoes.forEach(m => matrix.get(m.data)!.set(m.parametro, m.valor));
+
+    // Mapa data -> semana
+    const semanaPorData = new Map<string, number>();
+    medicoes.forEach(m => semanaPorData.set(m.data, m.semana));
+
+    // Layout matriz
+    const matY = 23;
+    const matMaxY = pageH - 14;
+    const fixedColW = 22; // data
+    const semColW = 14;
+    const restW = pageW - margin * 2 - fixedColW - semColW;
+    const dataColW = restW / parametros.length;
+    const matRowH = 6.5;
+    const matHeaderH = 14;
+
+    // Header
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(margin, matY, pageW - margin * 2, matHeaderH, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.text("DATA", margin + 2, matY + 8.5);
+    doc.text("SEM", margin + fixedColW + 2, matY + 8.5);
+    doc.setFontSize(6.5);
+    parametros.forEach((p, i) => {
+      const cx = margin + fixedColW + semColW + i * dataColW;
+      // header em duas linhas se necessario
+      const lines = doc.splitTextToSize(p, dataColW - 2);
+      const lineH = 3;
+      const startY = matY + 7 - ((lines.length - 1) * lineH) / 2;
+      lines.slice(0, 2).forEach((ln: string, li: number) => {
+        doc.text(ln, cx + dataColW / 2, startY + li * lineH, { align: "center" });
+      });
+    });
+
+    // Rows
+    const maxDatas = Math.floor((matMaxY - matY - matHeaderH) / matRowH);
+    const datasShow = datas.slice(0, maxDatas);
+    datasShow.forEach((d, ri) => {
+      const ry4 = matY + matHeaderH + ri * matRowH;
+      if (ri % 2 === 0) {
+        doc.setFillColor(248, 248, 252);
+        doc.rect(margin, ry4, pageW - margin * 2, matRowH, "F");
+      }
+      doc.setDrawColor(225, 225, 230);
+      doc.setLineWidth(0.1);
+      doc.line(margin, ry4 + matRowH, pageW - margin, ry4 + matRowH);
+      // Data
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(pr, pg, pb);
+      doc.text(d, margin + 2, ry4 + 4.3);
+      // Semana
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...muted);
+      doc.text(`${semanaPorData.get(d) ?? "-"}`, margin + fixedColW + 2, ry4 + 4.3);
+      // Valores
+      const linhaMatrix = matrix.get(d)!;
+      parametros.forEach((p, i) => {
+        const cx = margin + fixedColW + semColW + i * dataColW;
+        const v = linhaMatrix.get(p);
+        if (v !== undefined && v !== null) {
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(7);
+          doc.setTextColor(...dark);
+          doc.text(String(v), cx + dataColW / 2, ry4 + 4.3, { align: "center" });
+        } else {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(6);
+          doc.setTextColor(220, 220, 225);
+          doc.text("-", cx + dataColW / 2, ry4 + 4.3, { align: "center" });
+        }
+      });
+    });
+
+    // Borda
+    doc.setDrawColor(pr, pg, pb);
+    doc.setLineWidth(0.4);
+    doc.rect(margin, matY, pageW - margin * 2, matHeaderH + datasShow.length * matRowH, "S");
+    // Linhas verticais
+    doc.setDrawColor(225, 225, 230);
+    doc.setLineWidth(0.15);
+    const totalRowsH = matHeaderH + datasShow.length * matRowH;
+    doc.line(margin + fixedColW, matY, margin + fixedColW, matY + totalRowsH);
+    doc.line(margin + fixedColW + semColW, matY, margin + fixedColW + semColW, matY + totalRowsH);
+    parametros.forEach((_p, i) => {
+      const cx = margin + fixedColW + semColW + (i + 1) * dataColW;
+      doc.line(cx, matY, cx, matY + totalRowsH);
+    });
+
+    if (datas.length > maxDatas) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(6.5);
+      doc.setTextColor(...muted);
+      doc.text(
+        `+ ${datas.length - maxDatas} consultas anteriores disponiveis no cartao digital online.`,
+        pageW / 2, pageH - 13, { align: "center" },
+      );
+    }
   }
 
   // ============ Footer em todas as páginas ============
