@@ -115,7 +115,7 @@ function WelcomeScreen() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => openModal("register")}
-              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm px-6 py-3 rounded-full backdrop-blur-sm transition-colors flex-1"
+              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm px-6 py-3 rounded-full backdrop-blur-sm transition-colors w-full"
             >
               Cadastrar
             </motion.button>
