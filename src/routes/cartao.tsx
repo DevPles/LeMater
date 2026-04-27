@@ -1,14 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { useScreenContent } from "@/hooks/useScreenContent";
 import { CARTAO_DEFAULT } from "@/components/admin/TelasTab";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
+import { supabase } from "@/integrations/supabase/client";
 import jsPDF from "jspdf";
+import QRCode from "qrcode";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  AreaChart, Area,
+  AreaChart, Area, ComposedChart, ReferenceArea, Legend,
 } from "recharts";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
@@ -21,7 +23,7 @@ import { ptBR } from "date-fns/locale";
 function paletaPorSexo(sexo: string | null | undefined) {
   if (sexo === "masculino") {
     return {
-      primary: "#2563eb",      // azul
+      primary: "#1d4ed8",
       primaryLight: "#dbeafe",
       accent: "#0ea5e9",
       label: "Menino",
@@ -29,14 +31,14 @@ function paletaPorSexo(sexo: string | null | undefined) {
   }
   if (sexo === "feminino") {
     return {
-      primary: "#db2777",      // rosa
+      primary: "#be185d",
       primaryLight: "#fce7f3",
       accent: "#f472b6",
       label: "Menina",
     };
   }
   return {
-    primary: "#7c3aed",        // roxo neutro
+    primary: "#6d28d9",
     primaryLight: "#ede9fe",
     accent: "#a78bfa",
     label: "A descobrir",
@@ -54,17 +56,7 @@ export const Route = createFileRoute("/cartao")({
   component: CartaoPage,
 });
 
-// Defaults — sobrescritos via /admin → Telas do App → Cartão da Gestante
-const patientInfoDefault = {
-  name: CARTAO_DEFAULT.patientName,
-  age: CARTAO_DEFAULT.patientAge,
-  bloodType: CARTAO_DEFAULT.bloodType,
-  dum: CARTAO_DEFAULT.dum,
-  dpp: CARTAO_DEFAULT.dpp,
-  weeks: CARTAO_DEFAULT.weeks,
-};
-
-// Helpers para data/semana
+// ============= Helpers ===================
 function parseBR(dateStr: string): Date | null {
   const m = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   if (!m) return null;
@@ -85,226 +77,210 @@ function semanaGestacional(dataConsultaBR: string, dumBR: string): number {
   if (!consulta || !dum) return 0;
   const diffMs = consulta.getTime() - dum.getTime();
   const semanas = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7));
-  return Math.max(1, Math.min(42, semanas));
+  return Math.max(0, Math.min(42, semanas));
 }
 
+function calcularDPP(dumBR: string): string {
+  const dum = parseBR(dumBR);
+  if (!dum) return "—";
+  // Regra de Naegele: DUM + 280 dias
+  const dpp = new Date(dum);
+  dpp.setDate(dpp.getDate() + 280);
+  return formatBR(dpp);
+}
 
-// --- Resumo data ---
+function idade(dataNascISO: string | null | undefined): number | null {
+  if (!dataNascISO) return null;
+  const d = new Date(dataNascISO);
+  if (isNaN(d.getTime())) return null;
+  const hoje = new Date();
+  let anos = hoje.getFullYear() - d.getFullYear();
+  const m = hoje.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < d.getDate())) anos--;
+  return anos;
+}
+
+function classificarIMC(imc: number): { label: string; color: string } {
+  if (imc < 18.5) return { label: "Baixo peso", color: "#3b82f6" };
+  if (imc < 25) return { label: "Peso adequado", color: "#22c55e" };
+  if (imc < 30) return { label: "Sobrepeso", color: "#f59e0b" };
+  return { label: "Obesidade", color: "#ef4444" };
+}
+
 const vitalColors = ["bg-coral-light", "bg-mint-light", "bg-warm", "bg-blush"];
 
-// --- Timeline entries (shared state) ---
-export interface TimelineEntry {
-  id: number;
-  week: number;
-  date: string;
-  event: string;
-  notes: string;
-  status: "done" | "upcoming";
-  type: "consulta" | "vacina" | "exame";
-  anexoUrl?: string;
-  anexoNome?: string;
+// ============= Tipos de dados ===================
+interface MedicaoReal {
+  id: string;
+  data: string; // BR
+  parametro: string;
+  valor: number;
+  semana: number;
 }
 
-const timelineIniciais: TimelineEntry[] = [
-  { id: 1, week: 24, date: "10/04/2026", event: "Consulta pré-natal", notes: "Peso e pressão normais. Ultrassom sem alterações.", status: "done", type: "consulta" },
-  { id: 2, week: 22, date: "27/03/2026", event: "Ultrassom morfológico", notes: "Desenvolvimento normal. Peso fetal 500g.", status: "done", type: "exame" },
-  { id: 3, week: 20, date: "13/03/2026", event: "Consulta pré-natal", notes: "Hemograma e glicemia em jejum solicitados.", status: "done", type: "consulta" },
-  { id: 4, week: 20, date: "13/03/2026", event: "Vacina dTpa", notes: "Vacina dTpa aplicada na UBS Central.", status: "done", type: "vacina" },
-  { id: 5, week: 16, date: "13/02/2026", event: "Consulta pré-natal", notes: "Início da suplementação de ferro.", status: "done", type: "consulta" },
-  { id: 6, week: 12, date: "16/01/2026", event: "1º Ultrassom", notes: "Batimento cardíaco confirmado. Translucência nucal normal.", status: "done", type: "exame" },
-  { id: 7, week: 12, date: "16/01/2026", event: "Vacina Hepatite B (1ª dose)", notes: "Aplicada na UBS Central.", status: "done", type: "vacina" },
-  { id: 8, week: 28, date: "08/05/2026", event: "Próxima consulta", notes: "Teste de tolerância à glicose agendado.", status: "upcoming", type: "consulta" },
-  { id: 9, week: 28, date: "08/05/2026", event: "Vacina Influenza", notes: "Vacina contra gripe recomendada.", status: "upcoming", type: "vacina" },
-  { id: 10, week: 30, date: "22/05/2026", event: "Ultrassom obstétrico", notes: "Verificar crescimento fetal.", status: "upcoming", type: "exame" },
-];
-
-// --- Lançamentos data ---
-interface Lancamento {
-  id: number;
-  semana: number;
-  data: string;
-  peso: string;
-  pressaoSis: string;
-  pressaoDia: string;
-  alturaUterina: string;
-  bcf: string;
-  edema: string;
-  observacoes: string;
+interface VacinaReal {
+  id: string;
+  vacina: string;
+  data: string; // BR
+  observacao?: string;
 }
 
-const lancamentosIniciais: Lancamento[] = [
-  { id: 1, semana: 12, data: "16/01/2026", peso: "63,0", pressaoSis: "110", pressaoDia: "70", alturaUterina: "12", bcf: "150", edema: "Ausente", observacoes: "Primeira consulta. Translucência nucal normal." },
-  { id: 2, semana: 16, data: "13/02/2026", peso: "64,2", pressaoSis: "120", pressaoDia: "80", alturaUterina: "16", bcf: "148", edema: "Ausente", observacoes: "Suplementação de ferro iniciada." },
-  { id: 3, semana: 20, data: "13/03/2026", peso: "65,8", pressaoSis: "110", pressaoDia: "70", alturaUterina: "20", bcf: "145", edema: "Ausente", observacoes: "Hemograma solicitado." },
-  { id: 4, semana: 22, data: "27/03/2026", peso: "67,0", pressaoSis: "115", pressaoDia: "75", alturaUterina: "22", bcf: "140", edema: "Ausente", observacoes: "Ultrassom morfológico normal." },
-  { id: 5, semana: 24, data: "10/04/2026", peso: "68,5", pressaoSis: "110", pressaoDia: "70", alturaUterina: "24", bcf: "142", edema: "Ausente", observacoes: "Consulta de rotina." },
-];
-
-// --- Vacinas/Exames data ---
-export interface VacinaExame {
-  id: number;
-  tipo: "vacina" | "exame";
-  nome: string;
-  data: string;
-  semana: number;
-  status: "realizado" | "pendente" | "agendado";
+interface ExameReal {
+  id: string;
+  tipo_exame: string;
+  data: string; // BR
+  status: string;
   resultado?: string;
-  observacoes?: string;
-  anexoUrl?: string;
-  anexoNome?: string;
 }
-
-const vacinasExamesIniciais: VacinaExame[] = [
-  { id: 1, tipo: "vacina", nome: "Hepatite B (1ª dose)", data: "16/01/2026", semana: 12, status: "realizado", observacoes: "Aplicada na UBS Central." },
-  { id: 2, tipo: "vacina", nome: "dTpa", data: "13/03/2026", semana: 20, status: "realizado", observacoes: "Aplicada na UBS Central." },
-  { id: 3, tipo: "exame", nome: "Ultrassom morfológico", data: "27/03/2026", semana: 22, status: "realizado", resultado: "Normal. Peso fetal 500g.", anexoNome: "ultrassom_22sem.pdf" },
-  { id: 4, tipo: "exame", nome: "Hemograma completo", data: "20/03/2026", semana: 20, status: "realizado", resultado: "Dentro dos parâmetros normais.", anexoNome: "hemograma.pdf" },
-  { id: 5, tipo: "vacina", nome: "Influenza", data: "08/05/2026", semana: 28, status: "agendado", observacoes: "Vacina contra gripe recomendada." },
-  { id: 6, tipo: "exame", nome: "Teste de tolerância à glicose", data: "08/05/2026", semana: 28, status: "pendente", observacoes: "Deve ser realizado até a semana 28." },
-  { id: 7, tipo: "exame", nome: "Ultrassom obstétrico", data: "22/05/2026", semana: 30, status: "agendado", observacoes: "Verificar crescimento fetal." },
-];
-
-// --- Gráficos data ---
-const pesoData = [
-  { semana: 8, peso: 61 },
-  { semana: 12, peso: 63 },
-  { semana: 16, peso: 64.2 },
-  { semana: 20, peso: 65.8 },
-  { semana: 24, peso: 68.5 },
-];
-
-const pressaoData = [
-  { semana: 8, sistolica: 110, diastolica: 70 },
-  { semana: 12, sistolica: 110, diastolica: 70 },
-  { semana: 16, sistolica: 120, diastolica: 80 },
-  { semana: 20, sistolica: 110, diastolica: 70 },
-  { semana: 24, sistolica: 110, diastolica: 70 },
-];
-
-const alturaUterinaData = [
-  { semana: 12, altura: 12 },
-  { semana: 16, altura: 16 },
-  { semana: 20, altura: 20 },
-  { semana: 22, altura: 22 },
-  { semana: 24, altura: 24 },
-];
-
-const bcfData = [
-  { semana: 12, bcf: 150 },
-  { semana: 16, bcf: 148 },
-  { semana: 20, bcf: 145 },
-  { semana: 22, bcf: 140 },
-  { semana: 24, bcf: 142 },
-];
 
 type Tab = "resumo" | "lancamentos" | "vacinas" | "graficos";
+type Palette = ReturnType<typeof paletaPorSexo>;
+type Periodo = "todos" | "1tri" | "2tri" | "3tri" | "custom";
 
 function CartaoPage() {
   const [tab, setTab] = useState<Tab>("resumo");
-  const [lancamentos, setLancamentos] = useState<Lancamento[]>(lancamentosIniciais);
-  const [showForm, setShowForm] = useState(false);
-  const [timelineEntries, setTimelineEntries] = useState<TimelineEntry[]>(timelineIniciais);
-  const [vacinasExames, setVacinasExames] = useState<VacinaExame[]>(vacinasExamesIniciais);
-
   const { content: cartaoContent } = useScreenContent("cartao", CARTAO_DEFAULT);
-  const { profile } = useGestanteProfile();
+  const { profile, session } = useGestanteProfile();
   const bebeSexo = profile?.bebe_sexo ?? null;
   const palette = paletaPorSexo(bebeSexo);
+
+  // ====== Dados clínicos REAIS do banco ======
+  const [medicoes, setMedicoes] = useState<MedicaoReal[]>([]);
+  const [vacinas, setVacinas] = useState<VacinaReal[]>([]);
+  const [exames, setExames] = useState<ExameReal[]>([]);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    const uid = session.user.id;
+    (async () => {
+      const [mRes, vRes, eRes] = await Promise.all([
+        supabase.from("clinical_measurements")
+          .select("id,parametro,valor,semana_gestacional,data_medicao")
+          .eq("gestante_id", uid)
+          .order("data_medicao", { ascending: true }),
+        supabase.from("vaccinations")
+          .select("id,vacina,data_aplicacao,observacao")
+          .eq("gestante_id", uid)
+          .order("data_aplicacao", { ascending: false }),
+        supabase.from("exam_results")
+          .select("id,tipo_exame,data_exame,status,resultado")
+          .eq("gestante_id", uid)
+          .order("data_exame", { ascending: false }),
+      ]);
+      if (mRes.data) {
+        setMedicoes(mRes.data.map((r: any) => ({
+          id: r.id,
+          data: formatBR(new Date(r.data_medicao + "T00:00:00")),
+          parametro: r.parametro,
+          valor: Number(r.valor),
+          semana: r.semana_gestacional ?? 0,
+        })));
+      }
+      if (vRes.data) {
+        setVacinas(vRes.data.map((r: any) => ({
+          id: r.id,
+          vacina: r.vacina,
+          data: formatBR(new Date(r.data_aplicacao + "T00:00:00")),
+          observacao: r.observacao ?? undefined,
+        })));
+      }
+      if (eRes.data) {
+        setExames(eRes.data.map((r: any) => ({
+          id: r.id,
+          tipo_exame: r.tipo_exame,
+          data: formatBR(new Date(r.data_exame + "T00:00:00")),
+          status: r.status,
+          resultado: r.resultado ?? undefined,
+        })));
+      }
+    })();
+  }, [session?.user?.id]);
+
+  // ====== Info da paciente derivada do banco ======
+  const dumBR = profile?.dum
+    ? formatBR(new Date(profile.dum + "T00:00:00"))
+    : cartaoContent.dum;
+  const dppBR = profile?.dum ? calcularDPP(dumBR) : cartaoContent.dpp;
+  const hojeBR = formatBR(new Date());
+  const semanasAtual = semanaGestacional(hojeBR, dumBR);
+  const idadePaciente = idade(profile?.data_nascimento) ?? cartaoContent.patientAge;
+
   const patientInfo = {
-    name: cartaoContent.patientName,
-    age: cartaoContent.patientAge,
+    name: profile?.nome || cartaoContent.patientName,
+    age: idadePaciente,
     bloodType: cartaoContent.bloodType,
-    dum: cartaoContent.dum,
-    dpp: cartaoContent.dpp,
-    weeks: cartaoContent.weeks,
+    dum: dumBR,
+    dpp: dppBR,
+    weeks: String(semanasAtual),
   };
+
+  // ====== Séries derivadas das medições reais ======
+  const series = useMemo(() => {
+    const peso = medicoes.filter(m => m.parametro.toLowerCase() === "peso")
+      .map(m => ({ semana: m.semana, peso: m.valor, data: m.data }));
+    const sis = medicoes.filter(m => m.parametro.toLowerCase().includes("sist"))
+      .map(m => ({ semana: m.semana, valor: m.valor, data: m.data }));
+    const dia = medicoes.filter(m => m.parametro.toLowerCase().includes("diast"))
+      .map(m => ({ semana: m.semana, valor: m.valor, data: m.data }));
+    const au = medicoes.filter(m => m.parametro.toLowerCase().includes("altura") || m.parametro.toLowerCase() === "au")
+      .map(m => ({ semana: m.semana, altura: m.valor, data: m.data }));
+    const bcf = medicoes.filter(m => m.parametro.toLowerCase().includes("bcf") || m.parametro.toLowerCase().includes("batim"))
+      .map(m => ({ semana: m.semana, bcf: m.valor, data: m.data }));
+
+    // Pressao combinada
+    const semanasSet = new Set([...sis, ...dia].map(p => p.semana));
+    const pressao = Array.from(semanasSet).sort((a, b) => a - b).map(s => ({
+      semana: s,
+      sistolica: sis.find(p => p.semana === s)?.valor,
+      diastolica: dia.find(p => p.semana === s)?.valor,
+    }));
+
+    return { peso, pressao, au, bcf };
+  }, [medicoes]);
+
+  // ====== IMC e ganho de peso ======
+  const altura = medicoes.find(m => m.parametro.toLowerCase() === "altura_pessoa" || m.parametro.toLowerCase() === "estatura")?.valor;
+  const pesoInicial = series.peso[0]?.peso;
+  const pesoAtual = series.peso[series.peso.length - 1]?.peso;
+  const ganhoPeso = (pesoInicial && pesoAtual) ? pesoAtual - pesoInicial : null;
+  const imc = (altura && pesoInicial) ? pesoInicial / (altura * altura) : null;
+  const imcInfo = imc ? classificarIMC(imc) : null;
+
   const vitals = (cartaoContent.vitals ?? []).map((v, i) => ({
     ...v,
     color: vitalColors[i % vitalColors.length],
   }));
 
-  const hojeBR = formatBR(new Date());
-  const semanaHoje = String(semanaGestacional(hojeBR, patientInfo.dum));
+  // ====== URL pública do cartão (para QR) ======
+  const cartaoUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/cartao?u=${session?.user?.id ?? ""}`
+    : "";
 
-  const [form, setForm] = useState({
-    semana: semanaHoje, data: hojeBR, peso: "", pressaoSis: "", pressaoDia: "",
-    alturaUterina: "", bcf: "", edema: "Ausente", observacoes: "",
-  });
-
-  const handleAddLancamento = () => {
-    if (!form.semana || !form.data) return;
-    const novo: Lancamento = {
-      id: lancamentos.length + 1,
-      semana: Number(form.semana),
-      data: form.data,
-      peso: form.peso,
-      pressaoSis: form.pressaoSis,
-      pressaoDia: form.pressaoDia,
-      alturaUterina: form.alturaUterina,
-      bcf: form.bcf,
-      edema: form.edema,
-      observacoes: form.observacoes,
-    };
-    setLancamentos([novo, ...lancamentos]);
-    // Add to timeline
-    setTimelineEntries(prev => [{
-      id: Date.now(),
-      week: Number(form.semana),
-      date: form.data,
-      event: "Consulta pré-natal",
-      notes: form.observacoes || `Peso: ${form.peso}kg, PA: ${form.pressaoSis}/${form.pressaoDia}, BCF: ${form.bcf}bpm`,
-      status: "done",
-      type: "consulta",
-    }, ...prev]);
-    setForm({ semana: semanaHoje, data: hojeBR, peso: "", pressaoSis: "", pressaoDia: "", alturaUterina: "", bcf: "", edema: "Ausente", observacoes: "" });
-    setShowForm(false);
-  };
-
-  const handleAddVacinaExame = (item: VacinaExame) => {
-    setVacinasExames(prev => [item, ...prev]);
-    // Add to timeline
-    setTimelineEntries(prev => [{
-      id: Date.now(),
-      week: item.semana,
-      date: item.data,
-      event: item.nome,
-      notes: item.observacoes || item.resultado || "",
-      status: item.status === "realizado" ? "done" : "upcoming",
-      type: item.tipo,
-      anexoUrl: item.anexoUrl,
-      anexoNome: item.anexoNome,
-    }, ...prev]);
-  };
-
-  const exportarPDF = () => {
-    // Mescla dados reais do perfil logado com defaults de tela
-    const realInfo = {
-      name: profile?.nome || patientInfo.name,
-      age: patientInfo.age,
-      bloodType: patientInfo.bloodType,
-      dum: profile?.dum
-        ? formatBR(new Date(profile.dum + "T00:00:00"))
-        : patientInfo.dum,
-      dpp: patientInfo.dpp,
-      weeks: profile?.dum
-        ? String(semanaGestacional(hojeBR, formatBR(new Date(profile.dum + "T00:00:00"))))
-        : patientInfo.weeks,
-      email: profile?.email ?? null,
-      telefone: profile?.telefone ?? null,
-    };
-    gerarPDFCartao({
-      patientInfo: realInfo,
-      vitals,
-      lancamentos,
-      vacinasExames,
-      timelineEntries,
-      palette,
-      charts: {
-        peso: pesoData,
-        pressao: pressaoData,
-        altura: alturaUterinaData,
-        bcf: bcfData,
+  const exportarPDF = async () => {
+    await gerarPDFCartao({
+      patientInfo: {
+        ...patientInfo,
+        email: profile?.email ?? null,
+        telefone: profile?.telefone ?? null,
+        cidade: profile?.cidade ?? null,
+        bairro: profile?.bairro ?? null,
+        unidadeSaude: profile?.unidade_saude ?? null,
+        gestacoes: profile?.numero_gestacoes ?? null,
+        partos: profile?.numero_partos ?? null,
+        abortos: profile?.numero_abortos ?? null,
+        fotoUrl: profile?.foto_url ?? null,
       },
+      vitals,
+      medicoes,
+      vacinas,
+      exames,
+      series,
+      ganhoPeso,
+      imc,
+      imcInfo,
+      altura,
+      palette,
+      cartaoUrl,
     });
   };
 
@@ -315,8 +291,6 @@ function CartaoPage() {
     { key: "graficos", label: "Gráficos" },
   ];
 
-  const inputClass = "w-full h-9 text-sm rounded-xl border border-border bg-background px-3 py-1.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30";
-
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4">
@@ -324,8 +298,8 @@ function CartaoPage() {
           <h1 className="text-2xl font-bold font-display text-foreground text-center">Cartão Digital da Gestante</h1>
           <button
             onClick={exportarPDF}
-            className="absolute right-0 top-9 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border-2 text-primary-foreground bg-primary transition-all hover:opacity-90"
-            style={{ backgroundColor: palette.primary, borderColor: palette.primary, color: "#fff" }}
+            className="absolute right-0 top-9 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all hover:opacity-90"
+            style={{ backgroundColor: palette.primary, color: "#fff" }}
           >
             Exportar PDF
           </button>
@@ -333,16 +307,13 @@ function CartaoPage() {
         <p className="text-sm text-muted-foreground text-center">Evolução da gestação</p>
       </motion.div>
 
-      {/* Tabs */}
       <div className="grid grid-cols-4 gap-2 mb-4">
         {tabs.map(t => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`px-2 py-2 rounded-full text-[10px] font-semibold leading-tight whitespace-nowrap transition-all ${
-              tab === t.key
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground"
+              tab === t.key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
             }`}
           >
             {t.label}
@@ -351,80 +322,92 @@ function CartaoPage() {
       </div>
 
       {/* Patient Card */}
-      <motion.div
-        className="mb-4"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <motion.div className="mb-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <LiquidCard className="p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-11 h-11 rounded-full bg-coral-light flex items-center justify-center">
-            <span className="text-sm font-bold text-primary">MS</span>
+          <div className="flex items-center gap-3 mb-3">
+            {profile?.foto_url ? (
+              <img src={profile.foto_url} alt={patientInfo.name} className="w-12 h-12 rounded-full object-cover border-2" style={{ borderColor: palette.primary }} />
+            ) : (
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ backgroundColor: palette.primary }}>
+                {patientInfo.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+              </div>
+            )}
+            <div>
+              <h2 className="font-semibold text-foreground text-sm">{patientInfo.name}</h2>
+              <p className="text-xs text-muted-foreground">{patientInfo.age} anos {profile?.unidade_saude ? `• ${profile.unidade_saude}` : ""}</p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-semibold text-foreground text-sm">{patientInfo.name}</h2>
-            <p className="text-xs text-muted-foreground">{patientInfo.age} anos • Tipo sanguíneo: {patientInfo.bloodType}</p>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-muted rounded-xl px-2 py-2 text-center">
+              <p className="text-[10px] text-muted-foreground">Semana</p>
+              <p className="font-bold text-foreground">{patientInfo.weeks}ª</p>
+            </div>
+            <div className="bg-muted rounded-xl px-2 py-2 text-center">
+              <p className="text-[10px] text-muted-foreground">DUM</p>
+              <p className="font-bold text-foreground text-xs">{patientInfo.dum}</p>
+            </div>
+            <div className="bg-muted rounded-xl px-2 py-2 text-center">
+              <p className="text-[10px] text-muted-foreground">DPP</p>
+              <p className="font-bold text-foreground text-xs">{patientInfo.dpp}</p>
+            </div>
           </div>
-        </div>
-        <div className="flex gap-3">
-          <div className="bg-muted rounded-xl px-3 py-2 flex-1 text-center">
-            <p className="text-[10px] text-muted-foreground">Semana</p>
-            <p className="font-bold text-foreground">{patientInfo.weeks}</p>
-          </div>
-          <div className="bg-muted rounded-xl px-3 py-2 flex-1 text-center">
-            <p className="text-[10px] text-muted-foreground">DPP</p>
-            <p className="font-bold text-foreground text-sm">{patientInfo.dpp}</p>
-          </div>
-        </div>
+          {imcInfo && (
+            <div className="mt-3 flex items-center justify-between rounded-xl px-3 py-2" style={{ backgroundColor: palette.primaryLight }}>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-semibold">IMC pré-gestacional</p>
+                <p className="text-sm font-bold" style={{ color: palette.primary }}>{imc!.toFixed(1)} — {imcInfo.label}</p>
+              </div>
+              {ganhoPeso !== null && (
+                <div className="text-right">
+                  <p className="text-[10px] text-muted-foreground uppercase font-semibold">Ganho</p>
+                  <p className="text-sm font-bold" style={{ color: palette.primary }}>
+                    {ganhoPeso > 0 ? "+" : ""}{ganhoPeso.toFixed(1)} kg
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </LiquidCard>
       </motion.div>
 
-      {tab === "resumo" && <ResumoTab timelineEntries={timelineEntries} vitals={vitals} />}
-      {tab === "lancamentos" && (
-        <LancamentosTab
-          lancamentos={lancamentos}
-          showForm={showForm}
-          setShowForm={setShowForm}
-          form={form}
-          setForm={setForm}
-          onAdd={handleAddLancamento}
-          inputClass={inputClass}
-          dum={patientInfo.dum}
-        />
-      )}
-      {tab === "vacinas" && (
-        <VacinasExamesTab
-          items={vacinasExames}
-          onAdd={handleAddVacinaExame}
-          inputClass={inputClass}
-        />
-      )}
-      {tab === "graficos" && <GraficosTab palette={palette} dum={patientInfo.dum} />}
+      {tab === "resumo" && <ResumoTab medicoes={medicoes} vacinas={vacinas} exames={exames} vitals={vitals} />}
+      {tab === "lancamentos" && <LancamentosTab medicoes={medicoes} />}
+      {tab === "vacinas" && <VacinasExamesTab vacinas={vacinas} exames={exames} />}
+      {tab === "graficos" && <GraficosTab palette={palette} dum={patientInfo.dum} series={series} />}
     </div>
   );
 }
 
 /* ========== RESUMO TAB ========== */
-function ResumoTab({ timelineEntries, vitals }: { timelineEntries: TimelineEntry[]; vitals: { label: string; value: string; change: string; color: string }[] }) {
-  const sorted = [...timelineEntries].sort((a, b) => b.week - a.week);
-
-  const typeColors: Record<string, string> = {
-    consulta: "bg-border",
-    vacina: "bg-green-400",
-    exame: "bg-blue-400",
-  };
+function ResumoTab({ medicoes, vacinas, exames, vitals }: {
+  medicoes: MedicaoReal[];
+  vacinas: VacinaReal[];
+  exames: ExameReal[];
+  vitals: { label: string; value: string; change: string; color: string }[];
+}) {
+  // Linha do tempo unificada
+  type Item = { id: string; data: string; titulo: string; tipo: "consulta" | "vacina" | "exame"; semana?: number; nota?: string };
+  const itens: Item[] = [
+    ...medicoes.reduce<Item[]>((acc, m) => {
+      // Agrupa por data
+      const existing = acc.find(a => a.data === m.data && a.tipo === "consulta");
+      if (!existing) acc.push({ id: m.id, data: m.data, titulo: "Registro clínico", tipo: "consulta", semana: m.semana, nota: `${m.parametro}: ${m.valor}` });
+      else existing.nota = (existing.nota ?? "") + ` • ${m.parametro}: ${m.valor}`;
+      return acc;
+    }, []),
+    ...vacinas.map<Item>(v => ({ id: v.id, data: v.data, titulo: `Vacina: ${v.vacina}`, tipo: "vacina", nota: v.observacao })),
+    ...exames.map<Item>(e => ({ id: e.id, data: e.data, titulo: `Exame: ${e.tipo_exame}`, tipo: "exame", nota: e.resultado })),
+  ].sort((a, b) => {
+    const da = parseBR(a.data); const db = parseBR(b.data);
+    return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+  });
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <h3 className="font-display font-semibold text-lg text-foreground mb-3">Sinais vitais</h3>
       <div className="grid grid-cols-2 gap-3 mb-6">
         {vitals.map((v, i) => (
-          <motion.div
-            key={v.label}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.08 }}
-          >
+          <motion.div key={v.label} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.08 }}>
             <LiquidCard className="p-4">
               <div className={`w-8 h-2 rounded-full ${v.color} mb-3`} />
               <p className="text-xs text-muted-foreground">{v.label}</p>
@@ -436,457 +419,113 @@ function ResumoTab({ timelineEntries, vitals }: { timelineEntries: TimelineEntry
       </div>
 
       <h3 className="font-display font-semibold text-lg text-foreground mb-2">Linha do tempo</h3>
-      <div className="flex gap-3 mb-3">
-        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-2 h-2 rounded-full bg-border inline-block" /> Consulta</span>
-        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-2 h-2 rounded-full bg-green-400 inline-block" /> Vacina</span>
-        <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block" /> Exame</span>
-      </div>
-      <div className="relative">
-        <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-border" />
-        <div className="space-y-4">
-          {sorted.map((item, i) => (
-            <motion.div
-              key={item.id}
-              className="relative pl-10"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.06 }}
-            >
-              <div className={`absolute left-1.5 w-3 h-3 rounded-full ${item.status === "upcoming" ? "bg-primary ring-2 ring-primary/30" : typeColors[item.type] || "bg-border"}`} />
-              <div className={`bg-card rounded-xl p-3 shadow-sm border ${item.status === "upcoming" ? "border-primary/30" : "border-border"}`}>
+      {itens.length === 0 ? (
+        <p className="text-sm text-muted-foreground italic">Nenhum registro ainda. Os profissionais inserem suas medições, vacinas e exames durante o pré-natal.</p>
+      ) : (
+        <div className="space-y-3">
+          {itens.map((t, i) => {
+            const cor = t.tipo === "vacina" ? "bg-green-500" : t.tipo === "exame" ? "bg-blue-500" : "bg-primary";
+            return (
+              <motion.div key={t.id} className="bg-card rounded-xl p-3 shadow-sm border border-border" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-primary">Semana {item.week}</span>
-                    <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${
-                      item.type === "vacina" ? "bg-green-100 text-green-700" :
-                      item.type === "exame" ? "bg-blue-100 text-blue-700" :
-                      "bg-muted text-muted-foreground"
-                    }`}>{item.type}</span>
+                    <span className={`w-2 h-2 rounded-full ${cor}`} />
+                    {t.semana ? <span className="text-xs font-semibold text-primary">Semana {t.semana}</span> : null}
+                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{t.tipo}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{item.date}</span>
+                  <span className="text-xs text-muted-foreground">{t.data}</span>
                 </div>
-                <h4 className="font-medium text-sm text-foreground">{item.event}</h4>
-                <p className="text-xs text-muted-foreground mt-1">{item.notes}</p>
-                {item.anexoNome && (
-                  <button
-                    onClick={() => item.anexoUrl && window.open(item.anexoUrl, "_blank")}
-                    className="mt-2 text-xs text-primary font-semibold underline"
-                  >
-                    {item.anexoNome}
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          ))}
+                <h4 className="font-medium text-sm text-foreground">{t.titulo}</h4>
+                {t.nota && <p className="text-xs text-muted-foreground mt-1">{t.nota}</p>}
+              </motion.div>
+            );
+          })}
         </div>
-      </div>
+      )}
     </motion.div>
   );
 }
 
 /* ========== LANÇAMENTOS TAB ========== */
-function LancamentosTab({
-  lancamentos, showForm, setShowForm, form, setForm, onAdd, inputClass, dum,
-}: {
-  lancamentos: Lancamento[];
-  showForm: boolean;
-  setShowForm: (v: boolean) => void;
-  form: { semana: string; data: string; peso: string; pressaoSis: string; pressaoDia: string; alturaUterina: string; bcf: string; edema: string; observacoes: string };
-  setForm: React.Dispatch<React.SetStateAction<{ semana: string; data: string; peso: string; pressaoSis: string; pressaoDia: string; alturaUterina: string; bcf: string; edema: string; observacoes: string }>>;
-  onAdd: () => void;
-  inputClass: string;
-  dum: string;
-}) {
-  const update = (field: string, value: string) => {
-    setForm(prev => {
-      const next = { ...prev, [field]: value };
-      // Quando a data muda, recalcula automaticamente a semana gestacional
-      if (field === "data") {
-        const semana = semanaGestacional(value, dum);
-        if (semana > 0) next.semana = String(semana);
-      }
-      return next;
+function LancamentosTab({ medicoes }: { medicoes: MedicaoReal[] }) {
+  // Agrupa por data
+  const grupos = useMemo(() => {
+    const map = new Map<string, MedicaoReal[]>();
+    medicoes.forEach(m => {
+      if (!map.has(m.data)) map.set(m.data, []);
+      map.get(m.data)!.push(m);
     });
-  };
-
-  // Converte yyyy-mm-dd (input date) <-> dd/mm/yyyy (formato BR usado no estado)
-  const dataParaInput = (br: string) => {
-    const m = br.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    return m ? `${m[3]}-${m[2]}-${m[1]}` : "";
-  };
-  const dataDoInput = (iso: string) => {
-    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
-  };
+    return Array.from(map.entries()).sort((a, b) => {
+      const da = parseBR(a[0]); const db = parseBR(b[0]);
+      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+    });
+  }, [medicoes]);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display font-semibold text-lg text-foreground">Dados Clínicos</h3>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-3 py-1.5 rounded-full text-xs font-semibold bg-primary text-primary-foreground"
-        >
-          {showForm ? "Cancelar" : "Novo Lançamento"}
-        </button>
-      </div>
-
-      {showForm && (
-        <motion.div
-          className="bg-card rounded-2xl p-4 shadow-sm border border-border mb-4 space-y-3"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Data da consulta</label>
-              <input
-                className={inputClass}
-                type="date"
-                value={dataParaInput(form.data)}
-                onChange={e => update("data", dataDoInput(e.target.value))}
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Semana</label>
-              <div className={`${inputClass} flex items-center bg-muted/50`}>
-                <span className="font-semibold text-foreground">{form.semana || "—"}ª semana</span>
+      <h3 className="font-display font-semibold text-lg text-foreground mb-4">Dados Clínicos</h3>
+      {grupos.length === 0 ? (
+        <p className="text-sm text-muted-foreground italic">Nenhuma medição registrada. As medições são lançadas pelos profissionais nas consultas de pré-natal.</p>
+      ) : (
+        <div className="space-y-3">
+          {grupos.map(([data, items], i) => (
+            <motion.div key={data} className="bg-card rounded-2xl p-4 shadow-sm border border-border" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-primary">Semana {items[0].semana}</span>
+                <span className="text-xs text-muted-foreground">{data}</span>
               </div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Peso (kg)</label>
-              <input className={inputClass} type="text" placeholder="Ex: 68,5" value={form.peso} onChange={e => update("peso", e.target.value)} />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Altura Uterina (cm)</label>
-              <input className={inputClass} type="text" placeholder="Ex: 24" value={form.alturaUterina} onChange={e => update("alturaUterina", e.target.value)} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">PA Sistólica</label>
-              <input className={inputClass} type="text" placeholder="Ex: 110" value={form.pressaoSis} onChange={e => update("pressaoSis", e.target.value)} />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">PA Diastólica</label>
-              <input className={inputClass} type="text" placeholder="Ex: 70" value={form.pressaoDia} onChange={e => update("pressaoDia", e.target.value)} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">BCF (bpm)</label>
-              <input className={inputClass} type="text" placeholder="Ex: 142" value={form.bcf} onChange={e => update("bcf", e.target.value)} />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Edema</label>
-              <select className={inputClass} value={form.edema} onChange={e => update("edema", e.target.value)}>
-                <option>Ausente</option>
-                <option>+ (leve)</option>
-                <option>++ (moderado)</option>
-                <option>+++ (grave)</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Observações</label>
-            <textarea
-              className={`${inputClass} h-16 resize-none`}
-              placeholder="Observações da consulta..."
-              value={form.observacoes}
-              onChange={e => update("observacoes", e.target.value)}
-            />
-          </div>
-          <button
-            onClick={onAdd}
-            className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
-          >
-            Salvar Lançamento
-          </button>
-        </motion.div>
+              <div className="grid grid-cols-2 gap-2">
+                {items.map(m => (
+                  <div key={m.id} className="bg-muted rounded-lg px-2 py-1.5">
+                    <p className="text-[10px] text-muted-foreground">{m.parametro}</p>
+                    <p className="text-sm font-semibold text-foreground">{m.valor}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
       )}
-
-      <div className="space-y-3">
-        {lancamentos.map((l, i) => (
-          <motion.div
-            key={l.id}
-            className="bg-card rounded-2xl p-4 shadow-sm border border-border"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-primary">Semana {l.semana}</span>
-              <span className="text-xs text-muted-foreground">{l.data}</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              <div>
-                <p className="text-[10px] text-muted-foreground">Peso</p>
-                <p className="text-xs font-semibold text-foreground">{l.peso} kg</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground">PA</p>
-                <p className="text-xs font-semibold text-foreground">{l.pressaoSis}/{l.pressaoDia}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground">BCF</p>
-                <p className="text-xs font-semibold text-foreground">{l.bcf} bpm</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              <div>
-                <p className="text-[10px] text-muted-foreground">Alt. Uterina</p>
-                <p className="text-xs font-semibold text-foreground">{l.alturaUterina} cm</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground">Edema</p>
-                <p className="text-xs font-semibold text-foreground">{l.edema}</p>
-              </div>
-            </div>
-            {l.observacoes && (
-              <p className="text-xs text-muted-foreground mt-1 border-t border-border pt-2">{l.observacoes}</p>
-            )}
-          </motion.div>
-        ))}
-      </div>
     </motion.div>
   );
 }
 
-/* ========== VACINAS/EXAMES TAB ========== */
-function VacinasExamesTab({
-  items, onAdd, inputClass,
-}: {
-  items: VacinaExame[];
-  onAdd: (item: VacinaExame) => void;
-  inputClass: string;
-}) {
-  const [showForm, setShowForm] = useState(false);
-  const [filtro, setFiltro] = useState<"todos" | "vacina" | "exame">("todos");
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [anexo, setAnexo] = useState<{ url: string; nome: string } | null>(null);
-
-  const [form, setForm] = useState({
-    tipo: "vacina" as "vacina" | "exame",
-    nome: "",
-    data: "",
-    semana: "",
-    status: "realizado" as "realizado" | "pendente" | "agendado",
-    resultado: "",
-    observacoes: "",
-  });
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    setAnexo({ url, nome: file.name });
-  };
-
-  const handleSubmit = () => {
-    if (!form.nome || !form.data || !form.semana) return;
-    const novo: VacinaExame = {
-      id: Date.now(),
-      tipo: form.tipo,
-      nome: form.nome,
-      data: form.data,
-      semana: Number(form.semana),
-      status: form.status,
-      resultado: form.resultado || undefined,
-      observacoes: form.observacoes || undefined,
-      anexoUrl: anexo?.url,
-      anexoNome: anexo?.nome,
-    };
-    onAdd(novo);
-    setForm({ tipo: "vacina", nome: "", data: "", semana: "", status: "realizado", resultado: "", observacoes: "" });
-    setAnexo(null);
-    setShowForm(false);
-  };
-
-  const filtered = filtro === "todos" ? items : items.filter(i => i.tipo === filtro);
-  const realizados = filtered.filter(i => i.status === "realizado");
-  const pendentes = filtered.filter(i => i.status !== "realizado");
-
-  const statusStyle: Record<string, string> = {
-    realizado: "bg-green-100 text-green-700",
-    pendente: "bg-yellow-100 text-yellow-700",
-    agendado: "bg-blue-100 text-blue-700",
-  };
-
+/* ========== VACINAS / EXAMES ========== */
+function VacinasExamesTab({ vacinas, exames }: { vacinas: VacinaReal[]; exames: ExameReal[] }) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display font-semibold text-lg text-foreground">Vacinas e Exames</h3>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-3 py-1.5 rounded-full text-xs font-semibold bg-primary text-primary-foreground"
-        >
-          {showForm ? "Cancelar" : "Novo Registro"}
-        </button>
-      </div>
-
-      {/* Filtros */}
-      <div className="flex gap-2 mb-4">
-        {(["todos", "vacina", "exame"] as const).map(f => (
-          <button
-            key={f}
-            onClick={() => setFiltro(f)}
-            className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-              filtro === f ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {f === "todos" ? "Todos" : f === "vacina" ? "Vacinas" : "Exames"}
-          </button>
-        ))}
-      </div>
-
-      {/* Form */}
-      {showForm && (
-        <motion.div
-          className="bg-card rounded-2xl p-4 shadow-sm border border-border mb-4 space-y-3"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Tipo</label>
-              <select className={inputClass} value={form.tipo} onChange={e => setForm(p => ({ ...p, tipo: e.target.value as "vacina" | "exame" }))}>
-                <option value="vacina">Vacina</option>
-                <option value="exame">Exame</option>
-              </select>
+      <h3 className="font-display font-semibold text-lg text-foreground mb-3">Vacinas</h3>
+      {vacinas.length === 0 ? (
+        <p className="text-sm text-muted-foreground italic mb-6">Nenhuma vacina registrada.</p>
+      ) : (
+        <div className="space-y-2 mb-6">
+          {vacinas.map(v => (
+            <div key={v.id} className="bg-green-50 border border-green-200 rounded-xl p-3">
+              <div className="flex items-center justify-between">
+                <p className="font-semibold text-sm text-green-900">{v.vacina}</p>
+                <span className="text-xs text-green-700">{v.data}</span>
+              </div>
+              {v.observacao && <p className="text-xs text-green-700 mt-1">{v.observacao}</p>}
             </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Status</label>
-              <select className={inputClass} value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value as "realizado" | "pendente" | "agendado" }))}>
-                <option value="realizado">Realizado</option>
-                <option value="pendente">Pendente</option>
-                <option value="agendado">Agendado</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Nome</label>
-            <input className={inputClass} placeholder="Ex: Ultrassom morfológico" value={form.nome} onChange={e => setForm(p => ({ ...p, nome: e.target.value }))} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Data</label>
-              <input className={inputClass} placeholder="DD/MM/AAAA" value={form.data} onChange={e => setForm(p => ({ ...p, data: e.target.value }))} />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Semana</label>
-              <input className={inputClass} type="number" placeholder="Ex: 24" value={form.semana} onChange={e => setForm(p => ({ ...p, semana: e.target.value }))} />
-            </div>
-          </div>
-          {form.tipo === "exame" && (
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Resultado</label>
-              <input className={inputClass} placeholder="Ex: Normal" value={form.resultado} onChange={e => setForm(p => ({ ...p, resultado: e.target.value }))} />
-            </div>
-          )}
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Observações</label>
-            <textarea
-              className={`${inputClass} h-14 resize-none`}
-              placeholder="Observações..."
-              value={form.observacoes}
-              onChange={e => setForm(p => ({ ...p, observacoes: e.target.value }))}
-            />
-          </div>
-          {/* Anexo */}
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1 block">Anexo (PDF, imagem)</label>
-            <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" className="hidden" onChange={handleFileChange} />
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className={`${inputClass} text-left ${anexo ? "text-primary font-semibold" : "text-muted-foreground"}`}
-            >
-              {anexo ? anexo.nome : "Selecionar arquivo..."}
-            </button>
-          </div>
-          <button
-            onClick={handleSubmit}
-            className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
-          >
-            Salvar Registro
-          </button>
-        </motion.div>
-      )}
-
-      {/* Pendentes / Agendados */}
-      {pendentes.length > 0 && (
-        <div className="mb-5">
-          <h4 className="font-semibold text-sm text-foreground mb-2 uppercase tracking-wide">Pendentes / Agendados</h4>
-          <div className="space-y-3">
-            {pendentes.map((item, i) => (
-              <motion.div
-                key={item.id}
-                className="bg-card rounded-2xl p-4 shadow-sm border-2 border-primary/20"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${item.tipo === "vacina" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
-                      {item.tipo}
-                    </span>
-                    <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${statusStyle[item.status]}`}>
-                      {item.status}
-                    </span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">Sem. {item.semana}</span>
-                </div>
-                <h4 className="font-semibold text-sm text-foreground mt-1">{item.nome}</h4>
-                <p className="text-xs text-muted-foreground">{item.data}</p>
-                {item.observacoes && <p className="text-xs text-muted-foreground mt-1">{item.observacoes}</p>}
-              </motion.div>
-            ))}
-          </div>
+          ))}
         </div>
       )}
 
-      {/* Realizados */}
-      {realizados.length > 0 && (
-        <div>
-          <h4 className="font-semibold text-sm text-foreground mb-2 uppercase tracking-wide">Realizados</h4>
-          <div className="space-y-3">
-            {realizados.map((item, i) => (
-              <motion.div
-                key={item.id}
-                className="bg-card rounded-2xl p-4 shadow-sm border border-border"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${item.tipo === "vacina" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
-                      {item.tipo}
-                    </span>
-                    <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${statusStyle[item.status]}`}>
-                      {item.status}
-                    </span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">Sem. {item.semana}</span>
-                </div>
-                <h4 className="font-semibold text-sm text-foreground mt-1">{item.nome}</h4>
-                <p className="text-xs text-muted-foreground">{item.data}</p>
-                {item.resultado && <p className="text-xs text-foreground mt-1">Resultado: {item.resultado}</p>}
-                {item.observacoes && <p className="text-xs text-muted-foreground mt-1">{item.observacoes}</p>}
-                {item.anexoNome && (
-                  <button
-                    onClick={() => item.anexoUrl && window.open(item.anexoUrl, "_blank")}
-                    className="mt-2 text-xs text-primary font-semibold underline"
-                  >
-                    Ver/Baixar: {item.anexoNome}
-                  </button>
-                )}
-              </motion.div>
-            ))}
-          </div>
+      <h3 className="font-display font-semibold text-lg text-foreground mb-3">Exames</h3>
+      {exames.length === 0 ? (
+        <p className="text-sm text-muted-foreground italic">Nenhum exame registrado.</p>
+      ) : (
+        <div className="space-y-2">
+          {exames.map(e => (
+            <div key={e.id} className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+              <div className="flex items-center justify-between">
+                <p className="font-semibold text-sm text-blue-900">{e.tipo_exame}</p>
+                <span className="text-xs text-blue-700">{e.data}</span>
+              </div>
+              <p className="text-xs text-blue-700 mt-1">Status: {e.status}</p>
+              {e.resultado && <p className="text-xs text-blue-800 mt-1">Resultado: {e.resultado}</p>}
+            </div>
+          ))}
         </div>
       )}
     </motion.div>
@@ -894,23 +533,24 @@ function VacinasExamesTab({
 }
 
 /* ========== GRÁFICOS TAB ========== */
-type Palette = ReturnType<typeof paletaPorSexo>;
+type Series = {
+  peso: { semana: number; peso: number; data: string }[];
+  pressao: { semana: number; sistolica?: number; diastolica?: number }[];
+  au: { semana: number; altura: number; data: string }[];
+  bcf: { semana: number; bcf: number; data: string }[];
+};
 
-type Periodo = "todos" | "1tri" | "2tri" | "3tri" | "custom";
-
-function GraficosTab({ palette, dum }: { palette: Palette; dum: string }) {
+function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; series: Series }) {
   const chartCard = "bg-card rounded-2xl p-4 shadow-sm border border-border";
   const chartTitle = "font-display font-semibold text-sm text-foreground mb-3";
 
   const [periodo, setPeriodo] = useState<Periodo>("todos");
-  // Para "custom" — calendário inteligente com range
   const [range, setRange] = useState<DateRange | undefined>(undefined);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const dateToSemana = (d: Date | undefined): number | null => {
     if (!d) return null;
-    const br = formatBR(d);
-    const s = semanaGestacional(br, dum);
+    const s = semanaGestacional(formatBR(d), dum);
     return s > 0 ? s : null;
   };
 
@@ -930,10 +570,17 @@ function GraficosTab({ palette, dum }: { palette: Palette; dum: string }) {
   const filtrar = <T extends { semana: number }>(arr: T[]) =>
     arr.filter(d => d.semana >= semanaRange.min && d.semana <= semanaRange.max);
 
-  const pesoFiltrado = filtrar(pesoData);
-  const pressaoFiltrada = filtrar(pressaoData);
-  const auFiltrada = filtrar(alturaUterinaData);
-  const bcfFiltrado = filtrar(bcfData);
+  const pesoF = filtrar(series.peso);
+  const pressaoF = filtrar(series.pressao);
+  const auF = filtrar(series.au);
+  const bcfF = filtrar(series.bcf);
+
+  // Combinado: peso + PAM (pressão arterial média)
+  const combinado = pressaoF.map(p => {
+    const pam = (p.sistolica && p.diastolica) ? (p.sistolica + 2 * p.diastolica) / 3 : null;
+    const peso = pesoF.find(x => x.semana === p.semana)?.peso ?? null;
+    return { semana: p.semana, pam, peso };
+  });
 
   const filtros: { key: Exclude<Periodo, "custom">; label: string }[] = [
     { key: "todos", label: "Evolução Total" },
@@ -945,13 +592,14 @@ function GraficosTab({ palette, dum }: { palette: Palette; dum: string }) {
   const calendarioAtivo = periodo === "custom";
   const labelCalendario = range?.from && range?.to
     ? `${format(range.from, "dd/MM", { locale: ptBR })} → ${format(range.to, "dd/MM", { locale: ptBR })}`
-    : range?.from
-      ? format(range.from, "dd/MM/yyyy", { locale: ptBR })
-      : null;
+    : range?.from ? format(range.from, "dd/MM/yyyy", { locale: ptBR }) : null;
+
+  const Vazio = ({ texto }: { texto: string }) => (
+    <p className="text-xs text-muted-foreground italic text-center py-8">{texto}</p>
+  );
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-      {/* Filtros inteligentes */}
       <div className="bg-card rounded-2xl p-3 shadow-sm border border-border">
         <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Filtrar período</p>
         <div className="flex flex-wrap items-center gap-1.5">
@@ -972,8 +620,6 @@ function GraficosTab({ palette, dum }: { palette: Palette; dum: string }) {
               </button>
             );
           })}
-
-          {/* Botão de calendário (ícone) */}
           <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
             <PopoverTrigger asChild>
               <button
@@ -984,151 +630,180 @@ function GraficosTab({ palette, dum }: { palette: Palette; dum: string }) {
                   color: calendarioAtivo ? "#fff" : palette.primary,
                   borderColor: palette.primary,
                 }}
-                aria-label="Selecionar intervalo no calendário"
               >
                 <CalendarIcon className="w-3.5 h-3.5" />
                 {labelCalendario ?? "Calendário"}
               </button>
             </PopoverTrigger>
-            <PopoverContent
-              className="w-auto p-0 pointer-events-auto"
-              align="start"
-              sideOffset={6}
-            >
+            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start" sideOffset={6}>
               <Calendar
                 mode="range"
                 selected={range}
-                onSelect={(r) => {
-                  setRange(r);
-                  setPeriodo("custom");
-                  if (r?.from && r?.to) setCalendarOpen(false);
-                }}
+                onSelect={(r) => { setRange(r); setPeriodo("custom"); if (r?.from && r?.to) setCalendarOpen(false); }}
                 numberOfMonths={2}
                 locale={ptBR}
                 defaultMonth={range?.from ?? (parseBR(dum) ?? new Date())}
                 className="p-3 pointer-events-auto"
               />
               <div className="flex items-center justify-between gap-2 p-2 border-t border-border">
-                <button
-                  onClick={() => { setRange(undefined); setPeriodo("todos"); setCalendarOpen(false); }}
-                  className="text-[11px] font-semibold text-muted-foreground hover:text-foreground px-2 py-1"
-                >
-                  Limpar
-                </button>
-                <button
-                  onClick={() => setCalendarOpen(false)}
-                  className="text-[11px] font-semibold px-3 py-1 rounded-full text-white"
-                  style={{ backgroundColor: palette.primary }}
-                >
-                  Aplicar
-                </button>
+                <button onClick={() => { setRange(undefined); setPeriodo("todos"); setCalendarOpen(false); }} className="text-[11px] font-semibold text-muted-foreground hover:text-foreground px-2 py-1">Limpar</button>
+                <button onClick={() => setCalendarOpen(false)} className="text-[11px] font-semibold px-3 py-1 rounded-full text-white" style={{ backgroundColor: palette.primary }}>Aplicar</button>
               </div>
             </PopoverContent>
           </Popover>
         </div>
-        <p className="text-[10px] text-muted-foreground mt-2">
-          Mostrando semana {semanaRange.min} → {semanaRange.max}
-        </p>
+        <p className="text-[10px] text-muted-foreground mt-2">Mostrando semana {semanaRange.min} → {semanaRange.max}</p>
       </div>
 
+      {/* CURVA DE PESO */}
       <div className={chartCard}>
-        <h4 className={chartTitle}>Curva de Peso (kg)</h4>
-        <ResponsiveContainer width="100%" height={180}>
-          <AreaChart data={pesoFiltrado}>
-            <defs>
-              <linearGradient id="pesoGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={palette.primary} stopOpacity={0.3} />
-                <stop offset="100%" stopColor={palette.primary} stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="semana" tick={{ fontSize: 10 }} label={{ value: "Semana", position: "insideBottomRight", offset: -5, fontSize: 10 }} />
-            <YAxis tick={{ fontSize: 10 }} domain={["dataMin - 2", "dataMax + 2"]} />
-            <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
-            <Area type="monotone" dataKey="peso" stroke={palette.primary} fill="url(#pesoGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.primary }} />
-          </AreaChart>
-        </ResponsiveContainer>
+        <h4 className={chartTitle}>Curva de Ganho de Peso (kg)</h4>
+        {pesoF.length === 0 ? <Vazio texto="Sem registros de peso no período." /> : (
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={pesoF}>
+              <defs>
+                <linearGradient id="pesoGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={palette.primary} stopOpacity={0.3} />
+                  <stop offset="100%" stopColor={palette.primary} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="semana" tick={{ fontSize: 10 }} label={{ value: "Semana gestacional", position: "insideBottom", offset: -2, fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} domain={["dataMin - 2", "dataMax + 2"]} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
+              <Area type="monotone" dataKey="peso" stroke={palette.primary} fill="url(#pesoGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.primary }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </div>
 
+      {/* PRESSÃO ARTERIAL com faixa normal */}
       <div className={chartCard}>
-        <h4 className={chartTitle}>Pressão Arterial (mmHg)</h4>
-        <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={pressaoFiltrada}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="semana" tick={{ fontSize: 10 }} label={{ value: "Semana", position: "insideBottomRight", offset: -5, fontSize: 10 }} />
-            <YAxis tick={{ fontSize: 10 }} domain={[50, 140]} />
-            <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
-            <Line type="monotone" dataKey="sistolica" name="Sistólica" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
-            <Line type="monotone" dataKey="diastolica" name="Diastólica" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
-          </LineChart>
-        </ResponsiveContainer>
+        <h4 className={chartTitle}>Curva Pressórica (mmHg) — referência: 90-140 / 60-90</h4>
+        {pressaoF.length === 0 ? <Vazio texto="Sem registros pressóricos no período." /> : (
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={pressaoF}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} domain={[50, 160]} />
+              <ReferenceArea y1={90} y2={140} fill="#22c55e" fillOpacity={0.05} />
+              <ReferenceArea y1={60} y2={90} fill="#22c55e" fillOpacity={0.05} />
+              <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Line type="monotone" dataKey="sistolica" name="Sistólica" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey="diastolica" name="Diastólica" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </div>
 
+      {/* COMBINADO peso x PAM */}
       <div className={chartCard}>
-        <h4 className={chartTitle}>Altura Uterina (cm)</h4>
-        <ResponsiveContainer width="100%" height={180}>
-          <AreaChart data={auFiltrada}>
-            <defs>
-              <linearGradient id="auGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={palette.accent} stopOpacity={0.3} />
-                <stop offset="100%" stopColor={palette.accent} stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="semana" tick={{ fontSize: 10 }} label={{ value: "Semana", position: "insideBottomRight", offset: -5, fontSize: 10 }} />
-            <YAxis tick={{ fontSize: 10 }} domain={[0, 40]} />
-            <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
-            <Area type="monotone" dataKey="altura" stroke={palette.accent} fill="url(#auGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.accent }} />
-          </AreaChart>
-        </ResponsiveContainer>
+        <h4 className={chartTitle}>Peso × Pressão Arterial Média</h4>
+        {combinado.filter(c => c.peso && c.pam).length === 0 ? <Vazio texto="Necessário ter peso e pressão registrados." /> : (
+          <ResponsiveContainer width="100%" height={200}>
+            <ComposedChart data={combinado}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="left" tick={{ fontSize: 10 }} label={{ value: "Peso (kg)", angle: -90, position: "insideLeft", fontSize: 10 }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} label={{ value: "PAM (mmHg)", angle: 90, position: "insideRight", fontSize: 10 }} />
+              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Area yAxisId="left" type="monotone" dataKey="peso" name="Peso" fill={palette.primary} stroke={palette.primary} fillOpacity={0.2} />
+              <Line yAxisId="right" type="monotone" dataKey="pam" name="PAM" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
       </div>
 
+      {/* ALTURA UTERINA */}
       <div className={chartCard}>
-        <h4 className={chartTitle}>Batimentos Cardíacos Fetais (bpm)</h4>
-        <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={bcfFiltrado}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="semana" tick={{ fontSize: 10 }} label={{ value: "Semana", position: "insideBottomRight", offset: -5, fontSize: 10 }} />
-            <YAxis tick={{ fontSize: 10 }} domain={[100, 180]} />
-            <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
-            <Line type="monotone" dataKey="bcf" name="BCF" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: "#10b981" }} />
-          </LineChart>
-        </ResponsiveContainer>
+        <h4 className={chartTitle}>Altura Uterina (cm) — referência MS</h4>
+        {auF.length === 0 ? <Vazio texto="Sem registros de altura uterina no período." /> : (
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={auF}>
+              <defs>
+                <linearGradient id="auGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={palette.accent} stopOpacity={0.3} />
+                  <stop offset="100%" stopColor={palette.accent} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} domain={[0, 40]} />
+              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Area type="monotone" dataKey="altura" stroke={palette.accent} fill="url(#auGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.accent }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* BCF */}
+      <div className={chartCard}>
+        <h4 className={chartTitle}>BCF (bpm) — normal: 110-160</h4>
+        {bcfF.length === 0 ? <Vazio texto="Sem registros de BCF no período." /> : (
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={bcfF}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} domain={[80, 180]} />
+              <ReferenceArea y1={110} y2={160} fill="#22c55e" fillOpacity={0.07} />
+              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Line type="monotone" dataKey="bcf" name="BCF" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: "#10b981" }} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </motion.div>
   );
 }
 
-/* ========== Geração de PDF ========== */
+/* ============================================================
+   GERAÇÃO DE PDF — Cartão profissional
+   ============================================================ */
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
-  return [
-    parseInt(h.slice(0, 2), 16),
-    parseInt(h.slice(2, 4), 16),
-    parseInt(h.slice(4, 6), 16),
-  ];
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 }
 
-function gerarPDFCartao(args: {
+async function imageToDataUrl(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch { return null; }
+}
+
+async function gerarPDFCartao(args: {
   patientInfo: {
     name: string; age: string | number; bloodType: string;
     dum: string; dpp: string; weeks: string | number;
     email?: string | null; telefone?: string | null;
+    cidade?: string | null; bairro?: string | null;
+    unidadeSaude?: string | null;
+    gestacoes?: number | null; partos?: number | null; abortos?: number | null;
+    fotoUrl?: string | null;
   };
   vitals: { label: string; value: string; change: string }[];
-  lancamentos: Lancamento[];
-  vacinasExames: VacinaExame[];
-  timelineEntries: TimelineEntry[];
+  medicoes: MedicaoReal[];
+  vacinas: VacinaReal[];
+  exames: ExameReal[];
+  series: Series;
+  ganhoPeso: number | null;
+  imc: number | null;
+  imcInfo: { label: string; color: string } | null;
+  altura: number | undefined;
   palette: Palette;
-  charts: {
-    peso: { semana: number; peso: number }[];
-    pressao: { semana: number; sistolica: number; diastolica: number }[];
-    altura: { semana: number; altura: number }[];
-    bcf: { semana: number; bcf: number }[];
-  };
+  cartaoUrl: string;
 }) {
-  const { patientInfo, vitals, lancamentos, vacinasExames, timelineEntries, palette, charts } = args;
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const { patientInfo, vitals, medicoes, vacinas, exames, series, ganhoPeso, imc, imcInfo, altura, palette, cartaoUrl } = args;
+  const doc = new jsPDF({ unit: "mm", format: "a4", compress: true });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 14;
@@ -1136,23 +811,25 @@ function gerarPDFCartao(args: {
 
   const [pr, pg, pb] = hexToRgb(palette.primary);
   const [lr, lg, lb] = hexToRgb(palette.primaryLight);
-  const [ar, ag, ab] = hexToRgb(palette.accent);
   const muted: [number, number, number] = [110, 110, 120];
   const dark: [number, number, number] = [32, 32, 40];
 
+  doc.setFont("helvetica", "normal");
+
+  // ======== Footer ========
   const drawFooter = (pageNum: number, totalPages: number) => {
     doc.setFillColor(pr, pg, pb);
     doc.rect(0, pageH - 9, pageW, 9, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    doc.text("MãeDigital — Cartão Digital da Gestante", margin, pageH - 3.5);
+    doc.text("MaeDigital - Cartao Digital da Gestante", margin, pageH - 3.5);
     doc.setFont("helvetica", "normal");
-    doc.text(`Pág. ${pageNum} de ${totalPages}`, pageW - margin, pageH - 3.5, { align: "right" });
+    doc.text(`Pag. ${pageNum} de ${totalPages}`, pageW - margin, pageH - 3.5, { align: "right" });
   };
 
   const ensureSpace = (needed: number) => {
-    if (y + needed > pageH - margin - 10) {
+    if (y + needed > pageH - margin - 12) {
       doc.addPage();
       y = margin + 4;
     }
@@ -1160,63 +837,80 @@ function gerarPDFCartao(args: {
 
   const sectionHeader = (title: string) => {
     ensureSpace(14);
-    // Barra colorida + ponto de destaque
     doc.setFillColor(pr, pg, pb);
     doc.roundedRect(margin, y, pageW - margin * 2, 8, 1.5, 1.5, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.text(title.toUpperCase(), margin + 4, y + 5.6);
+    doc.text(title, margin + 4, y + 5.6);
     y += 12;
     doc.setTextColor(...dark);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
   };
 
-  const linhaTexto = (texto: string, opts: { bold?: boolean; size?: number; color?: [number, number, number] } = {}) => {
-    doc.setFont("helvetica", opts.bold ? "bold" : "normal");
-    doc.setFontSize(opts.size ?? 9.5);
-    doc.setTextColor(...(opts.color ?? dark));
-    const lines = doc.splitTextToSize(texto, pageW - margin * 2 - 4);
-    ensureSpace(lines.length * 4.6 + 1);
-    doc.text(lines, margin + 2, y + 3.2);
-    y += lines.length * 4.6 + 0.5;
-  };
+  // ======== Carregar foto + QR Code em paralelo ========
+  const [fotoData, qrData] = await Promise.all([
+    patientInfo.fotoUrl ? imageToDataUrl(patientInfo.fotoUrl) : Promise.resolve(null),
+    QRCode.toDataURL(cartaoUrl || "https://maedigital.app", { width: 240, margin: 1, color: { dark: palette.primary, light: "#ffffff" } }),
+  ]);
 
-  // ==================== CAPA ====================
-  // Banner colorido com curva
+  // ============ CAPA ============
   doc.setFillColor(pr, pg, pb);
-  doc.rect(0, 0, pageW, 55, "F");
-  // Onda decorativa
+  doc.rect(0, 0, pageW, 60, "F");
   doc.setFillColor(lr, lg, lb);
-  doc.ellipse(pageW + 10, 55, 80, 18, "F");
+  doc.ellipse(pageW + 10, 60, 80, 18, "F");
+
+  // Foto/avatar
+  const avatarX = pageW - margin - 28;
+  const avatarY = 10;
+  if (fotoData) {
+    try {
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(avatarX - 1, avatarY - 1, 30, 30, 3, 3, "F");
+      doc.addImage(fotoData, "JPEG", avatarX, avatarY, 28, 28, undefined, "FAST");
+    } catch { /* ignore */ }
+  } else {
+    doc.setFillColor(255, 255, 255);
+    doc.circle(avatarX + 14, avatarY + 14, 14, "F");
+    doc.setTextColor(pr, pg, pb);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    const ini = patientInfo.name.split(" ").map(n => n[0]).slice(0, 2).join("");
+    doc.text(ini, avatarX + 14, avatarY + 18, { align: "center" });
+  }
 
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text("MÃEDIGITAL", margin, 14);
+  doc.text("MAEDIGITAL", margin, 14);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.text("Cartão Digital da Gestante", margin, 19);
+  doc.text("Cartao Digital da Gestante", margin, 19);
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(22);
-  doc.text(patientInfo.name, margin, 35);
+  doc.setFontSize(20);
+  doc.text(patientInfo.name, margin, 36, { maxWidth: pageW - margin * 2 - 35 });
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.text(`${patientInfo.age} anos  •  Sangue ${patientInfo.bloodType}  •  Bebê: ${palette.label}`, margin, 42);
-  doc.setFontSize(9);
-  doc.text(`Emitido em ${formatBR(new Date())}`, margin, 48);
+  doc.setFontSize(9.5);
+  const subPartes = [
+    `${patientInfo.age} anos`,
+    `Sangue ${patientInfo.bloodType}`,
+    `Bebe: ${palette.label}`,
+  ].join("  -  ");
+  doc.text(subPartes, margin, 44);
+  doc.setFontSize(8.5);
+  doc.text(`Emitido em ${formatBR(new Date())}`, margin, 50);
 
-  y = 64;
+  y = 70;
 
-  // ==================== KPIs principais ====================
+  // ============ KPIs ============
   const kpiW = (pageW - margin * 2 - 6) / 3;
   const kpis = [
-    { label: "SEMANA GESTACIONAL", value: `${patientInfo.weeks}ª`, sub: "atual" },
-    { label: "DUM", value: patientInfo.dum, sub: "última menstruação" },
-    { label: "DPP", value: patientInfo.dpp, sub: "data provável do parto" },
+    { label: "SEMANA GESTACIONAL", value: `${patientInfo.weeks}a`, sub: "atual" },
+    { label: "DUM", value: patientInfo.dum, sub: "ultima menstruacao" },
+    { label: "DPP", value: patientInfo.dpp, sub: "data provavel do parto" },
   ];
   kpis.forEach((k, i) => {
     const x = margin + i * (kpiW + 3);
@@ -1237,41 +931,113 @@ function gerarPDFCartao(args: {
   });
   y += 28;
 
-  // ==================== Contato ====================
-  if (patientInfo.email || patientInfo.telefone) {
-    doc.setDrawColor(220, 220, 225);
-    doc.setLineWidth(0.2);
-    doc.roundedRect(margin, y, pageW - margin * 2, 12, 2, 2);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(...muted);
-    doc.text("CONTATO", margin + 3, y + 4.5);
-    doc.setFont("helvetica", "normal");
+  // ============ Bloco IMC + Ganho de peso + Obstetrica ============
+  const cardW = (pageW - margin * 2 - 4) / 2;
+  // IMC
+  doc.setFillColor(248, 248, 252);
+  doc.setDrawColor(225, 225, 230);
+  doc.roundedRect(margin, y, cardW, 28, 2, 2, "FD");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...muted);
+  doc.text("IMC E GANHO DE PESO", margin + 3, y + 5);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(...dark);
+  if (imc && imcInfo) {
+    doc.text(`IMC: ${imc.toFixed(1)}`, margin + 3, y + 13);
+    const [cr, cg, cb] = hexToRgb(imcInfo.color);
+    doc.setTextColor(cr, cg, cb);
     doc.setFontSize(9);
-    doc.setTextColor(...dark);
-    const contato = [
-      patientInfo.telefone ? `Tel: ${patientInfo.telefone}` : null,
-      patientInfo.email ? `E-mail: ${patientInfo.email}` : null,
-    ].filter(Boolean).join("    •    ");
-    doc.text(contato, margin + 3, y + 9.5);
-    y += 16;
+    doc.text(imcInfo.label, margin + 3, y + 19);
+  } else {
+    doc.setFontSize(9);
+    doc.setTextColor(...muted);
+    doc.text("IMC nao calculado (informar altura)", margin + 3, y + 13);
+  }
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...dark);
+  if (ganhoPeso !== null) {
+    doc.text(`Ganho atual: ${ganhoPeso > 0 ? "+" : ""}${ganhoPeso.toFixed(1)} kg`, margin + 3, y + 25);
+  }
+  if (altura) {
+    doc.text(`Altura: ${altura} m`, margin + cardW - 3, y + 25, { align: "right" });
   }
 
-  // ==================== Sinais vitais ====================
+  // Antecedentes obstetricos
+  const x2 = margin + cardW + 4;
+  doc.setFillColor(248, 248, 252);
+  doc.setDrawColor(225, 225, 230);
+  doc.roundedRect(x2, y, cardW, 28, 2, 2, "FD");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...muted);
+  doc.text("ANTECEDENTES OBSTETRICOS", x2 + 3, y + 5);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...dark);
+  const obs = [
+    { l: "Gestacoes", v: String(patientInfo.gestacoes ?? 0) },
+    { l: "Partos", v: String(patientInfo.partos ?? 0) },
+    { l: "Abortos", v: String(patientInfo.abortos ?? 0) },
+  ];
+  obs.forEach((o, i) => {
+    const ox = x2 + 3 + i * ((cardW - 6) / 3);
+    doc.setTextColor(pr, pg, pb);
+    doc.setFontSize(14);
+    doc.text(o.v, ox, y + 14);
+    doc.setTextColor(...muted);
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.text(o.l, ox, y + 19);
+    doc.setFont("helvetica", "bold");
+  });
+  y += 32;
+
+  // ============ Contato + Endereço ============
+  const linhasContato = [
+    patientInfo.telefone ? `Tel: ${patientInfo.telefone}` : null,
+    patientInfo.email ? `E-mail: ${patientInfo.email}` : null,
+  ].filter(Boolean);
+  const linhasEnd = [
+    patientInfo.bairro ? `Bairro: ${patientInfo.bairro}` : null,
+    patientInfo.cidade ? `Cidade: ${patientInfo.cidade}` : null,
+    patientInfo.unidadeSaude ? `UBS: ${patientInfo.unidadeSaude}` : null,
+  ].filter(Boolean);
+
+  if (linhasContato.length || linhasEnd.length) {
+    const altura = 6 + Math.max(linhasContato.length, linhasEnd.length) * 4 + 2;
+    doc.setDrawColor(220, 220, 225);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(margin, y, pageW - margin * 2, altura, 2, 2);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...muted);
+    doc.text("CONTATO", margin + 3, y + 4);
+    doc.text("ENDERECO / UBS", margin + (pageW - margin * 2) / 2 + 1, y + 4);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...dark);
+    linhasContato.forEach((l, i) => doc.text(l!, margin + 3, y + 8 + i * 4));
+    linhasEnd.forEach((l, i) => doc.text(l!, margin + (pageW - margin * 2) / 2 + 1, y + 8 + i * 4));
+    y += altura + 4;
+  }
+
+  // ============ Sinais vitais (resumo do app) ============
   if (vitals.length) {
-    sectionHeader("Sinais vitais");
+    sectionHeader("SINAIS VITAIS");
     const cellW = (pageW - margin * 2 - (vitals.length - 1) * 3) / vitals.length;
     vitals.forEach((v, i) => {
       const x = margin + i * (cellW + 3);
       doc.setFillColor(248, 248, 252);
       doc.roundedRect(x, y, cellW, 22, 2, 2, "F");
-      // barrinha colorida no topo
-      doc.setFillColor(ar, ag, ab);
+      doc.setFillColor(pr, pg, pb);
       doc.roundedRect(x, y, cellW, 2.5, 1, 1, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7);
       doc.setTextColor(...muted);
-      doc.text(v.label.toUpperCase(), x + 2.5, y + 7);
+      doc.text(v.label, x + 2.5, y + 7);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(13);
       doc.setTextColor(...dark);
@@ -1284,26 +1050,24 @@ function gerarPDFCartao(args: {
     y += 27;
   }
 
-  // ==================== GRÁFICOS NATIVOS ====================
-  sectionHeader("Evolução clínica — gráficos");
+  // ============ GRÁFICOS ============
+  sectionHeader("EVOLUCAO CLINICA - GRAFICOS");
 
-  /** Desenha um line/area chart simples no PDF. */
   const drawChart = (
     title: string,
-    series: { color: [number, number, number]; values: { x: number; y: number }[]; fill?: boolean; name?: string }[],
-    yLabel: string,
+    subtitulo: string,
+    serie: { color: [number, number, number]; values: { x: number; y: number }[]; fill?: boolean; name?: string }[],
+    refRange?: { min: number; max: number; label?: string },
   ) => {
     const chartH = 50;
     const chartW = pageW - margin * 2;
-    ensureSpace(chartH + 14);
+    ensureSpace(chartH + 16);
 
-    // Card
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(225, 225, 230);
     doc.setLineWidth(0.2);
-    doc.roundedRect(margin, y, chartW, chartH + 12, 2, 2, "FD");
+    doc.roundedRect(margin, y, chartW, chartH + 14, 2, 2, "FD");
 
-    // Título
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9.5);
     doc.setTextColor(...dark);
@@ -1311,30 +1075,42 @@ function gerarPDFCartao(args: {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     doc.setTextColor(...muted);
-    doc.text(yLabel, pageW - margin - 4, y + 6, { align: "right" });
+    doc.text(subtitulo, pageW - margin - 4, y + 6, { align: "right" });
 
-    // Área de plotagem
-    const plotX = margin + 12;
+    const plotX = margin + 14;
     const plotY = y + 10;
-    const plotW = chartW - 16;
-    const plotH = chartH - 4;
+    const plotW = chartW - 18;
+    const plotH = chartH - 6;
 
-    // Coleta limites
-    const allX = series.flatMap(s => s.values.map(v => v.x));
-    const allY = series.flatMap(s => s.values.map(v => v.y));
-    if (allX.length === 0) { y += chartH + 14; return; }
+    const allX = serie.flatMap(s => s.values.map(v => v.x));
+    const allY = serie.flatMap(s => s.values.map(v => v.y));
+    if (allX.length === 0) {
+      doc.setFontSize(8);
+      doc.setTextColor(...muted);
+      doc.text("Sem dados registrados.", margin + chartW / 2, plotY + plotH / 2, { align: "center" });
+      y += chartH + 16;
+      return;
+    }
     const minX = Math.min(...allX);
-    const maxX = Math.max(...allX);
-    const minY = Math.min(...allY);
-    const maxY = Math.max(...allY);
-    const padY = (maxY - minY) * 0.15 || 1;
+    const maxX = Math.max(...allX, minX + 1);
+    const minY = Math.min(...allY, refRange?.min ?? Infinity);
+    const maxY = Math.max(...allY, refRange?.max ?? -Infinity);
+    const padY = (maxY - minY) * 0.2 || 1;
     const yLo = minY - padY;
     const yHi = maxY + padY;
 
     const sx = (v: number) => plotX + ((v - minX) / Math.max(1, maxX - minX)) * plotW;
     const sy = (v: number) => plotY + plotH - ((v - yLo) / Math.max(0.0001, yHi - yLo)) * plotH;
 
-    // Grid horizontal (4 linhas) + labels Y
+    // Faixa de referência
+    if (refRange) {
+      doc.setFillColor(220, 252, 231);
+      const yT = sy(refRange.max);
+      const yB = sy(refRange.min);
+      doc.rect(plotX, yT, plotW, yB - yT, "F");
+    }
+
+    // Grid
     doc.setDrawColor(235, 235, 240);
     doc.setLineWidth(0.15);
     doc.setFont("helvetica", "normal");
@@ -1344,30 +1120,28 @@ function gerarPDFCartao(args: {
       const yy = plotY + (plotH / 4) * i;
       doc.line(plotX, yy, plotX + plotW, yy);
       const val = yHi - ((yHi - yLo) / 4) * i;
-      doc.text(val.toFixed(0), plotX - 1.5, yy + 1, { align: "right" });
+      doc.text(val.toFixed(0), plotX - 1, yy + 1.5, { align: "right" });
     }
-    // Eixo X labels (semanas)
-    series[0].values.forEach(p => {
-      doc.text(`${p.x}`, sx(p.x), plotY + plotH + 4, { align: "center" });
+
+    // X labels (semanas únicas)
+    const xs = Array.from(new Set(allX)).sort((a, b) => a - b);
+    xs.forEach(x => {
+      doc.text(`${x}`, sx(x), plotY + plotH + 3.5, { align: "center" });
     });
     doc.setFontSize(6.5);
-    doc.text("Semana", plotX + plotW / 2, plotY + plotH + 7.5, { align: "center" });
+    doc.text("Semana gestacional", plotX + plotW / 2, plotY + plotH + 7, { align: "center" });
 
-    // Desenhar séries
-    series.forEach(s => {
+    serie.forEach(s => {
       if (s.values.length === 0) return;
-      // Área (preenchimento sob a linha)
-      if (s.fill) {
-        doc.setFillColor(s.color[0], s.color[1], s.color[2]);
-        // simulando opacidade baixa via cor mais clara
-        const lightR = Math.min(255, s.color[0] + (255 - s.color[0]) * 0.75);
-        const lightG = Math.min(255, s.color[1] + (255 - s.color[1]) * 0.75);
-        const lightB = Math.min(255, s.color[2] + (255 - s.color[2]) * 0.75);
+      // Sort by x
+      const sorted = [...s.values].sort((a, b) => a.x - b.x);
+      if (s.fill && sorted.length > 1) {
+        const lightR = Math.min(255, s.color[0] + (255 - s.color[0]) * 0.7);
+        const lightG = Math.min(255, s.color[1] + (255 - s.color[1]) * 0.7);
+        const lightB = Math.min(255, s.color[2] + (255 - s.color[2]) * 0.7);
         doc.setFillColor(lightR, lightG, lightB);
-        // Polígono manual: pontos + base
-        for (let i = 0; i < s.values.length - 1; i++) {
-          const p1 = s.values[i];
-          const p2 = s.values[i + 1];
+        for (let i = 0; i < sorted.length - 1; i++) {
+          const p1 = sorted[i], p2 = sorted[i + 1];
           const x1 = sx(p1.x), y1 = sy(p1.y);
           const x2 = sx(p2.x), y2 = sy(p2.y);
           const baseY = plotY + plotH;
@@ -1375,22 +1149,20 @@ function gerarPDFCartao(args: {
           doc.triangle(x2, y2, x2, baseY, x1, baseY, "F");
         }
       }
-      // Linha
       doc.setDrawColor(s.color[0], s.color[1], s.color[2]);
       doc.setLineWidth(0.6);
-      for (let i = 0; i < s.values.length - 1; i++) {
-        doc.line(sx(s.values[i].x), sy(s.values[i].y), sx(s.values[i + 1].x), sy(s.values[i + 1].y));
+      for (let i = 0; i < sorted.length - 1; i++) {
+        doc.line(sx(sorted[i].x), sy(sorted[i].y), sx(sorted[i + 1].x), sy(sorted[i + 1].y));
       }
-      // Pontos
       doc.setFillColor(s.color[0], s.color[1], s.color[2]);
-      s.values.forEach(p => doc.circle(sx(p.x), sy(p.y), 0.9, "F"));
+      sorted.forEach(p => doc.circle(sx(p.x), sy(p.y), 0.9, "F"));
     });
 
     // Legenda
-    if (series.some(s => s.name)) {
+    if (serie.some(s => s.name) || refRange?.label) {
       let lx = plotX;
-      const ly = y + chartH + 9;
-      series.forEach(s => {
+      const ly = y + chartH + 11;
+      serie.forEach(s => {
         if (!s.name) return;
         doc.setFillColor(s.color[0], s.color[1], s.color[2]);
         doc.circle(lx + 1, ly - 1, 1, "F");
@@ -1400,81 +1172,103 @@ function gerarPDFCartao(args: {
         doc.text(s.name, lx + 3.5, ly);
         lx += doc.getTextWidth(s.name) + 10;
       });
+      if (refRange?.label) {
+        doc.setFillColor(34, 197, 94);
+        doc.rect(lx, ly - 2, 3, 2, "F");
+        doc.setTextColor(...dark);
+        doc.text(refRange.label, lx + 4, ly);
+      }
     }
 
-    y += chartH + 14;
+    y += chartH + 16;
   };
 
-  drawChart("Curva de Peso",
-    [{ color: [pr, pg, pb], values: charts.peso.map(d => ({ x: d.semana, y: d.peso })), fill: true, name: "Peso (kg)" }],
-    "kg");
+  drawChart("Curva de Ganho de Peso",
+    "kg / semana gestacional",
+    [{ color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), fill: true, name: "Peso (kg)" }]);
 
-  drawChart("Pressão Arterial",
+  drawChart("Curva Pressorica",
+    "mmHg",
     [
-      { color: [239, 68, 68], values: charts.pressao.map(d => ({ x: d.semana, y: d.sistolica })), name: "Sistólica" },
-      { color: [59, 130, 246], values: charts.pressao.map(d => ({ x: d.semana, y: d.diastolica })), name: "Diastólica" },
+      { color: [239, 68, 68], values: series.pressao.filter(p => p.sistolica !== undefined).map(d => ({ x: d.semana, y: d.sistolica! })), name: "Sistolica" },
+      { color: [59, 130, 246], values: series.pressao.filter(p => p.diastolica !== undefined).map(d => ({ x: d.semana, y: d.diastolica! })), name: "Diastolica" },
     ],
-    "mmHg");
+    { min: 60, max: 140, label: "faixa normal" });
+
+  // Combinado peso x PAM
+  const pamSerie = series.pressao
+    .filter(p => p.sistolica !== undefined && p.diastolica !== undefined)
+    .map(p => ({ x: p.semana, y: (p.sistolica! + 2 * p.diastolica!) / 3 }));
+  drawChart("Pressao Arterial Media (PAM) x Peso",
+    "Analise combinada",
+    [
+      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso (kg)", fill: true },
+      { color: [239, 68, 68], values: pamSerie, name: "PAM (mmHg)" },
+    ]);
 
   drawChart("Altura Uterina",
-    [{ color: [ar, ag, ab], values: charts.altura.map(d => ({ x: d.semana, y: d.altura })), fill: true, name: "Altura (cm)" }],
-    "cm");
+    "cm / semana",
+    [{ color: [124, 58, 237], values: series.au.map(d => ({ x: d.semana, y: d.altura })), fill: true, name: "AU (cm)" }]);
 
-  drawChart("Batimentos Cardíacos Fetais",
-    [{ color: [16, 185, 129], values: charts.bcf.map(d => ({ x: d.semana, y: d.bcf })), name: "BCF" }],
-    "bpm");
+  drawChart("Batimentos Cardiacos Fetais (BCF)",
+    "bpm",
+    [{ color: [16, 185, 129], values: series.bcf.map(d => ({ x: d.semana, y: d.bcf })), name: "BCF" }],
+    { min: 110, max: 160, label: "BCF normal" });
 
-  // ==================== Lançamentos clínicos ====================
-  if (lancamentos.length) {
-    sectionHeader("Dados clínicos / Lançamentos");
-    lancamentos.forEach(l => {
-      ensureSpace(22);
-      // Card
+  // ============ MEDICOES (lista detalhada) ============
+  if (medicoes.length) {
+    sectionHeader("DADOS CLINICOS REGISTRADOS");
+    // Agrupa por data
+    const map = new Map<string, MedicaoReal[]>();
+    medicoes.forEach(m => {
+      if (!map.has(m.data)) map.set(m.data, []);
+      map.get(m.data)!.push(m);
+    });
+    const grupos = Array.from(map.entries()).sort((a, b) => {
+      const da = parseBR(a[0]); const db = parseBR(b[0]);
+      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+    });
+    grupos.forEach(([data, items]) => {
+      ensureSpace(14 + items.length * 4);
       doc.setFillColor(250, 250, 253);
       doc.setDrawColor(230, 230, 235);
-      doc.roundedRect(margin, y, pageW - margin * 2, 20, 2, 2, "FD");
-      // Etiqueta semana
+      const h = 8 + Math.ceil(items.length / 3) * 5;
+      doc.roundedRect(margin, y, pageW - margin * 2, h, 2, 2, "FD");
       doc.setFillColor(pr, pg, pb);
-      doc.roundedRect(margin + 3, y + 3, 22, 6, 1, 1, "F");
+      doc.roundedRect(margin + 3, y + 2, 24, 5.5, 1, 1, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      doc.text(`SEM ${l.semana}`, margin + 14, y + 7, { align: "center" });
-      // Data
+      doc.setFontSize(7);
+      doc.text(`SEM ${items[0].semana}`, margin + 15, y + 5.8, { align: "center" });
       doc.setTextColor(...muted);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
-      doc.text(l.data, pageW - margin - 4, y + 7, { align: "right" });
-      // Métricas em linha
+      doc.text(data, pageW - margin - 4, y + 5.8, { align: "right" });
       doc.setTextColor(...dark);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8.5);
-      const cols = [
-        `Peso: ${l.peso} kg`,
-        `PA: ${l.pressaoSis}/${l.pressaoDia}`,
-        `BCF: ${l.bcf} bpm`,
-        `AU: ${l.alturaUterina} cm`,
-        `Edema: ${l.edema}`,
-      ];
-      const colW = (pageW - margin * 2 - 6) / cols.length;
-      cols.forEach((c, i) => {
-        doc.text(c, margin + 3 + i * colW, y + 14);
-      });
-      if (l.observacoes) {
-        doc.setFont("helvetica", "italic");
-        doc.setFontSize(7.5);
+      const colW = (pageW - margin * 2 - 6) / 3;
+      items.forEach((m, i) => {
+        const col = i % 3;
+        const row = Math.floor(i / 3);
+        const cx = margin + 3 + col * colW;
+        const cy = y + 11 + row * 5;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
         doc.setTextColor(...muted);
-        const obs = doc.splitTextToSize(`Obs: ${l.observacoes}`, pageW - margin * 2 - 6);
-        doc.text(obs[0] ?? "", margin + 3, y + 18);
-      }
-      y += 23;
+        doc.text(m.parametro + ":", cx, cy);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(...dark);
+        doc.text(String(m.valor), cx + doc.getTextWidth(m.parametro + ": "), cy);
+      });
+      y += h + 2;
     });
   }
 
-  // ==================== Vacinas ====================
-  const vacinas = vacinasExames.filter(v => v.tipo === "vacina");
+  // ============ VACINAS ============
   if (vacinas.length) {
-    sectionHeader("Vacinas");
+    sectionHeader("VACINAS APLICADAS");
     vacinas.forEach(v => {
       ensureSpace(11);
       doc.setFillColor(240, 253, 244);
@@ -1483,71 +1277,92 @@ function gerarPDFCartao(args: {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
       doc.setTextColor(22, 101, 52);
-      doc.text(v.nome, margin + 3, y + 5.5);
+      doc.text(v.vacina, margin + 3, y + 5.8);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
+      doc.setFontSize(8);
       doc.setTextColor(...muted);
-      doc.text(`Sem ${v.semana}  •  ${v.data}  •  ${v.status.toUpperCase()}`, pageW - margin - 3, y + 5.5, { align: "right" });
+      doc.text(v.data, pageW - margin - 3, y + 5.8, { align: "right" });
       y += 11;
-      if (v.observacoes) linhaTexto(`  ${v.observacoes}`, { color: muted, size: 8 });
+      if (v.observacao) {
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(7.5);
+        const lines = doc.splitTextToSize(v.observacao, pageW - margin * 2 - 6);
+        doc.text(lines, margin + 3, y + 1);
+        y += lines.length * 3.5 + 2;
+      }
     });
+  } else {
+    sectionHeader("VACINAS APLICADAS");
+    doc.setFontSize(9);
+    doc.setTextColor(...muted);
+    doc.setFont("helvetica", "italic");
+    doc.text("Nenhuma vacina registrada.", margin + 2, y + 4);
+    y += 8;
   }
 
-  // ==================== Exames ====================
-  const exames = vacinasExames.filter(v => v.tipo === "exame");
+  // ============ EXAMES ============
   if (exames.length) {
-    sectionHeader("Exames");
-    exames.forEach(ex => {
-      ensureSpace(13);
+    sectionHeader("EXAMES REALIZADOS");
+    exames.forEach(e => {
+      ensureSpace(12);
       doc.setFillColor(239, 246, 255);
       doc.setDrawColor(191, 219, 254);
       doc.roundedRect(margin, y, pageW - margin * 2, 9, 1.5, 1.5, "FD");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
       doc.setTextColor(30, 64, 175);
-      doc.text(ex.nome, margin + 3, y + 5.5);
+      doc.text(e.tipo_exame, margin + 3, y + 5.8);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
+      doc.setFontSize(8);
       doc.setTextColor(...muted);
-      doc.text(`Sem ${ex.semana}  •  ${ex.data}  •  ${ex.status.toUpperCase()}`, pageW - margin - 3, y + 5.5, { align: "right" });
+      doc.text(`${e.data}  -  ${e.status}`, pageW - margin - 3, y + 5.8, { align: "right" });
       y += 11;
-      if (ex.resultado) linhaTexto(`  Resultado: ${ex.resultado}`, { size: 8 });
-      if (ex.observacoes) linhaTexto(`  Obs: ${ex.observacoes}`, { color: muted, size: 8 });
-    });
-  }
-
-  // ==================== Linha do tempo ====================
-  if (timelineEntries.length) {
-    sectionHeader("Linha do tempo / Consultas");
-    [...timelineEntries].sort((a, b) => b.week - a.week).forEach(t => {
-      ensureSpace(11);
-      // Bullet colorido
-      const cor: [number, number, number] = t.type === "vacina" ? [34, 197, 94]
-        : t.type === "exame" ? [59, 130, 246]
-        : [pr, pg, pb];
-      doc.setFillColor(...cor);
-      doc.circle(margin + 2.5, y + 3, 1.6, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.setTextColor(...dark);
-      doc.text(`Semana ${t.week} — ${t.event}`, margin + 7, y + 4);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(...muted);
-      doc.text(`${t.date} • ${t.type}`, pageW - margin - 3, y + 4, { align: "right" });
-      y += 5;
-      if (t.notes) {
-        const lines = doc.splitTextToSize(t.notes, pageW - margin * 2 - 10);
-        doc.setFontSize(8);
-        doc.setTextColor(...muted);
-        doc.text(lines, margin + 7, y + 3);
-        y += lines.length * 4 + 1;
+      if (e.resultado) {
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(7.5);
+        doc.setTextColor(...dark);
+        const lines = doc.splitTextToSize(`Resultado: ${e.resultado}`, pageW - margin * 2 - 6);
+        doc.text(lines, margin + 3, y + 1);
+        y += lines.length * 3.5 + 2;
       }
-      y += 2;
     });
+  } else {
+    sectionHeader("EXAMES REALIZADOS");
+    doc.setFontSize(9);
+    doc.setTextColor(...muted);
+    doc.setFont("helvetica", "italic");
+    doc.text("Nenhum exame registrado.", margin + 2, y + 4);
+    y += 8;
   }
 
-  // Rodapé em todas as páginas
+  // ============ QR CODE - Acesso ao cartao online ============
+  ensureSpace(60);
+  sectionHeader("ACESSO AO CARTAO ONLINE");
+  const qrSize = 38;
+  const qrX = margin + 2;
+  const qrY = y;
+  doc.addImage(qrData, "PNG", qrX, qrY, qrSize, qrSize);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...dark);
+  doc.text("Escaneie o QR Code", qrX + qrSize + 6, qrY + 8);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...muted);
+  const txt = doc.splitTextToSize(
+    "Acesse o cartao digital sempre atualizado, com novos exames, vacinas e medicoes em tempo real.",
+    pageW - margin * 2 - qrSize - 10);
+  doc.text(txt, qrX + qrSize + 6, qrY + 14);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(pr, pg, pb);
+  const linkLines = doc.splitTextToSize(cartaoUrl, pageW - margin * 2 - qrSize - 10);
+  doc.text(linkLines, qrX + qrSize + 6, qrY + qrSize - 4);
+  // make it clickable
+  doc.link(qrX + qrSize + 6, qrY + qrSize - 8, pageW - margin * 2 - qrSize - 10, 6, { url: cartaoUrl });
+  y += qrSize + 4;
+
+  // ============ Footer em todas as páginas ============
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
