@@ -714,8 +714,8 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
       <div className={chartCard}>
         <h4 className={chartTitle}>Curva de Ganho de Peso (kg)</h4>
         {pesoF.length === 0 ? <Vazio texto="Sem registros de peso no período." /> : (
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={pesoF}>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={pesoF} margin={{ top: 18, right: 12, left: 4, bottom: 18 }}>
               <defs>
                 <linearGradient id="pesoGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={palette.primary} stopOpacity={0.3} />
@@ -726,7 +726,9 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} label={{ value: "Semana gestacional", position: "insideBottom", offset: -2, fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} domain={["dataMin - 2", "dataMax + 2"]} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
-              <Area type="monotone" dataKey="peso" stroke={palette.primary} fill="url(#pesoGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.primary }} />
+              <Area type="monotone" dataKey="peso" stroke={palette.primary} fill="url(#pesoGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.primary }}>
+                <LabelList dataKey="peso" position="top" style={{ fontSize: 10, fill: palette.primary, fontWeight: 700 }} formatter={(v: number) => v.toFixed(1)} />
+              </Area>
             </AreaChart>
           </ResponsiveContainer>
         )}
@@ -736,8 +738,8 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
       <div className={chartCard}>
         <h4 className={chartTitle}>Curva Pressórica (mmHg) — referência: 90-140 / 60-90</h4>
         {pressaoF.length === 0 ? <Vazio texto="Sem registros pressóricos no período." /> : (
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={pressaoF}>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={pressaoF} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} domain={[50, 160]} />
@@ -745,8 +747,12 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <ReferenceArea y1={60} y2={90} fill="#22c55e" fillOpacity={0.05} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line type="monotone" dataKey="sistolica" name="Sistólica" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
-              <Line type="monotone" dataKey="diastolica" name="Diastólica" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey="sistolica" name="Sistólica" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }}>
+                <LabelList dataKey="sistolica" position="top" style={{ fontSize: 10, fill: "#ef4444", fontWeight: 700 }} />
+              </Line>
+              <Line type="monotone" dataKey="diastolica" name="Diastólica" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }}>
+                <LabelList dataKey="diastolica" position="bottom" style={{ fontSize: 10, fill: "#3b82f6", fontWeight: 700 }} />
+              </Line>
             </LineChart>
           </ResponsiveContainer>
         )}
@@ -755,17 +761,74 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
       {/* COMBINADO peso x PAM */}
       <div className={chartCard}>
         <h4 className={chartTitle}>Peso × Pressão Arterial Média</h4>
+        <p className="text-[10px] text-muted-foreground mb-2">Cruzamento útil para monitorar pré-eclâmpsia: ganho rápido de peso + PAM crescente é sinal de alerta.</p>
         {combinado.filter(c => c.peso && c.pam).length === 0 ? <Vazio texto="Necessário ter peso e pressão registrados." /> : (
-          <ResponsiveContainer width="100%" height={200}>
-            <ComposedChart data={combinado}>
+          <ResponsiveContainer width="100%" height={220}>
+            <ComposedChart data={combinado} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
               <YAxis yAxisId="left" tick={{ fontSize: 10 }} label={{ value: "Peso (kg)", angle: -90, position: "insideLeft", fontSize: 10 }} />
               <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} label={{ value: "PAM (mmHg)", angle: 90, position: "insideRight", fontSize: 10 }} />
+              <ReferenceLine yAxisId="right" y={105} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "PAM crítica", position: "right", fontSize: 9, fill: "#ef4444" }} />
               <Tooltip contentStyle={{ fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Area yAxisId="left" type="monotone" dataKey="peso" name="Peso" fill={palette.primary} stroke={palette.primary} fillOpacity={0.2} />
-              <Line yAxisId="right" type="monotone" dataKey="pam" name="PAM" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
+              <Area yAxisId="left" type="monotone" dataKey="peso" name="Peso" fill={palette.primary} stroke={palette.primary} fillOpacity={0.2}>
+                <LabelList dataKey="peso" position="top" style={{ fontSize: 9, fill: palette.primary, fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(1) : ""} />
+              </Area>
+              <Line yAxisId="right" type="monotone" dataKey="pam" name="PAM" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }}>
+                <LabelList dataKey="pam" position="bottom" style={{ fontSize: 9, fill: "#ef4444", fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(0) : ""} />
+              </Line>
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* CRUZAMENTO INTELIGENTE: Glicemia × Peso */}
+      <div className={chartCard}>
+        <h4 className={chartTitle}>Glicemia × Peso — risco de DMG</h4>
+        <p className="text-[10px] text-muted-foreground mb-2">Eleva­ções simultâneas de glicemia capilar e peso podem indicar resistência insulínica ou diabetes gestacional. Faixa normal: glicemia &lt; 95 mg/dL em jejum.</p>
+        {glicemiaPeso.filter(d => d.glicemia !== null).length === 0 ? <Vazio texto="Sem registros de glicemia no período." /> : (
+          <ResponsiveContainer width="100%" height={220}>
+            <ComposedChart data={glicemiaPeso} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="left" tick={{ fontSize: 10 }} domain={[60, 140]} label={{ value: "Glicemia (mg/dL)", angle: -90, position: "insideLeft", fontSize: 10 }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} label={{ value: "Peso (kg)", angle: 90, position: "insideRight", fontSize: 10 }} />
+              <ReferenceArea yAxisId="left" y1={70} y2={95} fill="#22c55e" fillOpacity={0.07} />
+              <ReferenceLine yAxisId="left" y={95} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: "Limite jejum 95", position: "right", fontSize: 9, fill: "#f59e0b" }} />
+              <ReferenceLine yAxisId="left" y={126} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "DMG 126", position: "right", fontSize: 9, fill: "#ef4444" }} />
+              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Line yAxisId="left" type="monotone" dataKey="glicemia" name="Glicemia" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} connectNulls>
+                <LabelList dataKey="glicemia" position="top" style={{ fontSize: 9, fill: "#f59e0b", fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(0) : ""} />
+              </Line>
+              <Line yAxisId="right" type="monotone" dataKey="peso" name="Peso" stroke={palette.primary} strokeWidth={2} dot={{ r: 4 }} connectNulls>
+                <LabelList dataKey="peso" position="bottom" style={{ fontSize: 9, fill: palette.primary, fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(1) : ""} />
+              </Line>
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* CRUZAMENTO INTELIGENTE: Altura uterina × Peso */}
+      <div className={chartCard}>
+        <h4 className={chartTitle}>Altura Uterina × Peso — proporcionalidade do crescimento</h4>
+        <p className="text-[10px] text-muted-foreground mb-2">A altura uterina deve crescer junto com o ganho de peso materno. Discrepâncias podem indicar restrição ou macrossomia fetal.</p>
+        {auPeso.filter(d => d.altura !== null && d.peso !== null).length === 0 ? <Vazio texto="Necessário ter AU e peso registrados." /> : (
+          <ResponsiveContainer width="100%" height={220}>
+            <ComposedChart data={auPeso} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="left" tick={{ fontSize: 10 }} label={{ value: "AU (cm)", angle: -90, position: "insideLeft", fontSize: 10 }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} label={{ value: "Peso (kg)", angle: 90, position: "insideRight", fontSize: 10 }} />
+              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Area yAxisId="left" type="monotone" dataKey="altura" name="Altura uterina" stroke={palette.accent} fill={palette.accent} fillOpacity={0.2} connectNulls>
+                <LabelList dataKey="altura" position="top" style={{ fontSize: 9, fill: palette.accent, fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(0) : ""} />
+              </Area>
+              <Line yAxisId="right" type="monotone" dataKey="peso" name="Peso" stroke={palette.primary} strokeWidth={2} dot={{ r: 4 }} connectNulls>
+                <LabelList dataKey="peso" position="bottom" style={{ fontSize: 9, fill: palette.primary, fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(1) : ""} />
+              </Line>
             </ComposedChart>
           </ResponsiveContainer>
         )}
@@ -775,8 +838,8 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
       <div className={chartCard}>
         <h4 className={chartTitle}>Altura Uterina (cm) — referência MS</h4>
         {auF.length === 0 ? <Vazio texto="Sem registros de altura uterina no período." /> : (
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={auF}>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={auF} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
               <defs>
                 <linearGradient id="auGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={palette.accent} stopOpacity={0.3} />
@@ -787,7 +850,9 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} domain={[0, 40]} />
               <Tooltip contentStyle={{ fontSize: 12 }} />
-              <Area type="monotone" dataKey="altura" stroke={palette.accent} fill="url(#auGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.accent }} />
+              <Area type="monotone" dataKey="altura" stroke={palette.accent} fill="url(#auGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.accent }}>
+                <LabelList dataKey="altura" position="top" style={{ fontSize: 10, fill: palette.accent, fontWeight: 700 }} formatter={(v: number) => v.toFixed(0)} />
+              </Area>
             </AreaChart>
           </ResponsiveContainer>
         )}
@@ -797,14 +862,16 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
       <div className={chartCard}>
         <h4 className={chartTitle}>BCF (bpm) — normal: 110-160</h4>
         {bcfF.length === 0 ? <Vazio texto="Sem registros de BCF no período." /> : (
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={bcfF}>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={bcfF} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} domain={[80, 180]} />
               <ReferenceArea y1={110} y2={160} fill="#22c55e" fillOpacity={0.07} />
               <Tooltip contentStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="bcf" name="BCF" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: "#10b981" }} />
+              <Line type="monotone" dataKey="bcf" name="BCF" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: "#10b981" }}>
+                <LabelList dataKey="bcf" position="top" style={{ fontSize: 10, fill: "#10b981", fontWeight: 700 }} />
+              </Line>
             </LineChart>
           </ResponsiveContainer>
         )}
