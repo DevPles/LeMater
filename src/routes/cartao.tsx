@@ -1031,10 +1031,11 @@ async function gerarPDFCartao(args: {
     doc.text(`Pag. ${pageNum} de ${totalPages}`, pageW - margin, pageH - 3.5, { align: "right" });
   };
 
-  // ======== Carregar foto + QR Code em paralelo ========
-  const [fotoData, qrData] = await Promise.all([
+  // ======== Carregar foto + QR Code + logo em paralelo ========
+  const [fotoData, qrData, logoData] = await Promise.all([
     patientInfo.fotoUrl ? imageToDataUrl(patientInfo.fotoUrl) : Promise.resolve(null),
     QRCode.toDataURL(cartaoUrl || "https://maedigital.app", { width: 240, margin: 1, color: { dark: palette.primary, light: "#ffffff" } }),
+    imageToDataUrl(logoHospitalUrl).catch(() => null),
   ]);
 
   // ============================================================
