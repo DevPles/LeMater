@@ -35,6 +35,20 @@ type Trimestre = {
   meses: MesInfo[];
 };
 
+function textoSeguro(valor: unknown): string {
+  if (valor == null) return "";
+  if (["string", "number", "boolean"].includes(typeof valor)) return String(valor);
+  if (Array.isArray(valor)) return valor.map(textoSeguro).filter(Boolean).join(" ");
+  if (typeof valor === "object") {
+    const item = valor as Record<string, unknown>;
+    return [item.titulo ?? item.title, item.descricao ?? item.description]
+      .map(textoSeguro)
+      .filter(Boolean)
+      .join(" — ");
+  }
+  return "";
+}
+
 const trimestres: Trimestre[] = [
   {
     numero: 1,
@@ -475,14 +489,16 @@ function GestacaoPage() {
                 No seu corpo
               </p>
               <ul className="space-y-3">
-                {mes.corpo.map((item) => (
+                {mes.corpo.map((item, itemIdx) => (
                   <li
-                    key={item.titulo}
+                    key={`${textoSeguro(item.titulo)}-${itemIdx}`}
                     className="pl-3 border-l-2 border-primary/40"
                   >
-                    <p className="text-sm font-medium text-foreground">{item.titulo}</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {textoSeguro(item.titulo)}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                      {item.descricao}
+                      {textoSeguro(item.descricao)}
                     </p>
                   </li>
                 ))}
@@ -494,14 +510,16 @@ function GestacaoPage() {
                 Como aliviar
               </p>
               <ul className="space-y-3">
-                {mes.alivio.map((item) => (
+                {mes.alivio.map((item, itemIdx) => (
                   <li
-                    key={item.titulo}
+                    key={`${textoSeguro(item.titulo)}-${itemIdx}`}
                     className="pl-3 border-l-2 border-accent"
                   >
-                    <p className="text-sm font-medium text-foreground">{item.titulo}</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {textoSeguro(item.titulo)}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                      {item.descricao}
+                      {textoSeguro(item.descricao)}
                     </p>
                   </li>
                 ))}
