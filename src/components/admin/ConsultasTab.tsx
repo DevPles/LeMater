@@ -402,7 +402,7 @@ export function ConsultasTab() {
                           type="button"
                           onClick={() => apagar(item)}
                           disabled={deletingId === item.id}
-                          className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline disabled:opacity-50"
+                          className="inline-flex items-center justify-center rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 h-8 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                           {deletingId === item.id ? "Apagando..." : "Apagar"}
                         </button>
