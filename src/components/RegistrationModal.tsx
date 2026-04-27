@@ -85,6 +85,12 @@ export default function RegistrationModal({
   const [loginErro, setLoginErro] = useState<string | null>(null);
   const [loginLoading, setLoginLoading] = useState(false);
 
+  // Forgot password fields
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotMsg, setForgotMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+
   // Step 1 fields
   const [nome, setNome] = useState("");
   const [cep, setCep] = useState("");
