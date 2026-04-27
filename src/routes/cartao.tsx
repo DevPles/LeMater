@@ -2303,7 +2303,7 @@ async function gerarPDFCartao(args: {
     });
 
     // Rows - tabela limpa, sem cor de fundo nas celulas
-    datas.forEach((d, ri) => {
+    datasMatriz.forEach((d, ri) => {
       const ry4 = matY + matHeaderH + ri * rowH;
       if (ri % 2 === 0) {
         doc.setFillColor(246, 247, 252);
@@ -2336,14 +2336,14 @@ async function gerarPDFCartao(args: {
     });
 
     // Bordas
-    const totalH = matHeaderH + datas.length * rowH;
+    const totalH = matHeaderH + datasMatriz.length * rowH;
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.3);
     doc.rect(faceX, matY, matTotalW, totalH, "S");
     doc.setDrawColor(220, 222, 230);
     doc.setLineWidth(0.1);
     // Linhas horizontais entre rows
-    for (let r = 1; r < datas.length; r++) {
+    for (let r = 1; r < datasMatriz.length; r++) {
       const y = matY + matHeaderH + r * rowH;
       doc.line(faceX, y, faceX + matTotalW, y);
     }
