@@ -7,6 +7,8 @@ type Props = {
   professionalUserId: string;
   /** Compact mode for sidebar inside video room */
   compact?: boolean;
+  /** Optional close handler (shows a close button in the header) */
+  onClose?: () => void;
 };
 
 type Tab = "obs" | "med" | "exame" | "imagem" | "vacina";
@@ -36,6 +38,7 @@ export function ConsultationNotesPanel({
   gestanteId,
   professionalUserId,
   compact = false,
+  onClose,
 }: Props) {
   const [tab, setTab] = useState<Tab>("obs");
   const [dum, setDum] = useState<string | null>(null);
@@ -234,15 +237,27 @@ export function ConsultationNotesPanel({
         compact ? "h-full" : ""
       }`}
     >
-      <div className="px-3 py-2 border-b border-border bg-muted/40">
-        <p className="text-xs font-bold uppercase tracking-wide text-foreground">
-          Anotações da consulta
-        </p>
-        <p className="text-[10px] text-muted-foreground">
-          {semanaAtual !== null
-            ? `Semana gestacional atual: ${semanaAtual}`
-            : "Semana gestacional não calculada (DUM ausente)"}
-        </p>
+      <div className="px-3 py-2 border-b border-border bg-muted/40 flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-wide text-foreground">
+            Anotações da consulta
+          </p>
+          <p className="text-[10px] text-muted-foreground">
+            {semanaAtual !== null
+              ? `Semana gestacional atual: ${semanaAtual}`
+              : "Semana gestacional não calculada (DUM ausente)"}
+          </p>
+        </div>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar anotações"
+            className="flex-shrink-0 w-8 h-8 rounded-full bg-background border border-border text-foreground text-base font-bold leading-none flex items-center justify-center hover:bg-muted transition"
+          >
+            ×
+          </button>
+        )}
       </div>
 
       {/* tabs */}
