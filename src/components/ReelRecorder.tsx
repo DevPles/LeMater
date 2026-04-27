@@ -232,22 +232,22 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
         )}
 
         {previewUrl && (
-          <div className="space-y-3">
-            <div className="aspect-[9/16] bg-black rounded-xl overflow-hidden">
+          <div className="space-y-2">
+            <div className="aspect-[9/16] max-h-[45vh] mx-auto bg-black rounded-lg overflow-hidden">
               <video src={previewUrl} controls playsInline className="w-full h-full object-contain" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-foreground">Título</label>
-              <Input value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Dê um título ao seu reel" maxLength={120} />
+              <label className="text-[11px] font-semibold text-foreground">Título</label>
+              <Input value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Título do reel" maxLength={120} className="h-8 text-sm" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-foreground">Descrição (opcional)</label>
-              <Textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={2} maxLength={500} />
+              <label className="text-[11px] font-semibold text-foreground">Descrição (opcional)</label>
+              <Textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={2} maxLength={500} className="text-sm" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-foreground">Categoria</label>
+              <label className="text-[11px] font-semibold text-foreground">Categoria</label>
               <Select value={categoria} onValueChange={setCategoria}>
-                <SelectTrigger><SelectValue placeholder="Escolha uma categoria" /></SelectTrigger>
+                <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Escolha uma categoria" /></SelectTrigger>
                 <SelectContent>
                   {categorias.map(c => (
                     <SelectItem key={c.slug} value={c.slug}>{c.nome}</SelectItem>
@@ -255,16 +255,17 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 pt-1">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => { setRecordedBlob(null); setPreviewUrl(null); setMode("choose"); }}
                 className="flex-1"
                 disabled={enviando}
               >
                 Refazer
               </Button>
-              <Button onClick={publicar} disabled={enviando || !titulo.trim()} className="flex-1 bg-primary text-primary-foreground">
+              <Button onClick={publicar} size="sm" disabled={enviando || !titulo.trim()} className="flex-1 bg-primary text-primary-foreground">
                 {enviando ? "Publicando..." : "Publicar"}
               </Button>
             </div>
