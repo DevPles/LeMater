@@ -1006,98 +1006,122 @@ async function gerarPDFCartao(args: {
   };
 
   // =============================================================
-  // PAGINA 1 - CAPA ABSTRATA MODERNA (apenas apresentacao)
-  // Sem dados clinicos, QR ou orientacoes - somente identidade visual
+  // PAGINA 1 - CAPA DO FOLDER (dividida em 2 faces)
+  // Esquerda  = CONTRACAPA (institucional sobrio)
+  // Direita   = CAPA FRONTAL (titulo + nome + data)
   // =============================================================
+  drawBaseFolderPage();
 
-  // Fundo navy ocupando toda a folha
+  // ===== METADE DIREITA: CAPA FRONTAL =====
+  // Fundo navy somente na capa frontal
   doc.setFillColor(pr, pg, pb);
-  doc.rect(0, 0, pageW, pageH, "F");
-
-  // ===== FORMAS ABSTRATAS DE FUNDO =====
-  // Grandes circulos concentricos translucidos (canto superior direito)
-  const cxAbs = pageW - 40;
-  const cyAbs = 40;
-  // Tons mais claros do navy para criar profundidade
-  doc.setFillColor(40, 32, 110);
-  doc.circle(cxAbs, cyAbs, 90, "F");
-  doc.setFillColor(60, 50, 140);
-  doc.circle(cxAbs, cyAbs, 60, "F");
-  doc.setFillColor(80, 70, 165);
-  doc.circle(cxAbs, cyAbs, 35, "F");
-  // Acento gold como ponto focal
+  doc.rect(halfW, 0, halfW, pageH, "F");
+  // Faixa gold superior (marca)
   doc.setFillColor(ar, ag, ab);
-  doc.circle(cxAbs - 18, cyAbs - 18, 8, "F");
+  doc.rect(halfW, 0, halfW, 6, "F");
+  // Faixa gold inferior
+  doc.rect(halfW, pageH - 6, halfW, 6, "F");
 
-  // Forma abstrata oposta (canto inferior esquerdo) - quarto de circulo gold
-  doc.setFillColor(ar, ag, ab);
-  doc.circle(20, pageH - 20, 55, "F");
-  doc.setFillColor(pr, pg, pb);
-  doc.circle(20, pageH - 20, 40, "F");
-  doc.setFillColor(ar, ag, ab);
-  doc.circle(20, pageH - 20, 22, "F");
-
-  // Linhas diagonais finas (textura abstrata) no centro-esquerda
-  doc.setDrawColor(ar, ag, ab);
-  doc.setLineWidth(0.3);
-  for (let i = 0; i < 12; i++) {
-    const y0 = 60 + i * 8;
-    doc.line(60, y0, 60 + 30, y0 - 30);
-  }
-
-  // Trio de circulos pequenos (acento decorativo)
-  doc.setFillColor(ar, ag, ab);
-  doc.circle(pageW / 2 - 10, pageH - 50, 1.8, "F");
-  doc.circle(pageW / 2, pageH - 50, 1.8, "F");
-  doc.circle(pageW / 2 + 10, pageH - 50, 1.8, "F");
-
-  // ===== BLOCO CENTRAL DE IDENTIDADE =====
-  // Faixa central horizontal com transparencia visual
-  const bandY = pageH / 2 - 38;
-  const bandH = 76;
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, bandY, pageW, bandH, "F");
-  // Linha gold superior e inferior da faixa
-  doc.setFillColor(ar, ag, ab);
-  doc.rect(0, bandY, pageW, 2, "F");
-  doc.rect(0, bandY + bandH - 2, pageW, 2, "F");
-
-  // ===== TIPOGRAFIA CENTRAL =====
-  // Pequena marca acima do titulo
+  // Selo institucional pequeno no topo
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(ar, ag, ab);
-  doc.text("U N A E R P   /   D R S   X I I I", pageW / 2, bandY + 14, { align: "center" });
+  doc.text("UNAERP  /  DRS XIII", halfW + halfW / 2, 16, { align: "center" });
 
-  // Titulo principal grande
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(38);
-  doc.setTextColor(pr, pg, pb);
-  doc.text("CARTAO DA GESTANTE", pageW / 2, bandY + 36, { align: "center" });
-
-  // Linha curta gold abaixo do titulo
-  const lineLen = 40;
+  // Bloco branco central elegante com titulo
+  const coverBandY = pageH / 2 - 32;
+  const coverBandH = 64;
+  doc.setFillColor(255, 255, 255);
+  doc.rect(halfW + 10, coverBandY, halfW - 20, coverBandH, "F");
   doc.setFillColor(ar, ag, ab);
-  doc.rect(pageW / 2 - lineLen / 2, bandY + 42, lineLen, 1.2, "F");
+  doc.rect(halfW + 10, coverBandY, halfW - 20, 1.5, "F");
+  doc.rect(halfW + 10, coverBandY + coverBandH - 1.5, halfW - 20, 1.5, "F");
 
-  // Subtitulo
-  doc.setFont("helvetica", "normal");
+  // Titulo principal
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(...muted);
-  doc.text("Acompanhamento Pre-Natal  -  Sistema MaeDigital", pageW / 2, bandY + 54, { align: "center" });
-
-  // Nome da gestante (apresentacao apenas, sem outros dados)
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
+  doc.text("CARTAO DIGITAL DA", halfW + halfW / 2, coverBandY + 16, { align: "center" });
+  doc.setFontSize(30);
   doc.setTextColor(pr, pg, pb);
-  doc.text(patientInfo.name.toUpperCase(), pageW / 2, bandY + 66, { align: "center" });
+  doc.text("GESTANTE", halfW + halfW / 2, coverBandY + 34, { align: "center" });
+  // Linha gold curta
+  const cLineLen = 28;
+  doc.setFillColor(ar, ag, ab);
+  doc.rect(halfW + halfW / 2 - cLineLen / 2, coverBandY + 40, cLineLen, 1, "F");
+  // Subtitulo
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...muted);
+  doc.text("Acompanhamento Pre-Natal", halfW + halfW / 2, coverBandY + 50, { align: "center" });
+  doc.text("Sistema MaeDigital", halfW + halfW / 2, coverBandY + 56, { align: "center" });
 
-  // ===== RODAPE DA CAPA =====
-  // Apenas data de emissao, discreto
+  // Nome da gestante (em destaque na parte inferior da capa)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(255, 255, 255);
+  doc.text(patientInfo.name.toUpperCase(), halfW + halfW / 2, pageH - 22, { align: "center" });
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(ar, ag, ab);
-  doc.text(`EMITIDO EM ${formatBR(new Date()).toUpperCase()}`, pageW / 2, pageH - 14, { align: "center" });
+  doc.text(`EMITIDO EM ${formatBR(new Date()).toUpperCase()}`, halfW + halfW / 2, pageH - 14, { align: "center" });
+
+  // ===== METADE ESQUERDA: CONTRACAPA (sobria, sem QR/links) =====
+  // Fundo branco neutro, info institucional no rodape
+  doc.setTextColor(...muted);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.text("UNAERP  /  DRS XIII", 14, pageH - 22);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.text("Universidade de Ribeirao Preto", 14, pageH - 17);
+  doc.text("Departamento Regional de Saude XIII", 14, pageH - 13);
+
+  // Pequena marca decorativa centralizada
+  doc.setFillColor(pr, pg, pb);
+  doc.rect(14, 14, 28, 1.5, "F");
+  doc.setFillColor(ar, ag, ab);
+  doc.rect(14, 16, 14, 1.5, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(pr, pg, pb);
+  doc.text("DOCUMENTO DE ACOMPANHAMENTO PRE-NATAL", 14, 24);
+
+  // Bloco central da contracapa: ficha de identificacao discreta
+  const idY = pageH / 2 - 32;
+  const idW = halfW - 28;
+  doc.setDrawColor(220, 220, 230);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(14, idY, idW, 64, 2, 2, "S");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(pr, pg, pb);
+  doc.text("IDENTIFICACAO DA GESTANTE", 18, idY + 7);
+  doc.setDrawColor(pr, pg, pb);
+  doc.setLineWidth(0.3);
+  doc.line(18, idY + 9, 14 + idW - 4, idY + 9);
+
+  const idFields = [
+    { l: "Nome", v: patientInfo.name },
+    { l: "Idade", v: `${patientInfo.age} anos` },
+    { l: "Tipo sanguineo", v: patientInfo.bloodType || "-" },
+    { l: "Cidade / Bairro", v: `${patientInfo.cidade ?? "-"} / ${patientInfo.bairro ?? "-"}` },
+    { l: "Unidade de saude", v: patientInfo.unidadeSaude ?? "-" },
+  ];
+  let idFy = idY + 16;
+  idFields.forEach((f) => {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...muted);
+    doc.text(f.l.toUpperCase(), 18, idFy);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...dark);
+    const v = doc.splitTextToSize(f.v, idW - 8)[0];
+    doc.text(v, 18, idFy + 4);
+    idFy += 9.5;
+  });
 
 
 
