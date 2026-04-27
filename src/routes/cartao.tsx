@@ -1845,7 +1845,7 @@ async function gerarPDFCartao(args: {
       }
 
       // TABELA logo abaixo do grafico, dentro da mesma face
-      drawTableBox(xFace, yTable, faceW, tableH, param, items, accent);
+      drawTableBox(xFace, yTable, faceW, tableH, paramLabel, items, accent);
 
       posInPage = (posInPage + 1) % blocksPerPage;
     });
