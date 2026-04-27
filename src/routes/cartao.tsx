@@ -903,61 +903,64 @@ function GraficosTab({ palette, dum }: { palette: Palette; dum: string }) {
   const chartTitle = "font-display font-semibold text-sm text-foreground mb-3";
 
   const [periodo, setPeriodo] = useState<Periodo>("todos");
-  // Para "custom" — calendário por data (DUM ⇒ semana)
-  const [dataInicio, setDataInicio] = useState<string>("");
-  const [dataFim, setDataFim] = useState<string>("");
+  // Para "custom" — calendário inteligente com range
+  const [range, setRange] = useState<DateRange | undefined>(undefined);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
-  // Converte data ISO (yyyy-mm-dd) → semana gestacional
-  const dataParaSemana = (iso: string): number | null => {
-    if (!iso) return null;
-    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return null;
-    const br = `${m[3]}/${m[2]}/${m[1]}`;
+  const dateToSemana = (d: Date | undefined): number | null => {
+    if (!d) return null;
+    const br = formatBR(d);
     const s = semanaGestacional(br, dum);
     return s > 0 ? s : null;
   };
 
-  const range = useMemo(() => {
+  const semanaRange = useMemo(() => {
     if (periodo === "1tri") return { min: 1, max: 13 };
     if (periodo === "2tri") return { min: 14, max: 27 };
     if (periodo === "3tri") return { min: 28, max: 42 };
     if (periodo === "custom") {
-      const min = dataParaSemana(dataInicio) ?? 1;
-      const max = dataParaSemana(dataFim) ?? 42;
+      const min = dateToSemana(range?.from) ?? 1;
+      const max = dateToSemana(range?.to) ?? 42;
       return { min: Math.min(min, max), max: Math.max(min, max) };
     }
     return { min: 0, max: 42 };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [periodo, dataInicio, dataFim]);
+  }, [periodo, range]);
 
   const filtrar = <T extends { semana: number }>(arr: T[]) =>
-    arr.filter(d => d.semana >= range.min && d.semana <= range.max);
+    arr.filter(d => d.semana >= semanaRange.min && d.semana <= semanaRange.max);
 
   const pesoFiltrado = filtrar(pesoData);
   const pressaoFiltrada = filtrar(pressaoData);
   const auFiltrada = filtrar(alturaUterinaData);
   const bcfFiltrado = filtrar(bcfData);
 
-  const filtros: { key: Periodo; label: string }[] = [
+  const filtros: { key: Exclude<Periodo, "custom">; label: string }[] = [
     { key: "todos", label: "Evolução Total" },
     { key: "1tri", label: "1º Trim." },
     { key: "2tri", label: "2º Trim." },
     { key: "3tri", label: "3º Trim." },
-    { key: "custom", label: "Calendário" },
   ];
+
+  const calendarioAtivo = periodo === "custom";
+  const labelCalendario = range?.from && range?.to
+    ? `${format(range.from, "dd/MM", { locale: ptBR })} → ${format(range.to, "dd/MM", { locale: ptBR })}`
+    : range?.from
+      ? format(range.from, "dd/MM/yyyy", { locale: ptBR })
+      : null;
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
       {/* Filtros inteligentes */}
       <div className="bg-card rounded-2xl p-3 shadow-sm border border-border">
         <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Filtrar período</p>
-        <div className="flex flex-wrap gap-1.5 mb-2">
+        <div className="flex flex-wrap items-center gap-1.5">
           {filtros.map(f => {
             const ativo = periodo === f.key;
             return (
               <button
                 key={f.key}
-                onClick={() => setPeriodo(f.key)}
+                onClick={() => { setPeriodo(f.key); setRange(undefined); }}
                 className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border"
                 style={{
                   backgroundColor: ativo ? palette.primary : "transparent",
@@ -969,31 +972,62 @@ function GraficosTab({ palette, dum }: { palette: Palette; dum: string }) {
               </button>
             );
           })}
+
+          {/* Botão de calendário (ícone) */}
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <button
+                onClick={() => setPeriodo("custom")}
+                className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border inline-flex items-center gap-1.5"
+                style={{
+                  backgroundColor: calendarioAtivo ? palette.primary : "transparent",
+                  color: calendarioAtivo ? "#fff" : palette.primary,
+                  borderColor: palette.primary,
+                }}
+                aria-label="Selecionar intervalo no calendário"
+              >
+                <CalendarIcon className="w-3.5 h-3.5" />
+                {labelCalendario ?? "Calendário"}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto p-0 pointer-events-auto"
+              align="start"
+              sideOffset={6}
+            >
+              <Calendar
+                mode="range"
+                selected={range}
+                onSelect={(r) => {
+                  setRange(r);
+                  setPeriodo("custom");
+                  if (r?.from && r?.to) setCalendarOpen(false);
+                }}
+                numberOfMonths={2}
+                locale={ptBR}
+                defaultMonth={range?.from ?? (parseBR(dum) ?? new Date())}
+                className="p-3 pointer-events-auto"
+              />
+              <div className="flex items-center justify-between gap-2 p-2 border-t border-border">
+                <button
+                  onClick={() => { setRange(undefined); setPeriodo("todos"); setCalendarOpen(false); }}
+                  className="text-[11px] font-semibold text-muted-foreground hover:text-foreground px-2 py-1"
+                >
+                  Limpar
+                </button>
+                <button
+                  onClick={() => setCalendarOpen(false)}
+                  className="text-[11px] font-semibold px-3 py-1 rounded-full text-white"
+                  style={{ backgroundColor: palette.primary }}
+                >
+                  Aplicar
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
-        {periodo === "custom" && (
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <div>
-              <label className="text-[10px] font-medium text-muted-foreground mb-1 block">Início</label>
-              <input
-                type="date"
-                value={dataInicio}
-                onChange={e => setDataInicio(e.target.value)}
-                className="w-full h-9 text-xs rounded-xl border border-border bg-background px-2"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-medium text-muted-foreground mb-1 block">Fim</label>
-              <input
-                type="date"
-                value={dataFim}
-                onChange={e => setDataFim(e.target.value)}
-                className="w-full h-9 text-xs rounded-xl border border-border bg-background px-2"
-              />
-            </div>
-          </div>
-        )}
         <p className="text-[10px] text-muted-foreground mt-2">
-          Mostrando semana {range.min} → {range.max}
+          Mostrando semana {semanaRange.min} → {semanaRange.max}
         </p>
       </div>
 
