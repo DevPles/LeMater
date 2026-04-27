@@ -1140,16 +1140,22 @@ async function gerarPDFCartao(args: {
   doc.setFontSize(7.5);
   doc.text("Universidade de Ribeirao Preto", 14, pageH - 13);
 
-  // Pequena marca decorativa centralizada
-  doc.setFillColor(pr, pg, pb);
-  doc.rect(14, 14, 28, 1.5, "F");
-  doc.setFillColor(ar, ag, ab);
-  doc.rect(14, 16, 14, 1.5, "F");
+  // Pequena marca decorativa centralizada / logo institucional
+  if (logoData) {
+    const logoW2 = 50;
+    const logoH2 = 21;
+    doc.addImage(logoData, "PNG", 14, 12, logoW2, logoH2);
+  } else {
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(14, 14, 28, 1.5, "F");
+    doc.setFillColor(ar, ag, ab);
+    doc.rect(14, 16, 14, 1.5, "F");
+  }
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(pr, pg, pb);
-  doc.text("DOCUMENTO DE ACOMPANHAMENTO PRE-NATAL", 14, 24);
+  doc.text("DOCUMENTO DE ACOMPANHAMENTO PRE-NATAL", 14, 38);
 
   // Bloco central da contracapa: ficha de identificacao discreta
   const idY = pageH / 2 - 32;
