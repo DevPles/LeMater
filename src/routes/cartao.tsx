@@ -1144,12 +1144,12 @@ async function gerarPDFCartao(args: {
   if (logoData) {
     const logoW2 = 50;
     const logoH2 = 21;
-    doc.addImage(logoData, "PNG", 14, 12, logoW2, logoH2);
+    doc.addImage(logoData, "PNG", (halfW - logoW2) / 2, 12, logoW2, logoH2);
   } else {
     doc.setFillColor(pr, pg, pb);
-    doc.rect(14, 14, 28, 1.5, "F");
+    doc.rect((halfW - 28) / 2, 14, 28, 1.5, "F");
     doc.setFillColor(ar, ag, ab);
-    doc.rect(14, 16, 14, 1.5, "F");
+    doc.rect((halfW - 14) / 2, 16, 14, 1.5, "F");
   }
 
   doc.setFont("helvetica", "bold");
@@ -1663,13 +1663,14 @@ async function gerarPDFCartao(args: {
   doc.text("Linhas = data da consulta  |  Colunas = parametro clinico", rgX, rgY + 1.5);
   rgY += 4;
 
-  // Renderiza matriz cruzada na face direita
-  const matrizMaxY = pageH - 8;
+  // Renderiza matriz cruzada na face direita (limitada para deixar espaço ao histórico)
+  const matrizMaxY = pageH / 2 + 18; // matriz ocupa ~metade superior
   if (medicoes.length === 0) {
     doc.setFont("helvetica", "italic");
     doc.setFontSize(8);
     doc.setTextColor(...muted);
     doc.text("Nenhum dado clinico registrado.", rgX + 2, rgY + 5);
+    rgY += 10;
   } else {
     const medicoesMatrizR = medicoes.filter(m => !ehEstatura(m.parametro) && !ehTemperatura(m.parametro));
     const datasSetR = new Set<string>();
@@ -1680,7 +1681,7 @@ async function gerarPDFCartao(args: {
     });
     const matHeaderHR = 11;
     const availHR = matrizMaxY - rgY;
-    const maxRowsR = Math.max(1, Math.floor((availHR - matHeaderHR) / 3.6));
+    const maxRowsR = Math.max(1, Math.min(8, Math.floor((availHR - matHeaderHR) / 4.2)));
     const datasMatrizR = datasR.slice(0, maxRowsR);
 
     const matrixR = new Map<string, Map<string, string | number>>();
@@ -1797,6 +1798,71 @@ async function gerarPDFCartao(args: {
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.2);
     doc.line(rgX, rgY + matHeaderHR, rgX + matTotalWR, rgY + matHeaderHR);
+    rgY += totalHR + 4;
+  }
+
+  // ===== HISTÓRICO E OBSERVAÇÕES CLÍNICAS =====
+  const histLimY = pageH - 8;
+  if (rgY < histLimY - 8) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(pr, pg, pb);
+    doc.text("HISTORICO E OBSERVACOES CLINICAS", rgX, rgY);
+    doc.setDrawColor(220, 220, 230);
+    doc.setLineWidth(0.2);
+    doc.line(rgX, rgY + 1.5, rgX + rgW, rgY + 1.5);
+    rgY += 4;
+
+    const consultasOrd = [...consultas].sort((a, b) => {
+      const da = parseBR(a.data); const db = parseBR(b.data);
+      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+    });
+
+    if (consultasOrd.length === 0) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(7);
+      doc.setTextColor(...muted);
+      doc.text("Nenhuma consulta registrada.", rgX + 2, rgY + 4);
+    } else {
+      for (const c of consultasOrd) {
+        if (rgY > histLimY - 6) break;
+        // Header da consulta
+        doc.setFillColor(248, 248, 252);
+        doc.roundedRect(rgX, rgY, rgW, 5, 1, 1, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7);
+        doc.setTextColor(pr, pg, pb);
+        doc.text(`${c.data}  ${c.hora}`, rgX + 2, rgY + 3.4);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6.2);
+        doc.setTextColor(...dark);
+        const tituloC = c.titulo || c.tipo || "Consulta";
+        const statusTxt = c.status === "realizado" ? "REALIZADA" : "AGENDADA";
+        doc.text(tituloC, rgX + 24, rgY + 3.4);
+        doc.setTextColor(...muted);
+        doc.text(statusTxt, rgX + rgW - 2, rgY + 3.4, { align: "right" });
+        rgY += 5.4;
+
+        if (c.observacao && c.observacao.trim()) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(6.2);
+          doc.setTextColor(...dark);
+          const lines = doc.splitTextToSize(c.observacao.trim(), rgW - 4) as string[];
+          for (const ln of lines) {
+            if (rgY > histLimY - 2) break;
+            doc.text(ln, rgX + 3, rgY + 2.2);
+            rgY += 2.8;
+          }
+          rgY += 1.2;
+        } else {
+          doc.setFont("helvetica", "italic");
+          doc.setFontSize(5.8);
+          doc.setTextColor(190, 190, 200);
+          doc.text("Sem observacao registrada.", rgX + 3, rgY + 2);
+          rgY += 3.5;
+        }
+      }
+    }
   }
 
   // ================================================================
