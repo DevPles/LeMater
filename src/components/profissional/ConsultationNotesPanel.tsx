@@ -140,6 +140,7 @@ export function ConsultationNotesPanel({
     const { error } = await supabase.from("clinical_measurements").insert({
       gestante_id: gestanteId,
       registrado_por: professionalUserId,
+      appointment_id: appointmentId,
       parametro,
       valor,
       semana_gestacional: sem ? Number(sem) : semanaAtual,
@@ -165,6 +166,7 @@ export function ConsultationNotesPanel({
     const { error } = await supabase.from("exam_results").insert({
       gestante_id: gestanteId,
       registrado_por: professionalUserId,
+      appointment_id: appointmentId,
       tipo_exame,
       resultado,
       status,
@@ -189,6 +191,7 @@ export function ConsultationNotesPanel({
     const { error } = await supabase.from("image_exam_results").insert({
       gestante_id: gestanteId,
       registrado_por: professionalUserId,
+      appointment_id: appointmentId,
       tipo_exame,
       status,
       semana_gestacional: semanaAtual,
@@ -212,6 +215,7 @@ export function ConsultationNotesPanel({
     const { error } = await supabase.from("vaccinations").insert({
       gestante_id: gestanteId,
       registrado_por: professionalUserId,
+      appointment_id: appointmentId,
       vacina,
       observacao: observacao || null,
     });
