@@ -236,6 +236,20 @@ function CartaoPage() {
         resultado: r.resultado ?? undefined,
       })));
     }
+    if (cRes.data) {
+      setConsultas(cRes.data.map((r: any) => {
+        const dt = new Date(r.data_hora);
+        return {
+          id: r.id,
+          data: formatBR(dt),
+          hora: `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`,
+          titulo: r.titulo ?? undefined,
+          tipo: r.tipo_atendimento ?? undefined,
+          status: r.status,
+          observacao: r.observacao ?? undefined,
+        };
+      }));
+    }
   }, [session?.user?.id, isShared]);
 
   useEffect(() => { carregarDados(); }, [carregarDados]);
