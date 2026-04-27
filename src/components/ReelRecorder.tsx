@@ -69,15 +69,19 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
         audio: true,
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play().catch(() => {});
-      }
       setMode("record");
     } catch (e: any) {
       toast.error("Não foi possível acessar câmera/microfone", { description: e?.message });
     }
   }
+
+  // Conectar stream ao <video> quando entrar no modo record
+  useEffect(() => {
+    if (mode === "record" && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [mode]);
 
   function startRecording() {
     if (!streamRef.current) return;
