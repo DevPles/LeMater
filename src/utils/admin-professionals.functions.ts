@@ -28,7 +28,13 @@ export const updateProfessional = createServerFn({ method: "POST" })
     }
 
     // 1. Atualiza professionals
-    const profPatch: Record<string, unknown> = {};
+    const profPatch: {
+      nome?: string;
+      especialidade?: string;
+      registro?: string | null;
+      bio?: string | null;
+      ativo?: boolean;
+    } = {};
     if (data.patch.nome !== undefined) profPatch.nome = data.patch.nome;
     if (data.patch.especialidade !== undefined) profPatch.especialidade = data.patch.especialidade;
     if (data.patch.registro !== undefined) profPatch.registro = data.patch.registro;
@@ -44,7 +50,7 @@ export const updateProfessional = createServerFn({ method: "POST" })
     }
 
     // 2. Atualiza profiles (nome / email espelhado)
-    const profilesPatch: Record<string, unknown> = {};
+    const profilesPatch: { nome?: string; email?: string } = {};
     if (data.patch.nome !== undefined) profilesPatch.nome = data.patch.nome;
     if (data.novoEmail) profilesPatch.email = data.novoEmail;
     if (Object.keys(profilesPatch).length > 0) {
