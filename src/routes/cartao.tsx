@@ -726,9 +726,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} label={{ value: "Semana gestacional", position: "insideBottom", offset: -2, fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} domain={["dataMin - 2", "dataMax + 2"]} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
-              <Area type="monotone" dataKey="peso" stroke={palette.primary} fill="url(#pesoGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.primary }}>
-                <LabelList dataKey="peso" position="top" style={{ fontSize: 10, fill: palette.primary, fontWeight: 700 }} formatter={(v: number) => v.toFixed(1)} />
-              </Area>
+              <Area type="monotone" dataKey="peso" stroke={palette.primary} fill="url(#pesoGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.primary }} />
             </AreaChart>
           </ResponsiveContainer>
         )}
@@ -768,12 +766,8 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <ReferenceLine yAxisId="right" y={105} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "PAM crítica", position: "right", fontSize: 9, fill: "#ef4444" }} />
               <Tooltip contentStyle={{ fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Area yAxisId="left" type="monotone" dataKey="peso" name="Peso" fill={palette.primary} stroke={palette.primary} fillOpacity={0.2}>
-                <LabelList dataKey="peso" position="top" style={{ fontSize: 9, fill: palette.primary, fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(1) : ""} />
-              </Area>
-              <Line yAxisId="right" type="monotone" dataKey="pam" name="PAM" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }}>
-                <LabelList dataKey="pam" position="bottom" style={{ fontSize: 9, fill: "#ef4444", fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(0) : ""} />
-              </Line>
+              <Area yAxisId="left" type="monotone" dataKey="peso" name="Peso" fill={palette.primary} stroke={palette.primary} fillOpacity={0.2} />
+              <Line yAxisId="right" type="monotone" dataKey="pam" name="PAM" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
             </ComposedChart>
           </ResponsiveContainer>
         )}
@@ -795,12 +789,8 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <ReferenceLine yAxisId="left" y={126} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "DMG 126", position: "right", fontSize: 9, fill: "#ef4444" }} />
               <Tooltip contentStyle={{ fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line yAxisId="left" type="monotone" dataKey="glicemia" name="Glicemia" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} connectNulls>
-                <LabelList dataKey="glicemia" position="top" style={{ fontSize: 9, fill: "#f59e0b", fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(0) : ""} />
-              </Line>
-              <Line yAxisId="right" type="monotone" dataKey="peso" name="Peso" stroke={palette.primary} strokeWidth={2} dot={{ r: 4 }} connectNulls>
-                <LabelList dataKey="peso" position="bottom" style={{ fontSize: 9, fill: palette.primary, fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(1) : ""} />
-              </Line>
+              <Line yAxisId="left" type="monotone" dataKey="glicemia" name="Glicemia" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} connectNulls />
+              <Line yAxisId="right" type="monotone" dataKey="peso" name="Peso" stroke={palette.primary} strokeWidth={2} dot={{ r: 4 }} connectNulls />
             </ComposedChart>
           </ResponsiveContainer>
         )}
@@ -819,12 +809,8 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} label={{ value: "Peso (kg)", angle: 90, position: "insideRight", fontSize: 10 }} />
               <Tooltip contentStyle={{ fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Area yAxisId="left" type="monotone" dataKey="altura" name="Altura uterina" stroke={palette.accent} fill={palette.accent} fillOpacity={0.2} connectNulls>
-                <LabelList dataKey="altura" position="top" style={{ fontSize: 9, fill: palette.accent, fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(0) : ""} />
-              </Area>
-              <Line yAxisId="right" type="monotone" dataKey="peso" name="Peso" stroke={palette.primary} strokeWidth={2} dot={{ r: 4 }} connectNulls>
-                <LabelList dataKey="peso" position="bottom" style={{ fontSize: 9, fill: palette.primary, fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(1) : ""} />
-              </Line>
+              <Area yAxisId="left" type="monotone" dataKey="altura" name="Altura uterina" stroke={palette.accent} fill={palette.accent} fillOpacity={0.2} connectNulls />
+              <Line yAxisId="right" type="monotone" dataKey="peso" name="Peso" stroke={palette.primary} strokeWidth={2} dot={{ r: 4 }} connectNulls />
             </ComposedChart>
           </ResponsiveContainer>
         )}
@@ -846,9 +832,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} domain={[0, 40]} />
               <Tooltip contentStyle={{ fontSize: 12 }} />
-              <Area type="monotone" dataKey="altura" stroke={palette.accent} fill="url(#auGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.accent }}>
-                <LabelList dataKey="altura" position="top" style={{ fontSize: 10, fill: palette.accent, fontWeight: 700 }} formatter={(v: number) => v.toFixed(0)} />
-              </Area>
+              <Area type="monotone" dataKey="altura" stroke={palette.accent} fill="url(#auGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.accent }} />
             </AreaChart>
           </ResponsiveContainer>
         )}
