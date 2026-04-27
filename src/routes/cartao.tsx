@@ -365,6 +365,7 @@ function CartaoPage() {
       medicoes,
       vacinas,
       exames,
+      consultas,
       series,
       ganhoPeso,
       imc,
