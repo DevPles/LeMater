@@ -1519,29 +1519,28 @@ async function gerarPDFCartao(args: {
   // ============ QR CODE - Acesso ao cartao online ============
   ensureSpace(60);
   sectionHeader("ACESSO AO CARTAO ONLINE");
-  const qrSize = 38;
-  const qrX = margin + 2;
-  const qrY = y;
-  doc.addImage(qrData, "PNG", qrX, qrY, qrSize, qrSize);
+  const qrSize2 = 38;
+  const qrX2 = margin + 2;
+  const qrY2 = y;
+  doc.addImage(qrData, "PNG", qrX2, qrY2, qrSize2, qrSize2);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...dark);
-  doc.text("Escaneie o QR Code", qrX + qrSize + 6, qrY + 8);
+  doc.text("Escaneie o QR Code", qrX2 + qrSize2 + 6, qrY2 + 8);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(...muted);
   const txt = doc.splitTextToSize(
     "Acesse o cartao digital sempre atualizado, com novos exames, vacinas e medicoes em tempo real.",
-    pageW - margin * 2 - qrSize - 10);
-  doc.text(txt, qrX + qrSize + 6, qrY + 14);
+    pageW - margin * 2 - qrSize2 - 10);
+  doc.text(txt, qrX2 + qrSize2 + 6, qrY2 + 14);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(pr, pg, pb);
-  const linkLines = doc.splitTextToSize(cartaoUrl, pageW - margin * 2 - qrSize - 10);
-  doc.text(linkLines, qrX + qrSize + 6, qrY + qrSize - 4);
-  // make it clickable
-  doc.link(qrX + qrSize + 6, qrY + qrSize - 8, pageW - margin * 2 - qrSize - 10, 6, { url: cartaoUrl });
-  y += qrSize + 4;
+  const linkLines = doc.splitTextToSize(cartaoUrl, pageW - margin * 2 - qrSize2 - 10);
+  doc.text(linkLines, qrX2 + qrSize2 + 6, qrY2 + qrSize2 - 4);
+  doc.link(qrX2 + qrSize2 + 6, qrY2 + qrSize2 - 8, pageW - margin * 2 - qrSize2 - 10, 6, { url: cartaoUrl });
+  y += qrSize2 + 4;
 
   // ============ Footer em todas as páginas ============
   const totalPages = doc.getNumberOfPages();
