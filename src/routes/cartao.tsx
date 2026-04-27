@@ -990,21 +990,44 @@ async function gerarPDFCartao(args: {
   // ============================================================
   const halfW = pageW / 2;
 
+  // Helper genérico de fundo + linha de dobra ============
+  const drawBaseFolderPage = () => {
+    doc.setFillColor(252, 252, 254);
+    doc.rect(0, 0, pageW, pageH, "F");
+    doc.setDrawColor(180, 180, 190);
+    doc.setLineDashPattern([2, 2], 0);
+    doc.setLineWidth(0.4);
+    doc.line(halfW, 6, halfW, pageH - 6);
+    doc.setLineDashPattern([], 0);
+    doc.setTextColor(160, 160, 170);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.text("DOBRE AQUI", halfW, pageH / 2, { align: "center", angle: 90 });
+  };
+
   // =============================================================
-  // PAGINA 1 - CAPA EXTERNA
-  // Esquerda = contracapa (acesso/QR)  |  Direita = capa frontal (identidade)
+  // PAGINA 1 - CAPA
+  // Esquerda = contracapa rica (resumo + QR)  |  Direita = capa frontal vibrante
   // =============================================================
-  // Fundo da capa frontal (direita) - cor primaria
-  doc.setFillColor(252, 252, 254);
-  doc.rect(0, 0, halfW, pageH, "F");
+  // Fundo direito (capa frontal): cor primaria
   doc.setFillColor(pr, pg, pb);
   doc.rect(halfW, 0, halfW, pageH, "F");
+  // Faixa decorativa diagonal (gold)
   doc.setFillColor(ar, ag, ab);
-  doc.ellipse(pageW - 6, pageH - 6, 60, 28, "F");
+  doc.triangle(halfW, 0, pageW, 0, pageW, 22, "F");
+  doc.ellipse(pageW - 10, pageH - 14, 70, 36, "F");
   doc.setFillColor(lr, lg, lb);
-  doc.ellipse(halfW + 12, 6, 50, 18, "F");
+  doc.ellipse(halfW + 18, 12, 38, 14, "F");
+
+  // Fundo esquerdo (contracapa): tom claro
+  doc.setFillColor(248, 248, 252);
+  doc.rect(0, 0, halfW, pageH, "F");
+  // Faixa lateral decorativa (gold sutil)
+  doc.setFillColor(ar, ag, ab);
+  doc.rect(0, 0, 5, pageH, "F");
+
   // Linha de dobra
-  doc.setDrawColor(180, 180, 190);
+  doc.setDrawColor(200, 200, 210);
   doc.setLineDashPattern([2, 2], 0);
   doc.setLineWidth(0.4);
   doc.line(halfW, 6, halfW, pageH - 6);
@@ -1014,122 +1037,209 @@ async function gerarPDFCartao(args: {
   doc.setFontSize(6);
   doc.text("DOBRE AQUI", halfW, pageH / 2, { align: "center", angle: 90 });
 
-  // CAPA FRONTAL (DIREITA)
-  doc.setTextColor(255, 255, 255);
+  // ===== CAPA FRONTAL (DIREITA) =====
+  doc.setTextColor(pr, pg, pb);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.text("MAEDIGITAL  -  UNAERP", halfW + 16, 18);
+  doc.setFontSize(11);
+  doc.text("MAEDIGITAL  -  UNAERP", halfW + 16, 14);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.text("Cartao Digital da Gestante", halfW + 16, 24);
+  doc.setFontSize(8.5);
+  doc.text("Cartao Digital da Gestante", halfW + 16, 19);
 
-  const photoSize = 46;
+  // Foto grande
+  const photoSize = 58;
   const photoX = halfW + (halfW - photoSize) / 2;
-  const photoY = 42;
+  const photoY = 32;
   if (fotoData) {
     try {
       doc.setFillColor(255, 255, 255);
-      doc.roundedRect(photoX - 1.5, photoY - 1.5, photoSize + 3, photoSize + 3, 4, 4, "F");
+      doc.roundedRect(photoX - 2, photoY - 2, photoSize + 4, photoSize + 4, 5, 5, "F");
       doc.addImage(fotoData, "JPEG", photoX, photoY, photoSize, photoSize, undefined, "FAST");
     } catch { /* ignore */ }
   } else {
     doc.setFillColor(255, 255, 255);
-    doc.roundedRect(photoX, photoY, photoSize, photoSize, 4, 4, "F");
+    doc.roundedRect(photoX, photoY, photoSize, photoSize, 5, 5, "F");
     doc.setTextColor(pr, pg, pb);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
+    doc.setFontSize(28);
     const ini = patientInfo.name.split(" ").map(n => n[0]).slice(0, 2).join("");
-    doc.text(ini, photoX + photoSize / 2, photoY + photoSize / 2 + 6, { align: "center" });
+    doc.text(ini, photoX + photoSize / 2, photoY + photoSize / 2 + 8, { align: "center" });
   }
 
+  // Nome em destaque
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(17);
-  doc.text(patientInfo.name, halfW + halfW / 2, photoY + photoSize + 12, { align: "center", maxWidth: halfW - 20 });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.text(`${patientInfo.age} anos  -  Sangue ${patientInfo.bloodType}`, halfW + halfW / 2, photoY + photoSize + 19, { align: "center" });
+  doc.setFontSize(19);
+  doc.text(patientInfo.name, halfW + halfW / 2, photoY + photoSize + 13, { align: "center", maxWidth: halfW - 24 });
+  // Tag bebê
+  doc.setFillColor(ar, ag, ab);
+  const tagW = 44;
+  doc.roundedRect(halfW + (halfW - tagW) / 2, photoY + photoSize + 17, tagW, 8, 4, 4, "F");
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.text(`Bebe: ${palette.label}`, halfW + halfW / 2, photoY + photoSize + 24, { align: "center" });
+  doc.setTextColor(pr, pg, pb);
+  doc.text(`BEBE: ${palette.label.toUpperCase()}`, halfW + halfW / 2, photoY + photoSize + 22.6, { align: "center" });
 
-  // KPIs principais na capa
-  const capaKpis = [
+  // KPIs grade 2x2 grandes
+  const ckGap = 4;
+  const ckBoxW = (halfW - 36 - ckGap) / 2;
+  const ckBoxH = 22;
+  const ckBaseY = photoY + photoSize + 32;
+  const ckList = [
     { l: "SEMANAS", v: `${patientInfo.weeks}` },
     { l: "DPP", v: patientInfo.dpp },
+    { l: "IDADE", v: `${patientInfo.age}a` },
+    { l: "SANGUE", v: patientInfo.bloodType || "-" },
   ];
-  let cky = photoY + photoSize + 32;
-  capaKpis.forEach((k) => {
-    doc.setFillColor(255, 255, 255, 0.15 as never);
+  ckList.forEach((k, i) => {
+    const cx = halfW + 18 + (i % 2) * (ckBoxW + ckGap);
+    const cy = ckBaseY + Math.floor(i / 2) * (ckBoxH + ckGap);
+    doc.setFillColor(255, 255, 255);
     doc.setDrawColor(255, 255, 255);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(halfW + 18, cky, halfW - 36, 11, 1.5, 1.5, "S");
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.setTextColor(230, 230, 240);
-    doc.text(k.l, halfW + 22, cky + 4.5);
+    doc.roundedRect(cx, cy, ckBoxW, ckBoxH, 2, 2, "F");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(255, 255, 255);
-    doc.text(k.v, halfW + halfW - 22, cky + 7.5, { align: "right" });
-    cky += 13;
+    doc.setFontSize(7);
+    doc.setTextColor(...muted);
+    doc.text(k.l, cx + 4, cy + 6);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(pr, pg, pb);
+    doc.text(k.v, cx + 4, cy + 16);
   });
 
-  // CONTRACAPA (ESQUERDA) - QR e acesso digital
+  // Rodape capa frontal
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(7.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text("Cuidando de voce e do seu bebe", halfW + halfW / 2, pageH - 14, { align: "center" });
+
+  // ===== CONTRACAPA (ESQUERDA) =====
   const ccX = 16;
   const ccW = halfW - 32;
+
   doc.setTextColor(pr, pg, pb);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("ACESSO DIGITAL", ccX, 22);
-  doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.5);
-  doc.line(ccX, 25, ccX + ccW, 25);
-
+  doc.setFontSize(13);
+  doc.text("CARTAO DIGITAL", ccX, 18);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.setTextColor(...dark);
-  const ccTxt = doc.splitTextToSize(
-    "Escaneie o QR Code abaixo para acessar o cartao digital sempre atualizado, com novos exames, vacinas e medicoes em tempo real.",
-    ccW,
-  );
-  doc.text(ccTxt, ccX, 33);
+  doc.setFontSize(8);
+  doc.setTextColor(...muted);
+  doc.text("Acompanhamento gestacional completo", ccX, 23);
 
-  const qrCapa = 50;
-  const qrCapaX = ccX + (ccW - qrCapa) / 2;
-  const qrCapaY = 56;
+  // Bloco resumo da gestacao
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(225, 225, 230);
-  doc.roundedRect(qrCapaX - 2, qrCapaY - 2, qrCapa + 4, qrCapa + 4, 2, 2, "FD");
-  try { doc.addImage(qrData, "PNG", qrCapaX, qrCapaY, qrCapa, qrCapa); } catch { /* ignore */ }
-
+  doc.roundedRect(ccX, 28, ccW, 38, 2, 2, "FD");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.setTextColor(pr, pg, pb);
-  const linkLines0 = doc.splitTextToSize(cartaoUrl, ccW);
-  doc.text(linkLines0, ccX + ccW / 2, qrCapaY + qrCapa + 8, { align: "center" });
-
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(7);
   doc.setTextColor(...muted);
-  doc.text(`Emitido em ${formatBR(new Date())}`, ccX, pageH - 14);
+  doc.text("RESUMO DA GESTACAO", ccX + 4, 33);
+  // 3 colunas
+  const rgItems = [
+    { l: "DUM", v: patientInfo.dum },
+    { l: "DPP", v: patientInfo.dpp },
+    { l: "SEMANAS", v: `${patientInfo.weeks}a` },
+  ];
+  const rgColW = (ccW - 8) / 3;
+  rgItems.forEach((r, i) => {
+    const x = ccX + 4 + i * rgColW;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(...muted);
+    doc.text(r.l, x, 41);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(pr, pg, pb);
+    doc.text(r.v, x, 49);
+  });
+  // Linha extra: contagem de registros
+  doc.setDrawColor(235, 235, 240);
+  doc.line(ccX + 4, 53, ccX + ccW - 4, 53);
+  const stItems = [
+    { l: "Medicoes", v: String(medicoes.length) },
+    { l: "Vacinas", v: String(vacinas.length) },
+    { l: "Exames", v: String(exames.length) },
+  ];
+  stItems.forEach((s, i) => {
+    const x = ccX + 4 + i * rgColW;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...dark);
+    doc.text(s.v, x, 61);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(...muted);
+    doc.text(s.l, x + doc.getTextWidth(s.v) + 2, 61);
+  });
+
+  // Bloco QR Code (lateral horizontal)
+  const qrCapa = 42;
+  const qrCapaY = 72;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(225, 225, 230);
+  doc.roundedRect(ccX, qrCapaY, ccW, qrCapa + 8, 2, 2, "FD");
+  doc.setFillColor(pr, pg, pb);
+  doc.roundedRect(ccX, qrCapaY, ccW, 6, 2, 2, "F");
+  doc.rect(ccX, qrCapaY + 3, ccW, 3, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(255, 255, 255);
+  doc.text("ACESSO DIGITAL EM TEMPO REAL", ccX + 4, qrCapaY + 4.3);
+
+  try { doc.addImage(qrData, "PNG", ccX + 4, qrCapaY + 8, qrCapa, qrCapa); } catch { /* ignore */ }
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(...dark);
+  const ccTxt = doc.splitTextToSize(
+    "Escaneie o QR Code para acessar o cartao digital sempre atualizado, com novos exames, vacinas e medicoes.",
+    ccW - qrCapa - 14,
+  );
+  doc.text(ccTxt, ccX + qrCapa + 10, qrCapaY + 14);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(pr, pg, pb);
+  const linkLines0 = doc.splitTextToSize(cartaoUrl, ccW - qrCapa - 14);
+  doc.text(linkLines0, ccX + qrCapa + 10, qrCapaY + qrCapa + 2);
+
+  // Bloco contato/UBS
+  const linhasContatoCapa = [
+    patientInfo.telefone ? `Tel: ${patientInfo.telefone}` : null,
+    patientInfo.email ? `Email: ${patientInfo.email}` : null,
+    patientInfo.unidadeSaude ? `UBS: ${patientInfo.unidadeSaude}` : null,
+    patientInfo.bairro || patientInfo.cidade ? `${patientInfo.bairro ?? ""}${patientInfo.bairro && patientInfo.cidade ? " - " : ""}${patientInfo.cidade ?? ""}` : null,
+  ].filter(Boolean) as string[];
+  const ctY = qrCapaY + qrCapa + 14;
+  if (linhasContatoCapa.length) {
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(225, 225, 230);
+    doc.roundedRect(ccX, ctY, ccW, 8 + linhasContatoCapa.length * 4.5, 2, 2, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...muted);
+    doc.text("CONTATO E REFERENCIA", ccX + 4, ctY + 5);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...dark);
+    linhasContatoCapa.forEach((l, i) => doc.text(l, ccX + 4, ctY + 9.5 + i * 4));
+  }
+
+  // Bloco emissao no rodape
+  doc.setFillColor(pr, pg, pb);
+  doc.roundedRect(ccX, pageH - 22, ccW, 10, 2, 2, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(255, 255, 255);
+  doc.text(`Emitido em ${formatBR(new Date())}`, ccX + 4, pageH - 16);
+  doc.setFont("helvetica", "normal");
+  doc.text("MaeDigital - UNAERP", ccX + ccW - 4, pageH - 16, { align: "right" });
 
   // =============================================================
-  // PAGINA 2 - FOLHA 1 (Dados gestacionais + Sinais vitais/Vacinas)
+  // PAGINA 2 - FOLHA 1 (Dados gestacionais + Sinais vitais + Vacinas + Exames)
   // =============================================================
   doc.addPage("a4", "landscape");
-  doc.setFillColor(252, 252, 254);
-  doc.rect(0, 0, pageW, pageH, "F");
-  // dobra
-  doc.setDrawColor(180, 180, 190);
-  doc.setLineDashPattern([2, 2], 0);
-  doc.setLineWidth(0.4);
-  doc.line(halfW, 6, halfW, pageH - 6);
-  doc.setLineDashPattern([], 0);
-  doc.setTextColor(160, 160, 170);
-  doc.setFontSize(6);
-  doc.text("DOBRE AQUI", halfW, pageH / 2, { align: "center", angle: 90 });
+  drawBaseFolderPage();
 
-  // METADE ESQUERDA: Dados gestacionais
+  // METADE ESQUERDA: Dados gestacionais + IMC + Antecedentes
   const lX = 14;
   const lW = halfW - 28;
   doc.setTextColor(pr, pg, pb);
@@ -1140,33 +1250,34 @@ async function gerarPDFCartao(args: {
   doc.setLineWidth(0.5);
   doc.line(lX, 21, lX + lW, 21);
 
-  let iy = 28;
-  const kpis = [
-    { label: "SEMANA GESTACIONAL", value: `${patientInfo.weeks}a`, sub: "atual" },
-    { label: "DUM", value: patientInfo.dum, sub: "ultima menstruacao" },
-    { label: "DPP", value: patientInfo.dpp, sub: "data provavel do parto" },
+  // KPIs gestacionais em GRADE 3 colunas
+  const kpis3 = [
+    { label: "SEMANA", value: `${patientInfo.weeks}a`, sub: "atual" },
+    { label: "DUM", value: patientInfo.dum, sub: "ult. menstr." },
+    { label: "DPP", value: patientInfo.dpp, sub: "data parto" },
   ];
-  kpis.forEach((k) => {
+  const kpiW = (lW - 6) / 3;
+  kpis3.forEach((k, i) => {
+    const x = lX + i * (kpiW + 3);
     doc.setFillColor(lr, lg, lb);
-    doc.roundedRect(lX, iy, lW, 16, 2, 2, "F");
+    doc.roundedRect(x, 26, kpiW, 22, 2, 2, "F");
     doc.setTextColor(...muted);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7);
-    doc.text(k.label, lX + 4, iy + 5);
+    doc.text(k.label, x + 3, 31);
     doc.setTextColor(pr, pg, pb);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-    doc.text(k.value, lX + 4, iy + 12);
+    doc.text(k.value, x + 3, 40);
     doc.setTextColor(...muted);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.text(k.sub, lX + lW - 4, iy + 12, { align: "right" });
-    iy += 19;
+    doc.setFontSize(6.5);
+    doc.text(k.sub, x + 3, 45);
   });
 
-  // IMC
-  iy += 2;
-  doc.setFillColor(248, 248, 252);
+  // IMC + Ganho
+  let iy = 52;
+  doc.setFillColor(255, 255, 255);
   doc.setDrawColor(225, 225, 230);
   doc.roundedRect(lX, iy, lW, 22, 2, 2, "FD");
   doc.setFont("helvetica", "bold");
@@ -1174,10 +1285,10 @@ async function gerarPDFCartao(args: {
   doc.setTextColor(...muted);
   doc.text("IMC E GANHO DE PESO", lX + 3, iy + 5);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  doc.setFontSize(13);
   doc.setTextColor(...dark);
   if (imc && imcInfo) {
-    doc.text(`IMC ${imc.toFixed(1)}`, lX + 3, iy + 13);
+    doc.text(`IMC ${imc.toFixed(1)}`, lX + 3, iy + 14);
     const [cr, cg, cb] = hexToRgb(imcInfo.color);
     doc.setTextColor(cr, cg, cb);
     doc.setFontSize(8.5);
@@ -1185,24 +1296,24 @@ async function gerarPDFCartao(args: {
   } else {
     doc.setFontSize(9);
     doc.setTextColor(...muted);
-    doc.text("Informe altura para calculo", lX + 3, iy + 13);
+    doc.text("Informe altura para calculo", lX + 3, iy + 14);
   }
   if (ganhoPeso !== null) {
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
+    doc.setFontSize(13);
     doc.setTextColor(pr, pg, pb);
-    doc.text(`${ganhoPeso > 0 ? "+" : ""}${ganhoPeso.toFixed(1)} kg`, lX + lW - 3, iy + 12, { align: "right" });
+    doc.text(`${ganhoPeso > 0 ? "+" : ""}${ganhoPeso.toFixed(1)} kg`, lX + lW - 3, iy + 14, { align: "right" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     doc.setTextColor(...muted);
-    doc.text("ganho atual", lX + lW - 3, iy + 17, { align: "right" });
+    doc.text("ganho atual", lX + lW - 3, iy + 19, { align: "right" });
   }
   iy += 26;
 
-  // Antecedentes
-  doc.setFillColor(248, 248, 252);
+  // Antecedentes - grade 3 colunas
+  doc.setFillColor(255, 255, 255);
   doc.setDrawColor(225, 225, 230);
-  doc.roundedRect(lX, iy, lW, 18, 2, 2, "FD");
+  doc.roundedRect(lX, iy, lW, 22, 2, 2, "FD");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
   doc.setTextColor(...muted);
@@ -1212,83 +1323,58 @@ async function gerarPDFCartao(args: {
     { l: "Partos", v: String(patientInfo.partos ?? 0) },
     { l: "Abortos", v: String(patientInfo.abortos ?? 0) },
   ];
+  const obsColW = (lW - 6) / 3;
   obs.forEach((o, i) => {
-    const ox = lX + 3 + i * ((lW - 6) / 3);
+    const ox = lX + 3 + i * obsColW;
     doc.setTextColor(pr, pg, pb);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text(o.v, ox, iy + 13);
+    doc.setFontSize(15);
+    doc.text(o.v, ox + obsColW / 2, iy + 16, { align: "center" });
     doc.setTextColor(...muted);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
-    doc.text(o.l, ox + 8, iy + 13);
+    doc.text(o.l, ox + obsColW / 2, iy + 20, { align: "center" });
   });
-  iy += 22;
+  iy += 26;
 
-  // Contato
-  const linhasContato = [
-    patientInfo.telefone ? `Tel: ${patientInfo.telefone}` : null,
-    patientInfo.email ? `Email: ${patientInfo.email}` : null,
-    patientInfo.unidadeSaude ? `UBS: ${patientInfo.unidadeSaude}` : null,
-    patientInfo.bairro || patientInfo.cidade ? `${patientInfo.bairro ?? ""}${patientInfo.bairro && patientInfo.cidade ? " - " : ""}${patientInfo.cidade ?? ""}` : null,
-  ].filter(Boolean) as string[];
-  if (linhasContato.length) {
-    const altC = 6 + linhasContato.length * 4 + 2;
-    doc.setDrawColor(220, 220, 225);
-    doc.roundedRect(lX, iy, lW, altC, 2, 2);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
-    doc.setTextColor(...muted);
-    doc.text("CONTATO E REFERENCIA", lX + 3, iy + 4);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(...dark);
-    linhasContato.forEach((l, i) => doc.text(l, lX + 3, iy + 8 + i * 4));
-  }
-
-  // METADE DIREITA: Sinais vitais + Vacinas
-  const rX = halfW + 14;
-  const rW = halfW - 28;
-  let ry = 18;
-
+  // SINAIS VITAIS na esquerda (grade)
   doc.setTextColor(pr, pg, pb);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text("SINAIS VITAIS", rX, ry);
+  doc.text("SINAIS VITAIS ATUAIS", lX, iy + 4);
   doc.setDrawColor(pr, pg, pb);
   doc.setLineWidth(0.5);
-  doc.line(rX, ry + 3, rX + rW, ry + 3);
-  ry += 10;
-
+  doc.line(lX, iy + 7, lX + lW, iy + 7);
+  iy += 11;
   if (vitals.length) {
-    const cellW = (rW - (vitals.length - 1) * 3) / vitals.length;
+    const vCols = vitals.length;
+    const vW = (lW - (vCols - 1) * 3) / vCols;
     vitals.forEach((v, i) => {
-      const x = rX + i * (cellW + 3);
+      const x = lX + i * (vW + 3);
       doc.setFillColor(248, 248, 252);
-      doc.roundedRect(x, ry, cellW, 22, 2, 2, "F");
+      doc.roundedRect(x, iy, vW, 22, 2, 2, "F");
       doc.setFillColor(pr, pg, pb);
-      doc.roundedRect(x, ry, cellW, 2.5, 1, 1, "F");
+      doc.roundedRect(x, iy, vW, 2.5, 1, 1, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7);
       doc.setTextColor(...muted);
-      doc.text(v.label, x + 2.5, ry + 7);
+      doc.text(v.label, x + 2.5, iy + 7);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
       doc.setTextColor(...dark);
-      doc.text(v.value, x + 2.5, ry + 14);
+      doc.text(v.value, x + 2.5, iy + 14);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
       doc.setTextColor(pr, pg, pb);
-      doc.text(v.change, x + 2.5, ry + 19);
+      doc.text(v.change, x + 2.5, iy + 19);
     });
-    ry += 27;
-  } else {
-    doc.setFontSize(9);
-    doc.setTextColor(...muted);
-    doc.setFont("helvetica", "italic");
-    doc.text("Sem registros.", rX, ry);
-    ry += 8;
+    iy += 26;
   }
+
+  // METADE DIREITA: Vacinas (grade 2 colunas) + Exames (grade 2 colunas)
+  const rX = halfW + 14;
+  const rW = halfW - 28;
+  let ry = 18;
 
   doc.setTextColor(pr, pg, pb);
   doc.setFont("helvetica", "bold");
@@ -1297,36 +1383,97 @@ async function gerarPDFCartao(args: {
   doc.setDrawColor(pr, pg, pb);
   doc.setLineWidth(0.5);
   doc.line(rX, ry + 3, rX + rW, ry + 3);
-  ry += 8;
+  ry += 7;
 
-  const maxRy = pageH - 18;
   if (vacinas.length) {
-    for (const v of vacinas) {
-      if (ry + 11 > maxRy) break;
+    const vCols2 = 2;
+    const vW2 = (rW - (vCols2 - 1) * 3) / vCols2;
+    const vH2 = 14;
+    vacinas.forEach((v, i) => {
+      const col = i % vCols2;
+      const row = Math.floor(i / vCols2);
+      const x = rX + col * (vW2 + 3);
+      const yy = ry + row * (vH2 + 2);
       doc.setFillColor(240, 253, 244);
       doc.setDrawColor(187, 247, 208);
-      doc.roundedRect(rX, ry, rW, 8, 1.5, 1.5, "FD");
+      doc.roundedRect(x, yy, vW2, vH2, 1.5, 1.5, "FD");
+      doc.setFillColor(34, 197, 94);
+      doc.roundedRect(x, yy, vW2, 2, 1, 1, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8.5);
       doc.setTextColor(22, 101, 52);
-      doc.text(v.vacina, rX + 3, ry + 5.4);
+      doc.text(v.vacina, x + 3, yy + 7.5);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
+      doc.setFontSize(7);
       doc.setTextColor(...muted);
-      doc.text(v.data, rX + rW - 3, ry + 5.4, { align: "right" });
-      ry += 10;
-    }
+      doc.text(v.data, x + 3, yy + 11.5);
+    });
+    const rows = Math.ceil(vacinas.length / vCols2);
+    ry += rows * (vH2 + 2) + 3;
   } else {
+    doc.setFillColor(248, 248, 252);
+    doc.roundedRect(rX, ry, rW, 12, 1.5, 1.5, "F");
     doc.setFontSize(9);
     doc.setTextColor(...muted);
     doc.setFont("helvetica", "italic");
-    doc.text("Nenhuma vacina registrada.", rX, ry + 4);
+    doc.text("Nenhuma vacina registrada.", rX + 3, ry + 7.5);
+    ry += 16;
+  }
+
+  // EXAMES (grade 2 colunas)
+  doc.setTextColor(pr, pg, pb);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("EXAMES REALIZADOS", rX, ry + 4);
+  doc.setDrawColor(pr, pg, pb);
+  doc.setLineWidth(0.5);
+  doc.line(rX, ry + 7, rX + rW, ry + 7);
+  ry += 11;
+
+  const maxRy = pageH - 16;
+  if (exames.length) {
+    const eCols = 2;
+    const eW = (rW - (eCols - 1) * 3) / eCols;
+    const eH = 16;
+    let placed = 0;
+    for (const e of exames) {
+      const col = placed % eCols;
+      const row = Math.floor(placed / eCols);
+      const yy = ry + row * (eH + 2);
+      if (yy + eH > maxRy) break;
+      const x = rX + col * (eW + 3);
+      doc.setFillColor(239, 246, 255);
+      doc.setDrawColor(191, 219, 254);
+      doc.roundedRect(x, yy, eW, eH, 1.5, 1.5, "FD");
+      doc.setFillColor(59, 130, 246);
+      doc.roundedRect(x, yy, eW, 2, 1, 1, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(30, 64, 175);
+      const tipo = doc.splitTextToSize(e.tipo_exame, eW - 6)[0];
+      doc.text(tipo, x + 3, yy + 7);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.8);
+      doc.setTextColor(...muted);
+      doc.text(`${e.data}`, x + 3, yy + 11);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.8);
+      doc.setTextColor(34, 197, 94);
+      doc.text(e.status.toUpperCase(), x + eW - 3, yy + 11, { align: "right" });
+      placed++;
+    }
+  } else {
+    doc.setFillColor(248, 248, 252);
+    doc.roundedRect(rX, ry, rW, 12, 1.5, 1.5, "F");
+    doc.setFontSize(9);
+    doc.setTextColor(...muted);
+    doc.setFont("helvetica", "italic");
+    doc.text("Nenhum exame registrado.", rX + 3, ry + 7.5);
   }
 
   // ================================================================
-  // PAGINAS 3 e 4 - GRAFICOS (4 graficos por pagina, 2 por metade)
+  // PAGINAS 3 e 4 - GRAFICOS INTERCALADOS + DADOS CLINICOS EM GRADE
   // ================================================================
-  // Helper: desenha um grafico em uma "caixa" (x, y, w, h)
   const drawChartBox = (
     bx: number, by: number, bw: number, bh: number,
     title: string,
@@ -1453,183 +1600,179 @@ async function gerarPDFCartao(args: {
     }
   };
 
-  // PAGINA 3 - Folha 2: 4 graficos
+  // PAGINA 3 - Folha 2: GRAFICOS INTERCALADOS (4 graficos ocupando toda area)
   doc.addPage("a4", "landscape");
-  doc.setFillColor(252, 252, 254);
-  doc.rect(0, 0, pageW, pageH, "F");
-  doc.setDrawColor(180, 180, 190);
-  doc.setLineDashPattern([2, 2], 0);
-  doc.setLineWidth(0.4);
-  doc.line(halfW, 6, halfW, pageH - 6);
-  doc.setLineDashPattern([], 0);
-  doc.setTextColor(160, 160, 170);
-  doc.setFontSize(6);
-  doc.text("DOBRE AQUI", halfW, pageH / 2, { align: "center", angle: 90 });
+  drawBaseFolderPage();
 
-  // Titulo
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(pr, pg, pb);
-  doc.text("EVOLUCAO CLINICA - GRAFICOS (1/2)", margin, 14);
+  doc.text("EVOLUCAO CLINICA - GRAFICOS (1/2)", margin, 13);
+  doc.setDrawColor(pr, pg, pb);
+  doc.setLineWidth(0.5);
+  doc.line(margin, 15, pageW - margin, 15);
 
-  const chartW = halfW - margin - 6;
-  const chartH = (pageH - 28) / 2 - 4;
-  // Esquerda topo: Peso
+  const chartW = halfW - margin - 5;
+  const chartH = (pageH - 24) / 2 - 3;
+  // Intercalando: lado esquerdo (peso/AU) | lado direito (pressao/glicemia/BCF/PAM)
+  // Topo esquerdo: Peso
   drawChartBox(margin, 18, chartW, chartH,
     "Curva de Ganho de Peso (kg)",
     [{ color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), fill: true, name: "Peso" }]);
-  // Esquerda baixo: Pressao
-  drawChartBox(margin, 18 + chartH + 6, chartW, chartH,
+  // Topo direito: Pressao (intercalado)
+  drawChartBox(halfW + 5, 18, chartW, chartH,
     "Curva Pressorica (mmHg)",
     [
       { color: [239, 68, 68], values: series.pressao.filter(p => p.sistolica !== undefined).map(d => ({ x: d.semana, y: d.sistolica! })), name: "Sistolica" },
       { color: [59, 130, 246], values: series.pressao.filter(p => p.diastolica !== undefined).map(d => ({ x: d.semana, y: d.diastolica! })), name: "Diastolica" },
     ],
     { min: 60, max: 140, label: "normal" });
-  // Direita topo: Glicemia x Peso
-  drawChartBox(halfW + 6, 18, chartW, chartH,
-    "Glicemia x Peso",
-    [
-      { color: [245, 158, 11], values: series.glicemia.map(d => ({ x: d.semana, y: d.glicemia })), name: "Glicemia" },
-      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso" },
-    ],
-    { min: 70, max: 95, label: "normal" });
-  // Direita baixo: AU x Peso
-  drawChartBox(halfW + 6, 18 + chartH + 6, chartW, chartH,
-    "Altura Uterina x Peso",
-    [
-      { color: [124, 58, 237], values: series.au.map(d => ({ x: d.semana, y: d.altura })), name: "AU", fill: true },
-      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso" },
-    ]);
+  // Baixo esquerdo: Altura uterina
+  drawChartBox(margin, 18 + chartH + 5, chartW, chartH,
+    "Altura Uterina (cm)",
+    [{ color: [124, 58, 237], values: series.au.map(d => ({ x: d.semana, y: d.altura })), fill: true, name: "AU" }]);
+  // Baixo direito: BCF
+  drawChartBox(halfW + 5, 18 + chartH + 5, chartW, chartH,
+    "Batimentos Cardiacos Fetais (bpm)",
+    [{ color: [16, 185, 129], values: series.bcf.map(d => ({ x: d.semana, y: d.bcf })), name: "BCF" }],
+    { min: 110, max: 160, label: "normal" });
 
-  // PAGINA 4 - Folha 3: BCF + PAM (esquerda) | Medicoes + Exames (direita)
+  // PAGINA 4 - Folha 3: 2 graficos cruzados em cima | DADOS CLINICOS EM GRADE embaixo
   doc.addPage("a4", "landscape");
-  doc.setFillColor(252, 252, 254);
-  doc.rect(0, 0, pageW, pageH, "F");
-  doc.setDrawColor(180, 180, 190);
-  doc.setLineDashPattern([2, 2], 0);
-  doc.setLineWidth(0.4);
-  doc.line(halfW, 6, halfW, pageH - 6);
-  doc.setLineDashPattern([], 0);
-  doc.setTextColor(160, 160, 170);
-  doc.setFontSize(6);
-  doc.text("DOBRE AQUI", halfW, pageH / 2, { align: "center", angle: 90 });
+  drawBaseFolderPage();
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(pr, pg, pb);
-  doc.text("EVOLUCAO CLINICA - GRAFICOS (2/2)", margin, 14);
+  doc.text("EVOLUCAO CLINICA - GRAFICOS CRUZADOS (2/2)", margin, 13);
+  doc.setDrawColor(pr, pg, pb);
+  doc.setLineWidth(0.5);
+  doc.line(margin, 15, pageW - margin, 15);
 
-  // Esquerda: 2 graficos (BCF + PAM)
-  drawChartBox(margin, 18, chartW, chartH,
-    "Batimentos Cardiacos Fetais (bpm)",
-    [{ color: [16, 185, 129], values: series.bcf.map(d => ({ x: d.semana, y: d.bcf })), name: "BCF" }],
-    { min: 110, max: 160, label: "normal" });
+  // Top: 2 graficos cruzados (Glicemia x Peso | PAM x Peso)
+  const chartTopH = 70;
+  drawChartBox(margin, 18, chartW, chartTopH,
+    "Glicemia x Peso (risco DMG)",
+    [
+      { color: [245, 158, 11], values: series.glicemia.map(d => ({ x: d.semana, y: d.glicemia })), name: "Glicemia (mg/dL)" },
+      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso (kg)" },
+    ],
+    { min: 70, max: 95, label: "normal" });
   const pamSerie = series.pressao
     .filter(p => p.sistolica !== undefined && p.diastolica !== undefined)
     .map(p => ({ x: p.semana, y: (p.sistolica! + 2 * p.diastolica!) / 3 }));
-  drawChartBox(margin, 18 + chartH + 6, chartW, chartH,
+  drawChartBox(halfW + 5, 18, chartW, chartTopH,
     "PAM x Peso (analise combinada)",
     [
-      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso", fill: true },
-      { color: [239, 68, 68], values: pamSerie, name: "PAM" },
+      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso (kg)", fill: true },
+      { color: [239, 68, 68], values: pamSerie, name: "PAM (mmHg)" },
     ]);
 
-  // Direita: Medicoes + Exames
+  // Embaixo: DADOS CLINICOS EM GRADE (toda largura)
+  const gridY = 18 + chartTopH + 6;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(11);
   doc.setTextColor(pr, pg, pb);
-  doc.text("REGISTROS CLINICOS", halfW + 14, 22);
+  doc.text("DADOS CLINICOS REGISTRADOS", margin, gridY);
   doc.setDrawColor(pr, pg, pb);
   doc.setLineWidth(0.5);
-  doc.line(halfW + 14, 25, pageW - 14, 25);
+  doc.line(margin, gridY + 2, pageW - margin, gridY + 2);
 
-  let dy = 30;
-  const dMaxY = pageH - 18;
-  const drW = halfW - 28;
-  const drX = halfW + 14;
+  // Coleta lista plana ordenada
+  const flat = [...medicoes]
+    .sort((a, b) => {
+      const da = parseBR(a.data); const db = parseBR(b.data);
+      const tCmp = (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+      if (tCmp !== 0) return tCmp;
+      return a.parametro.localeCompare(b.parametro);
+    });
 
-  // Medicoes agrupadas por data (compactas)
-  if (medicoes.length) {
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.setTextColor(...dark);
-    doc.text("MEDICOES POR DATA", drX, dy);
-    dy += 4;
-    const map = new Map<string, MedicaoReal[]>();
-    medicoes.forEach(m => {
-      if (!map.has(m.data)) map.set(m.data, []);
-      map.get(m.data)!.push(m);
-    });
-    const grupos = Array.from(map.entries()).sort((a, b) => {
-      const da = parseBR(a[0]); const db = parseBR(b[0]);
-      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
-    });
-    for (const [data, items] of grupos) {
-      const linhas = Math.ceil(items.length / 2);
-      const blockH = 7 + linhas * 4;
-      if (dy + blockH > dMaxY - 30) break;
-      doc.setFillColor(250, 250, 253);
-      doc.setDrawColor(230, 230, 235);
-      doc.roundedRect(drX, dy, drW, blockH, 1.5, 1.5, "FD");
+  if (flat.length) {
+    // Grade tabular: colunas = Data | Sem | Parametro | Valor
+    const cols = 4; // 4 colunas duplicadas em duas tabelas lado a lado
+    const tableCols = ["Data", "Sem", "Parametro", "Valor"];
+    const colWeights = [1.4, 0.7, 2.4, 1];
+    const totalWeight = colWeights.reduce((s, w) => s + w, 0);
+    const tableW = (pageW - margin * 2 - 6) / 2; // duas tabelas
+    const colWs = colWeights.map(w => (tableW * w) / totalWeight);
+
+    const rowH = 4.6;
+    const headerH = 5.5;
+    const tableMaxY = pageH - 14;
+    const tableY = gridY + 6;
+    const availH = tableMaxY - tableY - headerH;
+    const rowsPerTable = Math.floor(availH / rowH);
+    const totalCapacity = rowsPerTable * 2;
+    const items = flat.slice(0, totalCapacity);
+
+    const drawTable = (tx: number, rows: typeof items) => {
+      // Header
       doc.setFillColor(pr, pg, pb);
-      doc.roundedRect(drX + 2, dy + 1.5, 22, 4.5, 0.8, 0.8, "F");
+      doc.rect(tx, tableY, tableW, headerH, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.5);
-      doc.text(`SEM ${items[0].semana}`, drX + 13, dy + 4.8, { align: "center" });
-      doc.setTextColor(...muted);
-      doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
-      doc.text(data, drX + drW - 2, dy + 4.8, { align: "right" });
-      const colW = (drW - 4) / 2;
-      items.forEach((m, i) => {
-        const col = i % 2;
-        const row = Math.floor(i / 2);
-        const cx = drX + 2 + col * colW;
-        const cy = dy + 9 + row * 4;
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(6.5);
-        doc.setTextColor(...muted);
-        doc.text(`${m.parametro}:`, cx, cy);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...dark);
-        doc.text(String(m.valor), cx + doc.getTextWidth(`${m.parametro}: `), cy);
+      let cx = tx + 2;
+      tableCols.forEach((c, ci) => {
+        doc.text(c, cx, tableY + 3.8);
+        cx += colWs[ci];
       });
-      dy += blockH + 1.5;
-    }
-  }
+      // Rows
+      rows.forEach((m, ri) => {
+        const ry2 = tableY + headerH + ri * rowH;
+        if (ri % 2 === 0) {
+          doc.setFillColor(248, 248, 252);
+          doc.rect(tx, ry2, tableW, rowH, "F");
+        }
+        doc.setDrawColor(235, 235, 240);
+        doc.setLineWidth(0.1);
+        doc.line(tx, ry2 + rowH, tx + tableW, ry2 + rowH);
+        let xx = tx + 2;
+        const cells = [m.data, `${m.semana}`, m.parametro, String(m.valor)];
+        cells.forEach((cell, ci) => {
+          if (ci === 3) {
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(...dark);
+          } else if (ci === 0 || ci === 1) {
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(pr, pg, pb);
+          } else {
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(...muted);
+          }
+          doc.setFontSize(6.8);
+          const truncated = doc.splitTextToSize(cell, colWs[ci] - 2)[0] ?? "";
+          doc.text(truncated, xx, ry2 + 3.2);
+          xx += colWs[ci];
+        });
+      });
+      // Borda externa
+      doc.setDrawColor(225, 225, 230);
+      doc.setLineWidth(0.3);
+      doc.rect(tx, tableY, tableW, headerH + rows.length * rowH, "S");
+    };
 
-  // Exames
-  if (dy < dMaxY - 20) {
-    dy += 2;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.setTextColor(...dark);
-    doc.text("EXAMES", drX, dy);
-    dy += 3;
-    if (exames.length) {
-      for (const e of exames) {
-        if (dy + 8 > dMaxY) break;
-        doc.setFillColor(239, 246, 255);
-        doc.setDrawColor(191, 219, 254);
-        doc.roundedRect(drX, dy, drW, 7, 1.2, 1.2, "FD");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(7.5);
-        doc.setTextColor(30, 64, 175);
-        doc.text(e.tipo_exame, drX + 2, dy + 4.6);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(6.5);
-        doc.setTextColor(...muted);
-        doc.text(`${e.data} - ${e.status}`, drX + drW - 2, dy + 4.6, { align: "right" });
-        dy += 8;
-      }
-    } else {
+    void cols;
+    drawTable(margin, items.slice(0, rowsPerTable));
+    drawTable(margin + tableW + 6, items.slice(rowsPerTable, rowsPerTable * 2));
+
+    // Aviso se cortou
+    if (flat.length > totalCapacity) {
       doc.setFont("helvetica", "italic");
-      doc.setFontSize(8);
+      doc.setFontSize(6.5);
       doc.setTextColor(...muted);
-      doc.text("Nenhum exame registrado.", drX, dy + 4);
+      doc.text(
+        `+ ${flat.length - totalCapacity} registros adicionais disponiveis no cartao digital online.`,
+        pageW / 2, pageH - 13, { align: "center" },
+      );
     }
+  } else {
+    doc.setFillColor(248, 248, 252);
+    doc.roundedRect(margin, gridY + 6, pageW - margin * 2, 14, 2, 2, "F");
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(...muted);
+    doc.text("Nenhum dado clinico registrado.", pageW / 2, gridY + 14, { align: "center" });
   }
 
   // ============ Footer em todas as páginas ============
