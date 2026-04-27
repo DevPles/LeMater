@@ -120,6 +120,7 @@ interface MedicaoReal {
   parametro: string;
   valor: number;
   semana: number;
+  observacao?: string;
 }
 
 interface VacinaReal {
