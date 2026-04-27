@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LancamentoModal } from "@/components/LancamentoModal";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
+import logoHospitalUrl from "@/assets/logo-hospital-electro-bonini.png";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, ComposedChart, ReferenceArea, Legend, ReferenceLine,
@@ -1030,10 +1031,11 @@ async function gerarPDFCartao(args: {
     doc.text(`Pag. ${pageNum} de ${totalPages}`, pageW - margin, pageH - 3.5, { align: "right" });
   };
 
-  // ======== Carregar foto + QR Code em paralelo ========
-  const [fotoData, qrData] = await Promise.all([
+  // ======== Carregar foto + QR Code + logo em paralelo ========
+  const [fotoData, qrData, logoData] = await Promise.all([
     patientInfo.fotoUrl ? imageToDataUrl(patientInfo.fotoUrl) : Promise.resolve(null),
     QRCode.toDataURL(cartaoUrl || "https://maedigital.app", { width: 240, margin: 1, color: { dark: palette.primary, light: "#ffffff" } }),
+    imageToDataUrl(logoHospitalUrl).catch(() => null),
   ]);
 
   // ============================================================
@@ -1074,11 +1076,21 @@ async function gerarPDFCartao(args: {
   // Faixa gold inferior
   doc.rect(halfW, pageH - 6, halfW, 6, "F");
 
-  // Selo institucional pequeno no topo
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(ar, ag, ab);
-  doc.text("UNAERP", halfW + halfW / 2, 16, { align: "center" });
+  // Logo do Hospital Electro Bonini no topo (sobre fundo navy: caixa branca)
+  if (logoData) {
+    const logoW = 42;
+    const logoH = 18;
+    const logoX = halfW + (halfW - logoW) / 2;
+    const logoY = 10;
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(logoX - 2, logoY - 1.5, logoW + 4, logoH + 3, 1.5, 1.5, "F");
+    doc.addImage(logoData, "PNG", logoX, logoY, logoW, logoH);
+  } else {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(ar, ag, ab);
+    doc.text("HOSPITAL ELECTRO BONINI", halfW + halfW / 2, 16, { align: "center" });
+  }
 
   // Bloco branco central elegante com titulo
   const coverBandY = pageH / 2 - 32;
@@ -1128,16 +1140,22 @@ async function gerarPDFCartao(args: {
   doc.setFontSize(7.5);
   doc.text("Universidade de Ribeirao Preto", 14, pageH - 13);
 
-  // Pequena marca decorativa centralizada
-  doc.setFillColor(pr, pg, pb);
-  doc.rect(14, 14, 28, 1.5, "F");
-  doc.setFillColor(ar, ag, ab);
-  doc.rect(14, 16, 14, 1.5, "F");
+  // Pequena marca decorativa centralizada / logo institucional
+  if (logoData) {
+    const logoW2 = 50;
+    const logoH2 = 21;
+    doc.addImage(logoData, "PNG", 14, 12, logoW2, logoH2);
+  } else {
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(14, 14, 28, 1.5, "F");
+    doc.setFillColor(ar, ag, ab);
+    doc.rect(14, 16, 14, 1.5, "F");
+  }
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(pr, pg, pb);
-  doc.text("DOCUMENTO DE ACOMPANHAMENTO PRE-NATAL", 14, 24);
+  doc.text("DOCUMENTO DE ACOMPANHAMENTO PRE-NATAL", 14, 38);
 
   // Bloco central da contracapa: ficha de identificacao discreta
   const idY = pageH / 2 - 32;
