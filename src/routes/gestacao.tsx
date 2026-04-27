@@ -474,13 +474,16 @@ function GestacaoPage() {
               <p className="text-sm font-semibold text-foreground mb-2">
                 No seu corpo
               </p>
-              <ul className="space-y-1">
+              <ul className="space-y-3">
                 {mes.corpo.map((item) => (
                   <li
-                    key={item}
-                    className="text-sm text-muted-foreground pl-3 border-l-2 border-primary/40"
+                    key={item.titulo}
+                    className="pl-3 border-l-2 border-primary/40"
                   >
-                    {item}
+                    <p className="text-sm font-medium text-foreground">{item.titulo}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                      {item.descricao}
+                    </p>
                   </li>
                 ))}
               </ul>
@@ -490,13 +493,16 @@ function GestacaoPage() {
               <p className="text-sm font-semibold text-foreground mb-2">
                 Como aliviar
               </p>
-              <ul className="space-y-1">
+              <ul className="space-y-3">
                 {mes.alivio.map((item) => (
                   <li
-                    key={item}
-                    className="text-sm text-muted-foreground pl-3 border-l-2 border-accent"
+                    key={item.titulo}
+                    className="pl-3 border-l-2 border-accent"
                   >
-                    {item}
+                    <p className="text-sm font-medium text-foreground">{item.titulo}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                      {item.descricao}
+                    </p>
                   </li>
                 ))}
               </ul>
