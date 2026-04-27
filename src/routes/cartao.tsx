@@ -1144,12 +1144,12 @@ async function gerarPDFCartao(args: {
   if (logoData) {
     const logoW2 = 50;
     const logoH2 = 21;
-    doc.addImage(logoData, "PNG", 14, 12, logoW2, logoH2);
+    doc.addImage(logoData, "PNG", (halfW - logoW2) / 2, 12, logoW2, logoH2);
   } else {
     doc.setFillColor(pr, pg, pb);
-    doc.rect(14, 14, 28, 1.5, "F");
+    doc.rect((halfW - 28) / 2, 14, 28, 1.5, "F");
     doc.setFillColor(ar, ag, ab);
-    doc.rect(14, 16, 14, 1.5, "F");
+    doc.rect((halfW - 14) / 2, 16, 14, 1.5, "F");
   }
 
   doc.setFont("helvetica", "bold");
