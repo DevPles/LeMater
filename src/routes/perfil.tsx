@@ -505,6 +505,8 @@ function PerfilPage() {
               Por segurança, sua senha atual não pode ser exibida. Defina uma nova senha ou receba um link de redefinição no seu e-mail.
             </p>
           </div>
+
+          {msg && (
             <div
               className={`text-sm rounded-lg px-3 py-2 ${
                 msg.type === "ok"
