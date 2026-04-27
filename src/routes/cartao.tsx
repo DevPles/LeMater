@@ -54,6 +54,9 @@ export const Route = createFileRoute("/cartao")({
     ],
   }),
   ssr: false,
+  validateSearch: (search: Record<string, unknown>): { u?: string } => {
+    return typeof search.u === "string" && search.u ? { u: search.u } : {};
+  },
   component: CartaoPage,
 });
 
@@ -141,7 +144,27 @@ type Periodo = "todos" | "1tri" | "2tri" | "3tri" | "custom";
 function CartaoPage() {
   const [tab, setTab] = useState<Tab>("resumo");
   const { content: cartaoContent } = useScreenContent("cartao", CARTAO_DEFAULT);
-  const { profile, session } = useGestanteProfile();
+  const { profile: ownProfile, session } = useGestanteProfile();
+  const { u: shareUserId } = Route.useSearch();
+
+  // Quando vem com ?u=<id>, carrega snapshot público (read-only)
+  const [publicSnap, setPublicSnap] = useState<{
+    profile: any; medicoes: any[]; vacinas: any[]; exames: any[];
+  } | null>(null);
+  const isShared = !!shareUserId;
+
+  useEffect(() => {
+    if (!shareUserId) { setPublicSnap(null); return; }
+    let active = true;
+    (async () => {
+      const { data, error } = await supabase.rpc("get_cartao_publico" as any, { _user_id: shareUserId });
+      if (!active) return;
+      if (!error && data) setPublicSnap(data as any);
+    })();
+    return () => { active = false; };
+  }, [shareUserId]);
+
+  const profile: any = isShared ? publicSnap?.profile : ownProfile;
   const bebeSexo = profile?.bebe_sexo ?? null;
   const palette = paletaPorSexo(bebeSexo);
 
@@ -152,6 +175,7 @@ function CartaoPage() {
   const [lancamentoOpen, setLancamentoOpen] = useState(false);
 
   const carregarDados = useCallback(async () => {
+    if (isShared) return; // dados vêm do snapshot público
     if (!session?.user?.id) return;
     const uid = session.user.id;
     const [mRes, vRes, eRes] = await Promise.all([
@@ -194,9 +218,34 @@ function CartaoPage() {
         resultado: r.resultado ?? undefined,
       })));
     }
-  }, [session?.user?.id]);
+  }, [session?.user?.id, isShared]);
 
   useEffect(() => { carregarDados(); }, [carregarDados]);
+
+  // Quando temos snapshot público, popula medicoes/vacinas/exames a partir dele
+  useEffect(() => {
+    if (!isShared || !publicSnap) return;
+    setMedicoes((publicSnap.medicoes ?? []).map((r: any) => ({
+      id: r.id,
+      data: formatBR(new Date(r.data_medicao + "T00:00:00")),
+      parametro: r.parametro,
+      valor: Number(r.valor),
+      semana: r.semana_gestacional ?? 0,
+    })));
+    setVacinas((publicSnap.vacinas ?? []).map((r: any) => ({
+      id: r.id,
+      vacina: r.vacina,
+      data: formatBR(new Date(r.data_aplicacao + "T00:00:00")),
+      observacao: r.observacao ?? undefined,
+    })));
+    setExames((publicSnap.exames ?? []).map((r: any) => ({
+      id: r.id,
+      tipo_exame: r.tipo_exame,
+      data: formatBR(new Date(r.data_exame + "T00:00:00")),
+      status: r.status,
+      resultado: r.resultado ?? undefined,
+    })));
+  }, [isShared, publicSnap]);
 
   // ====== Info da paciente derivada do banco ======
   const dumBR = profile?.dum
@@ -208,7 +257,7 @@ function CartaoPage() {
   const idadePaciente = idade(profile?.data_nascimento) ?? cartaoContent.patientAge;
 
   const patientInfo = {
-    name: profile?.nome || cartaoContent.patientName,
+    name: (profile?.nome as string | undefined) || cartaoContent.patientName,
     age: idadePaciente,
     bloodType: cartaoContent.bloodType,
     dum: dumBR,
@@ -259,9 +308,10 @@ function CartaoPage() {
     color: vitalColors[i % vitalColors.length],
   }));
 
-  // ====== URL pública do cartão (para QR) ======
+  // ====== URL pública do cartão (para QR) — sempre aponta para o id da gestante exibida ======
+  const ownerUserId = isShared ? shareUserId : session?.user?.id;
   const cartaoUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/cartao?u=${session?.user?.id ?? ""}`
+    ? `${window.location.origin}/cartao?u=${ownerUserId ?? ""}`
     : "";
 
   const exportarPDF = async () => {
@@ -929,12 +979,26 @@ async function gerarPDFCartao(args: {
     doc.text(`Pag. ${pageNum} de ${totalPages}`, pageW - margin, pageH - 3.5, { align: "right" });
   };
 
+  const drawFoldLine = () => {
+    const w = doc.internal.pageSize.getWidth();
+    const h = doc.internal.pageSize.getHeight();
+    doc.setDrawColor(180, 180, 190);
+    doc.setLineDashPattern([2, 2], 0);
+    doc.setLineWidth(0.2);
+    doc.line(w / 2, 6, w / 2, h - 12);
+    doc.setLineDashPattern([], 0);
+    doc.setFontSize(6);
+    doc.setTextColor(160, 160, 170);
+    doc.text("DOBRE AQUI", w / 2, 4, { align: "center" });
+  };
+
   const ensureSpace = (needed: number) => {
     if (y + needed > pageH - margin - 12) {
-      doc.addPage("a4", "portrait");
+      doc.addPage("a4", "landscape");
       pageW = doc.internal.pageSize.getWidth();
       pageH = doc.internal.pageSize.getHeight();
       y = margin + 4;
+      drawFoldLine();
     }
   };
 
@@ -1168,11 +1232,12 @@ async function gerarPDFCartao(args: {
   doc.setTextColor(...muted);
   doc.text(`Emitido em ${formatBR(new Date())}`, intX, pageH - 14);
 
-  // ============ A partir daqui, páginas em retrato ============
-  doc.addPage("a4", "portrait");
+  // ============ A partir daqui, páginas em formato folder (landscape) ============
+  doc.addPage("a4", "landscape");
   pageW = doc.internal.pageSize.getWidth();
   pageH = doc.internal.pageSize.getHeight();
   y = margin + 4;
+  drawFoldLine();
 
   // ============ Sinais vitais (resumo do app) ============
   if (vitals.length) {
