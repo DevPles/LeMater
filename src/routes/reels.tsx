@@ -68,7 +68,10 @@ function ReelsPage() {
   const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
   const [activeIdx, setActiveIdx] = useState(0);
   const [commentsOpenFor, setCommentsOpenFor] = useState<ReelRow | null>(null);
-  const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).get("upload") === "1";
+  });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});

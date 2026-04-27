@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -89,6 +89,7 @@ type Comment = {
 };
 
 function VideosPage() {
+  const navigate = useNavigate();
   const { profile } = useGestanteProfile();
   const [activeCategory, setActiveCategory] = useState("Reels");
   const [selected, setSelected] = useState<Video | null>(null);
@@ -217,7 +218,7 @@ function VideosPage() {
       {isReels ? (
         <>
           <button
-            onClick={() => alert("Em breve: compartilhe seu reel! 💕")}
+            onClick={() => navigate({ to: "/reels", search: { upload: "1" } as any })}
             className="w-full mb-4 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
           >
             + Compartilhe seu reel
