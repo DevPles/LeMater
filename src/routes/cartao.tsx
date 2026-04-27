@@ -270,6 +270,17 @@ function CartaoPage() {
     }, ...prev]);
   };
 
+  const exportarPDF = () => {
+    gerarPDFCartao({
+      patientInfo,
+      vitals,
+      lancamentos,
+      vacinasExames,
+      timelineEntries,
+      palette,
+    });
+  };
+
   const tabs: { key: Tab; label: string }[] = [
     { key: "resumo", label: "Resumo" },
     { key: "lancamentos", label: "Lançamentos" },
