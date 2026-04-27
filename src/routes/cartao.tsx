@@ -1877,6 +1877,7 @@ async function gerarPDFCartao(args: {
   const paramConfig = (param: string): {
     color: [number, number, number];
     refRange?: { min: number; max: number; label?: string };
+    extraRefs?: { min: number; max: number; label?: string; color?: [number, number, number] }[];
     series: { color: [number, number, number]; values: { x: number; y: number }[]; fill?: boolean; name?: string }[];
   } | null => {
     const lp = param.toLowerCase();
