@@ -1443,7 +1443,7 @@ async function gerarPDFCartao(args: {
 
   if (vacinas.length) {
     const vacRows = agruparPorData(vacinas, (v) => v.data, (v) => v.vacina);
-    const halfMaxY = Math.min(ry + 70, pageH / 2);
+    const halfMaxY = ry + Math.max(40, (pageH - 14 - ry) * 0.45);
     ry = drawSimpleTable(rX, ry, rW,
       [
         { label: "DATA", widthPct: 24 },
