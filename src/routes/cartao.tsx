@@ -2210,7 +2210,8 @@ async function gerarPDFCartao(args: {
     drawBaseFolderPage();
 
     const faceX = margin;
-    const faceWCompact = halfW - margin - 5;
+    const faceWCompact = halfW - margin * 2;
+    const faceRightEdge = halfW - margin;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
@@ -2218,15 +2219,16 @@ async function gerarPDFCartao(args: {
     doc.text("MATRIZ CRUZADA - EVOLUCAO POR CONSULTA", faceX, 13);
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.5);
-    doc.line(faceX, 15, faceX + faceWCompact, 15);
+    doc.line(faceX, 15, faceRightEdge, 15);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...muted);
     doc.text("Linhas = data da consulta  |  Colunas = parametro clinico", faceX, 19);
 
     // Datas (mais recentes primeiro)
+    const medicoesMatriz = medicoes.filter(m => !ehEstatura(m.parametro) && !ehTemperatura(m.parametro));
     const datasSet = new Set<string>();
-    medicoes.forEach(m => datasSet.add(m.data));
+    medicoesMatriz.forEach(m => datasSet.add(m.data));
     const datas = Array.from(datasSet).sort((a, b) => {
       const da = parseBR(a); const db = parseBR(b);
       return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
@@ -2234,7 +2236,7 @@ async function gerarPDFCartao(args: {
     const matrix = new Map<string, Map<string, string | number>>();
     datas.forEach(d => matrix.set(d, new Map()));
     const pressaoPorData = new Map<string, { sis?: number; dia?: number }>();
-    medicoes.forEach(m => {
+    medicoesMatriz.forEach(m => {
       const tipo = isPressao(m.parametro);
       if (tipo) {
         if (!pressaoPorData.has(m.data)) pressaoPorData.set(m.data, {});
@@ -2247,7 +2249,7 @@ async function gerarPDFCartao(args: {
     });
     pressaoPorData.forEach((v, d) => matrix.get(d)?.set(PRESSAO_KEY, `${v.sis ?? "-"}/${v.dia ?? "-"}`));
     const semanaPorData = new Map<string, number>();
-    medicoes.forEach(m => semanaPorData.set(m.data, m.semana));
+    medicoesMatriz.forEach(m => semanaPorData.set(m.data, m.semana));
 
     const compactLabel = (p: string): string => {
       const label = labelByKey.get(p) ?? p;
