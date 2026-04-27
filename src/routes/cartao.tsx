@@ -1506,36 +1506,79 @@ async function gerarPDFCartao(args: {
     }
     const minX = Math.min(...allX);
     const maxX = Math.max(...allX, minX + 1);
-    const minY = Math.min(...allY, refRange?.min ?? Infinity);
-    const maxY = Math.max(...allY, refRange?.max ?? -Infinity);
-    const padY = (maxY - minY) * 0.2 || 1;
-    const yLo = minY - padY;
-    const yHi = maxY + padY;
+    const dataMinY = Math.min(...allY);
+    const dataMaxY = Math.max(...allY);
+    // Janela Y centrada nos dados; refRange so amplia se nao deixar band ocupar tudo
+    let yLo: number;
+    let yHi: number;
+    {
+      const padBase = Math.max((dataMaxY - dataMinY) * 0.35, dataMaxY * 0.05, 4);
+      yLo = dataMinY - padBase;
+      yHi = dataMaxY + padBase;
+      if (refRange) {
+        // Inclui band somente se ela cabe sem ocupar mais de ~50% do grafico
+        const totalSpan = yHi - yLo;
+        const bandSpan = refRange.max - refRange.min;
+        if (bandSpan <= totalSpan * 0.6) {
+          yLo = Math.min(yLo, refRange.min - padBase * 0.3);
+          yHi = Math.max(yHi, refRange.max + padBase * 0.3);
+        }
+      }
+      // Arredonda para escala "bonita"
+      const niceStep = (range: number): number => {
+        const raw = range / 4;
+        const pow = Math.pow(10, Math.floor(Math.log10(raw)));
+        const n = raw / pow;
+        const step = n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10;
+        return step * pow;
+      };
+      const step = niceStep(yHi - yLo);
+      yLo = Math.floor(yLo / step) * step;
+      yHi = Math.ceil(yHi / step) * step;
+    }
 
     const sx = (v: number) => plotX + ((v - minX) / Math.max(1, maxX - minX)) * plotW;
     const sy = (v: number) => plotY + plotH - ((v - yLo) / Math.max(0.0001, yHi - yLo)) * plotH;
 
+    // Faixa normal (so se intersecta a janela visivel)
     if (refRange) {
-      doc.setFillColor(220, 252, 231);
-      const yT = sy(refRange.max);
-      const yB = sy(refRange.min);
-      doc.rect(plotX, yT, plotW, yB - yT, "F");
+      const visMin = Math.max(refRange.min, yLo);
+      const visMax = Math.min(refRange.max, yHi);
+      if (visMax > visMin) {
+        doc.setFillColor(220, 252, 231);
+        const yT = sy(visMax);
+        const yB = sy(visMin);
+        doc.rect(plotX, yT, plotW, yB - yT, "F");
+      }
     }
 
+    // Gridlines em escala "bonita"
     doc.setDrawColor(235, 235, 240);
     doc.setLineWidth(0.15);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(5.5);
     doc.setTextColor(...muted);
-    for (let i = 0; i <= 4; i++) {
-      const yy = plotY + (plotH / 4) * i;
+    const yTicks = 4;
+    for (let i = 0; i <= yTicks; i++) {
+      const val = yLo + ((yHi - yLo) / yTicks) * i;
+      const yy = sy(val);
       doc.line(plotX, yy, plotX + plotW, yy);
-      const val = yHi - ((yHi - yLo) / 4) * i;
       doc.text(val.toFixed(0), plotX - 1, yy + 1.3, { align: "right" });
     }
 
+    // Eixo X: distribui ticks uniformemente (max 6) para evitar sobreposicao
     const xs = Array.from(new Set(allX)).sort((a, b) => a - b);
-    xs.forEach(x => {
+    const xTickCount = Math.min(xs.length, 6);
+    const xTicks: number[] = [];
+    if (xs.length <= xTickCount) {
+      xTicks.push(...xs);
+    } else {
+      for (let i = 0; i < xTickCount; i++) {
+        const idx = Math.round((xs.length - 1) * (i / (xTickCount - 1)));
+        xTicks.push(xs[idx]);
+      }
+    }
+    xTicks.forEach(x => {
       doc.text(`${x}`, sx(x), plotY + plotH + 3, { align: "center" });
     });
     doc.setFontSize(6);
@@ -1569,11 +1612,12 @@ async function gerarPDFCartao(args: {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(5.5);
       doc.setTextColor(s.color[0], s.color[1], s.color[2]);
-      sorted.forEach((p, i) => {
+      sorted.forEach((p) => {
         const px = sx(p.x);
         const py = sy(p.y);
-        const acima = i % 2 === 0;
-        const ty = acima ? py - 1.8 : py + 3.5;
+        // Coloca o rotulo abaixo se o ponto estiver perto do topo do plot, senao acima
+        const nearTop = py - plotY < 4;
+        const ty = nearTop ? py + 3.2 : py - 1.8;
         const txt = Number.isInteger(p.y) ? String(p.y) : p.y.toFixed(1);
         doc.text(txt, px, ty, { align: "center" });
       });
@@ -1596,7 +1640,7 @@ async function gerarPDFCartao(args: {
         doc.setFillColor(34, 197, 94);
         doc.rect(lx2, ly2 - 2, 3, 2, "F");
         doc.setTextColor(...dark);
-        doc.text(refRange.label, lx2 + 4, ly2);
+        doc.text(`${refRange.label} (${refRange.min}-${refRange.max})`, lx2 + 4, ly2);
       }
     }
   };
