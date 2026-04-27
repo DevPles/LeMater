@@ -631,11 +631,11 @@ export function GestanteDetalheModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      className="fixed inset-0 z-40 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4 pb-28 sm:pb-28"
       onClick={onClose}
     >
       <div
-        className="bg-card w-full max-w-3xl max-h-[92vh] sm:rounded-2xl rounded-t-2xl overflow-hidden flex flex-col"
+        className="bg-card w-full max-w-3xl max-h-[calc(100vh-7rem)] sm:max-h-[calc(100vh-8rem)] sm:rounded-2xl rounded-t-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* header */}
