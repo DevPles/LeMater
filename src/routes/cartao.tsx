@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { useScreenContent } from "@/hooks/useScreenContent";
 import { CARTAO_DEFAULT } from "@/components/admin/TelasTab";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { LancamentoModal } from "@/components/LancamentoModal";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import {
