@@ -1122,7 +1122,40 @@ async function gerarPDFCartao(args: {
     idFy += 9.5;
   });
 
-
+  // ===== QR CODE + LINK do cartao digital online =====
+  const qrSize = 32;
+  const qrY = idY + 64 + 8;
+  const qrBoxW = idW;
+  const qrBoxH = qrSize + 10;
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(220, 220, 230);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(14, qrY, qrBoxW, qrBoxH, 2, 2, "FD");
+  // QR a esquerda
+  doc.addImage(qrData, "PNG", 14 + 5, qrY + 5, qrSize, qrSize);
+  // Texto a direita
+  const tX = 14 + 5 + qrSize + 6;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(pr, pg, pb);
+  doc.text("ACESSE O CARTAO DIGITAL", tX, qrY + 9);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.8);
+  doc.setTextColor(...muted);
+  const desc = doc.splitTextToSize(
+    "Aponte a camera do celular para o QR Code ou abra o link abaixo para visualizar o cartao online sempre atualizado.",
+    qrBoxW - qrSize - 18,
+  );
+  desc.forEach((ln: string, i: number) => doc.text(ln, tX, qrY + 14 + i * 3.2));
+  // Link
+  const linkY = qrY + qrBoxH - 5;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(6.8);
+  doc.setTextColor(pr, pg, pb);
+  const linkUrl = cartaoUrl || "https://maedigital.app";
+  const linkLines = doc.splitTextToSize(linkUrl, qrBoxW - qrSize - 18);
+  doc.text(linkLines[0], tX, linkY);
+  doc.link(tX, linkY - 3, doc.getTextWidth(linkLines[0]), 4, { url: linkUrl });
 
 
   // =============================================================
