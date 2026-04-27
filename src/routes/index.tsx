@@ -106,7 +106,7 @@ function WelcomeScreen() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => openModal("login")}
-              className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm px-6 py-3 rounded-full shadow-xl shadow-[#f0c040]/40 transition-colors flex-1"
+              className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm px-6 py-3 rounded-full shadow-xl shadow-[#f0c040]/40 transition-colors flex-1 border-2 border-transparent"
             >
               Entrar
             </motion.button>
