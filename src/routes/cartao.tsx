@@ -2266,11 +2266,12 @@ async function gerarPDFCartao(args: {
     // Layout para caber tudo dentro da face esquerda do folder
     const matY = 23;
     const matMaxY = pageH - 14;
-    const fixedColW = 17;
+    const fixedColW = 16;
     const semColW = 8;
-    const matTotalW = faceWCompact;
+    const matTotalW = Math.min(faceWCompact, faceRightEdge - faceX);
+    const parametrosMatriz = parametros.slice(0, Math.max(1, Math.min(parametros.length, 9)));
     const restW = matTotalW - fixedColW - semColW;
-    const dataColW = restW / Math.max(1, parametros.length);
+    const dataColW = restW / Math.max(1, parametrosMatriz.length);
 
     // Calcula altura de header e linha para encaixar todas as datas
     const availH = matMaxY - matY;
@@ -2286,11 +2287,11 @@ async function gerarPDFCartao(args: {
     doc.setFontSize(6.2);
     doc.text("DATA", faceX + 2, matY + matHeaderH / 2 + 1.2);
     doc.text("SEM", faceX + fixedColW + 1.5, matY + matHeaderH / 2 + 1.2);
-    doc.setFontSize(dataColW < 12 ? 4.5 : 5.2);
-    parametros.forEach((p, i) => {
+    doc.setFontSize(dataColW < 10 ? 4.1 : 4.8);
+    parametrosMatriz.forEach((p, i) => {
       const cx = faceX + fixedColW + semColW + i * dataColW;
       const lines = compactLabel(p).split("\n").flatMap(ln => doc.splitTextToSize(ln, dataColW - 1) as string[]);
-      const lineH = 2.5;
+      const lineH = 2.3;
       const visibleLines = lines.slice(0, 3);
       const startY = matY + matHeaderH / 2 - ((visibleLines.length - 1) * lineH) / 2;
       visibleLines.forEach((ln: string, li: number) => {
@@ -2314,7 +2315,7 @@ async function gerarPDFCartao(args: {
       doc.text(`${semanaPorData.get(d) ?? "-"}`, faceX + fixedColW + 2, ry4 + rowH / 2 + 1.1);
 
       const linhaMatrix = matrix.get(d)!;
-      parametros.forEach((p, i) => {
+      parametrosMatriz.forEach((p, i) => {
         const cx = faceX + fixedColW + semColW + i * dataColW;
         const v = linhaMatrix.get(p);
         if (v !== undefined && v !== null) {
@@ -2346,7 +2347,7 @@ async function gerarPDFCartao(args: {
     // Linhas verticais
     doc.line(faceX + fixedColW, matY, faceX + fixedColW, matY + totalH);
     doc.line(faceX + fixedColW + semColW, matY, faceX + fixedColW + semColW, matY + totalH);
-    parametros.forEach((_p, i) => {
+    parametrosMatriz.forEach((_p, i) => {
       const cx = faceX + fixedColW + semColW + (i + 1) * dataColW;
       doc.line(cx, matY, cx, matY + totalH);
     });
