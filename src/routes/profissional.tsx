@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import { GestanteDetalheModal } from "@/components/profissional/GestanteDetalheModal";
+import { ProntuarioConsultaModal } from "@/components/ProntuarioConsultaModal";
 
 export const Route = createFileRoute("/profissional")({
   head: () => ({
@@ -113,6 +114,7 @@ function Dashboard({ session }: { session: Session }) {
   const [msg, setMsg] = useState<string | null>(null);
   const [filtroStatus, setFiltroStatus] = useState<"todos" | "disponivel" | "reservado" | "realizado">("todos");
   const [slotDetalhe, setSlotDetalhe] = useState<Slot | null>(null);
+  const [prontuarioId, setProntuarioId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -425,6 +427,15 @@ function Dashboard({ session }: { session: Session }) {
                           Cancelar
                         </button>
                       )}
+                      {podeAbrir && (
+                        <button
+                          onClick={() => setProntuarioId(s.id)}
+                          className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+                          title="Ver prontuário compilado da consulta"
+                        >
+                          Prontuário
+                        </button>
+                      )}
                       <button
                         onClick={() => removerSlot(s.id)}
                         className="text-[10px] font-semibold text-red-700 hover:text-red-900"
@@ -444,6 +455,12 @@ function Dashboard({ session }: { session: Session }) {
 
       {slotDetalhe && (
         <GestanteDetalheModal slot={slotDetalhe} onClose={() => setSlotDetalhe(null)} />
+      )}
+      {prontuarioId && (
+        <ProntuarioConsultaModal
+          appointmentId={prontuarioId}
+          onClose={() => setProntuarioId(null)}
+        />
       )}
     </div>
   );
