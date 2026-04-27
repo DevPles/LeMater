@@ -355,8 +355,14 @@ function VideosPage() {
                 <DialogTitle className="text-left text-base">{selected.title}</DialogTitle>
               </DialogHeader>
               <div className={`${selected.category === "Reels" ? "aspect-[9/16]" : "aspect-video"} rounded-xl bg-gradient-to-br ${selected.gradient} flex items-center justify-center relative overflow-hidden`}>
-                <span className="text-5xl text-foreground/30">▶</span>
-                <span className="absolute bottom-2 left-2 bg-foreground/70 text-primary-foreground text-xs px-2 py-1 rounded-lg">{selected.duration}</span>
+                {(selected as any).videoUrl ? (
+                  <video src={(selected as any).videoUrl} controls autoPlay playsInline className="absolute inset-0 w-full h-full object-contain bg-black" />
+                ) : (
+                  <span className="text-5xl text-foreground/30">▶</span>
+                )}
+                {!(selected as any).videoUrl && (
+                  <span className="absolute bottom-2 left-2 bg-foreground/70 text-primary-foreground text-xs px-2 py-1 rounded-lg">{selected.duration}</span>
+                )}
 
                 {/* Coluna de ações estilo Instagram/TikTok — apenas para Reels */}
                 {selected.category === "Reels" && (
