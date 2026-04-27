@@ -239,7 +239,10 @@ function CartaoPage() {
   }, [medicoes]);
 
   // ====== IMC e ganho de peso ======
-  const altura = medicoes.find(m => m.parametro.toLowerCase() === "altura_pessoa" || m.parametro.toLowerCase() === "estatura")?.valor;
+  const altura = medicoes.find(m => {
+    const p = m.parametro.toLowerCase();
+    return p === "altura_pessoa" || p === "estatura" || p.startsWith("estatura");
+  })?.valor;
   const pesoInicial = series.peso[0]?.peso;
   const pesoAtual = series.peso[series.peso.length - 1]?.peso;
   const ganhoPeso = (pesoInicial && pesoAtual) ? pesoAtual - pesoInicial : null;
