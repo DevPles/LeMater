@@ -1723,18 +1723,14 @@ async function gerarPDFCartao(args: {
         series: [{ color: [16, 185, 129], values: series.bcf.map(d => ({ x: d.semana, y: d.bcf })), name: "BCF (bpm)" }],
       };
     }
-    if (lp.includes("press") && lp.includes("sist")) {
+    if (param === "pressao arterial" || (lp.includes("press") && (lp.includes("sist") || lp.includes("diast") || lp.includes("arter")))) {
       return {
         color: [239, 68, 68],
-        refRange: { min: 90, max: 140, label: "normal" },
-        series: [{ color: [239, 68, 68], values: series.pressao.filter(p => p.sistolica !== undefined).map(d => ({ x: d.semana, y: d.sistolica! })), name: "Sistolica (mmHg)" }],
-      };
-    }
-    if (lp.includes("press") && lp.includes("diast")) {
-      return {
-        color: [59, 130, 246],
-        refRange: { min: 60, max: 90, label: "normal" },
-        series: [{ color: [59, 130, 246], values: series.pressao.filter(p => p.diastolica !== undefined).map(d => ({ x: d.semana, y: d.diastolica! })), name: "Diastolica (mmHg)" }],
+        refRange: { min: 60, max: 140, label: "normal" },
+        series: [
+          { color: [239, 68, 68], values: series.pressao.filter(p => p.sistolica !== undefined).map(d => ({ x: d.semana, y: d.sistolica! })), name: "Sistolica (mmHg)" },
+          { color: [59, 130, 246], values: series.pressao.filter(p => p.diastolica !== undefined).map(d => ({ x: d.semana, y: d.diastolica! })), name: "Diastolica (mmHg)" },
+        ],
       };
     }
     if (lp.includes("glic")) {
