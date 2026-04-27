@@ -1840,99 +1840,109 @@ async function gerarPDFCartao(args: {
     const semanaPorData = new Map<string, number>();
     medicoes.forEach(m => semanaPorData.set(m.data, m.semana));
 
-    // Layout matriz
+    // Layout: matriz pode ser dividida em DUAS faces (esquerda e direita).
+    // Datas mais recentes na face esquerda; se sobrar, continua na face direita.
     const matY = 23;
     const matMaxY = pageH - 14;
-    const fixedColW = 22; // data
-    const semColW = 14;
-    const restW = pageW - margin * 2 - fixedColW - semColW;
-    const dataColW = restW / parametros.length;
-    const matRowH = 6.5;
+    const fixedColW = 18;
+    const semColW = 10;
+    const matRowH = 6;
     const matHeaderH = 14;
 
-    // Header
-    doc.setFillColor(pr, pg, pb);
-    doc.rect(margin, matY, pageW - margin * 2, matHeaderH, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    doc.text("DATA", margin + 2, matY + 8.5);
-    doc.text("SEM", margin + fixedColW + 2, matY + 8.5);
-    doc.setFontSize(6.5);
-    parametros.forEach((p, i) => {
-      const cx = margin + fixedColW + semColW + i * dataColW;
-      // header em duas linhas se necessario
-      const lines = doc.splitTextToSize(p, dataColW - 2);
-      const lineH = 3;
-      const startY = matY + 7 - ((lines.length - 1) * lineH) / 2;
-      lines.slice(0, 2).forEach((ln: string, li: number) => {
-        doc.text(ln, cx + dataColW / 2, startY + li * lineH, { align: "center" });
-      });
-    });
+    const drawMatrixFace = (faceX: number, faceWidth: number, datasFace: string[]) => {
+      const restW = faceWidth - fixedColW - semColW;
+      const dataColW = restW / Math.max(1, parametros.length);
 
-    // Rows
-    const maxDatas = Math.floor((matMaxY - matY - matHeaderH) / matRowH);
-    const datasShow = datas.slice(0, maxDatas);
-    datasShow.forEach((d, ri) => {
-      const ry4 = matY + matHeaderH + ri * matRowH;
-      if (ri % 2 === 0) {
-        doc.setFillColor(248, 248, 252);
-        doc.rect(margin, ry4, pageW - margin * 2, matRowH, "F");
-      }
+      // Header
+      doc.setFillColor(pr, pg, pb);
+      doc.rect(faceX, matY, faceWidth, matHeaderH, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.text("DATA", faceX + 2, matY + 8.5);
+      doc.text("SEM", faceX + fixedColW + 2, matY + 8.5);
+      doc.setFontSize(5.8);
+      parametros.forEach((p, i) => {
+        const cx = faceX + fixedColW + semColW + i * dataColW;
+        const lines = doc.splitTextToSize(p, dataColW - 1);
+        const lineH = 2.6;
+        const startY = matY + 7 - ((Math.min(lines.length, 2) - 1) * lineH) / 2;
+        lines.slice(0, 2).forEach((ln: string, li: number) => {
+          doc.text(ln, cx + dataColW / 2, startY + li * lineH, { align: "center" });
+        });
+      });
+
+      // Rows
+      datasFace.forEach((d, ri) => {
+        const ry4 = matY + matHeaderH + ri * matRowH;
+        if (ri % 2 === 0) {
+          doc.setFillColor(248, 248, 252);
+          doc.rect(faceX, ry4, faceWidth, matRowH, "F");
+        }
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(6.5);
+        doc.setTextColor(pr, pg, pb);
+        doc.text(d, faceX + 2, ry4 + 4);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...muted);
+        doc.text(`${semanaPorData.get(d) ?? "-"}`, faceX + fixedColW + 2, ry4 + 4);
+        const linhaMatrix = matrix.get(d)!;
+        parametros.forEach((p, i) => {
+          const cx = faceX + fixedColW + semColW + i * dataColW;
+          const v = linhaMatrix.get(p);
+          if (v !== undefined && v !== null) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(6.5);
+            doc.setTextColor(...dark);
+            doc.text(String(v), cx + dataColW / 2, ry4 + 4, { align: "center" });
+          } else {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(5.5);
+            doc.setTextColor(220, 220, 225);
+            doc.text("-", cx + dataColW / 2, ry4 + 4, { align: "center" });
+          }
+        });
+      });
+
+      const totalH = matHeaderH + datasFace.length * matRowH;
+      doc.setDrawColor(pr, pg, pb);
+      doc.setLineWidth(0.3);
+      doc.rect(faceX, matY, faceWidth, totalH, "S");
       doc.setDrawColor(225, 225, 230);
       doc.setLineWidth(0.1);
-      doc.line(margin, ry4 + matRowH, pageW - margin, ry4 + matRowH);
-      // Data
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7);
-      doc.setTextColor(pr, pg, pb);
-      doc.text(d, margin + 2, ry4 + 4.3);
-      // Semana
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(...muted);
-      doc.text(`${semanaPorData.get(d) ?? "-"}`, margin + fixedColW + 2, ry4 + 4.3);
-      // Valores
-      const linhaMatrix = matrix.get(d)!;
-      parametros.forEach((p, i) => {
-        const cx = margin + fixedColW + semColW + i * dataColW;
-        const v = linhaMatrix.get(p);
-        if (v !== undefined && v !== null) {
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(7);
-          doc.setTextColor(...dark);
-          doc.text(String(v), cx + dataColW / 2, ry4 + 4.3, { align: "center" });
-        } else {
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(6);
-          doc.setTextColor(220, 220, 225);
-          doc.text("-", cx + dataColW / 2, ry4 + 4.3, { align: "center" });
-        }
+      doc.line(faceX + fixedColW, matY, faceX + fixedColW, matY + totalH);
+      doc.line(faceX + fixedColW + semColW, matY, faceX + fixedColW + semColW, matY + totalH);
+      parametros.forEach((_p, i) => {
+        const cx = faceX + fixedColW + semColW + (i + 1) * dataColW;
+        doc.line(cx, matY, cx, matY + totalH);
       });
-    });
+    };
 
-    // Borda
-    doc.setDrawColor(pr, pg, pb);
-    doc.setLineWidth(0.4);
-    doc.rect(margin, matY, pageW - margin * 2, matHeaderH + datasShow.length * matRowH, "S");
-    // Linhas verticais
-    doc.setDrawColor(225, 225, 230);
-    doc.setLineWidth(0.15);
-    const totalRowsH = matHeaderH + datasShow.length * matRowH;
-    doc.line(margin + fixedColW, matY, margin + fixedColW, matY + totalRowsH);
-    doc.line(margin + fixedColW + semColW, matY, margin + fixedColW + semColW, matY + totalRowsH);
-    parametros.forEach((_p, i) => {
-      const cx = margin + fixedColW + semColW + (i + 1) * dataColW;
-      doc.line(cx, matY, cx, matY + totalRowsH);
-    });
+    const maxRowsPerFace = Math.floor((matMaxY - matY - matHeaderH) / matRowH);
+    const leftFaceW = halfW - margin - 5;
+    const rightFaceW = halfW - margin - 5;
 
-    if (datas.length > maxDatas) {
-      doc.setFont("helvetica", "italic");
-      doc.setFontSize(6.5);
-      doc.setTextColor(...muted);
-      doc.text(
-        `+ ${datas.length - maxDatas} consultas anteriores disponiveis no cartao digital online.`,
-        pageW / 2, pageH - 13, { align: "center" },
-      );
+    if (datas.length <= maxRowsPerFace) {
+      // Cabe tudo numa face: usa face esquerda completa (largura cheia da pagina)
+      const fullW = pageW - margin * 2;
+      drawMatrixFace(margin, fullW, datas);
+    } else {
+      // Divide entre as duas faces
+      const datasLeft = datas.slice(0, maxRowsPerFace);
+      const datasRight = datas.slice(maxRowsPerFace, maxRowsPerFace * 2);
+      drawMatrixFace(margin, leftFaceW, datasLeft);
+      drawMatrixFace(halfW + 5, rightFaceW, datasRight);
+
+      const remaining = datas.length - maxRowsPerFace * 2;
+      if (remaining > 0) {
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(6.5);
+        doc.setTextColor(...muted);
+        doc.text(
+          `+ ${remaining} consultas anteriores disponiveis no cartao digital online.`,
+          pageW / 2, pageH - 13, { align: "center" },
+        );
+      }
     }
   }
 
