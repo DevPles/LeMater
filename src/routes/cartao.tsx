@@ -1777,83 +1777,9 @@ async function gerarPDFCartao(args: {
     }
   };
 
-  // PAGINA 3 - Folha 2: GRAFICOS INTERCALADOS (4 graficos ocupando toda area)
-  doc.addPage("a4", "landscape");
-  drawBaseFolderPage();
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(pr, pg, pb);
-  doc.text("EVOLUCAO CLINICA - GRAFICOS (1/2)", margin, 13);
-  doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.5);
-  doc.line(margin, 15, pageW - margin, 15);
-
-  const chartW = halfW - margin - 5;
-  const chartH = (pageH - 24) / 2 - 3;
-  // Intercalando: lado esquerdo (peso/AU) | lado direito (pressao/glicemia/BCF/PAM)
-  // Topo esquerdo: Peso
-  drawChartBox(margin, 18, chartW, chartH,
-    "Curva de Ganho de Peso (kg)",
-    [{ color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), fill: true, name: "Peso" }]);
-  // Topo direito: Pressao (intercalado)
-  drawChartBox(halfW + 5, 18, chartW, chartH,
-    "Curva Pressorica (mmHg)",
-    [
-      { color: [239, 68, 68], values: series.pressao.filter(p => p.sistolica !== undefined).map(d => ({ x: d.semana, y: d.sistolica! })), name: "Sistolica" },
-      { color: [59, 130, 246], values: series.pressao.filter(p => p.diastolica !== undefined).map(d => ({ x: d.semana, y: d.diastolica! })), name: "Diastolica" },
-    ],
-    { min: 60, max: 140, label: "normal" });
-  // Baixo esquerdo: Altura uterina
-  drawChartBox(margin, 18 + chartH + 5, chartW, chartH,
-    "Altura Uterina (cm)",
-    [{ color: [124, 58, 237], values: series.au.map(d => ({ x: d.semana, y: d.altura })), fill: true, name: "AU" }]);
-  // Baixo direito: BCF
-  drawChartBox(halfW + 5, 18 + chartH + 5, chartW, chartH,
-    "Batimentos Cardiacos Fetais (bpm)",
-    [{ color: [16, 185, 129], values: series.bcf.map(d => ({ x: d.semana, y: d.bcf })), name: "BCF" }],
-    { min: 110, max: 160, label: "normal" });
-
-  // PAGINA 4 - Folha 3: 2 graficos cruzados em cima | DADOS CLINICOS EM GRADE embaixo
-  doc.addPage("a4", "landscape");
-  drawBaseFolderPage();
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(pr, pg, pb);
-  doc.text("EVOLUCAO CLINICA - GRAFICOS CRUZADOS (2/2)", margin, 13);
-  doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.5);
-  doc.line(margin, 15, pageW - margin, 15);
-
-  // Top: 2 graficos cruzados (Glicemia x Peso | PAM x Peso)
-  const chartTopH = 70;
-  drawChartBox(margin, 18, chartW, chartTopH,
-    "Glicemia x Peso (risco DMG)",
-    [
-      { color: [245, 158, 11], values: series.glicemia.map(d => ({ x: d.semana, y: d.glicemia })), name: "Glicemia (mg/dL)" },
-      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso (kg)" },
-    ],
-    { min: 70, max: 95, label: "normal" });
-  const pamSerie = series.pressao
-    .filter(p => p.sistolica !== undefined && p.diastolica !== undefined)
-    .map(p => ({ x: p.semana, y: (p.sistolica! + 2 * p.diastolica!) / 3 }));
-  drawChartBox(halfW + 5, 18, chartW, chartTopH,
-    "PAM x Peso (analise combinada)",
-    [
-      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso (kg)", fill: true },
-      { color: [239, 68, 68], values: pamSerie, name: "PAM (mmHg)" },
-    ]);
-
-  // Embaixo: TABELAS POR TIPO DE DADO CLINICO (grade)
-  const gridY = 18 + chartTopH + 6;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(pr, pg, pb);
-  doc.text("DADOS CLINICOS POR PARAMETRO", margin, gridY);
-  doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.5);
-  doc.line(margin, gridY + 2, pageW - margin, gridY + 2);
+  // ================================================================
+  // PAGINAS DE EVOLUCAO CLINICA: por parametro -> GRAFICO | TABELA lado a lado
+  // ================================================================
 
   // Agrupa por parametro
   const porParametro = new Map<string, MedicaoReal[]>();
@@ -1861,7 +1787,6 @@ async function gerarPDFCartao(args: {
     if (!porParametro.has(m.parametro)) porParametro.set(m.parametro, []);
     porParametro.get(m.parametro)!.push(m);
   });
-  // Ordena cada lista por data desc (mais recente primeiro)
   porParametro.forEach((arr) => {
     arr.sort((a, b) => {
       const da = parseBR(a.data); const db = parseBR(b.data);
@@ -1870,79 +1795,231 @@ async function gerarPDFCartao(args: {
   });
   const parametros = Array.from(porParametro.keys()).sort();
 
-  if (parametros.length) {
-    // Grade 4 colunas, distribuida pela largura
-    const cols = 4;
-    const gap = 4;
-    const tBoxW = (pageW - margin * 2 - gap * (cols - 1)) / cols;
-    const tBoxStartY = gridY + 6;
-    const tBoxMaxH = pageH - tBoxStartY - 12;
-    const headerH = 6;
-    const rowH = 4;
-    const titleH = 7;
-    const maxRows = Math.floor((tBoxMaxH - titleH - headerH) / rowH);
+  // Helper: detecta valor numerico (lida com "120/80")
+  const numFromValor = (v: string | number): number | null => {
+    if (typeof v === "number") return v;
+    const s = String(v).trim();
+    const m = s.match(/-?\d+([.,]\d+)?/);
+    return m ? parseFloat(m[0].replace(",", ".")) : null;
+  };
 
-    parametros.forEach((param, i) => {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      // Limite de 2 linhas para nao estourar
-      if (row >= 2) return;
-      const tx = margin + col * (tBoxW + gap);
-      const itensP = porParametro.get(param)!.slice(0, maxRows);
-      const tableH = titleH + headerH + itensP.length * rowH;
-      // Max 2 linhas: usa metade da altura disponivel
-      const ty = tBoxStartY + row * (tBoxMaxH / 2 + 2);
+  // Mapeia parametro -> serie + cor + range
+  const paramConfig = (param: string): {
+    color: [number, number, number];
+    refRange?: { min: number; max: number; label?: string };
+    series: { color: [number, number, number]; values: { x: number; y: number }[]; fill?: boolean; name?: string }[];
+  } | null => {
+    const lp = param.toLowerCase();
+    if (lp.includes("peso")) {
+      return {
+        color: [pr, pg, pb],
+        series: [{ color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), fill: true, name: "Peso (kg)" }],
+      };
+    }
+    if (lp.includes("uterina") || lp === "au") {
+      return {
+        color: [124, 58, 237],
+        series: [{ color: [124, 58, 237], values: series.au.map(d => ({ x: d.semana, y: d.altura })), fill: true, name: "AU (cm)" }],
+      };
+    }
+    if (lp.includes("bcf") || lp.includes("batimento")) {
+      return {
+        color: [16, 185, 129],
+        refRange: { min: 110, max: 160, label: "normal" },
+        series: [{ color: [16, 185, 129], values: series.bcf.map(d => ({ x: d.semana, y: d.bcf })), name: "BCF (bpm)" }],
+      };
+    }
+    if (lp.includes("press") && lp.includes("sist")) {
+      return {
+        color: [239, 68, 68],
+        refRange: { min: 90, max: 140, label: "normal" },
+        series: [{ color: [239, 68, 68], values: series.pressao.filter(p => p.sistolica !== undefined).map(d => ({ x: d.semana, y: d.sistolica! })), name: "Sistolica (mmHg)" }],
+      };
+    }
+    if (lp.includes("press") && lp.includes("diast")) {
+      return {
+        color: [59, 130, 246],
+        refRange: { min: 60, max: 90, label: "normal" },
+        series: [{ color: [59, 130, 246], values: series.pressao.filter(p => p.diastolica !== undefined).map(d => ({ x: d.semana, y: d.diastolica! })), name: "Diastolica (mmHg)" }],
+      };
+    }
+    if (lp.includes("glic")) {
+      return {
+        color: [245, 158, 11],
+        refRange: { min: 70, max: 95, label: "normal" },
+        series: [{ color: [245, 158, 11], values: series.glicemia.map(d => ({ x: d.semana, y: d.glicemia })), name: "Glicemia (mg/dL)" }],
+      };
+    }
+    // Generico: cria serie a partir das medicoes
+    const items = porParametro.get(param) ?? [];
+    const vals = items
+      .map(it => ({ x: it.semana, y: numFromValor(it.valor) }))
+      .filter((it): it is { x: number; y: number } => it.y !== null)
+      .sort((a, b) => a.x - b.x);
+    if (vals.length < 2) return null;
+    return {
+      color: [pr, pg, pb],
+      series: [{ color: [pr, pg, pb], values: vals, name: param }],
+    };
+  };
 
-      // Caixa
-      doc.setFillColor(255, 255, 255);
-      doc.setDrawColor(225, 225, 230);
-      doc.setLineWidth(0.3);
-      doc.roundedRect(tx, ty, tBoxW, tableH, 1.5, 1.5, "FD");
-      // Titulo
-      doc.setFillColor(pr, pg, pb);
-      doc.rect(tx, ty, tBoxW, titleH, "F");
-      doc.setTextColor(255, 255, 255);
+  // Layout: 2 blocos por pagina (cada bloco = grafico esquerda + tabela direita)
+  const blocksPerPage = 2;
+  const blockH = (pageH - 24) / blocksPerPage - 4;
+  const chartBoxW = halfW - margin - 5;   // grafico ocupa ~ metade
+  const tableBoxW = halfW - margin - 5;   // tabela ocupa a outra metade
+
+  const drawTableBox = (
+    bx: number, by: number, bw: number, bh: number,
+    title: string,
+    items: MedicaoReal[],
+    accent: [number, number, number],
+  ) => {
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(225, 225, 230);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(bx, by, bw, bh, 2, 2, "FD");
+    // Titulo
+    doc.setFillColor(accent[0], accent[1], accent[2]);
+    doc.rect(bx, by, bw, 7, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text(title.toUpperCase(), bx + 3, by + 5);
+    doc.setFontSize(7);
+    doc.text(`${items.length} registro${items.length !== 1 ? "s" : ""}`, bx + bw - 3, by + 5, { align: "right" });
+    // Header colunas
+    const headerY = by + 7;
+    const headerHt = 5.5;
+    doc.setFillColor(245, 245, 250);
+    doc.rect(bx, headerY, bw, headerHt, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...muted);
+    const cDataW = bw * 0.38;
+    const cSemW = bw * 0.18;
+    const cValW = bw - cDataW - cSemW - 2;
+    doc.text("DATA", bx + 3, headerY + 3.8);
+    doc.text("SEM", bx + 3 + cDataW, headerY + 3.8);
+    doc.text("VALOR", bx + 3 + cDataW + cSemW, headerY + 3.8);
+    // Rows
+    const rowsStartY = headerY + headerHt;
+    const rowsH = bh - (rowsStartY - by) - 2;
+    const rowHt = 4.5;
+    const maxRows = Math.floor(rowsH / rowHt);
+    const visible = items.slice(0, maxRows);
+    visible.forEach((m, ri) => {
+      const ry5 = rowsStartY + ri * rowHt;
+      if (ri % 2 === 0) {
+        doc.setFillColor(252, 252, 254);
+        doc.rect(bx, ry5, bw, rowHt, "F");
+      }
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(...dark);
+      doc.text(m.data, bx + 3, ry5 + 3.2);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      const titleTrunc = doc.splitTextToSize(param.toUpperCase(), tBoxW - 4)[0] ?? param;
-      doc.text(titleTrunc, tx + 2, ty + 4.8);
-      // Header
-      doc.setFillColor(245, 245, 250);
-      doc.rect(tx, ty + titleH, tBoxW, headerH, "F");
+      doc.setTextColor(accent[0], accent[1], accent[2]);
+      doc.text(`${m.semana}`, bx + 3 + cDataW, ry5 + 3.2);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.5);
+      doc.setTextColor(...dark);
+      doc.text(String(m.valor), bx + 3 + cDataW + cSemW, ry5 + 3.2);
+    });
+    if (items.length > maxRows) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(6);
       doc.setTextColor(...muted);
-      const c1W = tBoxW * 0.42;
-      const c2W = tBoxW * 0.22;
-      doc.text("DATA", tx + 2, ty + titleH + 4);
-      doc.text("SEM", tx + 2 + c1W, ty + titleH + 4);
-      doc.text("VALOR", tx + 2 + c1W + c2W, ty + titleH + 4);
-      // Rows
-      itensP.forEach((m, ri) => {
-        const ry3 = ty + titleH + headerH + ri * rowH;
-        if (ri % 2 === 0) {
-          doc.setFillColor(252, 252, 254);
-          doc.rect(tx, ry3, tBoxW, rowH, "F");
+      doc.text(`+ ${items.length - maxRows} registros anteriores`, bx + bw / 2, by + bh - 1.2, { align: "center" });
+    }
+  };
+
+  // Inicia a primeira pagina de evolucao
+  if (parametros.length) {
+    let pageIndex = 0;
+    let posInPage = 0;
+
+    const startNewPage = (titulo: string) => {
+      doc.addPage("a4", "landscape");
+      drawBaseFolderPage();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(pr, pg, pb);
+      doc.text(titulo, margin, 13);
+      doc.setDrawColor(pr, pg, pb);
+      doc.setLineWidth(0.5);
+      doc.line(margin, 15, pageW - margin, 15);
+    };
+
+    parametros.forEach((param) => {
+      if (posInPage === 0) {
+        pageIndex += 1;
+        startNewPage(`EVOLUCAO CLINICA POR PARAMETRO  -  PAGINA ${pageIndex}`);
+      }
+      const cfg = paramConfig(param);
+      const items = porParametro.get(param)!;
+      const accent: [number, number, number] = cfg?.color ?? [pr, pg, pb];
+      const yTop = 18 + posInPage * (blockH + 4);
+
+      // Lado esquerdo: GRAFICO (ou caixa "sem dados suficientes")
+      if (cfg && cfg.series[0].values.length >= 2) {
+        drawChartBox(margin, yTop, chartBoxW, blockH,
+          `Curva: ${param}`,
+          cfg.series,
+          cfg.refRange);
+      } else {
+        // sem grafico: caixa explicativa
+        doc.setFillColor(248, 248, 252);
+        doc.setDrawColor(225, 225, 230);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(margin, yTop, chartBoxW, blockH, 2, 2, "FD");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(...dark);
+        doc.text(param.toUpperCase(), margin + 4, yTop + 8);
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(8);
+        doc.setTextColor(...muted);
+        doc.text("Necessario ao menos 2 medicoes para gerar grafico.", margin + 4, yTop + 14);
+        // Mini stat: ultima leitura
+        const ult = items[0];
+        if (ult) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7);
+          doc.setTextColor(...muted);
+          doc.text("ULTIMA LEITURA", margin + 4, yTop + 22);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(20);
+          doc.setTextColor(accent[0], accent[1], accent[2]);
+          doc.text(String(ult.valor), margin + 4, yTop + 32);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7);
+          doc.setTextColor(...muted);
+          doc.text(`em ${ult.data}  -  semana ${ult.semana}`, margin + 4, yTop + 36);
         }
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(6.5);
-        doc.setTextColor(...dark);
-        doc.text(m.data, tx + 2, ry3 + 2.8);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(pr, pg, pb);
-        doc.text(`${m.semana}`, tx + 2 + c1W, ry3 + 2.8);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...dark);
-        doc.text(String(m.valor), tx + 2 + c1W + c2W, ry3 + 2.8);
-      });
+      }
+
+      // Lado direito: TABELA
+      drawTableBox(halfW + 5, yTop, tableBoxW, blockH, param, items, accent);
+
+      posInPage = (posInPage + 1) % blocksPerPage;
     });
   } else {
+    // Pagina vazia explicativa
+    doc.addPage("a4", "landscape");
+    drawBaseFolderPage();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(pr, pg, pb);
+    doc.text("EVOLUCAO CLINICA POR PARAMETRO", margin, 13);
+    doc.setDrawColor(pr, pg, pb);
+    doc.setLineWidth(0.5);
+    doc.line(margin, 15, pageW - margin, 15);
     doc.setFillColor(248, 248, 252);
-    doc.roundedRect(margin, gridY + 6, pageW - margin * 2, 14, 2, 2, "F");
+    doc.roundedRect(margin, pageH / 2 - 10, pageW - margin * 2, 20, 2, 2, "F");
     doc.setFont("helvetica", "italic");
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setTextColor(...muted);
-    doc.text("Nenhum dado clinico registrado.", pageW / 2, gridY + 14, { align: "center" });
+    doc.text("Nenhum dado clinico registrado.", pageW / 2, pageH / 2 + 2, { align: "center" });
   }
 
   // =============================================================
