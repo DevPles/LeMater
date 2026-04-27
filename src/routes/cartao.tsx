@@ -1616,6 +1616,7 @@ async function gerarPDFCartao(args: {
     title: string,
     serie: { color: [number, number, number]; values: { x: number; y: number }[]; fill?: boolean; name?: string }[],
     refRange?: { min: number; max: number; label?: string },
+    extraRefs?: { min: number; max: number; label?: string; color?: [number, number, number] }[],
   ) => {
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(225, 225, 230);
@@ -1660,6 +1661,12 @@ async function gerarPDFCartao(args: {
           yHi = Math.max(yHi, refRange.max + padBase * 0.3);
         }
       }
+      if (extraRefs && extraRefs.length) {
+        extraRefs.forEach(r => {
+          yLo = Math.min(yLo, r.min - padBase * 0.2);
+          yHi = Math.max(yHi, r.max + padBase * 0.2);
+        });
+      }
       // Arredonda para escala "bonita"
       const niceStep = (range: number): number => {
         const raw = range / 4;
@@ -1686,6 +1693,27 @@ async function gerarPDFCartao(args: {
         const yB = sy(visMin);
         doc.rect(plotX, yT, plotW, yB - yT, "F");
       }
+    }
+
+    // Linhas tracejadas de referencia adicionais (ex.: limites sistolica/diastolica)
+    if (extraRefs && extraRefs.length) {
+      extraRefs.forEach(r => {
+        const col = r.color ?? [120, 120, 130];
+        doc.setDrawColor(col[0], col[1], col[2]);
+        doc.setLineWidth(0.25);
+        doc.setLineDashPattern([1.2, 1.2], 0);
+        [r.min, r.max].forEach(v => {
+          if (v >= yLo && v <= yHi) {
+            const yy = sy(v);
+            doc.line(plotX, yy, plotX + plotW, yy);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(5);
+            doc.setTextColor(col[0], col[1], col[2]);
+            doc.text(`${v}`, plotX + plotW - 0.5, yy - 0.6, { align: "right" });
+          }
+        });
+        doc.setLineDashPattern([], 0);
+      });
     }
 
     // Gridlines em escala "bonita"
@@ -1849,6 +1877,7 @@ async function gerarPDFCartao(args: {
   const paramConfig = (param: string): {
     color: [number, number, number];
     refRange?: { min: number; max: number; label?: string };
+    extraRefs?: { min: number; max: number; label?: string; color?: [number, number, number] }[];
     series: { color: [number, number, number]; values: { x: number; y: number }[]; fill?: boolean; name?: string }[];
   } | null => {
     const lp = param.toLowerCase();
@@ -1874,7 +1903,12 @@ async function gerarPDFCartao(args: {
     if (param === "pressao arterial" || (lp.includes("press") && (lp.includes("sist") || lp.includes("diast") || lp.includes("arter")))) {
       return {
         color: [239, 68, 68],
-        refRange: { min: 60, max: 140, label: "normal" },
+        // Em vez de uma banda unica, mostramos linhas tracejadas para os limites
+        // normais da sistolica (90-140) e da diastolica (60-90), cada uma na cor da curva.
+        extraRefs: [
+          { min: 90, max: 140, label: "Sistolica normal", color: [239, 68, 68] },
+          { min: 60, max: 90, label: "Diastolica normal", color: [59, 130, 246] },
+        ],
         series: [
           { color: [239, 68, 68], values: series.pressao.filter(p => p.sistolica !== undefined).map(d => ({ x: d.semana, y: d.sistolica! })), name: "Sistolica (mmHg)" },
           { color: [59, 130, 246], values: series.pressao.filter(p => p.diastolica !== undefined).map(d => ({ x: d.semana, y: d.diastolica! })), name: "Diastolica (mmHg)" },
@@ -2049,7 +2083,8 @@ async function gerarPDFCartao(args: {
         drawChartBox(xFace, yChart, faceW, chartH,
           `Curva: ${paramLabel}`,
           cfg.series,
-          cfg.refRange);
+          cfg.refRange,
+          cfg.extraRefs);
       } else {
         doc.setFillColor(248, 248, 252);
         doc.setDrawColor(225, 225, 230);
