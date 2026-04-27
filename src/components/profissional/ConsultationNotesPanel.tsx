@@ -38,6 +38,7 @@ export function ConsultationNotesPanel({
   gestanteId,
   professionalUserId,
   compact = false,
+  onClose,
 }: Props) {
   const [tab, setTab] = useState<Tab>("obs");
   const [dum, setDum] = useState<string | null>(null);
