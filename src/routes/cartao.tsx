@@ -1612,11 +1612,12 @@ async function gerarPDFCartao(args: {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(5.5);
       doc.setTextColor(s.color[0], s.color[1], s.color[2]);
-      sorted.forEach((p, i) => {
+      sorted.forEach((p) => {
         const px = sx(p.x);
         const py = sy(p.y);
-        const acima = i % 2 === 0;
-        const ty = acima ? py - 1.8 : py + 3.5;
+        // Coloca o rotulo abaixo se o ponto estiver perto do topo do plot, senao acima
+        const nearTop = py - plotY < 4;
+        const ty = nearTop ? py + 3.2 : py - 1.8;
         const txt = Number.isInteger(p.y) ? String(p.y) : p.y.toFixed(1);
         doc.text(txt, px, ty, { align: "center" });
       });
