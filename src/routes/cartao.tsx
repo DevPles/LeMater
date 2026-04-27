@@ -372,7 +372,7 @@ function CartaoPage() {
           inputClass={inputClass}
         />
       )}
-      {tab === "graficos" && <GraficosTab />}
+      {tab === "graficos" && <GraficosTab palette={palette} dum={patientInfo.dum} />}
     </div>
   );
 }
