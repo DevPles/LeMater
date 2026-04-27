@@ -109,7 +109,7 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
     setElapsed(0);
     timerRef.current = window.setInterval(() => {
       setElapsed((s) => {
-        if (s >= 60) { stopRecording(); return s; }
+        if (s >= 180) { stopRecording(); return s; }
         return s + 1;
       });
     }, 1000);
@@ -126,10 +126,6 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
-    if (f.size > 50 * 1024 * 1024) {
-      toast.error("Arquivo muito grande (máx 50MB)");
-      return;
-    }
     setRecordedBlob(f);
     setPreviewUrl(URL.createObjectURL(f));
     setMode("upload");
@@ -175,14 +171,14 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-xs sm:max-w-sm max-h-[85vh] overflow-y-auto p-4">
         <DialogHeader>
-          <DialogTitle>Compartilhe seu reel</DialogTitle>
+          <DialogTitle className="text-base">Compartilhe seu reel</DialogTitle>
         </DialogHeader>
 
         {mode === "choose" && !previewUrl && (
-          <div className="space-y-3 pt-2">
-            <Button onClick={startCamera} className="w-full h-12 bg-primary text-primary-foreground">
+          <div className="space-y-2 pt-1">
+            <Button onClick={startCamera} size="sm" className="w-full bg-primary text-primary-foreground">
               Gravar agora
             </Button>
             <label className="block">
@@ -192,19 +188,19 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
                 onChange={onPickFile}
                 className="hidden"
               />
-              <span className="block w-full h-12 leading-[3rem] text-center rounded-md border border-input bg-background text-foreground font-medium cursor-pointer hover:bg-muted transition-colors">
+              <span className="block w-full h-9 leading-9 text-center text-sm rounded-md border border-input bg-background text-foreground font-medium cursor-pointer hover:bg-muted transition-colors">
                 Enviar do dispositivo
               </span>
             </label>
-            <p className="text-xs text-muted-foreground text-center">
-              Vídeos de até 60 segundos, 50MB no máximo.
+            <p className="text-[11px] text-muted-foreground text-center">
+              Vídeos de até 3 minutos.
             </p>
           </div>
         )}
 
         {mode === "record" && !previewUrl && (
-          <div className="space-y-3">
-            <div className="relative aspect-[9/16] bg-black rounded-xl overflow-hidden">
+          <div className="space-y-2">
+            <div className="relative aspect-[9/16] max-h-[55vh] mx-auto bg-black rounded-lg overflow-hidden">
               <video
                 ref={videoRef}
                 playsInline
@@ -212,23 +208,23 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
                 className="w-full h-full object-cover scale-x-[-1]"
               />
               {recording && (
-                <div className="absolute top-3 left-3 flex items-center gap-2 bg-red-600/90 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-red-600/90 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                   REC {elapsed}s
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center gap-2">
               {!recording ? (
-                <Button onClick={startRecording} className="h-12 px-6 bg-red-600 hover:bg-red-700 text-white">
+                <Button onClick={startRecording} size="sm" className="bg-red-600 hover:bg-red-700 text-white">
                   Iniciar gravação
                 </Button>
               ) : (
-                <Button onClick={stopRecording} className="h-12 px-6 bg-foreground text-background">
+                <Button onClick={stopRecording} size="sm" className="bg-foreground text-background">
                   Parar
                 </Button>
               )}
-              <Button variant="outline" onClick={() => { stopAll(); setMode("choose"); }} className="h-12">
+              <Button variant="outline" size="sm" onClick={() => { stopAll(); setMode("choose"); }}>
                 Cancelar
               </Button>
             </div>
@@ -236,22 +232,22 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
         )}
 
         {previewUrl && (
-          <div className="space-y-3">
-            <div className="aspect-[9/16] bg-black rounded-xl overflow-hidden">
+          <div className="space-y-2">
+            <div className="aspect-[9/16] max-h-[45vh] mx-auto bg-black rounded-lg overflow-hidden">
               <video src={previewUrl} controls playsInline className="w-full h-full object-contain" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-foreground">Título</label>
-              <Input value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Dê um título ao seu reel" maxLength={120} />
+              <label className="text-[11px] font-semibold text-foreground">Título</label>
+              <Input value={titulo} onChange={(e) => setTitulo(e.target.value)} placeholder="Título do reel" maxLength={120} className="h-8 text-sm" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-foreground">Descrição (opcional)</label>
-              <Textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={2} maxLength={500} />
+              <label className="text-[11px] font-semibold text-foreground">Descrição (opcional)</label>
+              <Textarea value={descricao} onChange={(e) => setDescricao(e.target.value)} rows={2} maxLength={500} className="text-sm" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-foreground">Categoria</label>
+              <label className="text-[11px] font-semibold text-foreground">Categoria</label>
               <Select value={categoria} onValueChange={setCategoria}>
-                <SelectTrigger><SelectValue placeholder="Escolha uma categoria" /></SelectTrigger>
+                <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Escolha uma categoria" /></SelectTrigger>
                 <SelectContent>
                   {categorias.map(c => (
                     <SelectItem key={c.slug} value={c.slug}>{c.nome}</SelectItem>
@@ -259,16 +255,17 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 pt-1">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => { setRecordedBlob(null); setPreviewUrl(null); setMode("choose"); }}
                 className="flex-1"
                 disabled={enviando}
               >
                 Refazer
               </Button>
-              <Button onClick={publicar} disabled={enviando || !titulo.trim()} className="flex-1 bg-primary text-primary-foreground">
+              <Button onClick={publicar} size="sm" disabled={enviando || !titulo.trim()} className="flex-1 bg-primary text-primary-foreground">
                 {enviando ? "Publicando..." : "Publicar"}
               </Button>
             </div>
