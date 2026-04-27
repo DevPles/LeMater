@@ -305,6 +305,7 @@ export function ConsultasTab() {
                   <th className="text-left px-3 py-2 font-semibold">Status</th>
                   <th className="text-left px-3 py-2 font-semibold">Duração</th>
                   <th className="text-right px-3 py-2 font-semibold">Gravação</th>
+                  <th className="text-right px-3 py-2 font-semibold">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
