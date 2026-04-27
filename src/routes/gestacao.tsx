@@ -15,11 +15,16 @@ export const Route = createFileRoute("/gestacao")({
   component: GestacaoPage,
 });
 
+type Item = {
+  titulo: string;
+  descricao: string;
+};
+
 type MesInfo = {
   mes: number;
   semanas: string;
-  corpo: string[];
-  alivio: string[];
+  corpo: Item[];
+  alivio: Item[];
 };
 
 type Trimestre = {
@@ -41,42 +46,114 @@ const trimestres: Trimestre[] = [
         mes: 1,
         semanas: "Semanas 1–4",
         corpo: [
-          "Atraso menstrual e possível pequeno sangramento de implantação",
-          "Sensibilidade nos seios e cansaço acentuado",
-          "Aumento da vontade de urinar",
+          {
+            titulo: "Atraso menstrual e possível sangramento de implantação",
+            descricao:
+              "O bebê é apenas um conjunto de células que se fixa na parede do útero. Esse processo pode causar um pequeno sangramento rosado.",
+          },
+          {
+            titulo: "Sensibilidade nos seios e cansaço acentuado",
+            descricao:
+              "Os hormônios (hCG e progesterona) sobem rapidamente para sustentar a gravidez, gerando inchaço nos seios e sono intenso.",
+          },
+          {
+            titulo: "Aumento da vontade de urinar",
+            descricao:
+              "O útero começa a crescer e o fluxo de sangue nos rins aumenta, fazendo a bexiga encher mais rápido.",
+          },
         ],
         alivio: [
-          "Descanse sempre que possível, durma cedo",
-          "Use sutiã confortável e sem aro",
-          "Beba água em pequenos goles ao longo do dia",
+          {
+            titulo: "Descanse sempre que possível, durma cedo",
+            descricao:
+              "O cansaço acontece porque seu corpo está construindo a placenta. Dormir bem ajuda nessa demanda extra de energia.",
+          },
+          {
+            titulo: "Use sutiã confortável e sem aro",
+            descricao:
+              "Os seios estão mais sensíveis por causa do aumento dos ductos mamários. Tecidos macios reduzem o desconforto.",
+          },
+          {
+            titulo: "Beba água em pequenos goles ao longo do dia",
+            descricao:
+              "Evita sobrecarregar a bexiga e mantém você hidratada para o aumento do volume sanguíneo.",
+          },
         ],
       },
       {
         mes: 2,
         semanas: "Semanas 5–8",
         corpo: [
-          "Náuseas e vômitos, principalmente pela manhã",
-          "Aversão ou desejo por certos cheiros e alimentos",
-          "Mudanças de humor por causa dos hormônios",
+          {
+            titulo: "Náuseas e vômitos, principalmente pela manhã",
+            descricao:
+              "O bebê já tem coração batendo e os hormônios hCG estão no pico, o que afeta o estômago e o olfato.",
+          },
+          {
+            titulo: "Aversão ou desejo por certos cheiros e alimentos",
+            descricao:
+              "O olfato fica mais sensível como uma proteção natural contra alimentos que poderiam fazer mal ao bebê.",
+          },
+          {
+            titulo: "Mudanças de humor por causa dos hormônios",
+            descricao:
+              "Estrogênio e progesterona oscilam muito, afetando neurotransmissores ligados ao humor.",
+          },
         ],
         alivio: [
-          "Coma porções pequenas a cada 2–3 horas",
-          "Prefira alimentos secos ao acordar (torrada, bolacha)",
-          "Evite frituras e cheiros fortes; experimente gengibre",
+          {
+            titulo: "Coma porções pequenas a cada 2–3 horas",
+            descricao:
+              "O estômago vazio piora a náusea, pois o ácido fica sem alimento para digerir.",
+          },
+          {
+            titulo: "Prefira alimentos secos ao acordar",
+            descricao:
+              "Torradas e bolachas absorvem o ácido produzido durante a noite, reduzindo o enjoo matinal.",
+          },
+          {
+            titulo: "Evite frituras e cheiros fortes; experimente gengibre",
+            descricao:
+              "Gorduras pesam na digestão e cheiros fortes ativam o reflexo de náusea. O gengibre tem ação comprovada contra enjoo.",
+          },
         ],
       },
       {
         mes: 3,
         semanas: "Semanas 9–13",
         corpo: [
-          "Náuseas começam a diminuir no final do mês",
-          "Constipação e azia podem aparecer",
-          "Leve aumento da barriga",
+          {
+            titulo: "Náuseas começam a diminuir no final do mês",
+            descricao:
+              "A placenta assume a produção hormonal e os níveis de hCG caem, aliviando o estômago.",
+          },
+          {
+            titulo: "Constipação e azia podem aparecer",
+            descricao:
+              "A progesterona relaxa a musculatura do intestino, deixando a digestão mais lenta. O bebê já tem todos os órgãos formados.",
+          },
+          {
+            titulo: "Leve aumento da barriga",
+            descricao:
+              "O útero sai da pelve e começa a aparecer no abdômen. O bebê mede cerca de 7 cm.",
+          },
         ],
         alivio: [
-          "Aumente fibras: frutas, verduras e cereais integrais",
-          "Faça refeições leves e evite deitar logo após comer",
-          "Caminhadas curtas ajudam o intestino",
+          {
+            titulo: "Aumente fibras: frutas, verduras e cereais integrais",
+            descricao:
+              "As fibras aceleram o trânsito intestinal, compensando a lentidão causada pela progesterona.",
+          },
+          {
+            titulo: "Faça refeições leves e evite deitar logo após comer",
+            descricao:
+              "A válvula entre estômago e esôfago fica relaxada; deitar facilita o refluxo (azia).",
+          },
+          {
+            titulo: "Caminhadas curtas ajudam o intestino",
+            descricao:
+              "O movimento estimula o peristaltismo e melhora a circulação, prevenindo varizes.",
+          },
         ],
       },
     ],
@@ -91,42 +168,114 @@ const trimestres: Trimestre[] = [
         mes: 4,
         semanas: "Semanas 14–17",
         corpo: [
-          "Mais energia e disposição",
-          "Barriga começa a aparecer",
-          "Pele e cabelos podem ficar mais bonitos",
+          {
+            titulo: "Mais energia e disposição",
+            descricao:
+              "O hCG diminui e o corpo já se adaptou. O bebê mede cerca de 13 cm e mexe bastante (ainda imperceptível).",
+          },
+          {
+            titulo: "Barriga começa a aparecer",
+            descricao:
+              "O útero cresce acima do osso púbico e o bebê está desenvolvendo músculos e cabelo.",
+          },
+          {
+            titulo: "Pele e cabelos podem ficar mais bonitos",
+            descricao:
+              "O estrogênio aumenta a circulação na pele e prolonga a fase de crescimento dos fios.",
+          },
         ],
         alivio: [
-          "Aproveite para fazer exercícios leves liberados pelo médico",
-          "Hidrate a pele da barriga para prevenir estrias",
-          "Use roupas confortáveis e adaptadas",
+          {
+            titulo: "Aproveite para fazer exercícios leves liberados pelo médico",
+            descricao:
+              "Esta é a fase mais segura e confortável para se movimentar, fortalecendo o corpo para o terceiro trimestre.",
+          },
+          {
+            titulo: "Hidrate a pele da barriga para prevenir estrias",
+            descricao:
+              "A pele estica rápido conforme o útero cresce; manter a elasticidade reduz o risco de rasgos nas fibras.",
+          },
+          {
+            titulo: "Use roupas confortáveis e adaptadas",
+            descricao:
+              "Roupas apertadas comprimem o útero e podem dificultar a circulação do sangue para o bebê.",
+          },
         ],
       },
       {
         mes: 5,
         semanas: "Semanas 18–22",
         corpo: [
-          "Primeiros movimentos do bebê (chutinhos)",
-          "Possíveis dores nas costas e cãibras",
-          "Inchaço leve nos pés",
+          {
+            titulo: "Primeiros movimentos do bebê (chutinhos)",
+            descricao:
+              "O bebê já tem cerca de 25 cm e força muscular suficiente para que você sinta os movimentos.",
+          },
+          {
+            titulo: "Possíveis dores nas costas e cãibras",
+            descricao:
+              "O peso do útero altera sua postura. As cãibras vêm da maior demanda de cálcio e magnésio pelo bebê.",
+          },
+          {
+            titulo: "Inchaço leve nos pés",
+            descricao:
+              "O volume de sangue aumenta cerca de 50% e o útero pressiona as veias das pernas.",
+          },
         ],
         alivio: [
-          "Alongue-se diariamente, especialmente as pernas",
-          "Eleve as pernas ao descansar",
-          "Aumente o consumo de água e alimentos com potássio (banana)",
+          {
+            titulo: "Alongue-se diariamente, especialmente as pernas",
+            descricao:
+              "Alongar relaxa os músculos sobrecarregados pela mudança de postura e previne cãibras noturnas.",
+          },
+          {
+            titulo: "Eleve as pernas ao descansar",
+            descricao:
+              "Facilita o retorno do sangue ao coração, reduzindo o inchaço causado pela pressão do útero.",
+          },
+          {
+            titulo: "Aumente água e alimentos com potássio (banana)",
+            descricao:
+              "O potássio equilibra a contração muscular e a água ajuda os rins a eliminar o excesso de líquido.",
+          },
         ],
       },
       {
         mes: 6,
         semanas: "Semanas 23–27",
         corpo: [
-          "Barriga cresce mais rápido",
-          "Azia, falta de ar e tontura ocasionais",
-          "Pode surgir a linha nigra na barriga",
+          {
+            titulo: "Barriga cresce mais rápido",
+            descricao:
+              "O bebê está ganhando peso e gordura, preparando-se para a vida fora do útero. Já mede cerca de 35 cm.",
+          },
+          {
+            titulo: "Azia, falta de ar e tontura ocasionais",
+            descricao:
+              "O útero empurra o estômago e o diafragma para cima. A pressão arterial cai um pouco nesta fase.",
+          },
+          {
+            titulo: "Pode surgir a linha nigra na barriga",
+            descricao:
+              "Os hormônios da gravidez aumentam a melanina, escurecendo a linha do umbigo até o púbis.",
+          },
         ],
         alivio: [
-          "Coma devagar e em pequenas porções",
-          "Durma de lado esquerdo com travesseiro entre as pernas",
-          "Levante-se devagar para evitar tontura",
+          {
+            titulo: "Coma devagar e em pequenas porções",
+            descricao:
+              "Como o estômago tem menos espaço, refeições menores evitam refluxo e desconforto.",
+          },
+          {
+            titulo: "Durma de lado esquerdo com travesseiro entre as pernas",
+            descricao:
+              "Essa posição melhora o fluxo de sangue para a placenta e alivia a coluna.",
+          },
+          {
+            titulo: "Levante-se devagar para evitar tontura",
+            descricao:
+              "A pressão baixa faz o sangue demorar mais para chegar ao cérebro quando você se move rápido.",
+          },
         ],
       },
     ],
@@ -141,42 +290,114 @@ const trimestres: Trimestre[] = [
         mes: 7,
         semanas: "Semanas 28–31",
         corpo: [
-          "Cansaço volta a aumentar",
-          "Falta de ar e dificuldade para dormir",
-          "Movimentos do bebê bem fortes",
+          {
+            titulo: "Cansaço volta a aumentar",
+            descricao:
+              "O bebê está crescendo rápido (já tem cerca de 40 cm) e seu corpo gasta muita energia para sustentá-lo.",
+          },
+          {
+            titulo: "Falta de ar e dificuldade para dormir",
+            descricao:
+              "O útero comprime o diafragma e a barriga dificulta encontrar uma posição confortável.",
+          },
+          {
+            titulo: "Movimentos do bebê bem fortes",
+            descricao:
+              "Ele tem força e ainda espaço razoável para se mexer, chutar e dar cambalhotas.",
+          },
         ],
         alivio: [
-          "Faça pausas durante o dia e descanse",
-          "Use travesseiros para apoiar barriga e costas",
-          "Pratique respiração profunda e relaxamento",
+          {
+            titulo: "Faça pausas durante o dia e descanse",
+            descricao:
+              "O coração está bombeando para dois; pausas evitam sobrecarga e quedas de pressão.",
+          },
+          {
+            titulo: "Use travesseiros para apoiar barriga e costas",
+            descricao:
+              "Apoiar o peso do útero alivia ligamentos e nervos pressionados, melhorando o sono.",
+          },
+          {
+            titulo: "Pratique respiração profunda e relaxamento",
+            descricao:
+              "Aumenta a oxigenação do bebê e treina a respiração que será usada no parto.",
+          },
         ],
       },
       {
         mes: 8,
         semanas: "Semanas 32–35",
         corpo: [
-          "Inchaço maior em pés e mãos",
-          "Contrações de treinamento (Braxton Hicks)",
-          "Pressão na bexiga e idas frequentes ao banheiro",
+          {
+            titulo: "Inchaço maior em pés e mãos",
+            descricao:
+              "O volume sanguíneo está no auge e o útero pesado dificulta o retorno do sangue das pernas.",
+          },
+          {
+            titulo: "Contrações de treinamento (Braxton Hicks)",
+            descricao:
+              "O útero pratica para o parto. São indolores e irregulares, diferentes do trabalho de parto real.",
+          },
+          {
+            titulo: "Pressão na bexiga e idas frequentes ao banheiro",
+            descricao:
+              "O bebê começa a se posicionar para baixo, comprimindo a bexiga.",
+          },
         ],
         alivio: [
-          "Evite ficar muito tempo em pé ou sentada",
-          "Reduza o sal e mantenha hidratação",
-          "Procure o serviço de saúde se as contrações forem regulares e dolorosas",
+          {
+            titulo: "Evite ficar muito tempo em pé ou sentada",
+            descricao:
+              "Mudar de posição estimula a circulação e impede o acúmulo de líquido nas extremidades.",
+          },
+          {
+            titulo: "Reduza o sal e mantenha hidratação",
+            descricao:
+              "O sódio retém líquidos. Beber água, paradoxalmente, ajuda os rins a eliminar o excesso.",
+          },
+          {
+            titulo: "Procure o serviço de saúde se as contrações forem regulares e dolorosas",
+            descricao:
+              "Pode ser sinal de trabalho de parto prematuro, que precisa de avaliação rápida.",
+          },
         ],
       },
       {
         mes: 9,
         semanas: "Semanas 36–40",
         corpo: [
-          "Bebê encaixa na pelve, alívio na respiração",
-          "Cólicas, dor lombar e perda do tampão mucoso",
-          "Ansiedade pelo parto",
+          {
+            titulo: "Bebê encaixa na pelve, alívio na respiração",
+            descricao:
+              "A cabeça desce, liberando espaço sob o diafragma. O bebê está pronto para nascer (cerca de 50 cm).",
+          },
+          {
+            titulo: "Cólicas, dor lombar e perda do tampão mucoso",
+            descricao:
+              "O colo do útero amolece e começa a se abrir, soltando o tampão de muco que o protegia.",
+          },
+          {
+            titulo: "Ansiedade pelo parto",
+            descricao:
+              "É natural — o corpo libera hormônios de alerta para prepará-la fisicamente e emocionalmente.",
+          },
         ],
         alivio: [
-          "Prepare a mala da maternidade e o plano de parto",
-          "Caminhadas leves ajudam o trabalho de parto",
-          "Procure a maternidade ao sentir contrações regulares ou bolsa rota",
+          {
+            titulo: "Prepare a mala da maternidade e o plano de parto",
+            descricao:
+              "Reduz a ansiedade e garante que tudo esteja pronto quando o trabalho de parto começar.",
+          },
+          {
+            titulo: "Caminhadas leves ajudam o trabalho de parto",
+            descricao:
+              "A gravidade auxilia a cabeça do bebê a pressionar o colo, favorecendo a dilatação.",
+          },
+          {
+            titulo: "Procure a maternidade ao sentir contrações regulares ou bolsa rota",
+            descricao:
+              "Contrações a cada 5 minutos por 1 hora ou perda de líquido indicam que o parto está próximo.",
+          },
         ],
       },
     ],
@@ -253,13 +474,16 @@ function GestacaoPage() {
               <p className="text-sm font-semibold text-foreground mb-2">
                 No seu corpo
               </p>
-              <ul className="space-y-1">
+              <ul className="space-y-3">
                 {mes.corpo.map((item) => (
                   <li
-                    key={item}
-                    className="text-sm text-muted-foreground pl-3 border-l-2 border-primary/40"
+                    key={item.titulo}
+                    className="pl-3 border-l-2 border-primary/40"
                   >
-                    {item}
+                    <p className="text-sm font-medium text-foreground">{item.titulo}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                      {item.descricao}
+                    </p>
                   </li>
                 ))}
               </ul>
@@ -269,13 +493,16 @@ function GestacaoPage() {
               <p className="text-sm font-semibold text-foreground mb-2">
                 Como aliviar
               </p>
-              <ul className="space-y-1">
+              <ul className="space-y-3">
                 {mes.alivio.map((item) => (
                   <li
-                    key={item}
-                    className="text-sm text-muted-foreground pl-3 border-l-2 border-accent"
+                    key={item.titulo}
+                    className="pl-3 border-l-2 border-accent"
                   >
-                    {item}
+                    <p className="text-sm font-medium text-foreground">{item.titulo}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                      {item.descricao}
+                    </p>
                   </li>
                 ))}
               </ul>
