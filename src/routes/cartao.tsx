@@ -2144,19 +2144,21 @@ async function gerarPDFCartao(args: {
   // =============================================================
   if (medicoes.length) {
     doc.addPage("a4", "landscape");
-    drawBaseFolderPage();
+    // Fundo simples (sem linha de dobra) - matriz ocupa face inteira
+    doc.setFillColor(252, 252, 254);
+    doc.rect(0, 0, pageW, pageH, "F");
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(pr, pg, pb);
-    doc.text("MATRIZ CRUZADA - EVOLUCAO POR CONSULTA", margin, 13);
+    doc.text("MATRIZ CRUZADA - MAPA TERMICO POR CONSULTA", margin, 13);
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.5);
     doc.line(margin, 15, pageW - margin, 15);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...muted);
-    doc.text("Linhas = data da consulta  |  Colunas = parametro clinico  |  Barras = intensidade relativa (min-max do parametro)", margin, 19);
+    doc.text("Linhas = data da consulta  |  Colunas = parametro clinico  |  Cor de fundo = intensidade relativa (min-max do parametro)", margin, 19);
 
     // Constroi matriz: datas x parametros
     const datasSet = new Set<string>();
@@ -2169,7 +2171,6 @@ async function gerarPDFCartao(args: {
     datas.forEach(d => matrix.set(d, new Map()));
     medicoes.forEach(m => matrix.get(m.data)!.set(normParam(m.parametro), m.valor));
 
-    // min/max numerico por parametro -> usado para desenhar barrinha proporcional (heatmap/sparkline)
     const rangePorParam = new Map<string, { min: number; max: number }>();
     parametros.forEach(p => {
       const nums: number[] = [];
@@ -2181,45 +2182,56 @@ async function gerarPDFCartao(args: {
         }
       });
       if (nums.length >= 1) {
-        const mn = Math.min(...nums);
-        const mx = Math.max(...nums);
-        rangePorParam.set(p, { min: mn, max: mx });
+        rangePorParam.set(p, { min: Math.min(...nums), max: Math.max(...nums) });
       }
     });
-    // cor por parametro (mesmas cores do drawChartBox)
     const corParam = (p: string): [number, number, number] => {
       const cfg = paramConfig(p);
       return cfg ? cfg.color : [pr, pg, pb];
     };
 
-    // Mapa data -> semana
     const semanaPorData = new Map<string, number>();
     medicoes.forEach(m => semanaPorData.set(m.data, m.semana));
 
-    // Layout: matriz pode ser dividida em DUAS faces (esquerda e direita).
-    // Datas mais recentes na face esquerda; se sobrar, continua na face direita.
+    // Layout: face inteira, todos os parametros em colunas
     const matY = 23;
     const matMaxY = pageH - 14;
     const fixedColW = 18;
     const semColW = 10;
-    const matRowH = 7;
     const matHeaderH = 14;
+    const matTotalW = pageW - margin * 2;
 
-    const drawMatrixFace = (faceX: number, faceWidth: number, datasFace: string[], paramsFace: string[]) => {
-      const restW = faceWidth - fixedColW - semColW;
-      const dataColW = restW / Math.max(1, paramsFace.length);
+    const renderMatrix = (datasPage: string[], isFirst: boolean) => {
+      if (!isFirst) {
+        doc.addPage("a4", "landscape");
+        doc.setFillColor(252, 252, 254);
+        doc.rect(0, 0, pageW, pageH, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(pr, pg, pb);
+        doc.text("MATRIZ CRUZADA - MAPA TERMICO POR CONSULTA (cont.)", margin, 13);
+        doc.setDrawColor(pr, pg, pb);
+        doc.setLineWidth(0.5);
+        doc.line(margin, 15, pageW - margin, 15);
+      }
+
+      const restW = matTotalW - fixedColW - semColW;
+      const dataColW = restW / Math.max(1, parametros.length);
+      // Altura das linhas: aproveita o espaco vertical disponivel
+      const availH = matMaxY - matY - matHeaderH;
+      const rowH = Math.max(6, Math.min(10, availH / Math.max(1, datasPage.length)));
 
       // Header
       doc.setFillColor(pr, pg, pb);
-      doc.rect(faceX, matY, faceWidth, matHeaderH, "F");
+      doc.rect(margin, matY, matTotalW, matHeaderH, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.5);
-      doc.text("DATA", faceX + 2, matY + 8.5);
-      doc.text("SEM", faceX + fixedColW + 2, matY + 8.5);
-      doc.setFontSize(5.8);
-      paramsFace.forEach((p, i) => {
-        const cx = faceX + fixedColW + semColW + i * dataColW;
+      doc.setFontSize(7);
+      doc.text("DATA", margin + 2, matY + 8.5);
+      doc.text("SEM", margin + fixedColW + 2, matY + 8.5);
+      doc.setFontSize(6);
+      parametros.forEach((p, i) => {
+        const cx = margin + fixedColW + semColW + i * dataColW;
         const lines = doc.splitTextToSize(labelByKey.get(p) ?? p, dataColW - 1);
         const lineH = 2.6;
         const startY = matY + 7 - ((Math.min(lines.length, 2) - 1) * lineH) / 2;
@@ -2228,108 +2240,107 @@ async function gerarPDFCartao(args: {
         });
       });
 
+      // Helper: clareia a cor do parametro com base na intensidade (heatmap)
+      const corHeatmap = (base: [number, number, number], pct: number): [number, number, number] => {
+        // pct=0 -> quase branco (10% cor), pct=1 -> 65% cor (mantem texto legivel)
+        const t = 0.10 + Math.max(0, Math.min(1, pct)) * 0.55;
+        return [
+          Math.round(255 - (255 - base[0]) * t),
+          Math.round(255 - (255 - base[1]) * t),
+          Math.round(255 - (255 - base[2]) * t),
+        ];
+      };
+
       // Rows
-      datasFace.forEach((d, ri) => {
-        const ry4 = matY + matHeaderH + ri * matRowH;
+      datasPage.forEach((d, ri) => {
+        const ry4 = matY + matHeaderH + ri * rowH;
+        // Fundo zebra base
         if (ri % 2 === 0) {
           doc.setFillColor(248, 248, 252);
-          doc.rect(faceX, ry4, faceWidth, matRowH, "F");
+          doc.rect(margin, ry4, matTotalW, rowH, "F");
         }
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(6.5);
+        doc.setFontSize(7);
         doc.setTextColor(pr, pg, pb);
-        doc.text(d, faceX + 2, ry4 + 4);
+        doc.text(d, margin + 2, ry4 + rowH / 2 + 1.2);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(...muted);
-        doc.text(`${semanaPorData.get(d) ?? "-"}`, faceX + fixedColW + 2, ry4 + 4);
+        doc.text(`${semanaPorData.get(d) ?? "-"}`, margin + fixedColW + 2, ry4 + rowH / 2 + 1.2);
+
         const linhaMatrix = matrix.get(d)!;
-        paramsFace.forEach((p, i) => {
-          const cx = faceX + fixedColW + semColW + i * dataColW;
+        parametros.forEach((p, i) => {
+          const cx = margin + fixedColW + semColW + i * dataColW;
           const v = linhaMatrix.get(p);
           if (v !== undefined && v !== null) {
-            // barrinha proporcional (sparkline / heatmap horizontal)
             const rng = rangePorParam.get(p);
             const n = numFromValor(v as string | number);
-            const [cr2, cg2, cb2] = corParam(p);
-            const barPad = 1.2;
-            const barX = cx + barPad;
-            const barW = dataColW - barPad * 2;
-            const barY = ry4 + matRowH - 1.6;
-            const barH = 0.9;
-            // trilho
-            doc.setFillColor(235, 235, 240);
-            doc.rect(barX, barY, barW, barH, "F");
+            const base = corParam(p);
+            let pct = 0.5;
             if (n !== null && rng) {
               const span = rng.max - rng.min;
-              const pct = span > 0 ? (n - rng.min) / span : 1;
-              const fillW = Math.max(0.6, barW * pct);
-              doc.setFillColor(cr2, cg2, cb2);
-              doc.rect(barX, barY, fillW, barH, "F");
+              pct = span > 0 ? (n - rng.min) / span : 0.6;
             }
+            const [hr, hg, hb] = corHeatmap(base, pct);
+            doc.setFillColor(hr, hg, hb);
+            doc.rect(cx + 0.4, ry4 + 0.4, dataColW - 0.8, rowH - 0.8, "F");
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(6.5);
+            doc.setFontSize(7);
             doc.setTextColor(...dark);
-            doc.text(String(v), cx + dataColW / 2, ry4 + 3.2, { align: "center" });
+            doc.text(String(v), cx + dataColW / 2, ry4 + rowH / 2 + 1.2, { align: "center" });
           } else {
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(5.5);
+            doc.setFontSize(6);
             doc.setTextColor(220, 220, 225);
-            doc.text("-", cx + dataColW / 2, ry4 + 4, { align: "center" });
+            doc.text("-", cx + dataColW / 2, ry4 + rowH / 2 + 1.2, { align: "center" });
           }
         });
       });
 
-      const totalH = matHeaderH + datasFace.length * matRowH;
+      const totalH = matHeaderH + datasPage.length * rowH;
       doc.setDrawColor(pr, pg, pb);
       doc.setLineWidth(0.3);
-      doc.rect(faceX, matY, faceWidth, totalH, "S");
+      doc.rect(margin, matY, matTotalW, totalH, "S");
       doc.setDrawColor(225, 225, 230);
       doc.setLineWidth(0.1);
-      doc.line(faceX + fixedColW, matY, faceX + fixedColW, matY + totalH);
-      doc.line(faceX + fixedColW + semColW, matY, faceX + fixedColW + semColW, matY + totalH);
-      paramsFace.forEach((_p, i) => {
-        const cx = faceX + fixedColW + semColW + (i + 1) * dataColW;
+      doc.line(margin + fixedColW, matY, margin + fixedColW, matY + totalH);
+      doc.line(margin + fixedColW + semColW, matY, margin + fixedColW + semColW, matY + totalH);
+      parametros.forEach((_p, i) => {
+        const cx = margin + fixedColW + semColW + (i + 1) * dataColW;
         doc.line(cx, matY, cx, matY + totalH);
       });
-    };
 
-    const maxRowsPerFace = Math.floor((matMaxY - matY - matHeaderH) / matRowH);
-    const faceW2 = halfW - margin - 5;
-
-    // Sempre divide os PARAMETROS em duas metades (uma face = metade dos parametros).
-    // Se ainda nao couber em linhas, divide tambem por datas em paginas extras.
-    const meio = Math.ceil(parametros.length / 2);
-    const paramsLeft = parametros.slice(0, meio);
-    const paramsRight = parametros.slice(meio);
-
-    const renderMatrixPage = (datasPage: string[], isFirst: boolean) => {
-      if (!isFirst) {
-        doc.addPage("a4", "landscape");
-        drawBaseFolderPage();
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(11);
-        doc.setTextColor(pr, pg, pb);
-        doc.text("MATRIZ CRUZADA - EVOLUCAO POR CONSULTA (cont.)", margin, 13);
-        doc.setDrawColor(pr, pg, pb);
-        doc.setLineWidth(0.5);
-        doc.line(margin, 15, pageW - margin, 15);
-      }
-      drawMatrixFace(margin, faceW2, datasPage, paramsLeft);
-      if (paramsRight.length > 0) {
-        drawMatrixFace(halfW + 5, faceW2, datasPage, paramsRight);
+      // Legenda heatmap no rodape da matriz
+      const legY = matY + totalH + 5;
+      if (legY < matMaxY - 4) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6.5);
+        doc.setTextColor(...muted);
+        doc.text("Intensidade:", margin, legY + 2);
+        const legSteps = 8;
+        const legW = 50;
+        const stepW = legW / legSteps;
+        for (let i = 0; i < legSteps; i++) {
+          const pct = i / (legSteps - 1);
+          const [hr, hg, hb] = corHeatmap([pr, pg, pb], pct);
+          doc.setFillColor(hr, hg, hb);
+          doc.rect(margin + 18 + i * stepW, legY - 2, stepW, 3, "F");
+        }
+        doc.text("min", margin + 18, legY + 4);
+        doc.text("max", margin + 18 + legW, legY + 4, { align: "right" });
       }
     };
 
-    if (datas.length <= maxRowsPerFace) {
-      renderMatrixPage(datas, true);
+    // Calcula quantas linhas cabem por pagina
+    const maxRowsPerPage = Math.floor((matMaxY - matY - matHeaderH - 8) / 6);
+    if (datas.length <= maxRowsPerPage) {
+      renderMatrix(datas, true);
     } else {
-      // Quebra por blocos de datas, repetindo o mesmo layout (metade param em cada face)
       let idx = 0;
       let primeira = true;
       while (idx < datas.length) {
-        const bloco = datas.slice(idx, idx + maxRowsPerFace);
-        renderMatrixPage(bloco, primeira);
-        idx += maxRowsPerFace;
+        const bloco = datas.slice(idx, idx + maxRowsPerPage);
+        renderMatrix(bloco, primeira);
+        idx += maxRowsPerPage;
         primeira = false;
       }
     }
