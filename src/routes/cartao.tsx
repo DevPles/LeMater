@@ -747,12 +747,8 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <ReferenceArea y1={60} y2={90} fill="#22c55e" fillOpacity={0.05} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line type="monotone" dataKey="sistolica" name="Sistólica" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }}>
-                <LabelList dataKey="sistolica" position="top" style={{ fontSize: 10, fill: "#ef4444", fontWeight: 700 }} />
-              </Line>
-              <Line type="monotone" dataKey="diastolica" name="Diastólica" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }}>
-                <LabelList dataKey="diastolica" position="bottom" style={{ fontSize: 10, fill: "#3b82f6", fontWeight: 700 }} />
-              </Line>
+              <Line type="monotone" dataKey="sistolica" name="Sistólica" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey="diastolica" name="Diastólica" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
             </LineChart>
           </ResponsiveContainer>
         )}
@@ -869,9 +865,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <YAxis tick={{ fontSize: 10 }} domain={[80, 180]} />
               <ReferenceArea y1={110} y2={160} fill="#22c55e" fillOpacity={0.07} />
               <Tooltip contentStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="bcf" name="BCF" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: "#10b981" }}>
-                <LabelList dataKey="bcf" position="top" style={{ fontSize: 10, fill: "#10b981", fontWeight: 700 }} />
-              </Line>
+              <Line type="monotone" dataKey="bcf" name="BCF" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: "#10b981" }} />
             </LineChart>
           </ResponsiveContainer>
         )}
