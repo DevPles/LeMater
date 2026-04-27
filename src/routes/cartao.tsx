@@ -257,7 +257,7 @@ function CartaoPage() {
   const idadePaciente = idade(profile?.data_nascimento) ?? cartaoContent.patientAge;
 
   const patientInfo = {
-    name: profile?.nome || cartaoContent.patientName,
+    name: (profile?.nome as string | undefined) || cartaoContent.patientName,
     age: idadePaciente,
     bloodType: cartaoContent.bloodType,
     dum: dumBR,
