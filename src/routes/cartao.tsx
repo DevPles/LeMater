@@ -216,18 +216,19 @@ function CartaoPage() {
 
   // ====== Séries derivadas das medições reais ======
   const series = useMemo(() => {
-    const peso = medicoes.filter(m => m.parametro.toLowerCase() === "peso")
+    const peso = medicoes.filter(m => m.parametro.toLowerCase().startsWith("peso"))
       .map(m => ({ semana: m.semana, peso: m.valor, data: m.data }));
     const sis = medicoes.filter(m => m.parametro.toLowerCase().includes("sist"))
       .map(m => ({ semana: m.semana, valor: m.valor, data: m.data }));
     const dia = medicoes.filter(m => m.parametro.toLowerCase().includes("diast"))
       .map(m => ({ semana: m.semana, valor: m.valor, data: m.data }));
-    const au = medicoes.filter(m => m.parametro.toLowerCase().includes("altura") || m.parametro.toLowerCase() === "au")
-      .map(m => ({ semana: m.semana, altura: m.valor, data: m.data }));
+    const au = medicoes.filter(m => {
+      const p = m.parametro.toLowerCase();
+      return p.includes("altura uterina") || p === "au";
+    }).map(m => ({ semana: m.semana, altura: m.valor, data: m.data }));
     const bcf = medicoes.filter(m => m.parametro.toLowerCase().includes("bcf") || m.parametro.toLowerCase().includes("batim"))
       .map(m => ({ semana: m.semana, bcf: m.valor, data: m.data }));
 
-    // Pressao combinada
     const semanasSet = new Set([...sis, ...dia].map(p => p.semana));
     const pressao = Array.from(semanasSet).sort((a, b) => a - b).map(s => ({
       semana: s,
