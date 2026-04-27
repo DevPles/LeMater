@@ -1986,9 +1986,9 @@ async function gerarPDFCartao(args: {
     const matRowH = 6;
     const matHeaderH = 14;
 
-    const drawMatrixFace = (faceX: number, faceWidth: number, datasFace: string[]) => {
+    const drawMatrixFace = (faceX: number, faceWidth: number, datasFace: string[], paramsFace: string[]) => {
       const restW = faceWidth - fixedColW - semColW;
-      const dataColW = restW / Math.max(1, parametros.length);
+      const dataColW = restW / Math.max(1, paramsFace.length);
 
       // Header
       doc.setFillColor(pr, pg, pb);
@@ -1999,7 +1999,7 @@ async function gerarPDFCartao(args: {
       doc.text("DATA", faceX + 2, matY + 8.5);
       doc.text("SEM", faceX + fixedColW + 2, matY + 8.5);
       doc.setFontSize(5.8);
-      parametros.forEach((p, i) => {
+      paramsFace.forEach((p, i) => {
         const cx = faceX + fixedColW + semColW + i * dataColW;
         const lines = doc.splitTextToSize(labelByKey.get(p) ?? p, dataColW - 1);
         const lineH = 2.6;
@@ -2024,7 +2024,7 @@ async function gerarPDFCartao(args: {
         doc.setTextColor(...muted);
         doc.text(`${semanaPorData.get(d) ?? "-"}`, faceX + fixedColW + 2, ry4 + 4);
         const linhaMatrix = matrix.get(d)!;
-        parametros.forEach((p, i) => {
+        paramsFace.forEach((p, i) => {
           const cx = faceX + fixedColW + semColW + i * dataColW;
           const v = linhaMatrix.get(p);
           if (v !== undefined && v !== null) {
@@ -2049,36 +2049,50 @@ async function gerarPDFCartao(args: {
       doc.setLineWidth(0.1);
       doc.line(faceX + fixedColW, matY, faceX + fixedColW, matY + totalH);
       doc.line(faceX + fixedColW + semColW, matY, faceX + fixedColW + semColW, matY + totalH);
-      parametros.forEach((_p, i) => {
+      paramsFace.forEach((_p, i) => {
         const cx = faceX + fixedColW + semColW + (i + 1) * dataColW;
         doc.line(cx, matY, cx, matY + totalH);
       });
     };
 
     const maxRowsPerFace = Math.floor((matMaxY - matY - matHeaderH) / matRowH);
-    const leftFaceW = halfW - margin - 5;
-    const rightFaceW = halfW - margin - 5;
+    const faceW2 = halfW - margin - 5;
+
+    // Sempre divide os PARAMETROS em duas metades (uma face = metade dos parametros).
+    // Se ainda nao couber em linhas, divide tambem por datas em paginas extras.
+    const meio = Math.ceil(parametros.length / 2);
+    const paramsLeft = parametros.slice(0, meio);
+    const paramsRight = parametros.slice(meio);
+
+    const renderMatrixPage = (datasPage: string[], isFirst: boolean) => {
+      if (!isFirst) {
+        doc.addPage("a4", "landscape");
+        drawBaseFolderPage();
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(pr, pg, pb);
+        doc.text("MATRIZ CRUZADA - EVOLUCAO POR CONSULTA (cont.)", margin, 13);
+        doc.setDrawColor(pr, pg, pb);
+        doc.setLineWidth(0.5);
+        doc.line(margin, 15, pageW - margin, 15);
+      }
+      drawMatrixFace(margin, faceW2, datasPage, paramsLeft);
+      if (paramsRight.length > 0) {
+        drawMatrixFace(halfW + 5, faceW2, datasPage, paramsRight);
+      }
+    };
 
     if (datas.length <= maxRowsPerFace) {
-      // Cabe tudo numa face: usa face esquerda completa (largura cheia da pagina)
-      const fullW = pageW - margin * 2;
-      drawMatrixFace(margin, fullW, datas);
+      renderMatrixPage(datas, true);
     } else {
-      // Divide entre as duas faces
-      const datasLeft = datas.slice(0, maxRowsPerFace);
-      const datasRight = datas.slice(maxRowsPerFace, maxRowsPerFace * 2);
-      drawMatrixFace(margin, leftFaceW, datasLeft);
-      drawMatrixFace(halfW + 5, rightFaceW, datasRight);
-
-      const remaining = datas.length - maxRowsPerFace * 2;
-      if (remaining > 0) {
-        doc.setFont("helvetica", "italic");
-        doc.setFontSize(6.5);
-        doc.setTextColor(...muted);
-        doc.text(
-          `+ ${remaining} consultas anteriores disponiveis no cartao digital online.`,
-          pageW / 2, pageH - 13, { align: "center" },
-        );
+      // Quebra por blocos de datas, repetindo o mesmo layout (metade param em cada face)
+      let idx = 0;
+      let primeira = true;
+      while (idx < datas.length) {
+        const bloco = datas.slice(idx, idx + maxRowsPerFace);
+        renderMatrixPage(bloco, primeira);
+        idx += maxRowsPerFace;
+        primeira = false;
       }
     }
   }
