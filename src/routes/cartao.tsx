@@ -1926,7 +1926,7 @@ async function gerarPDFCartao(args: {
       doc.setFontSize(5.8);
       parametros.forEach((p, i) => {
         const cx = faceX + fixedColW + semColW + i * dataColW;
-        const lines = doc.splitTextToSize(p, dataColW - 1);
+        const lines = doc.splitTextToSize(labelByKey.get(p) ?? p, dataColW - 1);
         const lineH = 2.6;
         const startY = matY + 7 - ((Math.min(lines.length, 2) - 1) * lineH) / 2;
         lines.slice(0, 2).forEach((ln: string, li: number) => {
