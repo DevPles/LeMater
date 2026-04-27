@@ -2049,7 +2049,7 @@ async function gerarPDFCartao(args: {
     const matMaxY = pageH - 14;
     const fixedColW = 18;
     const semColW = 10;
-    const matRowH = 6;
+    const matRowH = 7;
     const matHeaderH = 14;
 
     const drawMatrixFace = (faceX: number, faceWidth: number, datasFace: string[], paramsFace: string[]) => {
