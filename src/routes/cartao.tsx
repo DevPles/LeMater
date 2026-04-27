@@ -2083,7 +2083,8 @@ async function gerarPDFCartao(args: {
         drawChartBox(xFace, yChart, faceW, chartH,
           `Curva: ${paramLabel}`,
           cfg.series,
-          cfg.refRange);
+          cfg.refRange,
+          cfg.extraRefs);
       } else {
         doc.setFillColor(248, 248, 252);
         doc.setDrawColor(225, 225, 230);
