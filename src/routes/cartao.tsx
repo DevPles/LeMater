@@ -144,7 +144,27 @@ type Periodo = "todos" | "1tri" | "2tri" | "3tri" | "custom";
 function CartaoPage() {
   const [tab, setTab] = useState<Tab>("resumo");
   const { content: cartaoContent } = useScreenContent("cartao", CARTAO_DEFAULT);
-  const { profile, session } = useGestanteProfile();
+  const { profile: ownProfile, session } = useGestanteProfile();
+  const { u: shareUserId } = Route.useSearch();
+
+  // Quando vem com ?u=<id>, carrega snapshot público (read-only)
+  const [publicSnap, setPublicSnap] = useState<{
+    profile: any; medicoes: any[]; vacinas: any[]; exames: any[];
+  } | null>(null);
+  const isShared = !!shareUserId;
+
+  useEffect(() => {
+    if (!shareUserId) { setPublicSnap(null); return; }
+    let active = true;
+    (async () => {
+      const { data, error } = await supabase.rpc("get_cartao_publico" as any, { _user_id: shareUserId });
+      if (!active) return;
+      if (!error && data) setPublicSnap(data as any);
+    })();
+    return () => { active = false; };
+  }, [shareUserId]);
+
+  const profile: any = isShared ? publicSnap?.profile : ownProfile;
   const bebeSexo = profile?.bebe_sexo ?? null;
   const palette = paletaPorSexo(bebeSexo);
 
@@ -155,6 +175,7 @@ function CartaoPage() {
   const [lancamentoOpen, setLancamentoOpen] = useState(false);
 
   const carregarDados = useCallback(async () => {
+    if (isShared) return; // dados vêm do snapshot público
     if (!session?.user?.id) return;
     const uid = session.user.id;
     const [mRes, vRes, eRes] = await Promise.all([
@@ -197,9 +218,34 @@ function CartaoPage() {
         resultado: r.resultado ?? undefined,
       })));
     }
-  }, [session?.user?.id]);
+  }, [session?.user?.id, isShared]);
 
   useEffect(() => { carregarDados(); }, [carregarDados]);
+
+  // Quando temos snapshot público, popula medicoes/vacinas/exames a partir dele
+  useEffect(() => {
+    if (!isShared || !publicSnap) return;
+    setMedicoes((publicSnap.medicoes ?? []).map((r: any) => ({
+      id: r.id,
+      data: formatBR(new Date(r.data_medicao + "T00:00:00")),
+      parametro: r.parametro,
+      valor: Number(r.valor),
+      semana: r.semana_gestacional ?? 0,
+    })));
+    setVacinas((publicSnap.vacinas ?? []).map((r: any) => ({
+      id: r.id,
+      vacina: r.vacina,
+      data: formatBR(new Date(r.data_aplicacao + "T00:00:00")),
+      observacao: r.observacao ?? undefined,
+    })));
+    setExames((publicSnap.exames ?? []).map((r: any) => ({
+      id: r.id,
+      tipo_exame: r.tipo_exame,
+      data: formatBR(new Date(r.data_exame + "T00:00:00")),
+      status: r.status,
+      resultado: r.resultado ?? undefined,
+    })));
+  }, [isShared, publicSnap]);
 
   // ====== Info da paciente derivada do banco ======
   const dumBR = profile?.dum
