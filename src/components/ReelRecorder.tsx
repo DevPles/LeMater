@@ -209,7 +209,7 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
                 ref={videoRef}
                 playsInline
                 muted
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover scale-x-[-1]"
               />
               {recording && (
                 <div className="absolute top-3 left-3 flex items-center gap-2 bg-red-600/90 text-white text-xs font-bold px-2 py-1 rounded-full">
