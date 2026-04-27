@@ -1661,13 +1661,21 @@ async function gerarPDFCartao(args: {
   };
   const porParametro = new Map<string, MedicaoReal[]>();
   const labelByKey = new Map<string, string>();
+  // Unifica sistolica + diastolica num unico parametro "Pressao Arterial"
+  const isPressao = (p: string): "sis" | "dia" | null => {
+    const lp = normParam(p);
+    if (lp.includes("press") && lp.includes("sist")) return "sis";
+    if (lp.includes("press") && lp.includes("diast")) return "dia";
+    return null;
+  };
+  const PRESSAO_KEY = "pressao arterial";
   medicoes.forEach(m => {
-    const key = normParam(m.parametro);
+    const tipo = isPressao(m.parametro);
+    const key = tipo ? PRESSAO_KEY : normParam(m.parametro);
     if (!porParametro.has(key)) {
       porParametro.set(key, []);
-      // Mantem o label "mais bonito" (capitalizado)
-      const pretty = m.parametro.trim();
-      labelByKey.set(key, pretty.charAt(0).toUpperCase() + pretty.slice(1));
+      const pretty = tipo ? "Pressao Arterial (mmHg)" : m.parametro.trim();
+      labelByKey.set(key, tipo ? pretty : pretty.charAt(0).toUpperCase() + pretty.slice(1));
     }
     porParametro.get(key)!.push(m);
   });
@@ -1715,18 +1723,14 @@ async function gerarPDFCartao(args: {
         series: [{ color: [16, 185, 129], values: series.bcf.map(d => ({ x: d.semana, y: d.bcf })), name: "BCF (bpm)" }],
       };
     }
-    if (lp.includes("press") && lp.includes("sist")) {
+    if (param === "pressao arterial" || (lp.includes("press") && (lp.includes("sist") || lp.includes("diast") || lp.includes("arter")))) {
       return {
         color: [239, 68, 68],
-        refRange: { min: 90, max: 140, label: "normal" },
-        series: [{ color: [239, 68, 68], values: series.pressao.filter(p => p.sistolica !== undefined).map(d => ({ x: d.semana, y: d.sistolica! })), name: "Sistolica (mmHg)" }],
-      };
-    }
-    if (lp.includes("press") && lp.includes("diast")) {
-      return {
-        color: [59, 130, 246],
-        refRange: { min: 60, max: 90, label: "normal" },
-        series: [{ color: [59, 130, 246], values: series.pressao.filter(p => p.diastolica !== undefined).map(d => ({ x: d.semana, y: d.diastolica! })), name: "Diastolica (mmHg)" }],
+        refRange: { min: 60, max: 140, label: "normal" },
+        series: [
+          { color: [239, 68, 68], values: series.pressao.filter(p => p.sistolica !== undefined).map(d => ({ x: d.semana, y: d.sistolica! })), name: "Sistolica (mmHg)" },
+          { color: [59, 130, 246], values: series.pressao.filter(p => p.diastolica !== undefined).map(d => ({ x: d.semana, y: d.diastolica! })), name: "Diastolica (mmHg)" },
+        ],
       };
     }
     if (lp.includes("glic")) {
@@ -1846,14 +1850,41 @@ async function gerarPDFCartao(args: {
       }
       const paramLabel = labelByKey.get(param) ?? param;
       const cfg = paramConfig(param);
-      const items = porParametro.get(param)!;
+      let items = porParametro.get(param)!;
+      // Para pressao arterial: consolida sis+dia em "120/80" por (data, semana)
+      if (param === "pressao arterial") {
+        const grupos = new Map<string, { data: string; semana: number; sis?: number; dia?: number }>();
+        items.forEach((m) => {
+          const k = `${m.data}|${m.semana}`;
+          if (!grupos.has(k)) grupos.set(k, { data: m.data, semana: m.semana });
+          const g = grupos.get(k)!;
+          const lp = m.parametro.toLowerCase();
+          const v = numFromValor(m.valor);
+          if (v === null) return;
+          if (lp.includes("sist")) g.sis = v;
+          else if (lp.includes("diast")) g.dia = v;
+        });
+        items = Array.from(grupos.values())
+          .sort((a, b) => {
+            const da = parseBR(a.data); const db = parseBR(b.data);
+            return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+          })
+          .map((g, idx) => ({
+            id: `pa-${idx}`,
+            parametro: "Pressao Arterial",
+            data: g.data,
+            semana: g.semana,
+            valor: `${g.sis ?? "-"}/${g.dia ?? "-"}`,
+          })) as unknown as MedicaoReal[];
+      }
       const accent: [number, number, number] = cfg?.color ?? [pr, pg, pb];
       // Cada face: esquerda (posInPage=0) inicia em x=margin, direita em x=halfW+5
       const xFace = posInPage === 0 ? margin : halfW + 5;
       const yChart = 18;
       const yTable = yChart + chartH + 4;
 
-      if (cfg && cfg.series[0].values.length >= 2) {
+      const totalPts = cfg ? cfg.series.reduce((acc, s) => acc + s.values.length, 0) : 0;
+      if (cfg && totalPts >= 2) {
         drawChartBox(xFace, yChart, faceW, chartH,
           `Curva: ${paramLabel}`,
           cfg.series,
