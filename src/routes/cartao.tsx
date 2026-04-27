@@ -1499,104 +1499,55 @@ async function gerarPDFCartao(args: {
     iy += 26;
   }
 
-  // ULTIMA EVOLUCAO CLINICA (preenche espaco vazio embaixo)
+  // PROXIMOS PASSOS / LEMBRETES (ocupa todo espaco restante)
   doc.setTextColor(pr, pg, pb);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text("ULTIMA EVOLUCAO CLINICA", lX, iy + 4);
+  doc.text("PROXIMOS PASSOS E ORIENTACOES", lX, iy + 4);
   doc.setDrawColor(pr, pg, pb);
   doc.setLineWidth(0.5);
   doc.line(lX, iy + 7, lX + lW, iy + 7);
   iy += 11;
 
-  // Pega a ultima medicao por data
-  const ultimasMed = (() => {
-    const map = new Map<string, MedicaoReal[]>();
-    medicoes.forEach(m => {
-      if (!map.has(m.data)) map.set(m.data, []);
-      map.get(m.data)!.push(m);
-    });
-    const grupos = Array.from(map.entries()).sort((a, b) => {
-      const da = parseBR(a[0]); const db = parseBR(b[0]);
-      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
-    });
-    return grupos[0] ?? null;
-  })();
-
-  if (ultimasMed) {
-    const [dataU, itemsU] = ultimasMed;
-    const ueH = 12 + Math.ceil(itemsU.length / 2) * 5;
-    doc.setFillColor(255, 255, 255);
-    doc.setDrawColor(225, 225, 230);
-    doc.roundedRect(lX, iy, lW, ueH, 2, 2, "FD");
-    doc.setFillColor(pr, pg, pb);
-    doc.roundedRect(lX + 3, iy + 2, 28, 5.5, 1, 1, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    doc.text(`SEMANA ${itemsU[0].semana}`, lX + 17, iy + 5.8, { align: "center" });
-    doc.setTextColor(...muted);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.text(dataU, lX + lW - 4, iy + 5.8, { align: "right" });
-    const colWmed = (lW - 6) / 2;
-    itemsU.forEach((m, i) => {
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const cx = lX + 3 + col * colWmed;
-      const cy = iy + 11 + row * 5;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      doc.setTextColor(...muted);
-      doc.text(`${m.parametro}:`, cx, cy);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8);
-      doc.setTextColor(...dark);
-      doc.text(String(m.valor), cx + doc.getTextWidth(`${m.parametro}: `), cy);
-    });
-    iy += ueH + 4;
+  const wk = Number(patientInfo.weeks) || 0;
+  const lembretes: { titulo: string; desc: string }[] = [];
+  if (wk < 14) {
+    lembretes.push({ titulo: "USG morfologica 1o tri", desc: "Realizar entre 11 e 14 semanas (translucencia nucal)." });
+    lembretes.push({ titulo: "Suplementacao", desc: "Iniciar acido folico 5mg/dia e sulfato ferroso." });
+    lembretes.push({ titulo: "Exames de rotina", desc: "Hemograma, tipagem, glicemia, sorologias e urina I." });
+    lembretes.push({ titulo: "Vacinacao", desc: "Atualizar Hepatite B e dT conforme situacao vacinal." });
+  } else if (wk < 28) {
+    lembretes.push({ titulo: "USG morfologica 2o tri", desc: "Realizar entre 20 e 24 semanas (anatomia fetal)." });
+    lembretes.push({ titulo: "Vacinas obrigatorias", desc: "dTpa apos 20 sem e Influenza no periodo da campanha." });
+    lembretes.push({ titulo: "Rastreio de DMG", desc: "TOTG 75g entre 24 e 28 sem (jejum, 1h e 2h)." });
+    lembretes.push({ titulo: "Movimentacao fetal", desc: "Sentir movimentos do bebe a partir de 20 sem." });
+  } else {
+    lembretes.push({ titulo: "Consultas quinzenais/semanais", desc: "Aumentar frequencia conforme se aproxima do parto." });
+    lembretes.push({ titulo: "Plano de parto", desc: "Preparar mala da maternidade e definir via de parto." });
+    lembretes.push({ titulo: "Monitorar movimentos", desc: "Observar movimentos fetais diariamente apos o repouso." });
+    lembretes.push({ titulo: "Sinais de alerta", desc: "Procurar UBS em caso de dor, sangramento ou perda de liquido." });
   }
+  lembretes.push({ titulo: "Acompanhamento continuo", desc: "Manter pressao, peso e glicemia sob avaliacao a cada consulta." });
 
-  // PROXIMOS PASSOS / LEMBRETES (preenche resto)
-  if (iy < pageH - 30) {
-    doc.setFillColor(ar, ag, ab);
-    doc.roundedRect(lX, iy, lW, 7, 1.5, 1.5, "F");
+  // Cards verticais alternados
+  lembretes.forEach((it) => {
+    if (iy > pageH - 18) return;
+    const cardH = 11;
+    doc.setFillColor(248, 248, 252);
+    doc.rect(lX, iy, lW, cardH, "F");
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(lX, iy, 1.5, cardH, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(pr, pg, pb);
-    doc.text("PROXIMOS PASSOS E LEMBRETES", lX + 3, iy + 5);
-    iy += 10;
-    const wk = Number(patientInfo.weeks) || 0;
-    const lembretes: string[] = [];
-    if (wk < 14) {
-      lembretes.push("1o trimestre: USG morfologica entre 11-14 sem.");
-      lembretes.push("Iniciar acido folico e sulfato ferroso.");
-      lembretes.push("Exames de rotina: hemograma, glicemia, urina I.");
-    } else if (wk < 28) {
-      lembretes.push("2o trimestre: USG morfologica entre 20-24 sem.");
-      lembretes.push("Vacinas dTpa e Influenza no periodo indicado.");
-      lembretes.push("TOTG 75g entre 24-28 sem para rastreio de DMG.");
-    } else {
-      lembretes.push("3o trimestre: consultas quinzenais ou semanais.");
-      lembretes.push("Preparar mala da maternidade e plano de parto.");
-      lembretes.push("Monitorar movimentos fetais diariamente.");
-    }
-    lembretes.push("Manter pressao, peso e glicemia sob acompanhamento.");
+    doc.text(it.titulo, lX + 4, iy + 4.2);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(...dark);
-    lembretes.forEach((t) => {
-      if (iy > pageH - 14) return;
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(pr, pg, pb);
-      doc.text("-", lX + 2, iy);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(...dark);
-      const tl = doc.splitTextToSize(t, lW - 6);
-      doc.text(tl, lX + 5, iy);
-      iy += tl.length * 3.4 + 1;
-    });
-  }
+    const dl = doc.splitTextToSize(it.desc, lW - 8);
+    doc.text(dl, lX + 4, iy + 8.2);
+    iy += cardH + 2;
+  });
 
   const rX = halfW + 14;
   const rW = halfW - 28;
