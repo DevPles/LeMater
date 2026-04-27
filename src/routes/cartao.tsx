@@ -11,7 +11,7 @@ import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  AreaChart, Area, ComposedChart, ReferenceArea, Legend,
+  AreaChart, Area, ComposedChart, ReferenceArea, Legend, LabelList, ReferenceLine,
 } from "recharts";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
@@ -230,6 +230,8 @@ function CartaoPage() {
     }).map(m => ({ semana: m.semana, altura: m.valor, data: m.data }));
     const bcf = medicoes.filter(m => m.parametro.toLowerCase().includes("bcf") || m.parametro.toLowerCase().includes("batim"))
       .map(m => ({ semana: m.semana, bcf: m.valor, data: m.data }));
+    const glicemia = medicoes.filter(m => m.parametro.toLowerCase().includes("glic"))
+      .map(m => ({ semana: m.semana, glicemia: m.valor, data: m.data }));
 
     const semanasSet = new Set([...sis, ...dia].map(p => p.semana));
     const pressao = Array.from(semanasSet).sort((a, b) => a - b).map(s => ({
@@ -238,7 +240,7 @@ function CartaoPage() {
       diastolica: dia.find(p => p.semana === s)?.valor,
     }));
 
-    return { peso, pressao, au, bcf };
+    return { peso, pressao, au, bcf, glicemia };
   }, [medicoes]);
 
   // ====== IMC e ganho de peso ======
@@ -327,53 +329,112 @@ function CartaoPage() {
         ))}
       </div>
 
-      {/* Patient Card */}
-      <motion.div className="mb-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <LiquidCard className="p-4">
-          <div className="flex items-center gap-3 mb-3">
-            {profile?.foto_url ? (
-              <img src={profile.foto_url} alt={patientInfo.name} className="w-12 h-12 rounded-full object-cover border-2" style={{ borderColor: palette.primary }} />
-            ) : (
-              <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ backgroundColor: palette.primary }}>
-                {patientInfo.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
-              </div>
-            )}
-            <div>
-              <h2 className="font-semibold text-foreground text-sm">{patientInfo.name}</h2>
-              <p className="text-xs text-muted-foreground">{patientInfo.age} anos {profile?.unidade_saude ? `• ${profile.unidade_saude}` : ""}</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="bg-muted rounded-xl px-2 py-2 text-center">
-              <p className="text-[10px] text-muted-foreground">Semana</p>
-              <p className="font-bold text-foreground">{patientInfo.weeks}ª</p>
-            </div>
-            <div className="bg-muted rounded-xl px-2 py-2 text-center">
-              <p className="text-[10px] text-muted-foreground">DUM</p>
-              <p className="font-bold text-foreground text-xs">{patientInfo.dum}</p>
-            </div>
-            <div className="bg-muted rounded-xl px-2 py-2 text-center">
-              <p className="text-[10px] text-muted-foreground">DPP</p>
-              <p className="font-bold text-foreground text-xs">{patientInfo.dpp}</p>
-            </div>
-          </div>
-          {imcInfo && (
-            <div className="mt-3 flex items-center justify-between rounded-xl px-3 py-2" style={{ backgroundColor: palette.primaryLight }}>
+      {/* ============== FOLDER / CARTEIRINHA DOBRÁVEL ============== */}
+      <motion.div className="mb-5" initial={{ opacity: 0, y: 14, rotateX: -8 }} animate={{ opacity: 1, y: 0, rotateX: 0 }} transition={{ type: "spring", damping: 18 }}>
+        <div
+          className="relative rounded-2xl overflow-hidden shadow-xl border"
+          style={{
+            borderColor: palette.primary,
+            background: `linear-gradient(135deg, ${palette.primaryLight} 0%, #ffffff 50%, ${palette.primaryLight} 100%)`,
+          }}
+        >
+          {/* Faixa lateral (lombada do folder) */}
+          <div
+            className="absolute left-0 top-0 bottom-0 w-2"
+            style={{ background: `linear-gradient(180deg, ${palette.primary} 0%, ${palette.accent} 100%)` }}
+          />
+          {/* Linha de dobra horizontal (efeito folder) */}
+          <div
+            className="absolute left-2 right-0 top-1/2 -translate-y-1/2 border-t-2 border-dashed pointer-events-none opacity-40"
+            style={{ borderColor: palette.primary }}
+          />
+
+          {/* PARTE SUPERIOR DO FOLDER (capa) */}
+          <div className="relative pt-3 pb-4 pl-5 pr-4" style={{ background: palette.primary }}>
+            <div className="flex items-start justify-between text-white">
               <div>
-                <p className="text-[10px] text-muted-foreground uppercase font-semibold">IMC pré-gestacional</p>
-                <p className="text-sm font-bold" style={{ color: palette.primary }}>{imc!.toFixed(1)} — {imcInfo.label}</p>
+                <p className="text-[9px] font-bold tracking-[0.2em] opacity-90">MAEDIGITAL · UNAERP</p>
+                <p className="text-[10px] font-semibold tracking-wide opacity-80 mt-0.5">CARTAO DIGITAL DA GESTANTE</p>
               </div>
-              {ganhoPeso !== null && (
-                <div className="text-right">
-                  <p className="text-[10px] text-muted-foreground uppercase font-semibold">Ganho</p>
-                  <p className="text-sm font-bold" style={{ color: palette.primary }}>
-                    {ganhoPeso > 0 ? "+" : ""}{ganhoPeso.toFixed(1)} kg
-                  </p>
+              <div className="text-right">
+                <p className="text-[8px] font-bold tracking-widest opacity-80">VIA</p>
+                <p className="text-sm font-bold font-display">01</p>
+              </div>
+            </div>
+            <div className="flex items-end gap-3 mt-3">
+              {profile?.foto_url ? (
+                <img
+                  src={profile.foto_url}
+                  alt={patientInfo.name}
+                  className="w-16 h-16 rounded-xl object-cover border-2 shadow-lg"
+                  style={{ borderColor: "#fff" }}
+                />
+              ) : (
+                <div
+                  className="w-16 h-16 rounded-xl flex items-center justify-center font-bold text-xl shadow-lg border-2"
+                  style={{ borderColor: "#fff", background: palette.accent, color: "#fff" }}
+                >
+                  {patientInfo.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
                 </div>
               )}
+              <div className="flex-1 text-white pb-0.5">
+                <h2 className="font-display font-bold text-base leading-tight">{patientInfo.name}</h2>
+                <p className="text-[10px] opacity-90">{patientInfo.age} anos · Sangue {patientInfo.bloodType}</p>
+                <p className="text-[10px] opacity-80">Bebe: {palette.label}</p>
+              </div>
             </div>
-          )}
-        </LiquidCard>
+          </div>
+
+          {/* PARTE INFERIOR DO FOLDER (interior) */}
+          <div className="relative px-4 py-4 bg-white/70 backdrop-blur">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-xl px-2 py-2 text-center border" style={{ borderColor: palette.primary, background: "#fff" }}>
+                <p className="text-[9px] uppercase font-bold tracking-wide" style={{ color: palette.primary }}>Semana</p>
+                <p className="font-bold text-foreground font-display text-base">{patientInfo.weeks}ª</p>
+              </div>
+              <div className="rounded-xl px-2 py-2 text-center border" style={{ borderColor: palette.primary, background: "#fff" }}>
+                <p className="text-[9px] uppercase font-bold tracking-wide" style={{ color: palette.primary }}>DUM</p>
+                <p className="font-bold text-foreground text-xs font-display">{patientInfo.dum}</p>
+              </div>
+              <div className="rounded-xl px-2 py-2 text-center border" style={{ borderColor: palette.primary, background: "#fff" }}>
+                <p className="text-[9px] uppercase font-bold tracking-wide" style={{ color: palette.primary }}>DPP</p>
+                <p className="font-bold text-foreground text-xs font-display">{patientInfo.dpp}</p>
+              </div>
+            </div>
+
+            {imcInfo && (
+              <div className="mt-3 flex items-center justify-between rounded-xl px-3 py-2 border" style={{ backgroundColor: palette.primaryLight, borderColor: palette.primary }}>
+                <div>
+                  <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wide">IMC pré-gestacional</p>
+                  <p className="text-sm font-bold font-display" style={{ color: palette.primary }}>{imc!.toFixed(1)} — {imcInfo.label}</p>
+                </div>
+                {ganhoPeso !== null && (
+                  <div className="text-right">
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wide">Ganho</p>
+                    <p className="text-sm font-bold font-display" style={{ color: palette.primary }}>
+                      {ganhoPeso > 0 ? "+" : ""}{ganhoPeso.toFixed(1)} kg
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Rodapé do folder com unidade de saúde */}
+            {profile?.unidade_saude && (
+              <div className="mt-3 flex items-center justify-between text-[10px] pt-2 border-t border-dashed" style={{ borderColor: palette.primary }}>
+                <span className="font-bold uppercase tracking-wide" style={{ color: palette.primary }}>UBS de referência</span>
+                <span className="text-muted-foreground">{profile.unidade_saude}</span>
+              </div>
+            )}
+          </div>
+
+          {/* "Furos" decorativos do folder */}
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 pointer-events-none">
+            <div className="w-1 h-1 rounded-full bg-white/50" />
+            <div className="w-1 h-1 rounded-full bg-white/50" />
+            <div className="w-1 h-1 rounded-full bg-white/50" />
+          </div>
+        </div>
       </motion.div>
 
       {/* Botão de novo lançamento - visível em todas as abas exceto "resumo" */}
@@ -568,6 +629,7 @@ type Series = {
   pressao: { semana: number; sistolica?: number; diastolica?: number }[];
   au: { semana: number; altura: number; data: string }[];
   bcf: { semana: number; bcf: number; data: string }[];
+  glicemia: { semana: number; glicemia: number; data: string }[];
 };
 
 function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; series: Series }) {
@@ -604,6 +666,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
   const pressaoF = filtrar(series.pressao);
   const auF = filtrar(series.au);
   const bcfF = filtrar(series.bcf);
+  const glicemiaF = filtrar(series.glicemia);
 
   // Combinado: peso + PAM (pressão arterial média)
   const combinado = pressaoF.map(p => {
@@ -611,6 +674,22 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
     const peso = pesoF.find(x => x.semana === p.semana)?.peso ?? null;
     return { semana: p.semana, pam, peso };
   });
+
+  // Cruzamento: Glicemia x Peso (alerta para resistência insulínica/DMG)
+  const semanasGP = Array.from(new Set([...glicemiaF, ...pesoF].map(d => d.semana))).sort((a, b) => a - b);
+  const glicemiaPeso = semanasGP.map(s => ({
+    semana: s,
+    glicemia: glicemiaF.find(g => g.semana === s)?.glicemia ?? null,
+    peso: pesoF.find(p => p.semana === s)?.peso ?? null,
+  })).filter(d => d.glicemia !== null || d.peso !== null);
+
+  // Cruzamento: Altura uterina x Peso (proporcionalidade do crescimento)
+  const semanasAP = Array.from(new Set([...auF, ...pesoF].map(d => d.semana))).sort((a, b) => a - b);
+  const auPeso = semanasAP.map(s => ({
+    semana: s,
+    altura: auF.find(a => a.semana === s)?.altura ?? null,
+    peso: pesoF.find(p => p.semana === s)?.peso ?? null,
+  })).filter(d => d.altura !== null || d.peso !== null);
 
   const filtros: { key: Exclude<Periodo, "custom">; label: string }[] = [
     { key: "todos", label: "Evolução Total" },
@@ -694,8 +773,8 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
       <div className={chartCard}>
         <h4 className={chartTitle}>Curva de Ganho de Peso (kg)</h4>
         {pesoF.length === 0 ? <Vazio texto="Sem registros de peso no período." /> : (
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={pesoF}>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={pesoF} margin={{ top: 18, right: 12, left: 4, bottom: 18 }}>
               <defs>
                 <linearGradient id="pesoGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={palette.primary} stopOpacity={0.3} />
@@ -706,7 +785,9 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} label={{ value: "Semana gestacional", position: "insideBottom", offset: -2, fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} domain={["dataMin - 2", "dataMax + 2"]} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
-              <Area type="monotone" dataKey="peso" stroke={palette.primary} fill="url(#pesoGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.primary }} />
+              <Area type="monotone" dataKey="peso" stroke={palette.primary} fill="url(#pesoGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.primary }}>
+                <LabelList dataKey="peso" position="top" style={{ fontSize: 10, fill: palette.primary, fontWeight: 700 }} formatter={(v: number) => v.toFixed(1)} />
+              </Area>
             </AreaChart>
           </ResponsiveContainer>
         )}
@@ -716,8 +797,8 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
       <div className={chartCard}>
         <h4 className={chartTitle}>Curva Pressórica (mmHg) — referência: 90-140 / 60-90</h4>
         {pressaoF.length === 0 ? <Vazio texto="Sem registros pressóricos no período." /> : (
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={pressaoF}>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={pressaoF} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} domain={[50, 160]} />
@@ -725,8 +806,12 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <ReferenceArea y1={60} y2={90} fill="#22c55e" fillOpacity={0.05} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line type="monotone" dataKey="sistolica" name="Sistólica" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
-              <Line type="monotone" dataKey="diastolica" name="Diastólica" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+              <Line type="monotone" dataKey="sistolica" name="Sistólica" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }}>
+                <LabelList dataKey="sistolica" position="top" style={{ fontSize: 10, fill: "#ef4444", fontWeight: 700 }} />
+              </Line>
+              <Line type="monotone" dataKey="diastolica" name="Diastólica" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }}>
+                <LabelList dataKey="diastolica" position="bottom" style={{ fontSize: 10, fill: "#3b82f6", fontWeight: 700 }} />
+              </Line>
             </LineChart>
           </ResponsiveContainer>
         )}
@@ -735,17 +820,74 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
       {/* COMBINADO peso x PAM */}
       <div className={chartCard}>
         <h4 className={chartTitle}>Peso × Pressão Arterial Média</h4>
+        <p className="text-[10px] text-muted-foreground mb-2">Cruzamento útil para monitorar pré-eclâmpsia: ganho rápido de peso + PAM crescente é sinal de alerta.</p>
         {combinado.filter(c => c.peso && c.pam).length === 0 ? <Vazio texto="Necessário ter peso e pressão registrados." /> : (
-          <ResponsiveContainer width="100%" height={200}>
-            <ComposedChart data={combinado}>
+          <ResponsiveContainer width="100%" height={220}>
+            <ComposedChart data={combinado} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
               <YAxis yAxisId="left" tick={{ fontSize: 10 }} label={{ value: "Peso (kg)", angle: -90, position: "insideLeft", fontSize: 10 }} />
               <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} label={{ value: "PAM (mmHg)", angle: 90, position: "insideRight", fontSize: 10 }} />
+              <ReferenceLine yAxisId="right" y={105} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "PAM crítica", position: "right", fontSize: 9, fill: "#ef4444" }} />
               <Tooltip contentStyle={{ fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Area yAxisId="left" type="monotone" dataKey="peso" name="Peso" fill={palette.primary} stroke={palette.primary} fillOpacity={0.2} />
-              <Line yAxisId="right" type="monotone" dataKey="pam" name="PAM" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
+              <Area yAxisId="left" type="monotone" dataKey="peso" name="Peso" fill={palette.primary} stroke={palette.primary} fillOpacity={0.2}>
+                <LabelList dataKey="peso" position="top" style={{ fontSize: 9, fill: palette.primary, fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(1) : ""} />
+              </Area>
+              <Line yAxisId="right" type="monotone" dataKey="pam" name="PAM" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }}>
+                <LabelList dataKey="pam" position="bottom" style={{ fontSize: 9, fill: "#ef4444", fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(0) : ""} />
+              </Line>
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* CRUZAMENTO INTELIGENTE: Glicemia × Peso */}
+      <div className={chartCard}>
+        <h4 className={chartTitle}>Glicemia × Peso — risco de DMG</h4>
+        <p className="text-[10px] text-muted-foreground mb-2">Eleva­ções simultâneas de glicemia capilar e peso podem indicar resistência insulínica ou diabetes gestacional. Faixa normal: glicemia &lt; 95 mg/dL em jejum.</p>
+        {glicemiaPeso.filter(d => d.glicemia !== null).length === 0 ? <Vazio texto="Sem registros de glicemia no período." /> : (
+          <ResponsiveContainer width="100%" height={220}>
+            <ComposedChart data={glicemiaPeso} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="left" tick={{ fontSize: 10 }} domain={[60, 140]} label={{ value: "Glicemia (mg/dL)", angle: -90, position: "insideLeft", fontSize: 10 }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} label={{ value: "Peso (kg)", angle: 90, position: "insideRight", fontSize: 10 }} />
+              <ReferenceArea yAxisId="left" y1={70} y2={95} fill="#22c55e" fillOpacity={0.07} />
+              <ReferenceLine yAxisId="left" y={95} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: "Limite jejum 95", position: "right", fontSize: 9, fill: "#f59e0b" }} />
+              <ReferenceLine yAxisId="left" y={126} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "DMG 126", position: "right", fontSize: 9, fill: "#ef4444" }} />
+              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Line yAxisId="left" type="monotone" dataKey="glicemia" name="Glicemia" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} connectNulls>
+                <LabelList dataKey="glicemia" position="top" style={{ fontSize: 9, fill: "#f59e0b", fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(0) : ""} />
+              </Line>
+              <Line yAxisId="right" type="monotone" dataKey="peso" name="Peso" stroke={palette.primary} strokeWidth={2} dot={{ r: 4 }} connectNulls>
+                <LabelList dataKey="peso" position="bottom" style={{ fontSize: 9, fill: palette.primary, fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(1) : ""} />
+              </Line>
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* CRUZAMENTO INTELIGENTE: Altura uterina × Peso */}
+      <div className={chartCard}>
+        <h4 className={chartTitle}>Altura Uterina × Peso — proporcionalidade do crescimento</h4>
+        <p className="text-[10px] text-muted-foreground mb-2">A altura uterina deve crescer junto com o ganho de peso materno. Discrepâncias podem indicar restrição ou macrossomia fetal.</p>
+        {auPeso.filter(d => d.altura !== null && d.peso !== null).length === 0 ? <Vazio texto="Necessário ter AU e peso registrados." /> : (
+          <ResponsiveContainer width="100%" height={220}>
+            <ComposedChart data={auPeso} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="left" tick={{ fontSize: 10 }} label={{ value: "AU (cm)", angle: -90, position: "insideLeft", fontSize: 10 }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} label={{ value: "Peso (kg)", angle: 90, position: "insideRight", fontSize: 10 }} />
+              <Tooltip contentStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Area yAxisId="left" type="monotone" dataKey="altura" name="Altura uterina" stroke={palette.accent} fill={palette.accent} fillOpacity={0.2} connectNulls>
+                <LabelList dataKey="altura" position="top" style={{ fontSize: 9, fill: palette.accent, fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(0) : ""} />
+              </Area>
+              <Line yAxisId="right" type="monotone" dataKey="peso" name="Peso" stroke={palette.primary} strokeWidth={2} dot={{ r: 4 }} connectNulls>
+                <LabelList dataKey="peso" position="bottom" style={{ fontSize: 9, fill: palette.primary, fontWeight: 700 }} formatter={(v: number) => v ? v.toFixed(1) : ""} />
+              </Line>
             </ComposedChart>
           </ResponsiveContainer>
         )}
@@ -755,8 +897,8 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
       <div className={chartCard}>
         <h4 className={chartTitle}>Altura Uterina (cm) — referência MS</h4>
         {auF.length === 0 ? <Vazio texto="Sem registros de altura uterina no período." /> : (
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={auF}>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={auF} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
               <defs>
                 <linearGradient id="auGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={palette.accent} stopOpacity={0.3} />
@@ -767,7 +909,9 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} domain={[0, 40]} />
               <Tooltip contentStyle={{ fontSize: 12 }} />
-              <Area type="monotone" dataKey="altura" stroke={palette.accent} fill="url(#auGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.accent }} />
+              <Area type="monotone" dataKey="altura" stroke={palette.accent} fill="url(#auGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.accent }}>
+                <LabelList dataKey="altura" position="top" style={{ fontSize: 10, fill: palette.accent, fontWeight: 700 }} formatter={(v: number) => v.toFixed(0)} />
+              </Area>
             </AreaChart>
           </ResponsiveContainer>
         )}
@@ -777,14 +921,16 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
       <div className={chartCard}>
         <h4 className={chartTitle}>BCF (bpm) — normal: 110-160</h4>
         {bcfF.length === 0 ? <Vazio texto="Sem registros de BCF no período." /> : (
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={bcfF}>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={bcfF} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} domain={[80, 180]} />
               <ReferenceArea y1={110} y2={160} fill="#22c55e" fillOpacity={0.07} />
               <Tooltip contentStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="bcf" name="BCF" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: "#10b981" }} />
+              <Line type="monotone" dataKey="bcf" name="BCF" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: "#10b981" }}>
+                <LabelList dataKey="bcf" position="top" style={{ fontSize: 10, fill: "#10b981", fontWeight: 700 }} />
+              </Line>
             </LineChart>
           </ResponsiveContainer>
         )}
@@ -1190,7 +1336,21 @@ async function gerarPDFCartao(args: {
         doc.line(sx(sorted[i].x), sy(sorted[i].y), sx(sorted[i + 1].x), sy(sorted[i + 1].y));
       }
       doc.setFillColor(s.color[0], s.color[1], s.color[2]);
-      sorted.forEach(p => doc.circle(sx(p.x), sy(p.y), 0.9, "F"));
+      sorted.forEach(p => doc.circle(sx(p.x), sy(p.y), 1.1, "F"));
+
+      // Rótulos numéricos sobre cada ponto
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6);
+      doc.setTextColor(s.color[0], s.color[1], s.color[2]);
+      sorted.forEach((p, i) => {
+        const px = sx(p.x);
+        const py = sy(p.y);
+        // Alterna posição vertical do rótulo para reduzir sobreposição em séries densas
+        const acima = i % 2 === 0;
+        const ty = acima ? py - 2 : py + 4;
+        const txt = Number.isInteger(p.y) ? String(p.y) : p.y.toFixed(1);
+        doc.text(txt, px, ty, { align: "center" });
+      });
     });
 
     // Legenda
@@ -1239,6 +1399,23 @@ async function gerarPDFCartao(args: {
     [
       { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso (kg)", fill: true },
       { color: [239, 68, 68], values: pamSerie, name: "PAM (mmHg)" },
+    ]);
+
+  // CRUZAMENTO: Glicemia x Peso
+  drawChart("Glicemia x Peso",
+    "Risco de diabetes gestacional",
+    [
+      { color: [245, 158, 11], values: series.glicemia.map(d => ({ x: d.semana, y: d.glicemia })), name: "Glicemia (mg/dL)" },
+      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso (kg)" },
+    ],
+    { min: 70, max: 95, label: "glicemia normal jejum" });
+
+  // CRUZAMENTO: AU x Peso (proporcionalidade)
+  drawChart("Altura Uterina x Peso",
+    "Proporcionalidade do crescimento",
+    [
+      { color: [124, 58, 237], values: series.au.map(d => ({ x: d.semana, y: d.altura })), name: "AU (cm)", fill: true },
+      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso (kg)" },
     ]);
 
   drawChart("Altura Uterina",
