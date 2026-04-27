@@ -1663,13 +1663,14 @@ async function gerarPDFCartao(args: {
   doc.text("Linhas = data da consulta  |  Colunas = parametro clinico", rgX, rgY + 1.5);
   rgY += 4;
 
-  // Renderiza matriz cruzada na face direita
-  const matrizMaxY = pageH - 8;
+  // Renderiza matriz cruzada na face direita (limitada para deixar espaço ao histórico)
+  const matrizMaxY = pageH / 2 + 18; // matriz ocupa ~metade superior
   if (medicoes.length === 0) {
     doc.setFont("helvetica", "italic");
     doc.setFontSize(8);
     doc.setTextColor(...muted);
     doc.text("Nenhum dado clinico registrado.", rgX + 2, rgY + 5);
+    rgY += 10;
   } else {
     const medicoesMatrizR = medicoes.filter(m => !ehEstatura(m.parametro) && !ehTemperatura(m.parametro));
     const datasSetR = new Set<string>();
@@ -1680,7 +1681,7 @@ async function gerarPDFCartao(args: {
     });
     const matHeaderHR = 11;
     const availHR = matrizMaxY - rgY;
-    const maxRowsR = Math.max(1, Math.floor((availHR - matHeaderHR) / 3.6));
+    const maxRowsR = Math.max(1, Math.min(8, Math.floor((availHR - matHeaderHR) / 4.2)));
     const datasMatrizR = datasR.slice(0, maxRowsR);
 
     const matrixR = new Map<string, Map<string, string | number>>();
