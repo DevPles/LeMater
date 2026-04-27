@@ -233,6 +233,7 @@ function CartaoPage() {
       parametro: r.parametro,
       valor: Number(r.valor),
       semana: r.semana_gestacional ?? 0,
+      observacao: r.observacao ?? undefined,
     })));
     setVacinas((publicSnap.vacinas ?? []).map((r: any) => ({
       id: r.id,
