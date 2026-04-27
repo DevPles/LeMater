@@ -39,9 +39,11 @@ export function WeekProgress({ currentWeek, totalWeeks = 40 }: WeekProgressProps
         <p className="mt-2 text-xs text-muted-foreground">
           {totalWeeks - currentWeek} semanas restantes
         </p>
-        <p className="mt-3 text-xs font-medium text-primary">
-          Ver todos os trimestres →
-        </p>
+        <div className="mt-3 flex justify-start">
+          <span className="inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold px-4 h-8 shadow-sm hover:bg-primary/90 transition-colors">
+            Ver todos os trimestres →
+          </span>
+        </div>
       </LiquidCard>
     </Link>
   );
