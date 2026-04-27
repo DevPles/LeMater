@@ -144,6 +144,25 @@ export function ConsultasTab() {
     setGeneratingId(null);
   };
 
+  const apagar = async (item: Slot) => {
+    const dt = new Date(item.data_hora).toLocaleString("pt-BR");
+    const confirma = window.confirm(
+      `Apagar esta consulta de ${dt}?\n\nEssa ação é permanente e remove o registro do histórico.`,
+    );
+    if (!confirma) return;
+    setDeletingId(item.id);
+    const { error } = await supabase
+      .from("appointment_slots")
+      .delete()
+      .eq("id", item.id);
+    if (error) {
+      alert("Erro ao apagar: " + error.message);
+    } else {
+      setItems((prev) => prev.filter((x) => x.id !== item.id));
+    }
+    setDeletingId(null);
+  };
+
   const fmtDur = (seg: number | null) => {
     if (!seg) return "—";
     const m = Math.floor(seg / 60);
