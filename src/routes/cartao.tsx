@@ -2270,8 +2270,6 @@ async function gerarPDFCartao(args: {
     };
 
     // Layout para caber tudo dentro da face esquerda do folder
-    const matY = 23;
-    const matMaxY = pageH - 14;
     const fixedColW = 16;
     const semColW = 8;
     const matTotalW = Math.min(faceWCompact, faceRightEdge - faceX);
@@ -2281,8 +2279,7 @@ async function gerarPDFCartao(args: {
 
     // Calcula altura de header e linha para encaixar todas as datas
     const availH = matMaxY - matY;
-    const matHeaderH = 13;
-    const rowH = Math.max(3.6, Math.min(6.2, (availH - matHeaderH) / Math.max(1, datas.length)));
+    const rowH = Math.max(3.6, Math.min(6.2, (availH - matHeaderH) / Math.max(1, datasMatriz.length)));
     const fontRow = rowH >= 5.4 ? 5.9 : rowH >= 4.5 ? 5.2 : 4.6;
 
     // Header
