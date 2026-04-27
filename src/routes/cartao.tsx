@@ -2140,27 +2140,26 @@ async function gerarPDFCartao(args: {
   }
 
   // =============================================================
-  // PAGINA 5 - MATRIZ CRUZADA (datas x parametros)
+  // PAGINA 5 - MATRIZ CRUZADA (datas x parametros) - tabela compacta, 1 face
   // =============================================================
   if (medicoes.length) {
     doc.addPage("a4", "landscape");
-    // Fundo simples (sem linha de dobra) - matriz ocupa face inteira
     doc.setFillColor(252, 252, 254);
     doc.rect(0, 0, pageW, pageH, "F");
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(pr, pg, pb);
-    doc.text("MATRIZ CRUZADA - MAPA TERMICO POR CONSULTA", margin, 13);
+    doc.text("MATRIZ CRUZADA - EVOLUCAO POR CONSULTA", margin, 13);
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.5);
     doc.line(margin, 15, pageW - margin, 15);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...muted);
-    doc.text("Linhas = data da consulta  |  Colunas = parametro clinico  |  Cor de fundo = intensidade relativa (min-max do parametro)", margin, 19);
+    doc.text("Linhas = data da consulta  |  Colunas = parametro clinico", margin, 19);
 
-    // Constroi matriz: datas x parametros
+    // Datas (mais recentes primeiro)
     const datasSet = new Set<string>();
     medicoes.forEach(m => datasSet.add(m.data));
     const datas = Array.from(datasSet).sort((a, b) => {
@@ -2170,180 +2169,99 @@ async function gerarPDFCartao(args: {
     const matrix = new Map<string, Map<string, string | number>>();
     datas.forEach(d => matrix.set(d, new Map()));
     medicoes.forEach(m => matrix.get(m.data)!.set(normParam(m.parametro), m.valor));
-
-    const rangePorParam = new Map<string, { min: number; max: number }>();
-    parametros.forEach(p => {
-      const nums: number[] = [];
-      datas.forEach(d => {
-        const v = matrix.get(d)!.get(p);
-        if (v !== undefined && v !== null) {
-          const n = numFromValor(v as string | number);
-          if (n !== null && Number.isFinite(n)) nums.push(n);
-        }
-      });
-      if (nums.length >= 1) {
-        rangePorParam.set(p, { min: Math.min(...nums), max: Math.max(...nums) });
-      }
-    });
-    const corParam = (p: string): [number, number, number] => {
-      const cfg = paramConfig(p);
-      return cfg ? cfg.color : [pr, pg, pb];
-    };
-
     const semanaPorData = new Map<string, number>();
     medicoes.forEach(m => semanaPorData.set(m.data, m.semana));
 
-    // Layout: face inteira, todos os parametros em colunas
+    // Layout para caber tudo em 1 face
     const matY = 23;
     const matMaxY = pageH - 14;
     const fixedColW = 18;
     const semColW = 10;
-    const matHeaderH = 14;
     const matTotalW = pageW - margin * 2;
+    const restW = matTotalW - fixedColW - semColW;
+    const dataColW = restW / Math.max(1, parametros.length);
 
-    const renderMatrix = (datasPage: string[], isFirst: boolean) => {
-      if (!isFirst) {
-        doc.addPage("a4", "landscape");
-        doc.setFillColor(252, 252, 254);
-        doc.rect(0, 0, pageW, pageH, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(11);
-        doc.setTextColor(pr, pg, pb);
-        doc.text("MATRIZ CRUZADA - MAPA TERMICO POR CONSULTA (cont.)", margin, 13);
-        doc.setDrawColor(pr, pg, pb);
-        doc.setLineWidth(0.5);
-        doc.line(margin, 15, pageW - margin, 15);
+    // Calcula altura de header e linha para encaixar todas as datas
+    const availH = matMaxY - matY;
+    const matHeaderH = 12;
+    const rowH = Math.max(4.2, Math.min(7, (availH - matHeaderH) / Math.max(1, datas.length)));
+    const fontRow = rowH >= 6 ? 7 : rowH >= 5 ? 6.2 : 5.5;
+
+    // Header
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(margin, matY, matTotalW, matHeaderH, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.text("DATA", margin + 2, matY + matHeaderH / 2 + 1.2);
+    doc.text("SEM", margin + fixedColW + 2, matY + matHeaderH / 2 + 1.2);
+    doc.setFontSize(6);
+    parametros.forEach((p, i) => {
+      const cx = margin + fixedColW + semColW + i * dataColW;
+      const lines = doc.splitTextToSize(labelByKey.get(p) ?? p, dataColW - 1);
+      const lineH = 2.6;
+      const startY = matY + matHeaderH / 2 - ((Math.min(lines.length, 2) - 1) * lineH) / 2;
+      lines.slice(0, 2).forEach((ln: string, li: number) => {
+        doc.text(ln, cx + dataColW / 2, startY + li * lineH, { align: "center" });
+      });
+    });
+
+    // Rows - tabela limpa, sem cor de fundo nas celulas
+    datas.forEach((d, ri) => {
+      const ry4 = matY + matHeaderH + ri * rowH;
+      if (ri % 2 === 0) {
+        doc.setFillColor(246, 247, 252);
+        doc.rect(margin, ry4, matTotalW, rowH, "F");
       }
-
-      const restW = matTotalW - fixedColW - semColW;
-      const dataColW = restW / Math.max(1, parametros.length);
-      // Altura das linhas: aproveita o espaco vertical disponivel
-      const availH = matMaxY - matY - matHeaderH;
-      const rowH = Math.max(6, Math.min(10, availH / Math.max(1, datasPage.length)));
-
-      // Header
-      doc.setFillColor(pr, pg, pb);
-      doc.rect(margin, matY, matTotalW, matHeaderH, "F");
-      doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(7);
-      doc.text("DATA", margin + 2, matY + 8.5);
-      doc.text("SEM", margin + fixedColW + 2, matY + 8.5);
-      doc.setFontSize(6);
+      doc.setFontSize(fontRow);
+      doc.setTextColor(pr, pg, pb);
+      doc.text(d, margin + 2, ry4 + rowH / 2 + 1.1);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...muted);
+      doc.text(`${semanaPorData.get(d) ?? "-"}`, margin + fixedColW + 2, ry4 + rowH / 2 + 1.1);
+
+      const linhaMatrix = matrix.get(d)!;
       parametros.forEach((p, i) => {
         const cx = margin + fixedColW + semColW + i * dataColW;
-        const lines = doc.splitTextToSize(labelByKey.get(p) ?? p, dataColW - 1);
-        const lineH = 2.6;
-        const startY = matY + 7 - ((Math.min(lines.length, 2) - 1) * lineH) / 2;
-        lines.slice(0, 2).forEach((ln: string, li: number) => {
-          doc.text(ln, cx + dataColW / 2, startY + li * lineH, { align: "center" });
-        });
-      });
-
-      // Helper: clareia a cor do parametro com base na intensidade (heatmap)
-      const corHeatmap = (base: [number, number, number], pct: number): [number, number, number] => {
-        // pct=0 -> quase branco (10% cor), pct=1 -> 65% cor (mantem texto legivel)
-        const t = 0.10 + Math.max(0, Math.min(1, pct)) * 0.55;
-        return [
-          Math.round(255 - (255 - base[0]) * t),
-          Math.round(255 - (255 - base[1]) * t),
-          Math.round(255 - (255 - base[2]) * t),
-        ];
-      };
-
-      // Rows
-      datasPage.forEach((d, ri) => {
-        const ry4 = matY + matHeaderH + ri * rowH;
-        // Fundo zebra base
-        if (ri % 2 === 0) {
-          doc.setFillColor(248, 248, 252);
-          doc.rect(margin, ry4, matTotalW, rowH, "F");
+        const v = linhaMatrix.get(p);
+        if (v !== undefined && v !== null) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(fontRow);
+          doc.setTextColor(...dark);
+          doc.text(String(v), cx + dataColW / 2, ry4 + rowH / 2 + 1.1, { align: "center" });
+        } else {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(fontRow - 0.5);
+          doc.setTextColor(210, 210, 215);
+          doc.text("-", cx + dataColW / 2, ry4 + rowH / 2 + 1.1, { align: "center" });
         }
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(7);
-        doc.setTextColor(pr, pg, pb);
-        doc.text(d, margin + 2, ry4 + rowH / 2 + 1.2);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(...muted);
-        doc.text(`${semanaPorData.get(d) ?? "-"}`, margin + fixedColW + 2, ry4 + rowH / 2 + 1.2);
-
-        const linhaMatrix = matrix.get(d)!;
-        parametros.forEach((p, i) => {
-          const cx = margin + fixedColW + semColW + i * dataColW;
-          const v = linhaMatrix.get(p);
-          if (v !== undefined && v !== null) {
-            const rng = rangePorParam.get(p);
-            const n = numFromValor(v as string | number);
-            const base = corParam(p);
-            let pct = 0.5;
-            if (n !== null && rng) {
-              const span = rng.max - rng.min;
-              pct = span > 0 ? (n - rng.min) / span : 0.6;
-            }
-            const [hr, hg, hb] = corHeatmap(base, pct);
-            doc.setFillColor(hr, hg, hb);
-            doc.rect(cx + 0.4, ry4 + 0.4, dataColW - 0.8, rowH - 0.8, "F");
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(7);
-            doc.setTextColor(...dark);
-            doc.text(String(v), cx + dataColW / 2, ry4 + rowH / 2 + 1.2, { align: "center" });
-          } else {
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(6);
-            doc.setTextColor(220, 220, 225);
-            doc.text("-", cx + dataColW / 2, ry4 + rowH / 2 + 1.2, { align: "center" });
-          }
-        });
       });
+    });
 
-      const totalH = matHeaderH + datasPage.length * rowH;
-      doc.setDrawColor(pr, pg, pb);
-      doc.setLineWidth(0.3);
-      doc.rect(margin, matY, matTotalW, totalH, "S");
-      doc.setDrawColor(225, 225, 230);
-      doc.setLineWidth(0.1);
-      doc.line(margin + fixedColW, matY, margin + fixedColW, matY + totalH);
-      doc.line(margin + fixedColW + semColW, matY, margin + fixedColW + semColW, matY + totalH);
-      parametros.forEach((_p, i) => {
-        const cx = margin + fixedColW + semColW + (i + 1) * dataColW;
-        doc.line(cx, matY, cx, matY + totalH);
-      });
-
-      // Legenda heatmap no rodape da matriz
-      const legY = matY + totalH + 5;
-      if (legY < matMaxY - 4) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(6.5);
-        doc.setTextColor(...muted);
-        doc.text("Intensidade:", margin, legY + 2);
-        const legSteps = 8;
-        const legW = 50;
-        const stepW = legW / legSteps;
-        for (let i = 0; i < legSteps; i++) {
-          const pct = i / (legSteps - 1);
-          const [hr, hg, hb] = corHeatmap([pr, pg, pb], pct);
-          doc.setFillColor(hr, hg, hb);
-          doc.rect(margin + 18 + i * stepW, legY - 2, stepW, 3, "F");
-        }
-        doc.text("min", margin + 18, legY + 4);
-        doc.text("max", margin + 18 + legW, legY + 4, { align: "right" });
-      }
-    };
-
-    // Calcula quantas linhas cabem por pagina
-    const maxRowsPerPage = Math.floor((matMaxY - matY - matHeaderH - 8) / 6);
-    if (datas.length <= maxRowsPerPage) {
-      renderMatrix(datas, true);
-    } else {
-      let idx = 0;
-      let primeira = true;
-      while (idx < datas.length) {
-        const bloco = datas.slice(idx, idx + maxRowsPerPage);
-        renderMatrix(bloco, primeira);
-        idx += maxRowsPerPage;
-        primeira = false;
-      }
+    // Bordas
+    const totalH = matHeaderH + datas.length * rowH;
+    doc.setDrawColor(pr, pg, pb);
+    doc.setLineWidth(0.3);
+    doc.rect(margin, matY, matTotalW, totalH, "S");
+    doc.setDrawColor(220, 222, 230);
+    doc.setLineWidth(0.1);
+    // Linhas horizontais entre rows
+    for (let r = 1; r < datas.length; r++) {
+      const y = matY + matHeaderH + r * rowH;
+      doc.line(margin, y, margin + matTotalW, y);
     }
+    // Linhas verticais
+    doc.line(margin + fixedColW, matY, margin + fixedColW, matY + totalH);
+    doc.line(margin + fixedColW + semColW, matY, margin + fixedColW + semColW, matY + totalH);
+    parametros.forEach((_p, i) => {
+      const cx = margin + fixedColW + semColW + (i + 1) * dataColW;
+      doc.line(cx, matY, cx, matY + totalH);
+    });
+    // Linha separando header
+    doc.setDrawColor(pr, pg, pb);
+    doc.setLineWidth(0.2);
+    doc.line(margin, matY + matHeaderH, margin + matTotalW, matY + matHeaderH);
   }
 
   // ============ Footer em todas as páginas ============
