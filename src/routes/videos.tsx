@@ -218,7 +218,7 @@ function VideosPage() {
       {isReels ? (
         <>
           <button
-            onClick={() => alert("Em breve: compartilhe seu reel! 💕")}
+            onClick={() => navigate({ to: "/reels", search: { upload: "1" } as any })}
             className="w-full mb-4 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
           >
             + Compartilhe seu reel
