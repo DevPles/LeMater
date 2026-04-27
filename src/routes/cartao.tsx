@@ -2004,57 +2004,7 @@ async function gerarPDFCartao(args: {
   // PAGINAS DE EVOLUCAO CLINICA: por parametro -> GRAFICO | TABELA lado a lado
   // ================================================================
 
-  // Agrupa por parametro
-  // Normaliza nome do parametro (case-insensitive, remove acento, espacos extras e unidades entre parenteses)
-  const normParam = (p: string): string => {
-    return p
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/\([^)]*\)/g, "")
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, " ");
-  };
-  const porParametro = new Map<string, MedicaoReal[]>();
-  const labelByKey = new Map<string, string>();
-  // Unifica sistolica + diastolica num unico parametro "Pressao Arterial"
-  const isPressao = (p: string): "sis" | "dia" | null => {
-    const lp = normParam(p);
-    if (lp.includes("press") && lp.includes("sist")) return "sis";
-    if (lp.includes("press") && lp.includes("diast")) return "dia";
-    return null;
-  };
-  const PRESSAO_KEY = "pressao arterial";
-  // "Estatura" / "altura_pessoa" eh dado fixo da gestante (usado no IMC) -> nao entra na evolucao
-  const ehEstatura = (p: string) => {
-    const lp = normParam(p);
-    return lp === "estatura" || lp.startsWith("estatura") || lp === "altura pessoa" || lp === "altura";
-  };
-  // Temperatura removida da evolucao clinica a pedido do usuario
-  const ehTemperatura = (p: string) => {
-    const lp = normParam(p);
-    return lp === "temperatura" || lp.startsWith("temperatura") || lp === "temp" || lp.includes("termic");
-  };
-  medicoes.forEach(m => {
-    if (ehEstatura(m.parametro)) return;
-    if (ehTemperatura(m.parametro)) return;
-    const tipo = isPressao(m.parametro);
-    const key = tipo ? PRESSAO_KEY : normParam(m.parametro);
-    if (!porParametro.has(key)) {
-      porParametro.set(key, []);
-      const pretty = tipo ? "Pressao Arterial (mmHg)" : m.parametro.trim();
-      labelByKey.set(key, tipo ? pretty : pretty.charAt(0).toUpperCase() + pretty.slice(1));
-    }
-    porParametro.get(key)!.push(m);
-  });
-  porParametro.forEach((arr) => {
-    arr.sort((a, b) => {
-      const da = parseBR(a.data); const db = parseBR(b.data);
-      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
-    });
-  });
-  const parametros = Array.from(porParametro.keys()).sort((a, b) =>
-    (labelByKey.get(a) ?? a).localeCompare(labelByKey.get(b) ?? b)
-  );
+  // (parametros, labelByKey e helpers já calculados acima — reutilizamos)
 
   // Helper: detecta valor numerico (lida com "120/80")
   const numFromValor = (v: string | number): number | null => {
