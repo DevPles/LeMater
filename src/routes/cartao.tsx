@@ -329,112 +329,53 @@ function CartaoPage() {
         ))}
       </div>
 
-      {/* ============== FOLDER / CARTEIRINHA DOBRÁVEL ============== */}
-      <motion.div className="mb-5" initial={{ opacity: 0, y: 14, rotateX: -8 }} animate={{ opacity: 1, y: 0, rotateX: 0 }} transition={{ type: "spring", damping: 18 }}>
-        <div
-          className="relative rounded-2xl overflow-hidden shadow-xl border"
-          style={{
-            borderColor: palette.primary,
-            background: `linear-gradient(135deg, ${palette.primaryLight} 0%, #ffffff 50%, ${palette.primaryLight} 100%)`,
-          }}
-        >
-          {/* Faixa lateral (lombada do folder) */}
-          <div
-            className="absolute left-0 top-0 bottom-0 w-2"
-            style={{ background: `linear-gradient(180deg, ${palette.primary} 0%, ${palette.accent} 100%)` }}
-          />
-          {/* Linha de dobra horizontal (efeito folder) */}
-          <div
-            className="absolute left-2 right-0 top-1/2 -translate-y-1/2 border-t-2 border-dashed pointer-events-none opacity-40"
-            style={{ borderColor: palette.primary }}
-          />
-
-          {/* PARTE SUPERIOR DO FOLDER (capa) */}
-          <div className="relative pt-3 pb-4 pl-5 pr-4" style={{ background: palette.primary }}>
-            <div className="flex items-start justify-between text-white">
-              <div>
-                <p className="text-[9px] font-bold tracking-[0.2em] opacity-90">MAEDIGITAL · UNAERP</p>
-                <p className="text-[10px] font-semibold tracking-wide opacity-80 mt-0.5">CARTAO DIGITAL DA GESTANTE</p>
+      {/* Patient Card */}
+      <motion.div className="mb-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+        <LiquidCard className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            {profile?.foto_url ? (
+              <img src={profile.foto_url} alt={patientInfo.name} className="w-12 h-12 rounded-full object-cover border-2" style={{ borderColor: palette.primary }} />
+            ) : (
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ backgroundColor: palette.primary }}>
+                {patientInfo.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
               </div>
-              <div className="text-right">
-                <p className="text-[8px] font-bold tracking-widest opacity-80">VIA</p>
-                <p className="text-sm font-bold font-display">01</p>
-              </div>
+            )}
+            <div>
+              <h2 className="font-semibold text-foreground text-sm">{patientInfo.name}</h2>
+              <p className="text-xs text-muted-foreground">{patientInfo.age} anos {profile?.unidade_saude ? `• ${profile.unidade_saude}` : ""}</p>
             </div>
-            <div className="flex items-end gap-3 mt-3">
-              {profile?.foto_url ? (
-                <img
-                  src={profile.foto_url}
-                  alt={patientInfo.name}
-                  className="w-16 h-16 rounded-xl object-cover border-2 shadow-lg"
-                  style={{ borderColor: "#fff" }}
-                />
-              ) : (
-                <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center font-bold text-xl shadow-lg border-2"
-                  style={{ borderColor: "#fff", background: palette.accent, color: "#fff" }}
-                >
-                  {patientInfo.name.split(" ").map(n => n[0]).slice(0, 2).join("")}
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-muted rounded-xl px-2 py-2 text-center">
+              <p className="text-[10px] text-muted-foreground">Semana</p>
+              <p className="font-bold text-foreground">{patientInfo.weeks}ª</p>
+            </div>
+            <div className="bg-muted rounded-xl px-2 py-2 text-center">
+              <p className="text-[10px] text-muted-foreground">DUM</p>
+              <p className="font-bold text-foreground text-xs">{patientInfo.dum}</p>
+            </div>
+            <div className="bg-muted rounded-xl px-2 py-2 text-center">
+              <p className="text-[10px] text-muted-foreground">DPP</p>
+              <p className="font-bold text-foreground text-xs">{patientInfo.dpp}</p>
+            </div>
+          </div>
+          {imcInfo && (
+            <div className="mt-3 flex items-center justify-between rounded-xl px-3 py-2" style={{ backgroundColor: palette.primaryLight }}>
+              <div>
+                <p className="text-[10px] text-muted-foreground uppercase font-semibold">IMC pré-gestacional</p>
+                <p className="text-sm font-bold" style={{ color: palette.primary }}>{imc!.toFixed(1)} — {imcInfo.label}</p>
+              </div>
+              {ganhoPeso !== null && (
+                <div className="text-right">
+                  <p className="text-[10px] text-muted-foreground uppercase font-semibold">Ganho</p>
+                  <p className="text-sm font-bold" style={{ color: palette.primary }}>
+                    {ganhoPeso > 0 ? "+" : ""}{ganhoPeso.toFixed(1)} kg
+                  </p>
                 </div>
               )}
-              <div className="flex-1 text-white pb-0.5">
-                <h2 className="font-display font-bold text-base leading-tight">{patientInfo.name}</h2>
-                <p className="text-[10px] opacity-90">{patientInfo.age} anos · Sangue {patientInfo.bloodType}</p>
-                <p className="text-[10px] opacity-80">Bebe: {palette.label}</p>
-              </div>
             </div>
-          </div>
-
-          {/* PARTE INFERIOR DO FOLDER (interior) */}
-          <div className="relative px-4 py-4 bg-white/70 backdrop-blur">
-            <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-xl px-2 py-2 text-center border" style={{ borderColor: palette.primary, background: "#fff" }}>
-                <p className="text-[9px] uppercase font-bold tracking-wide" style={{ color: palette.primary }}>Semana</p>
-                <p className="font-bold text-foreground font-display text-base">{patientInfo.weeks}ª</p>
-              </div>
-              <div className="rounded-xl px-2 py-2 text-center border" style={{ borderColor: palette.primary, background: "#fff" }}>
-                <p className="text-[9px] uppercase font-bold tracking-wide" style={{ color: palette.primary }}>DUM</p>
-                <p className="font-bold text-foreground text-xs font-display">{patientInfo.dum}</p>
-              </div>
-              <div className="rounded-xl px-2 py-2 text-center border" style={{ borderColor: palette.primary, background: "#fff" }}>
-                <p className="text-[9px] uppercase font-bold tracking-wide" style={{ color: palette.primary }}>DPP</p>
-                <p className="font-bold text-foreground text-xs font-display">{patientInfo.dpp}</p>
-              </div>
-            </div>
-
-            {imcInfo && (
-              <div className="mt-3 flex items-center justify-between rounded-xl px-3 py-2 border" style={{ backgroundColor: palette.primaryLight, borderColor: palette.primary }}>
-                <div>
-                  <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wide">IMC pré-gestacional</p>
-                  <p className="text-sm font-bold font-display" style={{ color: palette.primary }}>{imc!.toFixed(1)} — {imcInfo.label}</p>
-                </div>
-                {ganhoPeso !== null && (
-                  <div className="text-right">
-                    <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wide">Ganho</p>
-                    <p className="text-sm font-bold font-display" style={{ color: palette.primary }}>
-                      {ganhoPeso > 0 ? "+" : ""}{ganhoPeso.toFixed(1)} kg
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Rodapé do folder com unidade de saúde */}
-            {profile?.unidade_saude && (
-              <div className="mt-3 flex items-center justify-between text-[10px] pt-2 border-t border-dashed" style={{ borderColor: palette.primary }}>
-                <span className="font-bold uppercase tracking-wide" style={{ color: palette.primary }}>UBS de referência</span>
-                <span className="text-muted-foreground">{profile.unidade_saude}</span>
-              </div>
-            )}
-          </div>
-
-          {/* "Furos" decorativos do folder */}
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 pointer-events-none">
-            <div className="w-1 h-1 rounded-full bg-white/50" />
-            <div className="w-1 h-1 rounded-full bg-white/50" />
-            <div className="w-1 h-1 rounded-full bg-white/50" />
-          </div>
-        </div>
+          )}
+        </LiquidCard>
       </motion.div>
 
       {/* Botão de novo lançamento - visível em todas as abas exceto "resumo" */}
