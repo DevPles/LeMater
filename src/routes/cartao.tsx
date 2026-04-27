@@ -931,7 +931,7 @@ async function gerarPDFCartao(args: {
 
   const ensureSpace = (needed: number) => {
     if (y + needed > pageH - margin - 12) {
-      doc.addPage("a4", "portrait");
+      doc.addPage("a4", "landscape");
       pageW = doc.internal.pageSize.getWidth();
       pageH = doc.internal.pageSize.getHeight();
       y = margin + 4;
