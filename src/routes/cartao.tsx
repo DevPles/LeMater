@@ -1190,7 +1190,21 @@ async function gerarPDFCartao(args: {
         doc.line(sx(sorted[i].x), sy(sorted[i].y), sx(sorted[i + 1].x), sy(sorted[i + 1].y));
       }
       doc.setFillColor(s.color[0], s.color[1], s.color[2]);
-      sorted.forEach(p => doc.circle(sx(p.x), sy(p.y), 0.9, "F"));
+      sorted.forEach(p => doc.circle(sx(p.x), sy(p.y), 1.1, "F"));
+
+      // Rótulos numéricos sobre cada ponto
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6);
+      doc.setTextColor(s.color[0], s.color[1], s.color[2]);
+      sorted.forEach((p, i) => {
+        const px = sx(p.x);
+        const py = sy(p.y);
+        // Alterna posição vertical do rótulo para reduzir sobreposição em séries densas
+        const acima = i % 2 === 0;
+        const ty = acima ? py - 2 : py + 4;
+        const txt = Number.isInteger(p.y) ? String(p.y) : p.y.toFixed(1);
+        doc.text(txt, px, ty, { align: "center" });
+      });
     });
 
     // Legenda
