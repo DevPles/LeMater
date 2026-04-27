@@ -95,6 +95,8 @@ export function LancamentoModal({
 
   async function salvarVacina(form: FormData) {
     const vacina = String(form.get("vacina") || "").trim();
+    const lote = String(form.get("lote") || "").trim();
+    const fabricante = String(form.get("fabricante") || "").trim();
     const observacao = String(form.get("obs") || "").trim();
     if (!vacina) {
       flash("err", "Informe a vacina.");
@@ -104,8 +106,10 @@ export function LancamentoModal({
       gestante_id: gestanteId,
       registrado_por: gestanteId,
       vacina,
+      lote: lote || null,
+      fabricante: fabricante || null,
       observacao: observacao || null,
-    });
+    } as any);
     if (error) {
       console.error(error);
       flash("err", "Falha ao salvar vacina.");
@@ -306,6 +310,14 @@ function FormaVacina({ onSubmit }: { onSubmit: (f: FormData) => Promise<void> })
       <Campo label="Vacina">
         <input name="vacina" placeholder="Ex.: dTpa, Influenza, Hepatite B..." className={inputClass} required />
       </Campo>
+      <div className="grid grid-cols-2 gap-2">
+        <Campo label="Lote">
+          <input name="lote" className={inputClass} />
+        </Campo>
+        <Campo label="Fabricante">
+          <input name="fabricante" className={inputClass} />
+        </Campo>
+      </div>
       <Campo label="Observação (opcional)">
         <input name="obs" className={inputClass} />
       </Campo>
