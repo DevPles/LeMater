@@ -2003,7 +2003,7 @@ async function gerarPDFCartao(args: {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...muted);
-    doc.text("Linhas = data da consulta  |  Colunas = parametro clinico  |  Ordenacao mais recente primeiro", margin, 19);
+    doc.text("Linhas = data da consulta  |  Colunas = parametro clinico  |  Barras = intensidade relativa (min-max do parametro)", margin, 19);
 
     // Constroi matriz: datas x parametros
     const datasSet = new Set<string>();
@@ -2016,6 +2016,29 @@ async function gerarPDFCartao(args: {
     datas.forEach(d => matrix.set(d, new Map()));
     medicoes.forEach(m => matrix.get(m.data)!.set(normParam(m.parametro), m.valor));
 
+    // min/max numerico por parametro -> usado para desenhar barrinha proporcional (heatmap/sparkline)
+    const rangePorParam = new Map<string, { min: number; max: number }>();
+    parametros.forEach(p => {
+      const nums: number[] = [];
+      datas.forEach(d => {
+        const v = matrix.get(d)!.get(p);
+        if (v !== undefined && v !== null) {
+          const n = numFromValor(v as string | number);
+          if (n !== null && Number.isFinite(n)) nums.push(n);
+        }
+      });
+      if (nums.length >= 1) {
+        const mn = Math.min(...nums);
+        const mx = Math.max(...nums);
+        rangePorParam.set(p, { min: mn, max: mx });
+      }
+    });
+    // cor por parametro (mesmas cores do drawChartBox)
+    const corParam = (p: string): [number, number, number] => {
+      const cfg = paramConfig(p);
+      return cfg ? cfg.color : [pr, pg, pb];
+    };
+
     // Mapa data -> semana
     const semanaPorData = new Map<string, number>();
     medicoes.forEach(m => semanaPorData.set(m.data, m.semana));
@@ -2026,7 +2049,7 @@ async function gerarPDFCartao(args: {
     const matMaxY = pageH - 14;
     const fixedColW = 18;
     const semColW = 10;
-    const matRowH = 6;
+    const matRowH = 7;
     const matHeaderH = 14;
 
     const drawMatrixFace = (faceX: number, faceWidth: number, datasFace: string[], paramsFace: string[]) => {
@@ -2071,10 +2094,29 @@ async function gerarPDFCartao(args: {
           const cx = faceX + fixedColW + semColW + i * dataColW;
           const v = linhaMatrix.get(p);
           if (v !== undefined && v !== null) {
+            // barrinha proporcional (sparkline / heatmap horizontal)
+            const rng = rangePorParam.get(p);
+            const n = numFromValor(v as string | number);
+            const [cr2, cg2, cb2] = corParam(p);
+            const barPad = 1.2;
+            const barX = cx + barPad;
+            const barW = dataColW - barPad * 2;
+            const barY = ry4 + matRowH - 1.6;
+            const barH = 0.9;
+            // trilho
+            doc.setFillColor(235, 235, 240);
+            doc.rect(barX, barY, barW, barH, "F");
+            if (n !== null && rng) {
+              const span = rng.max - rng.min;
+              const pct = span > 0 ? (n - rng.min) / span : 1;
+              const fillW = Math.max(0.6, barW * pct);
+              doc.setFillColor(cr2, cg2, cb2);
+              doc.rect(barX, barY, fillW, barH, "F");
+            }
             doc.setFont("helvetica", "bold");
             doc.setFontSize(6.5);
             doc.setTextColor(...dark);
-            doc.text(String(v), cx + dataColW / 2, ry4 + 4, { align: "center" });
+            doc.text(String(v), cx + dataColW / 2, ry4 + 3.2, { align: "center" });
           } else {
             doc.setFont("helvetica", "normal");
             doc.setFontSize(5.5);
