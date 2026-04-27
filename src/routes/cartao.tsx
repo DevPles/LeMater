@@ -607,6 +607,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
   const pressaoF = filtrar(series.pressao);
   const auF = filtrar(series.au);
   const bcfF = filtrar(series.bcf);
+  const glicemiaF = filtrar(series.glicemia);
 
   // Combinado: peso + PAM (pressão arterial média)
   const combinado = pressaoF.map(p => {
@@ -614,6 +615,22 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
     const peso = pesoF.find(x => x.semana === p.semana)?.peso ?? null;
     return { semana: p.semana, pam, peso };
   });
+
+  // Cruzamento: Glicemia x Peso (alerta para resistência insulínica/DMG)
+  const semanasGP = Array.from(new Set([...glicemiaF, ...pesoF].map(d => d.semana))).sort((a, b) => a - b);
+  const glicemiaPeso = semanasGP.map(s => ({
+    semana: s,
+    glicemia: glicemiaF.find(g => g.semana === s)?.glicemia ?? null,
+    peso: pesoF.find(p => p.semana === s)?.peso ?? null,
+  })).filter(d => d.glicemia !== null || d.peso !== null);
+
+  // Cruzamento: Altura uterina x Peso (proporcionalidade do crescimento)
+  const semanasAP = Array.from(new Set([...auF, ...pesoF].map(d => d.semana))).sort((a, b) => a - b);
+  const auPeso = semanasAP.map(s => ({
+    semana: s,
+    altura: auF.find(a => a.semana === s)?.altura ?? null,
+    peso: pesoF.find(p => p.semana === s)?.peso ?? null,
+  })).filter(d => d.altura !== null || d.peso !== null);
 
   const filtros: { key: Exclude<Periodo, "custom">; label: string }[] = [
     { key: "todos", label: "Evolução Total" },
