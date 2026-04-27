@@ -929,12 +929,26 @@ async function gerarPDFCartao(args: {
     doc.text(`Pag. ${pageNum} de ${totalPages}`, pageW - margin, pageH - 3.5, { align: "right" });
   };
 
+  const drawFoldLine = () => {
+    const w = doc.internal.pageSize.getWidth();
+    const h = doc.internal.pageSize.getHeight();
+    doc.setDrawColor(180, 180, 190);
+    doc.setLineDashPattern([2, 2], 0);
+    doc.setLineWidth(0.2);
+    doc.line(w / 2, 6, w / 2, h - 12);
+    doc.setLineDashPattern([], 0);
+    doc.setFontSize(6);
+    doc.setTextColor(160, 160, 170);
+    doc.text("DOBRE AQUI", w / 2, 4, { align: "center" });
+  };
+
   const ensureSpace = (needed: number) => {
     if (y + needed > pageH - margin - 12) {
       doc.addPage("a4", "landscape");
       pageW = doc.internal.pageSize.getWidth();
       pageH = doc.internal.pageSize.getHeight();
       y = margin + 4;
+      drawFoldLine();
     }
   };
 
