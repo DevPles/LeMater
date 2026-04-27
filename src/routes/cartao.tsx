@@ -271,13 +271,34 @@ function CartaoPage() {
   };
 
   const exportarPDF = () => {
+    // Mescla dados reais do perfil logado com defaults de tela
+    const realInfo = {
+      name: profile?.nome || patientInfo.name,
+      age: patientInfo.age,
+      bloodType: patientInfo.bloodType,
+      dum: profile?.dum
+        ? formatBR(new Date(profile.dum + "T00:00:00"))
+        : patientInfo.dum,
+      dpp: patientInfo.dpp,
+      weeks: profile?.dum
+        ? String(semanaGestacional(hojeBR, formatBR(new Date(profile.dum + "T00:00:00"))))
+        : patientInfo.weeks,
+      email: profile?.email ?? null,
+      telefone: profile?.telefone ?? null,
+    };
     gerarPDFCartao({
-      patientInfo,
+      patientInfo: realInfo,
       vitals,
       lancamentos,
       vacinasExames,
       timelineEntries,
       palette,
+      charts: {
+        peso: pesoData,
+        pressao: pressaoData,
+        altura: alturaUterinaData,
+        bcf: bcfData,
+      },
     });
   };
 
@@ -1049,14 +1070,24 @@ function hexToRgb(hex: string): [number, number, number] {
 }
 
 function gerarPDFCartao(args: {
-  patientInfo: { name: string; age: string | number; bloodType: string; dum: string; dpp: string; weeks: string | number };
+  patientInfo: {
+    name: string; age: string | number; bloodType: string;
+    dum: string; dpp: string; weeks: string | number;
+    email?: string | null; telefone?: string | null;
+  };
   vitals: { label: string; value: string; change: string }[];
   lancamentos: Lancamento[];
   vacinasExames: VacinaExame[];
   timelineEntries: TimelineEntry[];
   palette: Palette;
+  charts: {
+    peso: { semana: number; peso: number }[];
+    pressao: { semana: number; sistolica: number; diastolica: number }[];
+    altura: { semana: number; altura: number }[];
+    bcf: { semana: number; bcf: number }[];
+  };
 }) {
-  const { patientInfo, vitals, lancamentos, vacinasExames, timelineEntries, palette } = args;
+  const { patientInfo, vitals, lancamentos, vacinasExames, timelineEntries, palette, charts } = args;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -1065,161 +1096,422 @@ function gerarPDFCartao(args: {
 
   const [pr, pg, pb] = hexToRgb(palette.primary);
   const [lr, lg, lb] = hexToRgb(palette.primaryLight);
+  const [ar, ag, ab] = hexToRgb(palette.accent);
+  const muted: [number, number, number] = [110, 110, 120];
+  const dark: [number, number, number] = [32, 32, 40];
+
+  const drawFooter = (pageNum: number, totalPages: number) => {
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(0, pageH - 9, pageW, 9, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text("MãeDigital — Cartão Digital da Gestante", margin, pageH - 3.5);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Pág. ${pageNum} de ${totalPages}`, pageW - margin, pageH - 3.5, { align: "right" });
+  };
 
   const ensureSpace = (needed: number) => {
-    if (y + needed > pageH - margin) {
+    if (y + needed > pageH - margin - 10) {
       doc.addPage();
-      y = margin;
+      y = margin + 4;
     }
   };
 
   const sectionHeader = (title: string) => {
-    ensureSpace(12);
+    ensureSpace(14);
+    // Barra colorida + ponto de destaque
     doc.setFillColor(pr, pg, pb);
-    doc.rect(margin, y, pageW - margin * 2, 7, "F");
+    doc.roundedRect(margin, y, pageW - margin * 2, 8, 1.5, 1.5, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    doc.text(title, margin + 3, y + 5);
-    y += 10;
-    doc.setTextColor(30, 30, 30);
+    doc.text(title.toUpperCase(), margin + 4, y + 5.6);
+    y += 12;
+    doc.setTextColor(...dark);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
   };
 
-  const linhaTexto = (texto: string, opts: { bold?: boolean; size?: number } = {}) => {
+  const linhaTexto = (texto: string, opts: { bold?: boolean; size?: number; color?: [number, number, number] } = {}) => {
     doc.setFont("helvetica", opts.bold ? "bold" : "normal");
-    doc.setFontSize(opts.size ?? 10);
-    const lines = doc.splitTextToSize(texto, pageW - margin * 2);
-    ensureSpace(lines.length * 5 + 1);
-    doc.text(lines, margin, y);
-    y += lines.length * 5;
+    doc.setFontSize(opts.size ?? 9.5);
+    doc.setTextColor(...(opts.color ?? dark));
+    const lines = doc.splitTextToSize(texto, pageW - margin * 2 - 4);
+    ensureSpace(lines.length * 4.6 + 1);
+    doc.text(lines, margin + 2, y + 3.2);
+    y += lines.length * 4.6 + 0.5;
   };
 
-  // ===== CAPA / Cabeçalho colorido =====
+  // ==================== CAPA ====================
+  // Banner colorido com curva
   doc.setFillColor(pr, pg, pb);
-  doc.rect(0, 0, pageW, 38, "F");
+  doc.rect(0, 0, pageW, 55, "F");
+  // Onda decorativa
+  doc.setFillColor(lr, lg, lb);
+  doc.ellipse(pageW + 10, 55, 80, 18, "F");
+
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.text("Cartão Digital da Gestante", pageW / 2, 16, { align: "center" });
-  doc.setFont("helvetica", "normal");
   doc.setFontSize(11);
-  doc.text(`Sexo do bebê: ${palette.label}`, pageW / 2, 24, { align: "center" });
-  doc.setFontSize(9);
-  doc.text(`Emitido em ${formatBR(new Date())}`, pageW / 2, 31, { align: "center" });
-  y = 46;
-
-  // ===== Dados da gestante =====
-  doc.setFillColor(lr, lg, lb);
-  doc.rect(margin, y, pageW - margin * 2, 28, "F");
-  doc.setTextColor(30, 30, 30);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text(patientInfo.name, margin + 4, y + 7);
+  doc.text("MÃEDIGITAL", margin, 14);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.text(`${patientInfo.age} anos  •  Tipo sanguíneo: ${patientInfo.bloodType}`, margin + 4, y + 13);
-  doc.text(`DUM: ${patientInfo.dum}`, margin + 4, y + 19);
-  doc.text(`DPP: ${patientInfo.dpp}`, margin + 4, y + 25);
+  doc.text("Cartão Digital da Gestante", margin, 19);
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.setTextColor(pr, pg, pb);
-  doc.text(`${patientInfo.weeks}ª`, pageW - margin - 18, y + 17, { align: "center" });
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.text("semana", pageW - margin - 18, y + 23, { align: "center" });
-  y += 34;
+  doc.text(patientInfo.name, margin, 35);
 
-  // ===== Sinais vitais =====
-  if (vitals.length) {
-    sectionHeader("Sinais vitais");
-    vitals.forEach(v => {
-      linhaTexto(`• ${v.label}: ${v.value}  (${v.change})`);
-    });
-    y += 2;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(`${patientInfo.age} anos  •  Sangue ${patientInfo.bloodType}  •  Bebê: ${palette.label}`, margin, 42);
+  doc.setFontSize(9);
+  doc.text(`Emitido em ${formatBR(new Date())}`, margin, 48);
+
+  y = 64;
+
+  // ==================== KPIs principais ====================
+  const kpiW = (pageW - margin * 2 - 6) / 3;
+  const kpis = [
+    { label: "SEMANA GESTACIONAL", value: `${patientInfo.weeks}ª`, sub: "atual" },
+    { label: "DUM", value: patientInfo.dum, sub: "última menstruação" },
+    { label: "DPP", value: patientInfo.dpp, sub: "data provável do parto" },
+  ];
+  kpis.forEach((k, i) => {
+    const x = margin + i * (kpiW + 3);
+    doc.setFillColor(lr, lg, lb);
+    doc.roundedRect(x, y, kpiW, 22, 2.5, 2.5, "F");
+    doc.setTextColor(...muted);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.text(k.label, x + 3, y + 5);
+    doc.setTextColor(pr, pg, pb);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.text(k.value, x + 3, y + 13);
+    doc.setTextColor(...muted);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.text(k.sub, x + 3, y + 18);
+  });
+  y += 28;
+
+  // ==================== Contato ====================
+  if (patientInfo.email || patientInfo.telefone) {
+    doc.setDrawColor(220, 220, 225);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(margin, y, pageW - margin * 2, 12, 2, 2);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(...muted);
+    doc.text("CONTATO", margin + 3, y + 4.5);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(...dark);
+    const contato = [
+      patientInfo.telefone ? `Tel: ${patientInfo.telefone}` : null,
+      patientInfo.email ? `E-mail: ${patientInfo.email}` : null,
+    ].filter(Boolean).join("    •    ");
+    doc.text(contato, margin + 3, y + 9.5);
+    y += 16;
   }
 
-  // ===== Dados clínicos =====
+  // ==================== Sinais vitais ====================
+  if (vitals.length) {
+    sectionHeader("Sinais vitais");
+    const cellW = (pageW - margin * 2 - (vitals.length - 1) * 3) / vitals.length;
+    vitals.forEach((v, i) => {
+      const x = margin + i * (cellW + 3);
+      doc.setFillColor(248, 248, 252);
+      doc.roundedRect(x, y, cellW, 22, 2, 2, "F");
+      // barrinha colorida no topo
+      doc.setFillColor(ar, ag, ab);
+      doc.roundedRect(x, y, cellW, 2.5, 1, 1, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(...muted);
+      doc.text(v.label.toUpperCase(), x + 2.5, y + 7);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(...dark);
+      doc.text(v.value, x + 2.5, y + 14);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(pr, pg, pb);
+      doc.text(v.change, x + 2.5, y + 19);
+    });
+    y += 27;
+  }
+
+  // ==================== GRÁFICOS NATIVOS ====================
+  sectionHeader("Evolução clínica — gráficos");
+
+  /** Desenha um line/area chart simples no PDF. */
+  const drawChart = (
+    title: string,
+    series: { color: [number, number, number]; values: { x: number; y: number }[]; fill?: boolean; name?: string }[],
+    yLabel: string,
+  ) => {
+    const chartH = 50;
+    const chartW = pageW - margin * 2;
+    ensureSpace(chartH + 14);
+
+    // Card
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(225, 225, 230);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(margin, y, chartW, chartH + 12, 2, 2, "FD");
+
+    // Título
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.setTextColor(...dark);
+    doc.text(title, margin + 4, y + 6);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(...muted);
+    doc.text(yLabel, pageW - margin - 4, y + 6, { align: "right" });
+
+    // Área de plotagem
+    const plotX = margin + 12;
+    const plotY = y + 10;
+    const plotW = chartW - 16;
+    const plotH = chartH - 4;
+
+    // Coleta limites
+    const allX = series.flatMap(s => s.values.map(v => v.x));
+    const allY = series.flatMap(s => s.values.map(v => v.y));
+    if (allX.length === 0) { y += chartH + 14; return; }
+    const minX = Math.min(...allX);
+    const maxX = Math.max(...allX);
+    const minY = Math.min(...allY);
+    const maxY = Math.max(...allY);
+    const padY = (maxY - minY) * 0.15 || 1;
+    const yLo = minY - padY;
+    const yHi = maxY + padY;
+
+    const sx = (v: number) => plotX + ((v - minX) / Math.max(1, maxX - minX)) * plotW;
+    const sy = (v: number) => plotY + plotH - ((v - yLo) / Math.max(0.0001, yHi - yLo)) * plotH;
+
+    // Grid horizontal (4 linhas) + labels Y
+    doc.setDrawColor(235, 235, 240);
+    doc.setLineWidth(0.15);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.setTextColor(...muted);
+    for (let i = 0; i <= 4; i++) {
+      const yy = plotY + (plotH / 4) * i;
+      doc.line(plotX, yy, plotX + plotW, yy);
+      const val = yHi - ((yHi - yLo) / 4) * i;
+      doc.text(val.toFixed(0), plotX - 1.5, yy + 1, { align: "right" });
+    }
+    // Eixo X labels (semanas)
+    series[0].values.forEach(p => {
+      doc.text(`${p.x}`, sx(p.x), plotY + plotH + 4, { align: "center" });
+    });
+    doc.setFontSize(6.5);
+    doc.text("Semana", plotX + plotW / 2, plotY + plotH + 7.5, { align: "center" });
+
+    // Desenhar séries
+    series.forEach(s => {
+      if (s.values.length === 0) return;
+      // Área (preenchimento sob a linha)
+      if (s.fill) {
+        doc.setFillColor(s.color[0], s.color[1], s.color[2]);
+        // simulando opacidade baixa via cor mais clara
+        const lightR = Math.min(255, s.color[0] + (255 - s.color[0]) * 0.75);
+        const lightG = Math.min(255, s.color[1] + (255 - s.color[1]) * 0.75);
+        const lightB = Math.min(255, s.color[2] + (255 - s.color[2]) * 0.75);
+        doc.setFillColor(lightR, lightG, lightB);
+        // Polígono manual: pontos + base
+        for (let i = 0; i < s.values.length - 1; i++) {
+          const p1 = s.values[i];
+          const p2 = s.values[i + 1];
+          const x1 = sx(p1.x), y1 = sy(p1.y);
+          const x2 = sx(p2.x), y2 = sy(p2.y);
+          const baseY = plotY + plotH;
+          doc.triangle(x1, y1, x2, y2, x1, baseY, "F");
+          doc.triangle(x2, y2, x2, baseY, x1, baseY, "F");
+        }
+      }
+      // Linha
+      doc.setDrawColor(s.color[0], s.color[1], s.color[2]);
+      doc.setLineWidth(0.6);
+      for (let i = 0; i < s.values.length - 1; i++) {
+        doc.line(sx(s.values[i].x), sy(s.values[i].y), sx(s.values[i + 1].x), sy(s.values[i + 1].y));
+      }
+      // Pontos
+      doc.setFillColor(s.color[0], s.color[1], s.color[2]);
+      s.values.forEach(p => doc.circle(sx(p.x), sy(p.y), 0.9, "F"));
+    });
+
+    // Legenda
+    if (series.some(s => s.name)) {
+      let lx = plotX;
+      const ly = y + chartH + 9;
+      series.forEach(s => {
+        if (!s.name) return;
+        doc.setFillColor(s.color[0], s.color[1], s.color[2]);
+        doc.circle(lx + 1, ly - 1, 1, "F");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(...dark);
+        doc.text(s.name, lx + 3.5, ly);
+        lx += doc.getTextWidth(s.name) + 10;
+      });
+    }
+
+    y += chartH + 14;
+  };
+
+  drawChart("Curva de Peso",
+    [{ color: [pr, pg, pb], values: charts.peso.map(d => ({ x: d.semana, y: d.peso })), fill: true, name: "Peso (kg)" }],
+    "kg");
+
+  drawChart("Pressão Arterial",
+    [
+      { color: [239, 68, 68], values: charts.pressao.map(d => ({ x: d.semana, y: d.sistolica })), name: "Sistólica" },
+      { color: [59, 130, 246], values: charts.pressao.map(d => ({ x: d.semana, y: d.diastolica })), name: "Diastólica" },
+    ],
+    "mmHg");
+
+  drawChart("Altura Uterina",
+    [{ color: [ar, ag, ab], values: charts.altura.map(d => ({ x: d.semana, y: d.altura })), fill: true, name: "Altura (cm)" }],
+    "cm");
+
+  drawChart("Batimentos Cardíacos Fetais",
+    [{ color: [16, 185, 129], values: charts.bcf.map(d => ({ x: d.semana, y: d.bcf })), name: "BCF" }],
+    "bpm");
+
+  // ==================== Lançamentos clínicos ====================
   if (lancamentos.length) {
     sectionHeader("Dados clínicos / Lançamentos");
     lancamentos.forEach(l => {
-      ensureSpace(20);
-      doc.setDrawColor(pr, pg, pb);
-      doc.setLineWidth(0.3);
-      doc.line(margin, y, pageW - margin, y);
-      y += 3;
-      linhaTexto(`Semana ${l.semana}  —  ${l.data}`, { bold: true });
-      linhaTexto(`Peso: ${l.peso} kg  |  PA: ${l.pressaoSis}/${l.pressaoDia} mmHg  |  BCF: ${l.bcf} bpm`);
-      linhaTexto(`Alt. Uterina: ${l.alturaUterina} cm  |  Edema: ${l.edema}`);
-      if (l.observacoes) linhaTexto(`Obs: ${l.observacoes}`);
-      y += 2;
+      ensureSpace(22);
+      // Card
+      doc.setFillColor(250, 250, 253);
+      doc.setDrawColor(230, 230, 235);
+      doc.roundedRect(margin, y, pageW - margin * 2, 20, 2, 2, "FD");
+      // Etiqueta semana
+      doc.setFillColor(pr, pg, pb);
+      doc.roundedRect(margin + 3, y + 3, 22, 6, 1, 1, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.text(`SEM ${l.semana}`, margin + 14, y + 7, { align: "center" });
+      // Data
+      doc.setTextColor(...muted);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.text(l.data, pageW - margin - 4, y + 7, { align: "right" });
+      // Métricas em linha
+      doc.setTextColor(...dark);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      const cols = [
+        `Peso: ${l.peso} kg`,
+        `PA: ${l.pressaoSis}/${l.pressaoDia}`,
+        `BCF: ${l.bcf} bpm`,
+        `AU: ${l.alturaUterina} cm`,
+        `Edema: ${l.edema}`,
+      ];
+      const colW = (pageW - margin * 2 - 6) / cols.length;
+      cols.forEach((c, i) => {
+        doc.text(c, margin + 3 + i * colW, y + 14);
+      });
+      if (l.observacoes) {
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(7.5);
+        doc.setTextColor(...muted);
+        const obs = doc.splitTextToSize(`Obs: ${l.observacoes}`, pageW - margin * 2 - 6);
+        doc.text(obs[0] ?? "", margin + 3, y + 18);
+      }
+      y += 23;
     });
   }
 
-  // ===== Vacinas =====
+  // ==================== Vacinas ====================
   const vacinas = vacinasExames.filter(v => v.tipo === "vacina");
   if (vacinas.length) {
     sectionHeader("Vacinas");
     vacinas.forEach(v => {
-      ensureSpace(10);
-      linhaTexto(`• ${v.nome}  —  Sem. ${v.semana}  —  ${v.data}  [${v.status}]`, { bold: true });
-      if (v.observacoes) linhaTexto(`  ${v.observacoes}`);
+      ensureSpace(11);
+      doc.setFillColor(240, 253, 244);
+      doc.setDrawColor(187, 247, 208);
+      doc.roundedRect(margin, y, pageW - margin * 2, 9, 1.5, 1.5, "FD");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(22, 101, 52);
+      doc.text(v.nome, margin + 3, y + 5.5);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...muted);
+      doc.text(`Sem ${v.semana}  •  ${v.data}  •  ${v.status.toUpperCase()}`, pageW - margin - 3, y + 5.5, { align: "right" });
+      y += 11;
+      if (v.observacoes) linhaTexto(`  ${v.observacoes}`, { color: muted, size: 8 });
     });
-    y += 2;
   }
 
-  // ===== Exames =====
+  // ==================== Exames ====================
   const exames = vacinasExames.filter(v => v.tipo === "exame");
   if (exames.length) {
     sectionHeader("Exames");
     exames.forEach(ex => {
-      ensureSpace(12);
-      linhaTexto(`• ${ex.nome}  —  Sem. ${ex.semana}  —  ${ex.data}  [${ex.status}]`, { bold: true });
-      if (ex.resultado) linhaTexto(`  Resultado: ${ex.resultado}`);
-      if (ex.observacoes) linhaTexto(`  Obs: ${ex.observacoes}`);
-      if (ex.anexoNome) linhaTexto(`  Anexo: ${ex.anexoNome}`);
+      ensureSpace(13);
+      doc.setFillColor(239, 246, 255);
+      doc.setDrawColor(191, 219, 254);
+      doc.roundedRect(margin, y, pageW - margin * 2, 9, 1.5, 1.5, "FD");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(30, 64, 175);
+      doc.text(ex.nome, margin + 3, y + 5.5);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...muted);
+      doc.text(`Sem ${ex.semana}  •  ${ex.data}  •  ${ex.status.toUpperCase()}`, pageW - margin - 3, y + 5.5, { align: "right" });
+      y += 11;
+      if (ex.resultado) linhaTexto(`  Resultado: ${ex.resultado}`, { size: 8 });
+      if (ex.observacoes) linhaTexto(`  Obs: ${ex.observacoes}`, { color: muted, size: 8 });
     });
-    y += 2;
   }
 
-  // ===== Consultas / Linha do tempo =====
+  // ==================== Linha do tempo ====================
   if (timelineEntries.length) {
     sectionHeader("Linha do tempo / Consultas");
     [...timelineEntries].sort((a, b) => b.week - a.week).forEach(t => {
-      ensureSpace(10);
-      linhaTexto(`• Semana ${t.week} (${t.date}) — ${t.event}  [${t.type}]`, { bold: true });
-      if (t.notes) linhaTexto(`  ${t.notes}`);
+      ensureSpace(11);
+      // Bullet colorido
+      const cor: [number, number, number] = t.type === "vacina" ? [34, 197, 94]
+        : t.type === "exame" ? [59, 130, 246]
+        : [pr, pg, pb];
+      doc.setFillColor(...cor);
+      doc.circle(margin + 2.5, y + 3, 1.6, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(...dark);
+      doc.text(`Semana ${t.week} — ${t.event}`, margin + 7, y + 4);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...muted);
+      doc.text(`${t.date} • ${t.type}`, pageW - margin - 3, y + 4, { align: "right" });
+      y += 5;
+      if (t.notes) {
+        const lines = doc.splitTextToSize(t.notes, pageW - margin * 2 - 10);
+        doc.setFontSize(8);
+        doc.setTextColor(...muted);
+        doc.text(lines, margin + 7, y + 3);
+        y += lines.length * 4 + 1;
+      }
+      y += 2;
     });
-    y += 2;
   }
-
-  // ===== Gráficos (resumo de dados) =====
-  sectionHeader("Evolução — dados dos gráficos");
-  const drawDataset = (titulo: string, dados: { semana: number; valor: string }[]) => {
-    if (!dados.length) return;
-    ensureSpace(10);
-    linhaTexto(titulo, { bold: true });
-    const txt = dados.map(d => `Sem ${d.semana}: ${d.valor}`).join("  •  ");
-    linhaTexto(txt);
-    y += 1;
-  };
-  drawDataset("Peso (kg)", pesoData.map(d => ({ semana: d.semana, valor: String(d.peso) })));
-  drawDataset("Pressão Arterial (mmHg)", pressaoData.map(d => ({ semana: d.semana, valor: `${d.sistolica}/${d.diastolica}` })));
-  drawDataset("Altura Uterina (cm)", alturaUterinaData.map(d => ({ semana: d.semana, valor: String(d.altura) })));
-  drawDataset("BCF (bpm)", bcfData.map(d => ({ semana: d.semana, valor: String(d.bcf) })));
 
   // Rodapé em todas as páginas
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
-    doc.setFillColor(pr, pg, pb);
-    doc.rect(0, pageH - 8, pageW, 8, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text(`Cartão da Gestante — ${patientInfo.name}`, margin, pageH - 3);
-    doc.text(`${i} / ${totalPages}`, pageW - margin, pageH - 3, { align: "right" });
+    drawFooter(i, totalPages);
   }
 
   const safeName = patientInfo.name.replace(/\s+/g, "_");
