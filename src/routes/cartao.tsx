@@ -1338,9 +1338,11 @@ async function gerarPDFCartao(args: {
 
   // (bloco "PROXIMOS PASSOS E ORIENTACOES" removido a pedido do usuario)
 
-  const rX = halfW + 14;
-  const rW = halfW - 28;
-  let ry = 18;
+  // VACINAS e EXAMES agora ficam na MESMA face (metade esquerda),
+  // logo abaixo de SINAIS VITAIS, aproveitando o espaco livre.
+  const rX = lX;
+  const rW = lW;
+  let ry = iy + 2;
 
   doc.setTextColor(pr, pg, pb);
   doc.setFont("helvetica", "bold");
@@ -1441,7 +1443,7 @@ async function gerarPDFCartao(args: {
 
   if (vacinas.length) {
     const vacRows = agruparPorData(vacinas, (v) => v.data, (v) => v.vacina);
-    const halfMaxY = Math.min(ry + 70, pageH / 2);
+    const halfMaxY = ry + Math.max(40, (pageH - 14 - ry) * 0.45);
     ry = drawSimpleTable(rX, ry, rW,
       [
         { label: "DATA", widthPct: 24 },
