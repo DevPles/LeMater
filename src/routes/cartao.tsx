@@ -984,6 +984,7 @@ async function gerarPDFCartao(args: {
   medicoes: MedicaoReal[];
   vacinas: VacinaReal[];
   exames: ExameReal[];
+  consultas: ConsultaReal[];
   series: Series;
   ganhoPeso: number | null;
   imc: number | null;
@@ -992,7 +993,7 @@ async function gerarPDFCartao(args: {
   palette: Palette;
   cartaoUrl: string;
 }) {
-  const { patientInfo, vitals, medicoes, vacinas, exames, series, ganhoPeso, imc, imcInfo, altura, palette, cartaoUrl } = args;
+  const { patientInfo, vitals, medicoes, vacinas, exames, consultas, series, ganhoPeso, imc, imcInfo, altura, palette, cartaoUrl } = args;
   const doc = new jsPDF({ unit: "mm", format: "a4", compress: true, orientation: "landscape" });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
