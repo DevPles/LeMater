@@ -654,18 +654,23 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
             <PopoverTrigger asChild>
               <button
                 onClick={() => setPeriodo("custom")}
-                className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border inline-flex items-center gap-1.5"
+                aria-label="Selecionar período no calendário"
+                title="Calendário"
+                className="rounded-full text-[11px] font-semibold transition-all border inline-flex items-center justify-center gap-1.5"
                 style={{
                   backgroundColor: calendarioAtivo ? palette.primary : "transparent",
                   color: calendarioAtivo ? "#fff" : palette.primary,
                   borderColor: palette.primary,
+                  width: labelCalendario ? "auto" : "30px",
+                  height: "30px",
+                  padding: labelCalendario ? "0 10px" : "0",
                 }}
               >
                 <CalendarIcon className="w-3.5 h-3.5" />
-                {labelCalendario ?? "Calendário"}
+                {labelCalendario}
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start" sideOffset={6}>
+            <PopoverContent className="w-auto p-0 pointer-events-auto" align="end" sideOffset={6}>
               <Calendar
                 mode="range"
                 selected={range}
