@@ -138,6 +138,16 @@ interface ExameReal {
   resultado?: string;
 }
 
+interface ConsultaReal {
+  id: string;
+  data: string; // BR
+  hora: string; // HH:MM
+  titulo?: string;
+  tipo?: string;
+  status: string;
+  observacao?: string;
+}
+
 type Tab = "resumo" | "lancamentos" | "vacinas" | "graficos";
 type Palette = ReturnType<typeof paletaPorSexo>;
 type Periodo = "todos" | "1tri" | "2tri" | "3tri" | "custom";
