@@ -1606,10 +1606,26 @@ async function gerarPDFCartao(args: {
   // ================================================================
 
   // Agrupa por parametro
+  // Normaliza nome do parametro (case-insensitive, remove acento, espacos extras e unidades entre parenteses)
+  const normParam = (p: string): string => {
+    return p
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/\([^)]*\)/g, "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  };
   const porParametro = new Map<string, MedicaoReal[]>();
+  const labelByKey = new Map<string, string>();
   medicoes.forEach(m => {
-    if (!porParametro.has(m.parametro)) porParametro.set(m.parametro, []);
-    porParametro.get(m.parametro)!.push(m);
+    const key = normParam(m.parametro);
+    if (!porParametro.has(key)) {
+      porParametro.set(key, []);
+      // Mantem o label "mais bonito" (capitalizado)
+      const pretty = m.parametro.trim();
+      labelByKey.set(key, pretty.charAt(0).toUpperCase() + pretty.slice(1));
+    }
+    porParametro.get(key)!.push(m);
   });
   porParametro.forEach((arr) => {
     arr.sort((a, b) => {
@@ -1617,7 +1633,9 @@ async function gerarPDFCartao(args: {
       return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
     });
   });
-  const parametros = Array.from(porParametro.keys()).sort();
+  const parametros = Array.from(porParametro.keys()).sort((a, b) =>
+    (labelByKey.get(a) ?? a).localeCompare(labelByKey.get(b) ?? b)
+  );
 
   // Helper: detecta valor numerico (lida com "120/80")
   const numFromValor = (v: string | number): number | null => {
@@ -1782,6 +1800,7 @@ async function gerarPDFCartao(args: {
         pageIndex += 1;
         startNewPage(`EVOLUCAO CLINICA POR PARAMETRO  -  PAGINA ${pageIndex}`);
       }
+      const paramLabel = labelByKey.get(param) ?? param;
       const cfg = paramConfig(param);
       const items = porParametro.get(param)!;
       const accent: [number, number, number] = cfg?.color ?? [pr, pg, pb];
@@ -1792,7 +1811,7 @@ async function gerarPDFCartao(args: {
 
       if (cfg && cfg.series[0].values.length >= 2) {
         drawChartBox(xFace, yChart, faceW, chartH,
-          `Curva: ${param}`,
+          `Curva: ${paramLabel}`,
           cfg.series,
           cfg.refRange);
       } else {
@@ -1803,7 +1822,7 @@ async function gerarPDFCartao(args: {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(9);
         doc.setTextColor(...dark);
-        doc.text(param.toUpperCase(), xFace + 4, yChart + 8);
+        doc.text(paramLabel.toUpperCase(), xFace + 4, yChart + 8);
         doc.setFont("helvetica", "italic");
         doc.setFontSize(8);
         doc.setTextColor(...muted);
@@ -1826,7 +1845,7 @@ async function gerarPDFCartao(args: {
       }
 
       // TABELA logo abaixo do grafico, dentro da mesma face
-      drawTableBox(xFace, yTable, faceW, tableH, param, items, accent);
+      drawTableBox(xFace, yTable, faceW, tableH, paramLabel, items, accent);
 
       posInPage = (posInPage + 1) % blocksPerPage;
     });
@@ -1877,7 +1896,7 @@ async function gerarPDFCartao(args: {
     });
     const matrix = new Map<string, Map<string, string | number>>();
     datas.forEach(d => matrix.set(d, new Map()));
-    medicoes.forEach(m => matrix.get(m.data)!.set(m.parametro, m.valor));
+    medicoes.forEach(m => matrix.get(m.data)!.set(normParam(m.parametro), m.valor));
 
     // Mapa data -> semana
     const semanaPorData = new Map<string, number>();
@@ -1907,7 +1926,7 @@ async function gerarPDFCartao(args: {
       doc.setFontSize(5.8);
       parametros.forEach((p, i) => {
         const cx = faceX + fixedColW + semColW + i * dataColW;
-        const lines = doc.splitTextToSize(p, dataColW - 1);
+        const lines = doc.splitTextToSize(labelByKey.get(p) ?? p, dataColW - 1);
         const lineH = 2.6;
         const startY = matY + 7 - ((Math.min(lines.length, 2) - 1) * lineH) / 2;
         lines.slice(0, 2).forEach((ln: string, li: number) => {
