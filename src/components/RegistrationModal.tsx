@@ -402,10 +402,81 @@ export default function RegistrationModal({
 
               <button
                 type="button"
+                onClick={() => {
+                  setForgotOpen((v) => !v);
+                  setForgotMsg(null);
+                  if (!forgotEmail && loginEmail.includes("@")) setForgotEmail(loginEmail);
+                }}
                 className="text-white/60 hover:text-[#f0c040] text-xs text-right transition-colors self-end"
               >
                 Esqueci minha senha
               </button>
+
+              {forgotOpen && (
+                <div className="bg-white/5 border border-white/15 rounded-lg p-3 flex flex-col gap-2">
+                  <Label className={labelClass}>E-mail para receber o link de redefinição</Label>
+                  <Input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="email@exemplo.com"
+                    className={inputClass}
+                  />
+                  {forgotMsg && (
+                    <p
+                      className={`text-xs px-2 py-1.5 rounded ${
+                        forgotMsg.type === "ok"
+                          ? "text-emerald-200 bg-emerald-500/10 border border-emerald-500/30"
+                          : "text-red-200 bg-red-500/10 border border-red-500/30"
+                      }`}
+                    >
+                      {forgotMsg.text}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setForgotMsg(null);
+                        const em = forgotEmail.trim();
+                        if (!em || !em.includes("@")) {
+                          setForgotMsg({ type: "err", text: "Informe um e-mail válido." });
+                          return;
+                        }
+                        setForgotLoading(true);
+                        try {
+                          const { error } = await supabase.auth.resetPasswordForEmail(em, {
+                            redirectTo: window.location.origin + "/reset-password",
+                          });
+                          if (error) throw error;
+                          setForgotMsg({
+                            type: "ok",
+                            text: "Enviamos um link de redefinição para o seu e-mail.",
+                          });
+                        } catch (e) {
+                          setForgotMsg({
+                            type: "err",
+                            text: (e as Error).message || "Falha ao enviar e-mail.",
+                          });
+                        } finally {
+                          setForgotLoading(false);
+                        }
+                      }}
+                      disabled={forgotLoading}
+                      className="flex-1 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-xs py-2 rounded-full transition-colors disabled:opacity-40"
+                    >
+                      {forgotLoading ? "Enviando..." : "Enviar link"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForgotOpen(false)}
+                      className="px-3 text-white/70 hover:text-white text-xs"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {loginErro && (
                 <p className="text-red-300 text-xs bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">
