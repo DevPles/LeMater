@@ -1875,7 +1875,7 @@ async function gerarPDFCartao(args: {
             data: g.data,
             semana: g.semana,
             valor: `${g.sis ?? "-"}/${g.dia ?? "-"}`,
-          })) as MedicaoReal[];
+          })) as unknown as MedicaoReal[];
       }
       const accent: [number, number, number] = cfg?.color ?? [pr, pg, pb];
       // Cada face: esquerda (posInPage=0) inicia em x=margin, direita em x=halfW+5
