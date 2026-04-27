@@ -1644,12 +1644,14 @@ async function gerarPDFCartao(args: {
     };
   };
 
-  // Layout: 2 blocos por pagina (cada bloco = grafico esquerda + tabela direita)
-  // 1 grafico + 1 tabela por folha, ocupando toda a area util da pagina paisagem
-  const blocksPerPage = 1;
-  const blockH = pageH - 26;              // bloco ocupa toda a altura util
-  const chartBoxW = halfW - margin - 5;   // grafico ocupa metade esquerda
-  const tableBoxW = halfW - margin - 5;   // tabela ocupa metade direita
+  // Layout do FOLDER: cada pagina A4 landscape tem DUAS FACES (esquerda/direita).
+  // Em cada face fica 1 GRAFICO (em cima) + 1 TABELA (embaixo) do mesmo parametro.
+  // Logo, 2 parametros por pagina (um em cada face).
+  const blocksPerPage = 2;
+  const faceW = halfW - margin - 5;       // largura util de uma face
+  const faceH = pageH - 26;               // altura util de uma face
+  const chartH = Math.round(faceH * 0.55); // grafico = 55% da altura da face
+  const tableH = faceH - chartH - 4;       // tabela = restante
 
   const drawTableBox = (
     bx: number, by: number, bw: number, bh: number,
