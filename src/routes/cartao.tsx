@@ -376,10 +376,34 @@ function CartaoPage() {
         </LiquidCard>
       </motion.div>
 
+      {/* Botão de novo lançamento - visível em todas as abas exceto "resumo" */}
+      {(tab === "lancamentos" || tab === "vacinas") && session?.user?.id && (
+        <div className="mb-3 flex justify-end">
+          <button
+            onClick={() => setLancamentoOpen(true)}
+            className="px-4 py-2 rounded-full text-xs font-bold transition-all hover:opacity-90 shadow-sm"
+            style={{ backgroundColor: palette.primary, color: "#fff" }}
+          >
+            + Novo lançamento
+          </button>
+        </div>
+      )}
+
       {tab === "resumo" && <ResumoTab medicoes={medicoes} vacinas={vacinas} exames={exames} vitals={vitals} />}
       {tab === "lancamentos" && <LancamentosTab medicoes={medicoes} />}
       {tab === "vacinas" && <VacinasExamesTab vacinas={vacinas} exames={exames} />}
       {tab === "graficos" && <GraficosTab palette={palette} dum={patientInfo.dum} series={series} />}
+
+      {session?.user?.id && (
+        <LancamentoModal
+          open={lancamentoOpen}
+          onClose={() => setLancamentoOpen(false)}
+          gestanteId={session.user.id}
+          semanaAtual={semanasAtual > 0 ? semanasAtual : null}
+          initialTab={tab === "vacinas" ? "vacina" : "med"}
+          onSaved={carregarDados}
+        />
+      )}
     </div>
   );
 }
