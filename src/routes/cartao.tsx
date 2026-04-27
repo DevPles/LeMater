@@ -1605,10 +1605,11 @@ async function gerarPDFCartao(args: {
   };
 
   // Layout: 2 blocos por pagina (cada bloco = grafico esquerda + tabela direita)
-  const blocksPerPage = 2;
-  const blockH = (pageH - 24) / blocksPerPage - 4;
-  const chartBoxW = halfW - margin - 5;   // grafico ocupa ~ metade
-  const tableBoxW = halfW - margin - 5;   // tabela ocupa a outra metade
+  // 1 grafico + 1 tabela por folha, ocupando toda a area util da pagina paisagem
+  const blocksPerPage = 1;
+  const blockH = pageH - 26;              // bloco ocupa toda a altura util
+  const chartBoxW = halfW - margin - 5;   // grafico ocupa metade esquerda
+  const tableBoxW = halfW - margin - 5;   // tabela ocupa metade direita
 
   const drawTableBox = (
     bx: number, by: number, bw: number, bh: number,
