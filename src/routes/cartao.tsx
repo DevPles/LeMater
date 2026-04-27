@@ -1071,11 +1071,10 @@ async function gerarPDFCartao(args: {
   doc.setTextColor(...muted);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.text("UNAERP  /  DRS XIII", 14, pageH - 22);
+  doc.text("UNAERP", 14, pageH - 18);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
-  doc.text("Universidade de Ribeirao Preto", 14, pageH - 17);
-  doc.text("Departamento Regional de Saude XIII", 14, pageH - 13);
+  doc.text("Universidade de Ribeirao Preto", 14, pageH - 13);
 
   // Pequena marca decorativa centralizada
   doc.setFillColor(pr, pg, pb);
