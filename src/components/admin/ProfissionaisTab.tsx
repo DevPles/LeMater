@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { updateProfessional, deleteProfessional } from "@/utils/admin-professionals.functions";
+
+const ADMIN_SECRET = "unaerp2026";
 
 type Professional = {
   id: string;
@@ -129,9 +132,38 @@ export function ProfissionaisTab() {
     }
   };
 
+  const [editing, setEditing] = useState<Professional | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+
   const toggleAtivo = async (p: Professional) => {
-    await supabase.from("professionals").update({ ativo: !p.ativo }).eq("id", p.id);
-    await load();
+    setTogglingId(p.id);
+    try {
+      await updateProfessional({
+        data: {
+          adminSecret: ADMIN_SECRET,
+          professionalId: p.id,
+          userId: p.user_id,
+          patch: { ativo: !p.ativo },
+        },
+      });
+      await load();
+    } catch (e) {
+      alert("Erro ao alterar status: " + (e as Error).message);
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const handleDelete = async (p: Professional) => {
+    if (!window.confirm(`Remover o profissional ${p.nome}? Esta ação não pode ser desfeita.`)) return;
+    try {
+      await deleteProfessional({
+        data: { adminSecret: ADMIN_SECRET, professionalId: p.id, userId: p.user_id },
+      });
+      await load();
+    } catch (e) {
+      alert("Erro ao remover: " + (e as Error).message);
+    }
   };
 
   return (
@@ -199,29 +231,200 @@ export function ProfissionaisTab() {
         ) : (
           <ul className="divide-y divide-border">
             {list.map((p) => (
-              <li key={p.id} className="p-4 flex items-center justify-between gap-3">
-                <div>
+              <li key={p.id} className="p-4 flex items-center justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
                   <p className="font-semibold text-sm text-foreground">{p.nome}</p>
                   <p className="text-xs text-muted-foreground">
                     {p.especialidade}
                     {p.registro && ` — ${p.registro}`}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => toggleAtivo(p)}
-                  className={`px-3 py-1 rounded-full text-[11px] font-semibold ${
-                    p.ativo
-                      ? "bg-green-100 text-green-700 hover:bg-green-200"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  }`}
-                >
-                  {p.ativo ? "Ativo" : "Inativo"}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleAtivo(p)}
+                    disabled={togglingId === p.id}
+                    className={`px-3 py-1 rounded-full text-[11px] font-semibold disabled:opacity-50 ${
+                      p.ativo
+                        ? "bg-green-100 text-green-700 hover:bg-green-200"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                    }`}
+                  >
+                    {togglingId === p.id ? "..." : p.ativo ? "Ativo" : "Inativo"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditing(p)}
+                    className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#1a1557] text-white hover:bg-[#241e7a]"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(p)}
+                    className="px-3 py-1 rounded-full text-[11px] font-bold bg-rose-600 text-white hover:bg-rose-700"
+                  >
+                    Apagar
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         )}
+      </div>
+
+      {editing && (
+        <EditModal
+          professional={editing}
+          onClose={() => setEditing(null)}
+          onSaved={async () => {
+            setEditing(null);
+            await load();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditModal({
+  professional,
+  onClose,
+  onSaved,
+}: {
+  professional: Professional;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [nome, setNome] = useState(professional.nome);
+  const [especialidade, setEspecialidade] = useState(professional.especialidade);
+  const [registro, setRegistro] = useState(professional.registro ?? "");
+  const [bio, setBio] = useState(professional.bio ?? "");
+  const [ativo, setAtivo] = useState(professional.ativo);
+  const [novaSenha, setNovaSenha] = useState("");
+  const [novoEmail, setNovoEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  const salvar = async () => {
+    setErro(null);
+    setSaving(true);
+    try {
+      await updateProfessional({
+        data: {
+          adminSecret: ADMIN_SECRET,
+          professionalId: professional.id,
+          userId: professional.user_id,
+          patch: {
+            nome,
+            especialidade,
+            registro: registro || null,
+            bio: bio || null,
+            ativo,
+          },
+          novaSenha: novaSenha || undefined,
+          novoEmail: novoEmail.trim() || undefined,
+        },
+      });
+      onSaved();
+    } catch (e) {
+      setErro((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card w-full max-w-lg rounded-2xl border border-border p-5 space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-bold font-display text-foreground">Editar profissional</h3>
+            <p className="text-xs text-muted-foreground">{professional.nome}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-xs px-2 py-1 rounded-full bg-muted hover:bg-muted/70"
+          >
+            Fechar
+          </button>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-3">
+          <Input label="Nome completo" value={nome} onChange={setNome} />
+          <Input label="Especialidade" value={especialidade} onChange={setEspecialidade} />
+          <Input label="Registro (CRM/COREN)" value={registro} onChange={setRegistro} />
+          <div className="flex items-end">
+            <label className="inline-flex items-center gap-2 text-sm text-foreground cursor-pointer">
+              <input
+                type="checkbox"
+                checked={ativo}
+                onChange={(e) => setAtivo(e.target.checked)}
+                className="h-4 w-4"
+              />
+              <span className="font-semibold">{ativo ? "Ativo" : "Inativo"}</span>
+            </label>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">Bio</label>
+            <textarea
+              rows={2}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className="w-full text-sm rounded-xl border border-border bg-background p-3"
+            />
+          </div>
+        </div>
+
+        <div className="border-t border-border pt-4 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-foreground">Acesso</p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Input
+              label="Novo e-mail (opcional)"
+              value={novoEmail}
+              onChange={setNovoEmail}
+              type="email"
+              placeholder="deixe em branco para manter"
+            />
+            <PasswordInput
+              label="Nova senha (opcional)"
+              value={novaSenha}
+              onChange={setNovaSenha}
+              hint="Mínimo 6 caracteres. Em branco mantém a atual."
+            />
+          </div>
+        </div>
+
+        {erro && (
+          <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 px-3 py-2 rounded-lg">
+            {erro}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-full text-xs font-bold bg-muted text-foreground hover:bg-muted/70"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={salvar}
+            disabled={saving}
+            className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a] disabled:opacity-50"
+          >
+            {saving ? "Salvando..." : "Salvar alterações"}
+          </button>
+        </div>
       </div>
     </div>
   );
