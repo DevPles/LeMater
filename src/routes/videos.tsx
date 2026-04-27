@@ -1,6 +1,6 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { WhatsAppIcon, InstagramIcon, FacebookIcon, LinkIcon } from "@/components/SocialIcons";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
+import { ReelRecorder } from "@/components/ReelRecorder";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/videos")({
   head: () => ({
@@ -89,8 +91,7 @@ type Comment = {
 };
 
 function VideosPage() {
-  const navigate = useNavigate();
-  const { profile } = useGestanteProfile();
+  const { profile, session } = useGestanteProfile();
   const [activeCategory, setActiveCategory] = useState("Reels");
   const [selected, setSelected] = useState<Video | null>(null);
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
@@ -100,9 +101,50 @@ function VideosPage() {
   const [likedIds, setLikedIds] = useState<Record<number, boolean>>({});
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [recorderOpen, setRecorderOpen] = useState(false);
+  const [reelCategorias, setReelCategorias] = useState<{ slug: string; nome: string }[]>([]);
+  const [dbReels, setDbReels] = useState<Video[]>([]);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    supabase.from("reel_categories").select("slug,nome,ordem").order("ordem").then(({ data }) => {
+      setReelCategorias((data ?? []).map((c: any) => ({ slug: c.slug, nome: c.nome })));
+    });
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("reels")
+        .select("id,titulo,descricao,video_url,categoria_slug,visualizacoes,autor_id,created_at")
+        .eq("publicado", true)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (!data) return;
+      const autorIds = Array.from(new Set(data.map((r: any) => r.autor_id)));
+      const { data: profs } = autorIds.length
+        ? await supabase.from("profiles").select("user_id,nome").in("user_id", autorIds)
+        : { data: [] as any[] };
+      const nomeMap = new Map((profs ?? []).map((p: any) => [p.user_id, p.nome]));
+      const mapped: Video[] = data.map((r: any, i: number) => ({
+        id: 1_000_000 + i,
+        title: r.titulo,
+        author: nomeMap.get(r.autor_id) ?? "Usuário",
+        role: "Comunidade",
+        duration: "0:30",
+        category: "Reels",
+        gradient: "from-mint-light to-blush",
+        isGestante: true,
+        likes: 0,
+        views: r.visualizacoes ?? 0,
+        videoUrl: r.video_url,
+      } as Video & { videoUrl: string }));
+      setDbReels(mapped);
+    })();
+  }, [reloadKey]);
 
   const isReels = activeCategory === "Reels";
-  const items = isReels ? reels : videos.filter(v => v.category === activeCategory);
+  const items = isReels ? [...dbReels, ...reels] : videos.filter(v => v.category === activeCategory);
 
   const currentName =
     profile?.nome?.trim() || profile?.email?.split("@")[0] || "Você";
@@ -218,13 +260,16 @@ function VideosPage() {
       {isReels ? (
         <>
           <button
-            onClick={() => navigate({ to: "/reels", search: { upload: "1" } as any })}
+            onClick={() => {
+              if (!session?.user) { alert("Faça login para publicar um reel."); return; }
+              setRecorderOpen(true);
+            }}
             className="w-full mb-4 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
           >
             + Compartilhe seu reel
           </button>
           <div className="grid grid-cols-2 gap-3">
-            {reels.map((reel, i) => {
+            {items.map((reel, i) => {
               const liked = !!likedIds[reel.id];
               return (
                 <motion.div
@@ -310,8 +355,14 @@ function VideosPage() {
                 <DialogTitle className="text-left text-base">{selected.title}</DialogTitle>
               </DialogHeader>
               <div className={`${selected.category === "Reels" ? "aspect-[9/16]" : "aspect-video"} rounded-xl bg-gradient-to-br ${selected.gradient} flex items-center justify-center relative overflow-hidden`}>
-                <span className="text-5xl text-foreground/30">▶</span>
-                <span className="absolute bottom-2 left-2 bg-foreground/70 text-primary-foreground text-xs px-2 py-1 rounded-lg">{selected.duration}</span>
+                {(selected as any).videoUrl ? (
+                  <video src={(selected as any).videoUrl} controls autoPlay playsInline className="absolute inset-0 w-full h-full object-contain bg-black" />
+                ) : (
+                  <span className="text-5xl text-foreground/30">▶</span>
+                )}
+                {!(selected as any).videoUrl && (
+                  <span className="absolute bottom-2 left-2 bg-foreground/70 text-primary-foreground text-xs px-2 py-1 rounded-lg">{selected.duration}</span>
+                )}
 
                 {/* Coluna de ações estilo Instagram/TikTok — apenas para Reels */}
                 {selected.category === "Reels" && (
@@ -588,6 +639,14 @@ function VideosPage() {
           </div>
         </SheetContent>
       </Sheet>
+
+      <ReelRecorder
+        open={recorderOpen}
+        onClose={() => setRecorderOpen(false)}
+        onCreated={() => setReloadKey((k) => k + 1)}
+        userId={session?.user?.id ?? null}
+        categorias={reelCategorias}
+      />
     </div>
   );
 }
