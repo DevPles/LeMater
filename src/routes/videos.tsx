@@ -137,9 +137,8 @@ function VideosPage() {
         isGestante: true,
         likes: 0,
         views: r.visualizacoes ?? 0,
-        // @ts-expect-error - campo extra usado para tocar vídeo
         videoUrl: r.video_url,
-      }));
+      } as Video & { videoUrl: string }));
       setDbReels(mapped);
     })();
   }, [reloadKey]);
