@@ -91,8 +91,7 @@ type Comment = {
 };
 
 function VideosPage() {
-  const navigate = useNavigate();
-  const { profile } = useGestanteProfile();
+  const { profile, session } = useGestanteProfile();
   const [activeCategory, setActiveCategory] = useState("Reels");
   const [selected, setSelected] = useState<Video | null>(null);
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
@@ -102,9 +101,51 @@ function VideosPage() {
   const [likedIds, setLikedIds] = useState<Record<number, boolean>>({});
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [recorderOpen, setRecorderOpen] = useState(false);
+  const [reelCategorias, setReelCategorias] = useState<{ slug: string; nome: string }[]>([]);
+  const [dbReels, setDbReels] = useState<Video[]>([]);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    supabase.from("reel_categories").select("slug,nome,ordem").order("ordem").then(({ data }) => {
+      setReelCategorias((data ?? []).map((c: any) => ({ slug: c.slug, nome: c.nome })));
+    });
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("reels")
+        .select("id,titulo,descricao,video_url,categoria_slug,visualizacoes,autor_id,created_at")
+        .eq("publicado", true)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (!data) return;
+      const autorIds = Array.from(new Set(data.map((r: any) => r.autor_id)));
+      const { data: profs } = autorIds.length
+        ? await supabase.from("profiles").select("user_id,nome").in("user_id", autorIds)
+        : { data: [] as any[] };
+      const nomeMap = new Map((profs ?? []).map((p: any) => [p.user_id, p.nome]));
+      const mapped: Video[] = data.map((r: any, i: number) => ({
+        id: 1_000_000 + i,
+        title: r.titulo,
+        author: nomeMap.get(r.autor_id) ?? "Usuário",
+        role: "Comunidade",
+        duration: "0:30",
+        category: "Reels",
+        gradient: "from-mint-light to-blush",
+        isGestante: true,
+        likes: 0,
+        views: r.visualizacoes ?? 0,
+        // @ts-expect-error - campo extra usado para tocar vídeo
+        videoUrl: r.video_url,
+      }));
+      setDbReels(mapped);
+    })();
+  }, [reloadKey]);
 
   const isReels = activeCategory === "Reels";
-  const items = isReels ? reels : videos.filter(v => v.category === activeCategory);
+  const items = isReels ? [...dbReels, ...reels] : videos.filter(v => v.category === activeCategory);
 
   const currentName =
     profile?.nome?.trim() || profile?.email?.split("@")[0] || "Você";
