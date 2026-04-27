@@ -633,6 +633,14 @@ function VideosPage() {
           </div>
         </SheetContent>
       </Sheet>
+
+      <ReelRecorder
+        open={recorderOpen}
+        onClose={() => setRecorderOpen(false)}
+        onCreated={() => setReloadKey((k) => k + 1)}
+        userId={session?.user?.id ?? null}
+        categorias={reelCategorias}
+      />
     </div>
   );
 }
