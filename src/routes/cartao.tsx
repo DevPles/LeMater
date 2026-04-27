@@ -1342,6 +1342,23 @@ async function gerarPDFCartao(args: {
       { color: [239, 68, 68], values: pamSerie, name: "PAM (mmHg)" },
     ]);
 
+  // CRUZAMENTO: Glicemia x Peso
+  drawChart("Glicemia x Peso",
+    "Risco de diabetes gestacional",
+    [
+      { color: [245, 158, 11], values: series.glicemia.map(d => ({ x: d.semana, y: d.glicemia })), name: "Glicemia (mg/dL)" },
+      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso (kg)" },
+    ],
+    { min: 70, max: 95, label: "glicemia normal jejum" });
+
+  // CRUZAMENTO: AU x Peso (proporcionalidade)
+  drawChart("Altura Uterina x Peso",
+    "Proporcionalidade do crescimento",
+    [
+      { color: [124, 58, 237], values: series.au.map(d => ({ x: d.semana, y: d.altura })), name: "AU (cm)", fill: true },
+      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso (kg)" },
+    ]);
+
   drawChart("Altura Uterina",
     "cm / semana",
     [{ color: [124, 58, 237], values: series.au.map(d => ({ x: d.semana, y: d.altura })), fill: true, name: "AU (cm)" }]);
