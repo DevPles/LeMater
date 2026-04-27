@@ -7,6 +7,8 @@ type Props = {
   professionalUserId: string;
   /** Compact mode for sidebar inside video room */
   compact?: boolean;
+  /** Optional close handler (shows a close button in the header) */
+  onClose?: () => void;
 };
 
 type Tab = "obs" | "med" | "exame" | "imagem" | "vacina";
