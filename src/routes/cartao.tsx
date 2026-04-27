@@ -1396,11 +1396,30 @@ async function gerarPDFCartao(args: {
     return cy;
   };
 
+  // Helper: agrupa itens por data (mais recente primeiro) -> "data | tipos concatenados"
+  const agruparPorData = <T,>(itens: T[], getData: (i: T) => string, getTipo: (i: T) => string): string[][] => {
+    const map = new Map<string, string[]>();
+    itens.forEach((it) => {
+      const d = getData(it);
+      if (!map.has(d)) map.set(d, []);
+      map.get(d)!.push(getTipo(it));
+    });
+    return Array.from(map.entries())
+      .sort((a, b) => {
+        const da = parseBR(a[0]); const db = parseBR(b[0]);
+        return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+      })
+      .map(([data, tipos]) => [data, tipos.join(", ")]);
+  };
+
   if (vacinas.length) {
-    const vacRows = vacinas.map((v) => [v.vacina, v.data]);
-    const halfMaxY = Math.min(ry + 60, pageH / 2);
+    const vacRows = agruparPorData(vacinas, (v) => v.data, (v) => v.vacina);
+    const halfMaxY = Math.min(ry + 70, pageH / 2);
     ry = drawSimpleTable(rX, ry, rW,
-      [{ label: "VACINA", widthPct: 70 }, { label: "DATA", widthPct: 30, align: "right" }],
+      [
+        { label: "DATA", widthPct: 24 },
+        { label: "VACINAS APLICADAS", widthPct: 76 },
+      ],
       vacRows, [pr, pg, pb], halfMaxY) + 4;
   } else {
     doc.setFillColor(248, 248, 252);
@@ -1423,12 +1442,11 @@ async function gerarPDFCartao(args: {
   ry += 11;
 
   if (exames.length) {
-    const exRows = exames.map((e) => [e.tipo_exame, e.data, e.status.toUpperCase()]);
+    const exRows = agruparPorData(exames, (e) => e.data, (e) => e.tipo_exame);
     drawSimpleTable(rX, ry, rW,
       [
-        { label: "EXAME", widthPct: 55 },
-        { label: "DATA", widthPct: 22, align: "center" },
-        { label: "STATUS", widthPct: 23, align: "right" },
+        { label: "DATA", widthPct: 22 },
+        { label: "EXAMES REALIZADOS", widthPct: 78 },
       ],
       exRows, [pr, pg, pb], pageH - 14);
   } else {
