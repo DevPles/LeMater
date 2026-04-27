@@ -1850,14 +1850,40 @@ async function gerarPDFCartao(args: {
       }
       const paramLabel = labelByKey.get(param) ?? param;
       const cfg = paramConfig(param);
-      const items = porParametro.get(param)!;
+      let items = porParametro.get(param)!;
+      // Para pressao arterial: consolida sis+dia em "120/80" por (data, semana)
+      if (param === "pressao arterial") {
+        const grupos = new Map<string, { data: string; semana: number; sis?: number; dia?: number }>();
+        items.forEach((m) => {
+          const k = `${m.data}|${m.semana}`;
+          if (!grupos.has(k)) grupos.set(k, { data: m.data, semana: m.semana });
+          const g = grupos.get(k)!;
+          const lp = m.parametro.toLowerCase();
+          const v = numFromValor(m.valor);
+          if (v === null) return;
+          if (lp.includes("sist")) g.sis = v;
+          else if (lp.includes("diast")) g.dia = v;
+        });
+        items = Array.from(grupos.values())
+          .sort((a, b) => {
+            const da = parseBR(a.data); const db = parseBR(b.data);
+            return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+          })
+          .map((g) => ({
+            parametro: "Pressao Arterial",
+            data: g.data,
+            semana: g.semana,
+            valor: `${g.sis ?? "-"}/${g.dia ?? "-"}`,
+          })) as MedicaoReal[];
+      }
       const accent: [number, number, number] = cfg?.color ?? [pr, pg, pb];
       // Cada face: esquerda (posInPage=0) inicia em x=margin, direita em x=halfW+5
       const xFace = posInPage === 0 ? margin : halfW + 5;
       const yChart = 18;
       const yTable = yChart + chartH + 4;
 
-      if (cfg && cfg.series[0].values.length >= 2) {
+      const totalPts = cfg ? cfg.series.reduce((acc, s) => acc + s.values.length, 0) : 0;
+      if (cfg && totalPts >= 2) {
         drawChartBox(xFace, yChart, faceW, chartH,
           `Curva: ${paramLabel}`,
           cfg.series,
