@@ -13,6 +13,13 @@ export type GestanteProfile = {
   telefone: string | null;
   foto_url: string | null;
   bebe_sexo: BebeSexo;
+  data_nascimento: string | null;
+  cidade: string | null;
+  bairro: string | null;
+  unidade_saude: string | null;
+  numero_gestacoes: number | null;
+  numero_partos: number | null;
+  numero_abortos: number | null;
 };
 
 /** Calcula semanas completas entre a DUM e hoje. */
@@ -66,7 +73,7 @@ export function useGestanteProfile() {
     async function fetchProfile(userId: string) {
       const { data } = await supabase
         .from("profiles")
-        .select("id,user_id,nome,email,dum,telefone,foto_url,bebe_sexo")
+        .select("id,user_id,nome,email,dum,telefone,foto_url,bebe_sexo,data_nascimento,cidade,bairro,unidade_saude,numero_gestacoes,numero_partos,numero_abortos")
         .eq("user_id", userId)
         .maybeSingle();
       if (active) setProfile((data as GestanteProfile | null) ?? null);
