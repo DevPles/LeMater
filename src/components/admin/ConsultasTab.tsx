@@ -36,6 +36,7 @@ export function ConsultasTab() {
   const [loading, setLoading] = useState(true);
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // filtros
   const [statusFiltro, setStatusFiltro] = useState<StatusFiltro>("todos");
