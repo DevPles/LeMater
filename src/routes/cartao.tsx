@@ -1347,7 +1347,8 @@ async function gerarPDFCartao(args: {
     maxY: number,
   ): number => {
     const headerH = 6;
-    const rowH = 5;
+    const lineH = 3.6;
+    const padV = 1.6;
     doc.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
     doc.rect(x, y, w, headerH, "F");
     doc.setFont("helvetica", "bold");
@@ -1362,9 +1363,20 @@ async function gerarPDFCartao(args: {
       cx += cw;
     });
     let cy = y + headerH;
-    const maxRows = Math.max(0, Math.floor((maxY - cy) / rowH));
-    const visible = rows.slice(0, maxRows);
-    visible.forEach((row, ri) => {
+    let drawnRows = 0;
+    for (let ri = 0; ri < rows.length; ri++) {
+      const row = rows[ri];
+      // Pre-calcula a altura desta linha (maior numero de linhas entre as celulas)
+      doc.setFontSize(7);
+      let maxLines = 1;
+      const cellLines: string[][] = headers.map((h, ci) => {
+        const cw = (w * h.widthPct) / 100;
+        const lines = doc.splitTextToSize(row[ci] ?? "-", cw - 3) as string[];
+        if (lines.length > maxLines) maxLines = lines.length;
+        return lines;
+      });
+      const rowH = maxLines * lineH + padV * 2;
+      if (cy + rowH > maxY) break;
       if (ri % 2 === 0) {
         doc.setFillColor(248, 248, 252);
         doc.rect(x, cy, w, rowH, "F");
@@ -1377,17 +1389,19 @@ async function gerarPDFCartao(args: {
         doc.setFont("helvetica", ci === 0 ? "bold" : "normal");
         doc.setFontSize(7);
         doc.setTextColor(...dark);
-        const txt = doc.splitTextToSize(row[ci] ?? "-", cw - 3)[0] ?? "";
-        doc.text(txt, tx, cy + 3.6, { align });
+        cellLines[ci].forEach((ln, li) => {
+          doc.text(ln, tx, cy + padV + 2.5 + li * lineH, { align });
+        });
         cxr += cw;
       });
       cy += rowH;
-    });
-    if (rows.length > maxRows) {
+      drawnRows++;
+    }
+    if (rows.length > drawnRows) {
       doc.setFont("helvetica", "italic");
       doc.setFontSize(6);
       doc.setTextColor(...muted);
-      doc.text(`+ ${rows.length - maxRows} registros`, x + w / 2, cy + 3, { align: "center" });
+      doc.text(`+ ${rows.length - drawnRows} datas anteriores`, x + w / 2, cy + 3, { align: "center" });
       cy += 4;
     }
     doc.setDrawColor(225, 225, 230);
@@ -1396,11 +1410,30 @@ async function gerarPDFCartao(args: {
     return cy;
   };
 
+  // Helper: agrupa itens por data (mais recente primeiro) -> "data | tipos concatenados"
+  const agruparPorData = <T,>(itens: T[], getData: (i: T) => string, getTipo: (i: T) => string): string[][] => {
+    const map = new Map<string, string[]>();
+    itens.forEach((it) => {
+      const d = getData(it);
+      if (!map.has(d)) map.set(d, []);
+      map.get(d)!.push(getTipo(it));
+    });
+    return Array.from(map.entries())
+      .sort((a, b) => {
+        const da = parseBR(a[0]); const db = parseBR(b[0]);
+        return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+      })
+      .map(([data, tipos]) => [data, tipos.join(", ")]);
+  };
+
   if (vacinas.length) {
-    const vacRows = vacinas.map((v) => [v.vacina, v.data]);
-    const halfMaxY = Math.min(ry + 60, pageH / 2);
+    const vacRows = agruparPorData(vacinas, (v) => v.data, (v) => v.vacina);
+    const halfMaxY = Math.min(ry + 70, pageH / 2);
     ry = drawSimpleTable(rX, ry, rW,
-      [{ label: "VACINA", widthPct: 70 }, { label: "DATA", widthPct: 30, align: "right" }],
+      [
+        { label: "DATA", widthPct: 24 },
+        { label: "VACINAS APLICADAS", widthPct: 76 },
+      ],
       vacRows, [pr, pg, pb], halfMaxY) + 4;
   } else {
     doc.setFillColor(248, 248, 252);
@@ -1423,12 +1456,11 @@ async function gerarPDFCartao(args: {
   ry += 11;
 
   if (exames.length) {
-    const exRows = exames.map((e) => [e.tipo_exame, e.data, e.status.toUpperCase()]);
+    const exRows = agruparPorData(exames, (e) => e.data, (e) => e.tipo_exame);
     drawSimpleTable(rX, ry, rW,
       [
-        { label: "EXAME", widthPct: 55 },
-        { label: "DATA", widthPct: 22, align: "center" },
-        { label: "STATUS", widthPct: 23, align: "right" },
+        { label: "DATA", widthPct: 22 },
+        { label: "EXAMES REALIZADOS", widthPct: 78 },
       ],
       exRows, [pr, pg, pb], pageH - 14);
   } else {
