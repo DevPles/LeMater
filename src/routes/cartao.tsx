@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { useScreenContent } from "@/hooks/useScreenContent";
 import { CARTAO_DEFAULT } from "@/components/admin/TelasTab";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { LancamentoModal } from "@/components/LancamentoModal";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import {
@@ -148,53 +149,54 @@ function CartaoPage() {
   const [medicoes, setMedicoes] = useState<MedicaoReal[]>([]);
   const [vacinas, setVacinas] = useState<VacinaReal[]>([]);
   const [exames, setExames] = useState<ExameReal[]>([]);
+  const [lancamentoOpen, setLancamentoOpen] = useState(false);
 
-  useEffect(() => {
+  const carregarDados = useCallback(async () => {
     if (!session?.user?.id) return;
     const uid = session.user.id;
-    (async () => {
-      const [mRes, vRes, eRes] = await Promise.all([
-        supabase.from("clinical_measurements")
-          .select("id,parametro,valor,semana_gestacional,data_medicao")
-          .eq("gestante_id", uid)
-          .order("data_medicao", { ascending: true }),
-        supabase.from("vaccinations")
-          .select("id,vacina,data_aplicacao,observacao")
-          .eq("gestante_id", uid)
-          .order("data_aplicacao", { ascending: false }),
-        supabase.from("exam_results")
-          .select("id,tipo_exame,data_exame,status,resultado")
-          .eq("gestante_id", uid)
-          .order("data_exame", { ascending: false }),
-      ]);
-      if (mRes.data) {
-        setMedicoes(mRes.data.map((r: any) => ({
-          id: r.id,
-          data: formatBR(new Date(r.data_medicao + "T00:00:00")),
-          parametro: r.parametro,
-          valor: Number(r.valor),
-          semana: r.semana_gestacional ?? 0,
-        })));
-      }
-      if (vRes.data) {
-        setVacinas(vRes.data.map((r: any) => ({
-          id: r.id,
-          vacina: r.vacina,
-          data: formatBR(new Date(r.data_aplicacao + "T00:00:00")),
-          observacao: r.observacao ?? undefined,
-        })));
-      }
-      if (eRes.data) {
-        setExames(eRes.data.map((r: any) => ({
-          id: r.id,
-          tipo_exame: r.tipo_exame,
-          data: formatBR(new Date(r.data_exame + "T00:00:00")),
-          status: r.status,
-          resultado: r.resultado ?? undefined,
-        })));
-      }
-    })();
+    const [mRes, vRes, eRes] = await Promise.all([
+      supabase.from("clinical_measurements")
+        .select("id,parametro,valor,semana_gestacional,data_medicao")
+        .eq("gestante_id", uid)
+        .order("data_medicao", { ascending: true }),
+      supabase.from("vaccinations")
+        .select("id,vacina,data_aplicacao,observacao")
+        .eq("gestante_id", uid)
+        .order("data_aplicacao", { ascending: false }),
+      supabase.from("exam_results")
+        .select("id,tipo_exame,data_exame,status,resultado")
+        .eq("gestante_id", uid)
+        .order("data_exame", { ascending: false }),
+    ]);
+    if (mRes.data) {
+      setMedicoes(mRes.data.map((r: any) => ({
+        id: r.id,
+        data: formatBR(new Date(r.data_medicao + "T00:00:00")),
+        parametro: r.parametro,
+        valor: Number(r.valor),
+        semana: r.semana_gestacional ?? 0,
+      })));
+    }
+    if (vRes.data) {
+      setVacinas(vRes.data.map((r: any) => ({
+        id: r.id,
+        vacina: r.vacina,
+        data: formatBR(new Date(r.data_aplicacao + "T00:00:00")),
+        observacao: r.observacao ?? undefined,
+      })));
+    }
+    if (eRes.data) {
+      setExames(eRes.data.map((r: any) => ({
+        id: r.id,
+        tipo_exame: r.tipo_exame,
+        data: formatBR(new Date(r.data_exame + "T00:00:00")),
+        status: r.status,
+        resultado: r.resultado ?? undefined,
+      })));
+    }
   }, [session?.user?.id]);
+
+  useEffect(() => { carregarDados(); }, [carregarDados]);
 
   // ====== Info da paciente derivada do banco ======
   const dumBR = profile?.dum
@@ -216,18 +218,19 @@ function CartaoPage() {
 
   // ====== Séries derivadas das medições reais ======
   const series = useMemo(() => {
-    const peso = medicoes.filter(m => m.parametro.toLowerCase() === "peso")
+    const peso = medicoes.filter(m => m.parametro.toLowerCase().startsWith("peso"))
       .map(m => ({ semana: m.semana, peso: m.valor, data: m.data }));
     const sis = medicoes.filter(m => m.parametro.toLowerCase().includes("sist"))
       .map(m => ({ semana: m.semana, valor: m.valor, data: m.data }));
     const dia = medicoes.filter(m => m.parametro.toLowerCase().includes("diast"))
       .map(m => ({ semana: m.semana, valor: m.valor, data: m.data }));
-    const au = medicoes.filter(m => m.parametro.toLowerCase().includes("altura") || m.parametro.toLowerCase() === "au")
-      .map(m => ({ semana: m.semana, altura: m.valor, data: m.data }));
+    const au = medicoes.filter(m => {
+      const p = m.parametro.toLowerCase();
+      return p.includes("altura uterina") || p === "au";
+    }).map(m => ({ semana: m.semana, altura: m.valor, data: m.data }));
     const bcf = medicoes.filter(m => m.parametro.toLowerCase().includes("bcf") || m.parametro.toLowerCase().includes("batim"))
       .map(m => ({ semana: m.semana, bcf: m.valor, data: m.data }));
 
-    // Pressao combinada
     const semanasSet = new Set([...sis, ...dia].map(p => p.semana));
     const pressao = Array.from(semanasSet).sort((a, b) => a - b).map(s => ({
       semana: s,
@@ -239,7 +242,10 @@ function CartaoPage() {
   }, [medicoes]);
 
   // ====== IMC e ganho de peso ======
-  const altura = medicoes.find(m => m.parametro.toLowerCase() === "altura_pessoa" || m.parametro.toLowerCase() === "estatura")?.valor;
+  const altura = medicoes.find(m => {
+    const p = m.parametro.toLowerCase();
+    return p === "altura_pessoa" || p === "estatura" || p.startsWith("estatura");
+  })?.valor;
   const pesoInicial = series.peso[0]?.peso;
   const pesoAtual = series.peso[series.peso.length - 1]?.peso;
   const ganhoPeso = (pesoInicial && pesoAtual) ? pesoAtual - pesoInicial : null;
@@ -370,10 +376,34 @@ function CartaoPage() {
         </LiquidCard>
       </motion.div>
 
+      {/* Botão de novo lançamento - visível em todas as abas exceto "resumo" */}
+      {(tab === "lancamentos" || tab === "vacinas") && session?.user?.id && (
+        <div className="mb-3 flex justify-end">
+          <button
+            onClick={() => setLancamentoOpen(true)}
+            className="px-4 py-2 rounded-full text-xs font-bold transition-all hover:opacity-90 shadow-sm"
+            style={{ backgroundColor: palette.primary, color: "#fff" }}
+          >
+            + Novo lançamento
+          </button>
+        </div>
+      )}
+
       {tab === "resumo" && <ResumoTab medicoes={medicoes} vacinas={vacinas} exames={exames} vitals={vitals} />}
       {tab === "lancamentos" && <LancamentosTab medicoes={medicoes} />}
       {tab === "vacinas" && <VacinasExamesTab vacinas={vacinas} exames={exames} />}
       {tab === "graficos" && <GraficosTab palette={palette} dum={patientInfo.dum} series={series} />}
+
+      {session?.user?.id && (
+        <LancamentoModal
+          open={lancamentoOpen}
+          onClose={() => setLancamentoOpen(false)}
+          gestanteId={session.user.id}
+          semanaAtual={semanasAtual > 0 ? semanasAtual : null}
+          initialTab={tab === "vacinas" ? "vacina" : "med"}
+          onSaved={carregarDados}
+        />
+      )}
     </div>
   );
 }
@@ -624,18 +654,23 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
             <PopoverTrigger asChild>
               <button
                 onClick={() => setPeriodo("custom")}
-                className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border inline-flex items-center gap-1.5"
+                aria-label="Selecionar período no calendário"
+                title="Calendário"
+                className="rounded-full text-[11px] font-semibold transition-all border inline-flex items-center justify-center gap-1.5"
                 style={{
                   backgroundColor: calendarioAtivo ? palette.primary : "transparent",
                   color: calendarioAtivo ? "#fff" : palette.primary,
                   borderColor: palette.primary,
+                  width: labelCalendario ? "auto" : "30px",
+                  height: "30px",
+                  padding: labelCalendario ? "0 10px" : "0",
                 }}
               >
                 <CalendarIcon className="w-3.5 h-3.5" />
-                {labelCalendario ?? "Calendário"}
+                {labelCalendario}
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 pointer-events-auto" align="start" sideOffset={6}>
+            <PopoverContent className="w-auto p-0 pointer-events-auto" align="end" sideOffset={6}>
               <Calendar
                 mode="range"
                 selected={range}
