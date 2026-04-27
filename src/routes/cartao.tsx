@@ -230,6 +230,8 @@ function CartaoPage() {
     }).map(m => ({ semana: m.semana, altura: m.valor, data: m.data }));
     const bcf = medicoes.filter(m => m.parametro.toLowerCase().includes("bcf") || m.parametro.toLowerCase().includes("batim"))
       .map(m => ({ semana: m.semana, bcf: m.valor, data: m.data }));
+    const glicemia = medicoes.filter(m => m.parametro.toLowerCase().includes("glic"))
+      .map(m => ({ semana: m.semana, glicemia: m.valor, data: m.data }));
 
     const semanasSet = new Set([...sis, ...dia].map(p => p.semana));
     const pressao = Array.from(semanasSet).sort((a, b) => a - b).map(s => ({
@@ -238,7 +240,7 @@ function CartaoPage() {
       diastolica: dia.find(p => p.semana === s)?.valor,
     }));
 
-    return { peso, pressao, au, bcf };
+    return { peso, pressao, au, bcf, glicemia };
   }, [medicoes]);
 
   // ====== IMC e ganho de peso ======
