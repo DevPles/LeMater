@@ -54,9 +54,9 @@ export const Route = createFileRoute("/cartao")({
     ],
   }),
   ssr: false,
-  validateSearch: (search: Record<string, unknown>) => ({
-    u: typeof search.u === "string" ? search.u : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { u?: string } => {
+    return typeof search.u === "string" && search.u ? { u: search.u } : {};
+  },
   component: CartaoPage,
 });
 
