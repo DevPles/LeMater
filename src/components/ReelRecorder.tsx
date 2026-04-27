@@ -126,10 +126,6 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
-    if (f.size > 50 * 1024 * 1024) {
-      toast.error("Arquivo muito grande (máx 50MB)");
-      return;
-    }
     setRecordedBlob(f);
     setPreviewUrl(URL.createObjectURL(f));
     setMode("upload");
