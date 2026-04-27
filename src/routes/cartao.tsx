@@ -1824,44 +1824,70 @@ async function gerarPDFCartao(args: {
       doc.setTextColor(...muted);
       doc.text("Nenhuma consulta registrada.", rgX + 2, rgY + 4);
     } else {
+      // Layout em grade: 3 colunas de cards lado a lado
+      const cols = 3;
+      const gap = 2;
+      const cardW = (rgW - gap * (cols - 1)) / cols;
+      const cardH = 14;
+      const startY = rgY;
+      let col = 0;
+      let row = 0;
       for (const c of consultasOrd) {
-        if (rgY > histLimY - 6) break;
-        // Header da consulta
+        const cardX = rgX + col * (cardW + gap);
+        const cardY = startY + row * (cardH + gap);
+        if (cardY + cardH > histLimY) break;
+
+        // Fundo do card
         doc.setFillColor(248, 248, 252);
-        doc.roundedRect(rgX, rgY, rgW, 5, 1, 1, "F");
+        doc.setDrawColor(225, 225, 235);
+        doc.setLineWidth(0.2);
+        doc.roundedRect(cardX, cardY, cardW, cardH, 1.2, 1.2, "FD");
+
+        // Data/hora
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(7);
+        doc.setFontSize(6.5);
         doc.setTextColor(pr, pg, pb);
-        doc.text(`${c.data}  ${c.hora}`, rgX + 2, rgY + 3.4);
+        doc.text(`${c.data} ${c.hora}`, cardX + 1.5, cardY + 3);
+
+        // Status à direita
+        const statusTxt = c.status === "realizado" ? "REALIZADA" : "AGENDADA";
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(6.2);
+        doc.setFontSize(5.2);
+        doc.setTextColor(...muted);
+        doc.text(statusTxt, cardX + cardW - 1.5, cardY + 3, { align: "right" });
+
+        // Título
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6);
         doc.setTextColor(...dark);
         const tituloC = c.titulo || c.tipo || "Consulta";
-        const statusTxt = c.status === "realizado" ? "REALIZADA" : "AGENDADA";
-        doc.text(tituloC, rgX + 24, rgY + 3.4);
-        doc.setTextColor(...muted);
-        doc.text(statusTxt, rgX + rgW - 2, rgY + 3.4, { align: "right" });
-        rgY += 5.4;
+        const tLines = doc.splitTextToSize(tituloC, cardW - 3) as string[];
+        doc.text(tLines[0] ?? "", cardX + 1.5, cardY + 6);
 
+        // Observação
         if (c.observacao && c.observacao.trim()) {
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(6.2);
+          doc.setFontSize(5.6);
           doc.setTextColor(...dark);
-          const lines = doc.splitTextToSize(c.observacao.trim(), rgW - 4) as string[];
-          for (const ln of lines) {
-            if (rgY > histLimY - 2) break;
-            doc.text(ln, rgX + 3, rgY + 2.2);
-            rgY += 2.8;
+          const oLines = doc.splitTextToSize(c.observacao.trim(), cardW - 3) as string[];
+          let oy = cardY + 8.5;
+          for (const ln of oLines.slice(0, 3)) {
+            if (oy > cardY + cardH - 1) break;
+            doc.text(ln, cardX + 1.5, oy);
+            oy += 2.2;
           }
-          rgY += 1.2;
         } else {
           doc.setFont("helvetica", "italic");
-          doc.setFontSize(5.8);
+          doc.setFontSize(5.4);
           doc.setTextColor(190, 190, 200);
-          doc.text("Sem observacao registrada.", rgX + 3, rgY + 2);
-          rgY += 3.5;
+          doc.text("Sem observacao registrada.", cardX + 1.5, cardY + 9);
         }
+
+        col++;
+        if (col >= cols) { col = 0; row++; }
       }
+      const usedRows = row + (col > 0 ? 1 : 0);
+      rgY = startY + usedRows * (cardH + gap);
     }
   }
 
