@@ -439,71 +439,70 @@ function PerfilPage() {
             </p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              Telefone / WhatsApp
-            </label>
-            <input
-              type="tel"
-              value={telefone}
-              onChange={(e) => setTelefone(formatPhone(e.target.value))}
-              className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              placeholder="(00) 00000-0000"
-            />
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Telefone / WhatsApp
+              </label>
+              <input
+                type="tel"
+                value={telefone}
+                onChange={(e) => setTelefone(formatPhone(e.target.value))}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                placeholder="(00) 00000-0000"
+              />
+            </div>
 
-          <div className="border-t border-border pt-4">
-            <label className="block text-sm font-medium text-foreground mb-1">
-              Senha
-            </label>
-            <div className="relative">
-              <input
-                type={mostrarSenha ? "text" : "password"}
-                value={novaSenha}
-                onChange={(e) => setNovaSenha(e.target.value)}
-                className="w-full px-3 py-2 pr-20 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                placeholder="Nova senha (mín. 6 caracteres)"
-                autoComplete="new-password"
-              />
-              <button
-                type="button"
-                onClick={() => setMostrarSenha((v) => !v)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium text-primary hover:underline"
-              >
-                {mostrarSenha ? "Ocultar" : "Mostrar"}
-              </button>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Senha
+              </label>
+              <div className="relative">
+                <input
+                  type={mostrarSenha ? "text" : "password"}
+                  value={novaSenha}
+                  onChange={(e) => setNovaSenha(e.target.value)}
+                  className="w-full px-3 py-2 pr-16 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  placeholder="Nova senha"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarSenha((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-medium text-primary hover:underline"
+                >
+                  {mostrarSenha ? "Ocultar" : "Mostrar"}
+                </button>
+              </div>
+              {novaSenha && (
+                <input
+                  type={mostrarSenha ? "text" : "password"}
+                  value={confirmarSenha}
+                  onChange={(e) => setConfirmarSenha(e.target.value)}
+                  className="mt-1.5 w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  placeholder="Confirmar senha"
+                  autoComplete="new-password"
+                />
+              )}
+              <div className="flex gap-1.5 mt-1.5">
+                <button
+                  type="button"
+                  onClick={handleAlterarSenha}
+                  disabled={salvandoSenha || !novaSenha}
+                  className="flex-1 px-2 py-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-medium hover:opacity-90 transition disabled:opacity-50"
+                >
+                  {salvandoSenha ? "..." : "Alterar"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetSenhaEmail}
+                  disabled={enviandoReset}
+                  className="flex-1 px-2 py-1.5 rounded-full border border-border bg-card text-foreground text-[11px] font-medium hover:bg-muted transition disabled:opacity-50"
+                >
+                  {enviandoReset ? "..." : "Resetar"}
+                </button>
+              </div>
             </div>
-            {novaSenha && (
-              <input
-                type={mostrarSenha ? "text" : "password"}
-                value={confirmarSenha}
-                onChange={(e) => setConfirmarSenha(e.target.value)}
-                className="mt-2 w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-                placeholder="Confirmar nova senha"
-                autoComplete="new-password"
-              />
-            )}
-            <div className="flex flex-col sm:flex-row gap-2 mt-2">
-              <button
-                type="button"
-                onClick={handleAlterarSenha}
-                disabled={salvandoSenha || !novaSenha}
-                className="flex-1 px-3 py-2 rounded-full bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition disabled:opacity-50"
-              >
-                {salvandoSenha ? "Salvando..." : "Alterar senha"}
-              </button>
-              <button
-                type="button"
-                onClick={handleResetSenhaEmail}
-                disabled={enviandoReset}
-                className="flex-1 px-3 py-2 rounded-full border border-border bg-card text-foreground text-xs font-medium hover:bg-muted transition disabled:opacity-50"
-              >
-                {enviandoReset ? "Enviando..." : "Resetar por e-mail"}
-              </button>
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-2">
-              Por segurança, sua senha atual não pode ser exibida. Defina uma nova senha ou receba um link de redefinição no seu e-mail.
-            </p>
           </div>
 
           {msg && (
