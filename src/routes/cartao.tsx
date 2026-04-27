@@ -1006,165 +1006,181 @@ async function gerarPDFCartao(args: {
   };
 
   // =============================================================
-  // PAGINA 1 - CAPA ESTILO CARTEIRINHA OFICIAL
-  // Esquerda = verso (instrucoes/orientacoes/QR)  |  Direita = frente (identificacao)
+  // PAGINA 1 - CAPA CARTEIRINHA (limpa, hierarquica, alta densidade visual)
+  // Esquerda = verso (QR / contato / orientacoes)  |  Direita = frente (identificacao)
   // =============================================================
-  // Fundo branco geral
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, pageW, pageH, "F");
 
-  // ===== FRENTE (DIREITA) - estilo carteirinha =====
-  // Cabecalho navy
-  const headH = 22;
+  // ===== FRENTE (DIREITA) =====
+  // Faixa lateral gold como elemento grafico marcante
+  doc.setFillColor(ar, ag, ab);
+  doc.rect(halfW, 0, 4, pageH, "F");
+
+  // Cabecalho navy alto e limpo
+  const headH = 32;
   doc.setFillColor(pr, pg, pb);
-  doc.rect(halfW, 0, halfW, headH, "F");
-  // Faixa gold inferior do cabecalho
-  doc.setFillColor(ar, ag, ab);
-  doc.rect(halfW, headH, halfW, 2, "F");
+  doc.rect(halfW + 4, 0, halfW - 4, headH, "F");
 
-  // Selo UNAERP (circulo gold) no canto
-  doc.setFillColor(ar, ag, ab);
-  doc.circle(pageW - 16, headH / 2, 7, "F");
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
-  doc.setTextColor(pr, pg, pb);
-  doc.text("UNAERP", pageW - 16, headH / 2 + 0.5, { align: "center" });
-  doc.setFontSize(5.5);
-  doc.text("DRS XIII", pageW - 16, headH / 2 + 3.5, { align: "center" });
-
-  // Titulo cabecalho
+  // Titulo principal
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("CARTAO DA GESTANTE", halfW + 8, 11);
+  doc.setFontSize(18);
+  doc.text("CARTAO DA GESTANTE", halfW + 12, 14);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.text("Sistema MaeDigital - Acompanhamento Pre-Natal", halfW + 8, 16.5);
+  doc.setFontSize(8.5);
+  doc.setTextColor(ar, ag, ab);
+  doc.text("ACOMPANHAMENTO PRE-NATAL  -  SISTEMA MAEDIGITAL", halfW + 12, 20);
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(7);
+  doc.text("UNAERP  /  DRS XIII RIBEIRAO PRETO", halfW + 12, 25.5);
 
-  // Corpo da carteirinha
-  const cardX = halfW + 10;
-  const cardW = halfW - 20;
-  const cardY = headH + 8;
+  // Numero do cartao (estilo documento oficial) no lado direito do cabecalho
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(ar, ag, ab);
+  doc.text("No CARTAO", pageW - 10, 12, { align: "right" });
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(11);
+  const cartaoNumero = (patientInfo.name || "").replace(/\s+/g, "").slice(0, 4).toUpperCase().padEnd(4, "X")
+    + "-" + String(new Date().getFullYear()).slice(-2)
+    + "-" + String(patientInfo.weeks ?? "00").padStart(2, "0");
+  doc.text(cartaoNumero, pageW - 10, 19, { align: "right" });
 
-  // Foto a esquerda (estilo documento)
-  const ph = 50;
-  const pw = 40;
-  doc.setFillColor(245, 245, 250);
+  // Faixa fina abaixo do cabecalho
+  doc.setFillColor(ar, ag, ab);
+  doc.rect(halfW + 4, headH, halfW - 4, 1.5, "F");
+
+  // Corpo principal (foto + dados)
+  const cardX = halfW + 14;
+  const cardW = halfW - 24;
+  const bodyY = headH + 8;
+
+  // Foto estilo documento
+  const ph = 46;
+  const pw = 36;
+  doc.setFillColor(245, 245, 248);
   doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.6);
-  doc.roundedRect(cardX, cardY, pw, ph, 1, 1, "FD");
+  doc.setLineWidth(0.4);
+  doc.rect(cardX, bodyY, pw, ph, "FD");
   if (fotoData) {
-    try { doc.addImage(fotoData, "JPEG", cardX + 1, cardY + 1, pw - 2, ph - 2, undefined, "FAST"); } catch { /* ignore */ }
+    try { doc.addImage(fotoData, "JPEG", cardX + 0.5, bodyY + 0.5, pw - 1, ph - 1, undefined, "FAST"); } catch { /* ignore */ }
   } else {
     doc.setTextColor(pr, pg, pb);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
+    doc.setFontSize(22);
     const ini = patientInfo.name.split(" ").map(n => n[0]).slice(0, 2).join("");
-    doc.text(ini, cardX + pw / 2, cardY + ph / 2 + 6, { align: "center" });
+    doc.text(ini, cardX + pw / 2, bodyY + ph / 2 + 5, { align: "center" });
   }
-  // Tarja "FOTO" estilo oficial
-  doc.setFillColor(pr, pg, pb);
-  doc.rect(cardX, cardY + ph - 5, pw, 5, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(6);
-  doc.text("FOTO", cardX + pw / 2, cardY + ph - 1.5, { align: "center" });
 
-  // Campos a direita da foto - estilo formulario oficial
-  const fX = cardX + pw + 6;
-  const fW = cardW - pw - 6;
-  let fy = cardY;
-  const drawField = (label: string, value: string, y2: number, w: number = fW) => {
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(6);
+  // Campos a direita da foto - linhas finas estilo formulario
+  const fX = cardX + pw + 7;
+  const fW = cardW - pw - 7;
+  const drawDocField = (label: string, value: string, y2: number, w: number, x2: number = fX) => {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(5.8);
     doc.setTextColor(...muted);
-    doc.text(label, fX, y2);
-    doc.setDrawColor(pr, pg, pb);
-    doc.setLineWidth(0.3);
-    doc.line(fX, y2 + 5, fX + w, y2 + 5);
+    doc.text(label, x2, y2);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
+    doc.setFontSize(9.5);
     doc.setTextColor(...dark);
-    doc.text(value || "-", fX, y2 + 4);
+    const txt = doc.splitTextToSize(value || "-", w)[0] ?? "-";
+    doc.text(txt, x2, y2 + 4.5);
+    doc.setDrawColor(210, 210, 215);
+    doc.setLineWidth(0.2);
+    doc.line(x2, y2 + 6, x2 + w, y2 + 6);
   };
-  drawField("NOME COMPLETO", patientInfo.name, fy, fW);
-  fy += 9;
-  drawField("DATA DE NASC.", "-", fy, fW / 2 - 2);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(6);
-  doc.setTextColor(...muted);
-  doc.text("IDADE", fX + fW / 2 + 2, fy);
-  doc.setDrawColor(pr, pg, pb);
-  doc.line(fX + fW / 2 + 2, fy + 5, fX + fW, fy + 5);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(...dark);
-  doc.text(`${patientInfo.age} anos`, fX + fW / 2 + 2, fy + 4);
-  fy += 9;
-  drawField("TIPO SANGUINEO", patientInfo.bloodType || "-", fy, fW / 2 - 2);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(6);
-  doc.setTextColor(...muted);
-  doc.text("BEBE", fX + fW / 2 + 2, fy);
-  doc.setDrawColor(pr, pg, pb);
-  doc.line(fX + fW / 2 + 2, fy + 5, fX + fW, fy + 5);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(pr, pg, pb);
-  doc.text(palette.label, fX + fW / 2 + 2, fy + 4);
-  fy += 9;
-  drawField("UNIDADE DE SAUDE", patientInfo.unidadeSaude || "-", fy, fW);
-  fy += 9;
-  drawField("TELEFONE", patientInfo.telefone || "-", fy, fW);
+  let fy = bodyY + 4;
+  drawDocField("NOME COMPLETO", patientInfo.name, fy, fW);
+  fy += 11;
+  drawDocField("IDADE", `${patientInfo.age} anos`, fy, fW * 0.45);
+  drawDocField("TIPO SANGUINEO", patientInfo.bloodType || "-", fy, fW * 0.5, fX + fW * 0.5);
+  fy += 11;
+  drawDocField("UNIDADE DE SAUDE", patientInfo.unidadeSaude || "-", fy, fW);
+  fy += 11;
+  drawDocField("TELEFONE", patientInfo.telefone || "-", fy, fW * 0.55);
+  drawDocField("BEBE", palette.label, fy, fW * 0.4, fX + fW * 0.6);
 
-  // Bloco gestacional destacado (abaixo da foto+campos)
-  const gbY = cardY + ph + 6;
+  // Bloco gestacional - 4 KPIs grandes em linha
+  const gbY = bodyY + ph + 8;
   doc.setFillColor(pr, pg, pb);
-  doc.roundedRect(cardX, gbY, cardW, 10, 1.5, 1.5, "F");
+  doc.rect(cardX, gbY, cardW, 6, "F");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(255, 255, 255);
-  doc.text("DADOS GESTACIONAIS", cardX + 3, gbY + 6.5);
+  doc.setFontSize(7.5);
+  doc.setTextColor(ar, ag, ab);
+  doc.text("DADOS GESTACIONAIS", cardX + 3, gbY + 4.2);
 
-  // 4 KPIs em grade compacta
-  const gkY = gbY + 12;
-  const gkH = 18;
+  const gkY = gbY + 8;
+  const gkH = 22;
   const gkW = (cardW - 9) / 4;
   const gkData = [
-    { l: "DUM", v: patientInfo.dum },
-    { l: "DPP", v: patientInfo.dpp },
-    { l: "SEMANAS", v: `${patientInfo.weeks}a` },
+    { l: "SEMANAS", v: `${patientInfo.weeks}` },
     { l: "TRIMESTRE", v: Number(patientInfo.weeks) <= 13 ? "1o" : Number(patientInfo.weeks) <= 27 ? "2o" : "3o" },
+    { l: "DUM", v: patientInfo.dum, small: true },
+    { l: "DPP", v: patientInfo.dpp, small: true },
   ];
   gkData.forEach((k, i) => {
     const x = cardX + i * (gkW + 3);
-    doc.setFillColor(245, 245, 250);
-    doc.setDrawColor(pr, pg, pb);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(x, gkY, gkW, gkH, 1.5, 1.5, "FD");
+    doc.setFillColor(248, 248, 252);
+    doc.rect(x, gkY, gkW, gkH, "F");
     doc.setFillColor(pr, pg, pb);
     doc.rect(x, gkY, gkW, 1.5, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.5);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
     doc.setTextColor(...muted);
-    doc.text(k.l, x + 2, gkY + 6);
+    doc.text(k.l, x + gkW / 2, gkY + 6, { align: "center" });
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
+    doc.setFontSize(k.small ? 10 : 16);
     doc.setTextColor(pr, pg, pb);
-    doc.text(k.v, x + gkW / 2, gkY + 14, { align: "center" });
+    doc.text(k.v, x + gkW / 2, gkY + (k.small ? 14 : 16), { align: "center" });
   });
 
-  // Antecedentes obstetricos
-  const obY = gkY + gkH + 6;
-  doc.setFillColor(ar, ag, ab);
-  doc.roundedRect(cardX, obY, cardW, 10, 1.5, 1.5, "F");
+  // IMC + ganho de peso (mais compacto e informativo)
+  const imcY = gkY + gkH + 5;
+  doc.setFillColor(245, 245, 248);
+  doc.rect(cardX, imcY, cardW, 14, "F");
+  doc.setFillColor(pr, pg, pb);
+  doc.rect(cardX, imcY, 1.5, 14, "F");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.setTextColor(...muted);
+  doc.text("IMC E GANHO DE PESO", cardX + 4, imcY + 4);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(pr, pg, pb);
-  doc.text("ANTECEDENTES OBSTETRICOS", cardX + 3, obY + 6.5);
+  doc.setFontSize(13);
+  doc.setTextColor(...dark);
+  if (imc && imcInfo) {
+    doc.text(`IMC ${imc.toFixed(1)}`, cardX + 4, imcY + 11);
+    const [cr, cg, cb] = hexToRgb(imcInfo.color);
+    doc.setTextColor(cr, cg, cb);
+    doc.setFontSize(8);
+    doc.text(imcInfo.label, cardX + 36, imcY + 11);
+  } else {
+    doc.setFontSize(8);
+    doc.setTextColor(...muted);
+    doc.text("Altura nao informada", cardX + 4, imcY + 11);
+  }
+  if (ganhoPeso !== null) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(pr, pg, pb);
+    doc.text(`${ganhoPeso > 0 ? "+" : ""}${ganhoPeso.toFixed(1)} kg`, cardX + cardW - 3, imcY + 9.5, { align: "right" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.setTextColor(...muted);
+    doc.text("ganho atual", cardX + cardW - 3, imcY + 12.5, { align: "right" });
+  }
 
-  const obY2 = obY + 12;
-  const obH = 18;
+  // Antecedentes - linha unica compacta
+  const obY = imcY + 17;
+  doc.setFillColor(ar, ag, ab);
+  doc.rect(cardX, obY, cardW, 6, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(pr, pg, pb);
+  doc.text("ANTECEDENTES OBSTETRICOS  -  G / P / A", cardX + 3, obY + 4.2);
+
+  const obY2 = obY + 8;
+  const obH = 16;
   const obW = (cardW - 6) / 3;
   const obData = [
     { l: "GESTACOES", v: String(patientInfo.gestacoes ?? 0) },
@@ -1173,64 +1189,56 @@ async function gerarPDFCartao(args: {
   ];
   obData.forEach((o, i) => {
     const x = cardX + i * (obW + 3);
-    doc.setFillColor(245, 245, 250);
-    doc.setDrawColor(ar, ag, ab);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(x, obY2, obW, obH, 1.5, 1.5, "FD");
+    doc.setFillColor(248, 248, 252);
+    doc.rect(x, obY2, obW, obH, "F");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
+    doc.setFontSize(15);
     doc.setTextColor(pr, pg, pb);
-    doc.text(o.v, x + obW / 2, obY2 + 11, { align: "center" });
+    doc.text(o.v, x + obW / 2, obY2 + 10, { align: "center" });
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
+    doc.setFontSize(6);
     doc.setTextColor(...muted);
-    doc.text(o.l, x + obW / 2, obY2 + 16, { align: "center" });
+    doc.text(o.l, x + obW / 2, obY2 + 14, { align: "center" });
   });
 
-  // IMC + ganho de peso (preenche espaco vazio)
-  const imcY = obY2 + obH + 6;
-  doc.setFillColor(245, 245, 250);
-  doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(cardX, imcY, cardW, 16, 1.5, 1.5, "FD");
+  // Resumo de registros (preenche espaco abaixo)
+  const rrY = obY2 + obH + 5;
   doc.setFillColor(pr, pg, pb);
-  doc.rect(cardX, imcY, 2, 16, "F");
+  doc.rect(cardX, rrY, cardW, 6, "F");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
-  doc.setTextColor(...muted);
-  doc.text("IMC E GANHO DE PESO", cardX + 5, imcY + 5);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(...dark);
-  if (imc && imcInfo) {
-    doc.text(`IMC ${imc.toFixed(1)}`, cardX + 5, imcY + 13);
-    const [cr, cg, cb] = hexToRgb(imcInfo.color);
-    doc.setTextColor(cr, cg, cb);
-    doc.setFontSize(8);
-    doc.text(imcInfo.label, cardX + 35, imcY + 13);
-  } else {
-    doc.setFontSize(8);
-    doc.setTextColor(...muted);
-    doc.text("Altura nao informada", cardX + 5, imcY + 13);
-  }
-  if (ganhoPeso !== null) {
+  doc.setFontSize(7.5);
+  doc.setTextColor(ar, ag, ab);
+  doc.text("REGISTROS NO CARTAO", cardX + 3, rrY + 4.2);
+
+  const rrY2 = rrY + 8;
+  const rrH = 14;
+  const rrW = (cardW - 6) / 3;
+  const rrData = [
+    { l: "MEDICOES", v: String(medicoes.length) },
+    { l: "VACINAS", v: String(vacinas.length) },
+    { l: "EXAMES", v: String(exames.length) },
+  ];
+  rrData.forEach((r, i) => {
+    const x = cardX + i * (rrW + 3);
+    doc.setFillColor(248, 248, 252);
+    doc.rect(x, rrY2, rrW, rrH, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
     doc.setTextColor(pr, pg, pb);
-    doc.text(`${ganhoPeso > 0 ? "+" : ""}${ganhoPeso.toFixed(1)} kg`, cardX + cardW - 3, imcY + 11, { align: "right" });
+    doc.text(r.v, x + rrW / 2, rrY2 + 8.5, { align: "center" });
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.5);
+    doc.setFontSize(6);
     doc.setTextColor(...muted);
-    doc.text("ganho atual", cardX + cardW - 3, imcY + 14.5, { align: "right" });
-  }
+    doc.text(r.l, x + rrW / 2, rrY2 + 12.5, { align: "center" });
+  });
 
-  // Assinatura/validade no rodape
-  const sigY = pageH - 22;
-  doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.4);
+  // Assinatura e validade no rodape
+  const sigY = pageH - 16;
+  doc.setDrawColor(...dark);
+  doc.setLineWidth(0.3);
   doc.line(cardX, sigY, cardX + cardW * 0.55, sigY);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.5);
+  doc.setFontSize(6);
   doc.setTextColor(...muted);
   doc.text("Assinatura do profissional responsavel", cardX, sigY + 3);
   doc.setFont("helvetica", "bold");
@@ -1239,75 +1247,50 @@ async function gerarPDFCartao(args: {
   doc.text(`EMITIDO EM ${formatBR(new Date())}`, cardX + cardW, sigY + 3, { align: "right" });
 
   // ===== VERSO (ESQUERDA) =====
-  const ccX = 16;
-  const ccW = halfW - 32;
-
-  // Cabecalho do verso espelhado
-  doc.setFillColor(pr, pg, pb);
-  doc.rect(0, 0, halfW, headH, "F");
+  // Faixa lateral gold espelhada
   doc.setFillColor(ar, ag, ab);
-  doc.rect(0, headH, halfW, 2, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("INFORMACOES E ACESSO", ccX, 11);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.text("Verso da carteirinha", ccX, 16.5);
+  doc.rect(halfW - 4, 0, 4, pageH, "F");
 
-  // Resumo de registros (3 cards)
-  const rsY = headH + 8;
-  const rsH = 24;
-  const rsW = (ccW - 8) / 3;
-  const rsData = [
-    { l: "MEDICOES", v: String(medicoes.length) },
-    { l: "VACINAS", v: String(vacinas.length) },
-    { l: "EXAMES", v: String(exames.length) },
-  ];
-  rsData.forEach((s, i) => {
-    const x = ccX + i * (rsW + 4);
-    doc.setFillColor(pr, pg, pb);
-    doc.roundedRect(x, rsY, rsW, rsH, 1.5, 1.5, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(ar, ag, ab);
-    doc.text(s.v, x + rsW / 2, rsY + 14, { align: "center" });
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.setTextColor(255, 255, 255);
-    doc.text(s.l, x + rsW / 2, rsY + 20, { align: "center" });
-  });
-
-  // QR Code com instrucoes
-  const qrCapa = 50;
-  const qrCapaY = rsY + rsH + 6;
-  doc.setFillColor(245, 245, 250);
-  doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.4);
-  doc.roundedRect(ccX, qrCapaY, ccW, qrCapa + 10, 2, 2, "FD");
+  // Cabecalho do verso
   doc.setFillColor(pr, pg, pb);
-  doc.rect(ccX, qrCapaY, ccW, 7, "F");
+  doc.rect(0, 0, halfW - 4, headH, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text("ACESSO DIGITAL", 14, 14);
+  doc.setTextColor(ar, ag, ab);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text("ESCANEIE PARA VER O CARTAO SEMPRE ATUALIZADO", 14, 20);
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(7);
+  doc.text("Verso da carteirinha", 14, 25.5);
+  doc.setFillColor(ar, ag, ab);
+  doc.rect(0, headH, halfW - 4, 1.5, "F");
+
+  // QR Code grande e centralizado
+  const ccX = 14;
+  const ccW = halfW - 28;
+  const qrSize = 60;
+  const qrY = headH + 10;
+  const qrX = ccX + (ccW - qrSize) / 2;
+  // moldura da QR
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(pr, pg, pb);
+  doc.setLineWidth(0.5);
+  doc.rect(qrX - 3, qrY - 3, qrSize + 6, qrSize + 6, "FD");
+  try { doc.addImage(qrData, "PNG", qrX, qrY, qrSize, qrSize); } catch { /* ignore */ }
+
+  // URL abaixo do QR
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.setTextColor(255, 255, 255);
-  doc.text("ACESSO DIGITAL EM TEMPO REAL", ccX + 4, qrCapaY + 5);
-
-  doc.setFillColor(255, 255, 255);
-  doc.rect(ccX + 4, qrCapaY + 10, qrCapa, qrCapa, "F");
-  try { doc.addImage(qrData, "PNG", ccX + 4, qrCapaY + 10, qrCapa, qrCapa); } catch { /* ignore */ }
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8.5);
-  doc.setTextColor(...dark);
-  const ccTxt = doc.splitTextToSize(
-    "Escaneie o QR Code para acessar o cartao digital sempre atualizado, com novos exames, vacinas, medicoes e orientacoes.",
-    ccW - qrCapa - 14,
-  );
-  doc.text(ccTxt, ccX + qrCapa + 10, qrCapaY + 16);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
   doc.setTextColor(pr, pg, pb);
-  const linkLines0 = doc.splitTextToSize(cartaoUrl, ccW - qrCapa - 14);
-  doc.text(linkLines0, ccX + qrCapa + 10, qrCapaY + qrCapa + 4);
+  doc.text("LINK DIRETO", ccX + ccW / 2, qrY + qrSize + 9, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(...dark);
+  const urlLines = doc.splitTextToSize(cartaoUrl, ccW - 4);
+  doc.text(urlLines, ccX + ccW / 2, qrY + qrSize + 13, { align: "center" });
 
   // Bloco contato/UBS
   const linhasContatoCapa = [
@@ -1316,13 +1299,11 @@ async function gerarPDFCartao(args: {
     patientInfo.unidadeSaude ? `UBS: ${patientInfo.unidadeSaude}` : null,
     patientInfo.bairro || patientInfo.cidade ? `${patientInfo.bairro ?? ""}${patientInfo.bairro && patientInfo.cidade ? " - " : ""}${patientInfo.cidade ?? ""}` : null,
   ].filter(Boolean) as string[];
-  const ctY = qrCapaY + qrCapa + 16;
+  const ctY = qrY + qrSize + 13 + (urlLines.length * 3.5) + 6;
   if (linhasContatoCapa.length) {
     const ctH = 8 + linhasContatoCapa.length * 4.5;
-    doc.setFillColor(245, 245, 250);
-    doc.setDrawColor(pr, pg, pb);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(ccX, ctY, ccW, ctH, 2, 2, "FD");
+    doc.setFillColor(245, 245, 248);
+    doc.rect(ccX, ctY, ccW, ctH, "F");
     doc.setFillColor(pr, pg, pb);
     doc.rect(ccX, ctY, 2, ctH, "F");
     doc.setFont("helvetica", "bold");
@@ -1335,15 +1316,15 @@ async function gerarPDFCartao(args: {
     linhasContatoCapa.forEach((l, i) => doc.text(l, ccX + 5, ctY + 9.5 + i * 4));
   }
 
-  // ORIENTACOES IMPORTANTES (preenche espaco)
-  const orY = ctY + (linhasContatoCapa.length ? 8 + linhasContatoCapa.length * 4.5 : 0) + 4;
+  // ORIENTACOES IMPORTANTES
+  const orY = ctY + (linhasContatoCapa.length ? 8 + linhasContatoCapa.length * 4.5 : 0) + 5;
   if (orY < pageH - 40) {
     doc.setFillColor(ar, ag, ab);
-    doc.roundedRect(ccX, orY, ccW, 7, 1.5, 1.5, "F");
+    doc.rect(ccX, orY, ccW, 6, "F");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(pr, pg, pb);
-    doc.text("ORIENTACOES IMPORTANTES", ccX + 3, orY + 5);
+    doc.text("ORIENTACOES IMPORTANTES", ccX + 3, orY + 4.2);
 
     const orientacoes = [
       "Apresente este cartao em todas as consultas pre-natais.",
@@ -1352,12 +1333,12 @@ async function gerarPDFCartao(args: {
       "Movimentos fetais devem ser sentidos a partir de 20 semanas.",
       "Dados sempre atualizados no aplicativo MaeDigital.",
     ];
-    let ory = orY + 12;
+    let ory = orY + 11;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...dark);
     orientacoes.forEach((t) => {
-      if (ory > pageH - 22) return;
+      if (ory > pageH - 18) return;
       doc.setFont("helvetica", "bold");
       doc.setTextColor(pr, pg, pb);
       doc.text("-", ccX + 3, ory);
@@ -1369,17 +1350,15 @@ async function gerarPDFCartao(args: {
     });
   }
 
-  // Rodape oficial
+  // Rodape
   doc.setFillColor(pr, pg, pb);
-  doc.rect(0, pageH - 12, halfW, 12, "F");
-  doc.setFillColor(ar, ag, ab);
-  doc.rect(0, pageH - 12, halfW, 1.5, "F");
+  doc.rect(0, pageH - 10, halfW - 4, 10, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(255, 255, 255);
-  doc.text("UNAERP - DRS XIII / RIBEIRAO PRETO", ccX, pageH - 5);
+  doc.text("UNAERP - DRS XIII / RIBEIRAO PRETO", ccX, pageH - 4);
   doc.setFont("helvetica", "normal");
-  doc.text("Sistema MaeDigital", halfW - ccX, pageH - 5, { align: "right" });
+  doc.text("Sistema MaeDigital", halfW - ccX - 4, pageH - 4, { align: "right" });
 
 
   // =============================================================
@@ -1520,104 +1499,55 @@ async function gerarPDFCartao(args: {
     iy += 26;
   }
 
-  // ULTIMA EVOLUCAO CLINICA (preenche espaco vazio embaixo)
+  // PROXIMOS PASSOS / LEMBRETES (ocupa todo espaco restante)
   doc.setTextColor(pr, pg, pb);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text("ULTIMA EVOLUCAO CLINICA", lX, iy + 4);
+  doc.text("PROXIMOS PASSOS E ORIENTACOES", lX, iy + 4);
   doc.setDrawColor(pr, pg, pb);
   doc.setLineWidth(0.5);
   doc.line(lX, iy + 7, lX + lW, iy + 7);
   iy += 11;
 
-  // Pega a ultima medicao por data
-  const ultimasMed = (() => {
-    const map = new Map<string, MedicaoReal[]>();
-    medicoes.forEach(m => {
-      if (!map.has(m.data)) map.set(m.data, []);
-      map.get(m.data)!.push(m);
-    });
-    const grupos = Array.from(map.entries()).sort((a, b) => {
-      const da = parseBR(a[0]); const db = parseBR(b[0]);
-      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
-    });
-    return grupos[0] ?? null;
-  })();
-
-  if (ultimasMed) {
-    const [dataU, itemsU] = ultimasMed;
-    const ueH = 12 + Math.ceil(itemsU.length / 2) * 5;
-    doc.setFillColor(255, 255, 255);
-    doc.setDrawColor(225, 225, 230);
-    doc.roundedRect(lX, iy, lW, ueH, 2, 2, "FD");
-    doc.setFillColor(pr, pg, pb);
-    doc.roundedRect(lX + 3, iy + 2, 28, 5.5, 1, 1, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    doc.text(`SEMANA ${itemsU[0].semana}`, lX + 17, iy + 5.8, { align: "center" });
-    doc.setTextColor(...muted);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.text(dataU, lX + lW - 4, iy + 5.8, { align: "right" });
-    const colWmed = (lW - 6) / 2;
-    itemsU.forEach((m, i) => {
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const cx = lX + 3 + col * colWmed;
-      const cy = iy + 11 + row * 5;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      doc.setTextColor(...muted);
-      doc.text(`${m.parametro}:`, cx, cy);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8);
-      doc.setTextColor(...dark);
-      doc.text(String(m.valor), cx + doc.getTextWidth(`${m.parametro}: `), cy);
-    });
-    iy += ueH + 4;
+  const wk = Number(patientInfo.weeks) || 0;
+  const lembretes: { titulo: string; desc: string }[] = [];
+  if (wk < 14) {
+    lembretes.push({ titulo: "USG morfologica 1o tri", desc: "Realizar entre 11 e 14 semanas (translucencia nucal)." });
+    lembretes.push({ titulo: "Suplementacao", desc: "Iniciar acido folico 5mg/dia e sulfato ferroso." });
+    lembretes.push({ titulo: "Exames de rotina", desc: "Hemograma, tipagem, glicemia, sorologias e urina I." });
+    lembretes.push({ titulo: "Vacinacao", desc: "Atualizar Hepatite B e dT conforme situacao vacinal." });
+  } else if (wk < 28) {
+    lembretes.push({ titulo: "USG morfologica 2o tri", desc: "Realizar entre 20 e 24 semanas (anatomia fetal)." });
+    lembretes.push({ titulo: "Vacinas obrigatorias", desc: "dTpa apos 20 sem e Influenza no periodo da campanha." });
+    lembretes.push({ titulo: "Rastreio de DMG", desc: "TOTG 75g entre 24 e 28 sem (jejum, 1h e 2h)." });
+    lembretes.push({ titulo: "Movimentacao fetal", desc: "Sentir movimentos do bebe a partir de 20 sem." });
+  } else {
+    lembretes.push({ titulo: "Consultas quinzenais/semanais", desc: "Aumentar frequencia conforme se aproxima do parto." });
+    lembretes.push({ titulo: "Plano de parto", desc: "Preparar mala da maternidade e definir via de parto." });
+    lembretes.push({ titulo: "Monitorar movimentos", desc: "Observar movimentos fetais diariamente apos o repouso." });
+    lembretes.push({ titulo: "Sinais de alerta", desc: "Procurar UBS em caso de dor, sangramento ou perda de liquido." });
   }
+  lembretes.push({ titulo: "Acompanhamento continuo", desc: "Manter pressao, peso e glicemia sob avaliacao a cada consulta." });
 
-  // PROXIMOS PASSOS / LEMBRETES (preenche resto)
-  if (iy < pageH - 30) {
-    doc.setFillColor(ar, ag, ab);
-    doc.roundedRect(lX, iy, lW, 7, 1.5, 1.5, "F");
+  // Cards verticais alternados
+  lembretes.forEach((it) => {
+    if (iy > pageH - 18) return;
+    const cardH = 11;
+    doc.setFillColor(248, 248, 252);
+    doc.rect(lX, iy, lW, cardH, "F");
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(lX, iy, 1.5, cardH, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
     doc.setTextColor(pr, pg, pb);
-    doc.text("PROXIMOS PASSOS E LEMBRETES", lX + 3, iy + 5);
-    iy += 10;
-    const wk = Number(patientInfo.weeks) || 0;
-    const lembretes: string[] = [];
-    if (wk < 14) {
-      lembretes.push("1o trimestre: USG morfologica entre 11-14 sem.");
-      lembretes.push("Iniciar acido folico e sulfato ferroso.");
-      lembretes.push("Exames de rotina: hemograma, glicemia, urina I.");
-    } else if (wk < 28) {
-      lembretes.push("2o trimestre: USG morfologica entre 20-24 sem.");
-      lembretes.push("Vacinas dTpa e Influenza no periodo indicado.");
-      lembretes.push("TOTG 75g entre 24-28 sem para rastreio de DMG.");
-    } else {
-      lembretes.push("3o trimestre: consultas quinzenais ou semanais.");
-      lembretes.push("Preparar mala da maternidade e plano de parto.");
-      lembretes.push("Monitorar movimentos fetais diariamente.");
-    }
-    lembretes.push("Manter pressao, peso e glicemia sob acompanhamento.");
+    doc.text(it.titulo, lX + 4, iy + 4.2);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(...dark);
-    lembretes.forEach((t) => {
-      if (iy > pageH - 14) return;
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(pr, pg, pb);
-      doc.text("-", lX + 2, iy);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(...dark);
-      const tl = doc.splitTextToSize(t, lW - 6);
-      doc.text(tl, lX + 5, iy);
-      iy += tl.length * 3.4 + 1;
-    });
-  }
+    const dl = doc.splitTextToSize(it.desc, lW - 8);
+    doc.text(dl, lX + 4, iy + 8.2);
+    iy += cardH + 2;
+  });
 
   const rX = halfW + 14;
   const rW = halfW - 28;
@@ -1847,83 +1777,9 @@ async function gerarPDFCartao(args: {
     }
   };
 
-  // PAGINA 3 - Folha 2: GRAFICOS INTERCALADOS (4 graficos ocupando toda area)
-  doc.addPage("a4", "landscape");
-  drawBaseFolderPage();
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(pr, pg, pb);
-  doc.text("EVOLUCAO CLINICA - GRAFICOS (1/2)", margin, 13);
-  doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.5);
-  doc.line(margin, 15, pageW - margin, 15);
-
-  const chartW = halfW - margin - 5;
-  const chartH = (pageH - 24) / 2 - 3;
-  // Intercalando: lado esquerdo (peso/AU) | lado direito (pressao/glicemia/BCF/PAM)
-  // Topo esquerdo: Peso
-  drawChartBox(margin, 18, chartW, chartH,
-    "Curva de Ganho de Peso (kg)",
-    [{ color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), fill: true, name: "Peso" }]);
-  // Topo direito: Pressao (intercalado)
-  drawChartBox(halfW + 5, 18, chartW, chartH,
-    "Curva Pressorica (mmHg)",
-    [
-      { color: [239, 68, 68], values: series.pressao.filter(p => p.sistolica !== undefined).map(d => ({ x: d.semana, y: d.sistolica! })), name: "Sistolica" },
-      { color: [59, 130, 246], values: series.pressao.filter(p => p.diastolica !== undefined).map(d => ({ x: d.semana, y: d.diastolica! })), name: "Diastolica" },
-    ],
-    { min: 60, max: 140, label: "normal" });
-  // Baixo esquerdo: Altura uterina
-  drawChartBox(margin, 18 + chartH + 5, chartW, chartH,
-    "Altura Uterina (cm)",
-    [{ color: [124, 58, 237], values: series.au.map(d => ({ x: d.semana, y: d.altura })), fill: true, name: "AU" }]);
-  // Baixo direito: BCF
-  drawChartBox(halfW + 5, 18 + chartH + 5, chartW, chartH,
-    "Batimentos Cardiacos Fetais (bpm)",
-    [{ color: [16, 185, 129], values: series.bcf.map(d => ({ x: d.semana, y: d.bcf })), name: "BCF" }],
-    { min: 110, max: 160, label: "normal" });
-
-  // PAGINA 4 - Folha 3: 2 graficos cruzados em cima | DADOS CLINICOS EM GRADE embaixo
-  doc.addPage("a4", "landscape");
-  drawBaseFolderPage();
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(pr, pg, pb);
-  doc.text("EVOLUCAO CLINICA - GRAFICOS CRUZADOS (2/2)", margin, 13);
-  doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.5);
-  doc.line(margin, 15, pageW - margin, 15);
-
-  // Top: 2 graficos cruzados (Glicemia x Peso | PAM x Peso)
-  const chartTopH = 70;
-  drawChartBox(margin, 18, chartW, chartTopH,
-    "Glicemia x Peso (risco DMG)",
-    [
-      { color: [245, 158, 11], values: series.glicemia.map(d => ({ x: d.semana, y: d.glicemia })), name: "Glicemia (mg/dL)" },
-      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso (kg)" },
-    ],
-    { min: 70, max: 95, label: "normal" });
-  const pamSerie = series.pressao
-    .filter(p => p.sistolica !== undefined && p.diastolica !== undefined)
-    .map(p => ({ x: p.semana, y: (p.sistolica! + 2 * p.diastolica!) / 3 }));
-  drawChartBox(halfW + 5, 18, chartW, chartTopH,
-    "PAM x Peso (analise combinada)",
-    [
-      { color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), name: "Peso (kg)", fill: true },
-      { color: [239, 68, 68], values: pamSerie, name: "PAM (mmHg)" },
-    ]);
-
-  // Embaixo: TABELAS POR TIPO DE DADO CLINICO (grade)
-  const gridY = 18 + chartTopH + 6;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.setTextColor(pr, pg, pb);
-  doc.text("DADOS CLINICOS POR PARAMETRO", margin, gridY);
-  doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.5);
-  doc.line(margin, gridY + 2, pageW - margin, gridY + 2);
+  // ================================================================
+  // PAGINAS DE EVOLUCAO CLINICA: por parametro -> GRAFICO | TABELA lado a lado
+  // ================================================================
 
   // Agrupa por parametro
   const porParametro = new Map<string, MedicaoReal[]>();
@@ -1931,7 +1787,6 @@ async function gerarPDFCartao(args: {
     if (!porParametro.has(m.parametro)) porParametro.set(m.parametro, []);
     porParametro.get(m.parametro)!.push(m);
   });
-  // Ordena cada lista por data desc (mais recente primeiro)
   porParametro.forEach((arr) => {
     arr.sort((a, b) => {
       const da = parseBR(a.data); const db = parseBR(b.data);
@@ -1940,79 +1795,231 @@ async function gerarPDFCartao(args: {
   });
   const parametros = Array.from(porParametro.keys()).sort();
 
-  if (parametros.length) {
-    // Grade 4 colunas, distribuida pela largura
-    const cols = 4;
-    const gap = 4;
-    const tBoxW = (pageW - margin * 2 - gap * (cols - 1)) / cols;
-    const tBoxStartY = gridY + 6;
-    const tBoxMaxH = pageH - tBoxStartY - 12;
-    const headerH = 6;
-    const rowH = 4;
-    const titleH = 7;
-    const maxRows = Math.floor((tBoxMaxH - titleH - headerH) / rowH);
+  // Helper: detecta valor numerico (lida com "120/80")
+  const numFromValor = (v: string | number): number | null => {
+    if (typeof v === "number") return v;
+    const s = String(v).trim();
+    const m = s.match(/-?\d+([.,]\d+)?/);
+    return m ? parseFloat(m[0].replace(",", ".")) : null;
+  };
 
-    parametros.forEach((param, i) => {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      // Limite de 2 linhas para nao estourar
-      if (row >= 2) return;
-      const tx = margin + col * (tBoxW + gap);
-      const itensP = porParametro.get(param)!.slice(0, maxRows);
-      const tableH = titleH + headerH + itensP.length * rowH;
-      // Max 2 linhas: usa metade da altura disponivel
-      const ty = tBoxStartY + row * (tBoxMaxH / 2 + 2);
+  // Mapeia parametro -> serie + cor + range
+  const paramConfig = (param: string): {
+    color: [number, number, number];
+    refRange?: { min: number; max: number; label?: string };
+    series: { color: [number, number, number]; values: { x: number; y: number }[]; fill?: boolean; name?: string }[];
+  } | null => {
+    const lp = param.toLowerCase();
+    if (lp.includes("peso")) {
+      return {
+        color: [pr, pg, pb],
+        series: [{ color: [pr, pg, pb], values: series.peso.map(d => ({ x: d.semana, y: d.peso })), fill: true, name: "Peso (kg)" }],
+      };
+    }
+    if (lp.includes("uterina") || lp === "au") {
+      return {
+        color: [124, 58, 237],
+        series: [{ color: [124, 58, 237], values: series.au.map(d => ({ x: d.semana, y: d.altura })), fill: true, name: "AU (cm)" }],
+      };
+    }
+    if (lp.includes("bcf") || lp.includes("batimento")) {
+      return {
+        color: [16, 185, 129],
+        refRange: { min: 110, max: 160, label: "normal" },
+        series: [{ color: [16, 185, 129], values: series.bcf.map(d => ({ x: d.semana, y: d.bcf })), name: "BCF (bpm)" }],
+      };
+    }
+    if (lp.includes("press") && lp.includes("sist")) {
+      return {
+        color: [239, 68, 68],
+        refRange: { min: 90, max: 140, label: "normal" },
+        series: [{ color: [239, 68, 68], values: series.pressao.filter(p => p.sistolica !== undefined).map(d => ({ x: d.semana, y: d.sistolica! })), name: "Sistolica (mmHg)" }],
+      };
+    }
+    if (lp.includes("press") && lp.includes("diast")) {
+      return {
+        color: [59, 130, 246],
+        refRange: { min: 60, max: 90, label: "normal" },
+        series: [{ color: [59, 130, 246], values: series.pressao.filter(p => p.diastolica !== undefined).map(d => ({ x: d.semana, y: d.diastolica! })), name: "Diastolica (mmHg)" }],
+      };
+    }
+    if (lp.includes("glic")) {
+      return {
+        color: [245, 158, 11],
+        refRange: { min: 70, max: 95, label: "normal" },
+        series: [{ color: [245, 158, 11], values: series.glicemia.map(d => ({ x: d.semana, y: d.glicemia })), name: "Glicemia (mg/dL)" }],
+      };
+    }
+    // Generico: cria serie a partir das medicoes
+    const items = porParametro.get(param) ?? [];
+    const vals = items
+      .map(it => ({ x: it.semana, y: numFromValor(it.valor) }))
+      .filter((it): it is { x: number; y: number } => it.y !== null)
+      .sort((a, b) => a.x - b.x);
+    if (vals.length < 2) return null;
+    return {
+      color: [pr, pg, pb],
+      series: [{ color: [pr, pg, pb], values: vals, name: param }],
+    };
+  };
 
-      // Caixa
-      doc.setFillColor(255, 255, 255);
-      doc.setDrawColor(225, 225, 230);
-      doc.setLineWidth(0.3);
-      doc.roundedRect(tx, ty, tBoxW, tableH, 1.5, 1.5, "FD");
-      // Titulo
-      doc.setFillColor(pr, pg, pb);
-      doc.rect(tx, ty, tBoxW, titleH, "F");
-      doc.setTextColor(255, 255, 255);
+  // Layout: 2 blocos por pagina (cada bloco = grafico esquerda + tabela direita)
+  const blocksPerPage = 2;
+  const blockH = (pageH - 24) / blocksPerPage - 4;
+  const chartBoxW = halfW - margin - 5;   // grafico ocupa ~ metade
+  const tableBoxW = halfW - margin - 5;   // tabela ocupa a outra metade
+
+  const drawTableBox = (
+    bx: number, by: number, bw: number, bh: number,
+    title: string,
+    items: MedicaoReal[],
+    accent: [number, number, number],
+  ) => {
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(225, 225, 230);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(bx, by, bw, bh, 2, 2, "FD");
+    // Titulo
+    doc.setFillColor(accent[0], accent[1], accent[2]);
+    doc.rect(bx, by, bw, 7, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text(title.toUpperCase(), bx + 3, by + 5);
+    doc.setFontSize(7);
+    doc.text(`${items.length} registro${items.length !== 1 ? "s" : ""}`, bx + bw - 3, by + 5, { align: "right" });
+    // Header colunas
+    const headerY = by + 7;
+    const headerHt = 5.5;
+    doc.setFillColor(245, 245, 250);
+    doc.rect(bx, headerY, bw, headerHt, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...muted);
+    const cDataW = bw * 0.38;
+    const cSemW = bw * 0.18;
+    const cValW = bw - cDataW - cSemW - 2;
+    doc.text("DATA", bx + 3, headerY + 3.8);
+    doc.text("SEM", bx + 3 + cDataW, headerY + 3.8);
+    doc.text("VALOR", bx + 3 + cDataW + cSemW, headerY + 3.8);
+    // Rows
+    const rowsStartY = headerY + headerHt;
+    const rowsH = bh - (rowsStartY - by) - 2;
+    const rowHt = 4.5;
+    const maxRows = Math.floor(rowsH / rowHt);
+    const visible = items.slice(0, maxRows);
+    visible.forEach((m, ri) => {
+      const ry5 = rowsStartY + ri * rowHt;
+      if (ri % 2 === 0) {
+        doc.setFillColor(252, 252, 254);
+        doc.rect(bx, ry5, bw, rowHt, "F");
+      }
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(...dark);
+      doc.text(m.data, bx + 3, ry5 + 3.2);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      const titleTrunc = doc.splitTextToSize(param.toUpperCase(), tBoxW - 4)[0] ?? param;
-      doc.text(titleTrunc, tx + 2, ty + 4.8);
-      // Header
-      doc.setFillColor(245, 245, 250);
-      doc.rect(tx, ty + titleH, tBoxW, headerH, "F");
+      doc.setTextColor(accent[0], accent[1], accent[2]);
+      doc.text(`${m.semana}`, bx + 3 + cDataW, ry5 + 3.2);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.5);
+      doc.setTextColor(...dark);
+      doc.text(String(m.valor), bx + 3 + cDataW + cSemW, ry5 + 3.2);
+    });
+    if (items.length > maxRows) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(6);
       doc.setTextColor(...muted);
-      const c1W = tBoxW * 0.42;
-      const c2W = tBoxW * 0.22;
-      doc.text("DATA", tx + 2, ty + titleH + 4);
-      doc.text("SEM", tx + 2 + c1W, ty + titleH + 4);
-      doc.text("VALOR", tx + 2 + c1W + c2W, ty + titleH + 4);
-      // Rows
-      itensP.forEach((m, ri) => {
-        const ry3 = ty + titleH + headerH + ri * rowH;
-        if (ri % 2 === 0) {
-          doc.setFillColor(252, 252, 254);
-          doc.rect(tx, ry3, tBoxW, rowH, "F");
+      doc.text(`+ ${items.length - maxRows} registros anteriores`, bx + bw / 2, by + bh - 1.2, { align: "center" });
+    }
+  };
+
+  // Inicia a primeira pagina de evolucao
+  if (parametros.length) {
+    let pageIndex = 0;
+    let posInPage = 0;
+
+    const startNewPage = (titulo: string) => {
+      doc.addPage("a4", "landscape");
+      drawBaseFolderPage();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(pr, pg, pb);
+      doc.text(titulo, margin, 13);
+      doc.setDrawColor(pr, pg, pb);
+      doc.setLineWidth(0.5);
+      doc.line(margin, 15, pageW - margin, 15);
+    };
+
+    parametros.forEach((param) => {
+      if (posInPage === 0) {
+        pageIndex += 1;
+        startNewPage(`EVOLUCAO CLINICA POR PARAMETRO  -  PAGINA ${pageIndex}`);
+      }
+      const cfg = paramConfig(param);
+      const items = porParametro.get(param)!;
+      const accent: [number, number, number] = cfg?.color ?? [pr, pg, pb];
+      const yTop = 18 + posInPage * (blockH + 4);
+
+      // Lado esquerdo: GRAFICO (ou caixa "sem dados suficientes")
+      if (cfg && cfg.series[0].values.length >= 2) {
+        drawChartBox(margin, yTop, chartBoxW, blockH,
+          `Curva: ${param}`,
+          cfg.series,
+          cfg.refRange);
+      } else {
+        // sem grafico: caixa explicativa
+        doc.setFillColor(248, 248, 252);
+        doc.setDrawColor(225, 225, 230);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(margin, yTop, chartBoxW, blockH, 2, 2, "FD");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(...dark);
+        doc.text(param.toUpperCase(), margin + 4, yTop + 8);
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(8);
+        doc.setTextColor(...muted);
+        doc.text("Necessario ao menos 2 medicoes para gerar grafico.", margin + 4, yTop + 14);
+        // Mini stat: ultima leitura
+        const ult = items[0];
+        if (ult) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7);
+          doc.setTextColor(...muted);
+          doc.text("ULTIMA LEITURA", margin + 4, yTop + 22);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(20);
+          doc.setTextColor(accent[0], accent[1], accent[2]);
+          doc.text(String(ult.valor), margin + 4, yTop + 32);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7);
+          doc.setTextColor(...muted);
+          doc.text(`em ${ult.data}  -  semana ${ult.semana}`, margin + 4, yTop + 36);
         }
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(6.5);
-        doc.setTextColor(...dark);
-        doc.text(m.data, tx + 2, ry3 + 2.8);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(pr, pg, pb);
-        doc.text(`${m.semana}`, tx + 2 + c1W, ry3 + 2.8);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...dark);
-        doc.text(String(m.valor), tx + 2 + c1W + c2W, ry3 + 2.8);
-      });
+      }
+
+      // Lado direito: TABELA
+      drawTableBox(halfW + 5, yTop, tableBoxW, blockH, param, items, accent);
+
+      posInPage = (posInPage + 1) % blocksPerPage;
     });
   } else {
+    // Pagina vazia explicativa
+    doc.addPage("a4", "landscape");
+    drawBaseFolderPage();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(pr, pg, pb);
+    doc.text("EVOLUCAO CLINICA POR PARAMETRO", margin, 13);
+    doc.setDrawColor(pr, pg, pb);
+    doc.setLineWidth(0.5);
+    doc.line(margin, 15, pageW - margin, 15);
     doc.setFillColor(248, 248, 252);
-    doc.roundedRect(margin, gridY + 6, pageW - margin * 2, 14, 2, 2, "F");
+    doc.roundedRect(margin, pageH / 2 - 10, pageW - margin * 2, 20, 2, 2, "F");
     doc.setFont("helvetica", "italic");
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setTextColor(...muted);
-    doc.text("Nenhum dado clinico registrado.", pageW / 2, gridY + 14, { align: "center" });
+    doc.text("Nenhum dado clinico registrado.", pageW / 2, pageH / 2 + 2, { align: "center" });
   }
 
   // =============================================================
