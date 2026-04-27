@@ -94,6 +94,125 @@ function fmtData(s: string) {
   return new Date(s).toLocaleDateString("pt-BR");
 }
 
+function ObstetricoEditor({
+  profile,
+  onSaved,
+}: {
+  profile: Profile;
+  onSaved: (p: Profile) => void;
+}) {
+  const [g, setG] = useState<string>(String(profile.numero_gestacoes ?? 0));
+  const [p, setP] = useState<string>(String(profile.numero_partos ?? 0));
+  const [a, setA] = useState<string>(String(profile.numero_abortos ?? 0));
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    setG(String(profile.numero_gestacoes ?? 0));
+    setP(String(profile.numero_partos ?? 0));
+    setA(String(profile.numero_abortos ?? 0));
+  }, [profile.user_id]);
+
+  const parse = (v: string) => {
+    const n = parseInt(v, 10);
+    if (!Number.isFinite(n) || n < 0) return 0;
+    return Math.min(n, 30);
+  };
+
+  const salvar = async () => {
+    setSaving(true);
+    setMsg(null);
+    const ng = parse(g);
+    const np = parse(p);
+    const na = parse(a);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        numero_gestacoes: ng,
+        numero_partos: np,
+        numero_abortos: na,
+      })
+      .eq("user_id", profile.user_id);
+    setSaving(false);
+    if (error) {
+      setMsg("Erro ao salvar: " + error.message);
+    } else {
+      setMsg("Salvo com sucesso");
+      onSaved({
+        ...profile,
+        numero_gestacoes: ng,
+        numero_partos: np,
+        numero_abortos: na,
+      });
+      setTimeout(() => setMsg(null), 2500);
+    }
+  };
+
+  const inputCls =
+    "w-full rounded-lg border border-input bg-background px-2 py-1.5 text-sm text-center font-bold focus:outline-none focus:ring-2 focus:ring-primary";
+
+  return (
+    <section className="rounded-xl border border-border p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          Editar dados obstétricos
+        </p>
+        {msg && <span className="text-[11px] text-muted-foreground">{msg}</span>}
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <div>
+          <label className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            Gestações
+          </label>
+          <input
+            type="number"
+            min={0}
+            max={30}
+            value={g}
+            onChange={(e) => setG(e.target.value)}
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <label className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            Partos
+          </label>
+          <input
+            type="number"
+            min={0}
+            max={30}
+            value={p}
+            onChange={(e) => setP(e.target.value)}
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <label className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            Abortos
+          </label>
+          <input
+            type="number"
+            min={0}
+            max={30}
+            value={a}
+            onChange={(e) => setA(e.target.value)}
+            className={inputCls}
+          />
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={salvar}
+        disabled={saving}
+        className="w-full rounded-lg bg-primary px-3 py-2 text-xs font-bold uppercase tracking-wide text-primary-foreground hover:opacity-90 disabled:opacity-50"
+      >
+        {saving ? "Salvando…" : "Salvar G/P/A"}
+      </button>
+    </section>
+  );
+}
+
+
 export function GestanteDetalheModal({
   slot,
   onClose,
