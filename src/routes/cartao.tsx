@@ -1523,106 +1523,121 @@ async function gerarPDFCartao(args: {
   }
 
   // =============================================================
-  // METADE DIREITA DA PAGINA 2: Linha do tempo gestacional + Orientacoes
+  // METADE DIREITA DA PAGINA 2: Consultas (quantidade, datas e observacoes)
   // =============================================================
   const rgX = halfW + 14;
   const rgW = halfW - 28;
   let rgY = 18;
 
-  // Titulo: Linha do tempo
+  const totalConsultas = consultas.length;
+  const realizadas = consultas.filter(c => c.status === "realizado").length;
+  const agendadas = consultas.filter(c => c.status === "reservado").length;
+
+  // Titulo
   doc.setTextColor(pr, pg, pb);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text("LINHA DO TEMPO GESTACIONAL", rgX, rgY);
-  doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.5);
-  doc.line(rgX, rgY + 3, rgX + rgW, rgY + 3);
-  rgY += 8;
-
-  // Calcula marcos a partir da DUM
-  const dumDate = parseBR(String(patientInfo.dum));
-  const dppDate = parseBR(String(patientInfo.dpp));
-  const semanaAtualNum = parseInt(String(patientInfo.weeks), 10) || 0;
-  const addWeeks = (base: Date, w: number) => {
-    const d = new Date(base);
-    d.setDate(d.getDate() + w * 7);
-    return d;
-  };
-  const fmtBR = (d: Date | null) => {
-    if (!d || isNaN(d.getTime())) return "-";
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    return `${dd}/${mm}/${d.getFullYear()}`;
-  };
-
-  const marcos: { semana: number; titulo: string; descricao: string }[] = [
-    { semana: 12, titulo: "1o trimestre", descricao: "USG morfologica inicial, exames de sangue e urina." },
-    { semana: 20, titulo: "USG morfologica", descricao: "Avaliacao detalhada da anatomia fetal." },
-    { semana: 24, titulo: "TOTG 75g", descricao: "Rastreio de diabetes gestacional (24-28 sem)." },
-    { semana: 28, titulo: "Vacina dTpa", descricao: "Imunizacao da gestante contra coqueluche." },
-    { semana: 36, titulo: "Streptococcus B", descricao: "Cultura vagino-retal para GBS." },
-    { semana: 40, titulo: "DPP - parto", descricao: "Data provavel do parto." },
-  ];
-
-  const lineX = rgX + 3;
-  const itemH = 9;
-  marcos.forEach((m, i) => {
-    const y = rgY + i * itemH;
-    const dataMarco = dumDate ? fmtBR(addWeeks(dumDate, m.semana)) : "-";
-    const passou = semanaAtualNum >= m.semana;
-    // Bolinha
-    if (passou) {
-      doc.setFillColor(pr, pg, pb);
-    } else {
-      doc.setFillColor(220, 220, 230);
-    }
-    doc.circle(lineX, y + 2, 1.6, "F");
-    // Linha vertical conectora
-    if (i < marcos.length - 1) {
-      doc.setDrawColor(220, 220, 230);
-      doc.setLineWidth(0.4);
-      doc.line(lineX, y + 4, lineX, y + itemH);
-    }
-    // Texto
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
-    doc.setTextColor(passou ? pr : 150, passou ? pg : 150, passou ? pb : 160);
-    doc.text(`${m.semana}a sem - ${m.titulo}`, lineX + 5, y + 1.5);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.5);
-    doc.setTextColor(...muted);
-    doc.text(`${dataMarco}  -  ${m.descricao}`, lineX + 5, y + 5);
-  });
-  rgY += marcos.length * itemH + 4;
-
-  // Orientacoes gerais
-  doc.setTextColor(pr, pg, pb);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("ORIENTACOES GERAIS", rgX, rgY);
+  doc.text("CONSULTAS DE PRE-NATAL", rgX, rgY);
   doc.setDrawColor(pr, pg, pb);
   doc.setLineWidth(0.5);
   doc.line(rgX, rgY + 3, rgX + rgW, rgY + 3);
   rgY += 7;
 
-  const orientacoes = [
-    "Alimentacao equilibrada: frutas, verduras, proteinas e cereais integrais.",
-    "Hidratacao: pelo menos 2 litros de agua por dia.",
-    "Atividade fisica leve com orientacao profissional (caminhada, hidroginastica).",
-    "Evitar bebidas alcoolicas, cigarro e medicamentos sem prescricao.",
-    "Manter o cartao da gestante sempre atualizado e leva-lo a todas as consultas.",
-    "Sinais de alerta: sangramento, dor abdominal forte, perda de liquido, ausencia de movimentos fetais. Procure a unidade de saude.",
+  // Bloco de resumo (3 stats)
+  const statW = (rgW - 4) / 3;
+  const statH = 13;
+  const stats = [
+    { label: "TOTAL", value: String(totalConsultas) },
+    { label: "REALIZADAS", value: String(realizadas) },
+    { label: "AGENDADAS", value: String(agendadas) },
   ];
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
-  doc.setTextColor(...dark);
-  orientacoes.forEach((o) => {
-    const lines = doc.splitTextToSize(`- ${o}`, rgW - 4) as string[];
-    lines.forEach((ln, li) => {
-      doc.text(ln, rgX + 2, rgY + 3 + li * 3.4);
-    });
-    rgY += lines.length * 3.4 + 1.5;
+  stats.forEach((s, i) => {
+    const x = rgX + i * (statW + 2);
+    doc.setFillColor(lr, lg, lb);
+    doc.roundedRect(x, rgY, statW, statH, 2, 2, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(pr, pg, pb);
+    doc.text(s.value, x + statW / 2, rgY + 7, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.setTextColor(...muted);
+    doc.text(s.label, x + statW / 2, rgY + 11, { align: "center" });
   });
+  rgY += statH + 4;
+
+  // Subtitulo lista
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(pr, pg, pb);
+  doc.text("HISTORICO E OBSERVACOES CLINICAS", rgX, rgY);
+  doc.setDrawColor(220, 220, 230);
+  doc.setLineWidth(0.2);
+  doc.line(rgX, rgY + 1.5, rgX + rgW, rgY + 1.5);
+  rgY += 4;
+
+  // Lista de consultas (ordenadas mais recentes primeiro)
+  const consultasOrd = [...consultas].sort((a, b) => {
+    const da = parseBR(a.data); const db = parseBR(b.data);
+    return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+  });
+
+  const limiteY = pageH - 26; // espaco para rodape de contatos
+  if (consultasOrd.length === 0) {
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(...muted);
+    doc.text("Nenhuma consulta registrada.", rgX + 2, rgY + 5);
+  } else {
+    consultasOrd.forEach((c) => {
+      if (rgY > limiteY - 6) return;
+      // Linha header da consulta
+      doc.setFillColor(248, 248, 252);
+      doc.roundedRect(rgX, rgY, rgW, 5.5, 1, 1, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(pr, pg, pb);
+      doc.text(`${c.data}  ${c.hora}`, rgX + 2, rgY + 3.7);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor(...dark);
+      const tituloC = c.titulo || c.tipo || "Consulta";
+      const statusTxt = c.status === "realizado" ? "REALIZADA" : "AGENDADA";
+      doc.text(tituloC, rgX + 26, rgY + 3.7);
+      doc.setTextColor(...muted);
+      doc.text(statusTxt, rgX + rgW - 2, rgY + 3.7, { align: "right" });
+      rgY += 6;
+
+      // Observacao
+      if (c.observacao && c.observacao.trim()) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6.5);
+        doc.setTextColor(...dark);
+        const lines = doc.splitTextToSize(c.observacao.trim(), rgW - 4) as string[];
+        for (const ln of lines) {
+          if (rgY > limiteY - 3) break;
+          doc.text(ln, rgX + 3, rgY + 2.5);
+          rgY += 3;
+        }
+        rgY += 1.5;
+      } else {
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(6);
+        doc.setTextColor(190, 190, 200);
+        doc.text("Sem observacao registrada.", rgX + 3, rgY + 2);
+        rgY += 4;
+      }
+    });
+
+    // Indicador "+N" se truncou
+    const restante = consultasOrd.findIndex(() => false);
+    if (rgY > limiteY - 6 && restante !== -1) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(6.5);
+      doc.setTextColor(...muted);
+      doc.text("(+ consultas adicionais nao exibidas)", rgX + 2, limiteY);
+    }
+  }
 
   // Rodape da face direita: contatos uteis
   const contatosY = pageH - 22;
