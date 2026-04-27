@@ -373,6 +373,7 @@ function SalaPage() {
                 gestanteId={slot.gestante_id}
                 professionalUserId={meuUserId}
                 compact
+                onClose={() => setNotasAbertas(false)}
               />
             </aside>
           )}
