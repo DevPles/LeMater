@@ -308,9 +308,10 @@ function CartaoPage() {
     color: vitalColors[i % vitalColors.length],
   }));
 
-  // ====== URL pública do cartão (para QR) ======
+  // ====== URL pública do cartão (para QR) — sempre aponta para o id da gestante exibida ======
+  const ownerUserId = isShared ? shareUserId : session?.user?.id;
   const cartaoUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/cartao?u=${session?.user?.id ?? ""}`
+    ? `${window.location.origin}/cartao?u=${ownerUserId ?? ""}`
     : "";
 
   const exportarPDF = async () => {
