@@ -1101,6 +1101,33 @@ async function gerarPDFCartao(args: {
   doc.setLineWidth(0.3);
   doc.line(18, idY + 9, 14 + idW - 4, idY + 9);
 
+  // Foto da gestante (canto direito da ficha)
+  const photoSize = 28;
+  const photoX = 14 + idW - photoSize - 5;
+  const photoY = idY + 13;
+  if (fotoData) {
+    doc.setFillColor(245, 245, 250);
+    doc.roundedRect(photoX - 1, photoY - 1, photoSize + 2, photoSize + 2, 2, 2, "F");
+    try {
+      doc.addImage(fotoData, "JPEG", photoX, photoY, photoSize, photoSize);
+    } catch {
+      doc.addImage(fotoData, "PNG", photoX, photoY, photoSize, photoSize);
+    }
+    doc.setDrawColor(pr, pg, pb);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(photoX, photoY, photoSize, photoSize, 2, 2, "S");
+  } else {
+    // Placeholder caso nao haja foto
+    doc.setFillColor(245, 245, 250);
+    doc.setDrawColor(220, 220, 230);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(photoX, photoY, photoSize, photoSize, 2, 2, "FD");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.setTextColor(...muted);
+    doc.text("sem foto", photoX + photoSize / 2, photoY + photoSize / 2 + 1, { align: "center" });
+  }
+
   const idFields = [
     { l: "Nome", v: patientInfo.name },
     { l: "Idade", v: `${patientInfo.age} anos` },
@@ -1108,6 +1135,7 @@ async function gerarPDFCartao(args: {
     { l: "Cidade / Bairro", v: `${patientInfo.cidade ?? "-"} / ${patientInfo.bairro ?? "-"}` },
     { l: "Unidade de saude", v: patientInfo.unidadeSaude ?? "-" },
   ];
+  const fieldsW = idW - photoSize - 14; // largura util dos campos (deixa espaco p/ foto)
   let idFy = idY + 16;
   idFields.forEach((f) => {
     doc.setFont("helvetica", "normal");
@@ -1117,7 +1145,7 @@ async function gerarPDFCartao(args: {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(...dark);
-    const v = doc.splitTextToSize(f.v, idW - 8)[0];
+    const v = doc.splitTextToSize(f.v, fieldsW)[0];
     doc.text(v, 18, idFy + 4);
     idFy += 9.5;
   });
