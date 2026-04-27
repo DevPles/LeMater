@@ -100,7 +100,7 @@ function WelcomeScreen() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9 }}
-            className="flex flex-row items-center justify-center gap-3 w-full max-w-md"
+            className="grid grid-cols-2 items-center justify-center gap-3 w-full max-w-md"
           >
             <motion.button
               whileHover={{ scale: 1.05 }}
