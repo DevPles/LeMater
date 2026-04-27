@@ -1692,8 +1692,14 @@ async function gerarPDFCartao(args: {
     const lp = normParam(p);
     return lp === "estatura" || lp.startsWith("estatura") || lp === "altura pessoa" || lp === "altura";
   };
+  // Temperatura removida da evolucao clinica a pedido do usuario
+  const ehTemperatura = (p: string) => {
+    const lp = normParam(p);
+    return lp === "temperatura" || lp.startsWith("temperatura") || lp === "temp" || lp.includes("termic");
+  };
   medicoes.forEach(m => {
     if (ehEstatura(m.parametro)) return;
+    if (ehTemperatura(m.parametro)) return;
     const tipo = isPressao(m.parametro);
     const key = tipo ? PRESSAO_KEY : normParam(m.parametro);
     if (!porParametro.has(key)) {
