@@ -39,6 +39,11 @@ function PerfilPage() {
   const [saving, setSaving] = useState(false);
   const [savingTema, setSavingTema] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [novaSenha, setNovaSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [salvandoSenha, setSalvandoSenha] = useState(false);
+  const [enviandoReset, setEnviandoReset] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(
     null,
   );
