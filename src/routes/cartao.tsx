@@ -799,6 +799,9 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
               <YAxis tick={{ fontSize: 10 }} domain={[50, 160]} />
               <ReferenceArea y1={90} y2={140} fill="#22c55e" fillOpacity={0.05} />
               <ReferenceArea y1={60} y2={90} fill="#22c55e" fillOpacity={0.05} />
+              <ReferenceLine y={140} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "Sist. máx (140)", position: "insideTopRight", fontSize: 9, fill: "#ef4444" }} />
+              <ReferenceLine y={90} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "Sist. mín / Diast. máx (90)", position: "insideTopRight", fontSize: 9, fill: "#ef4444" }} />
+              <ReferenceLine y={60} stroke="#3b82f6" strokeDasharray="4 4" label={{ value: "Diast. mín (60)", position: "insideBottomRight", fontSize: 9, fill: "#3b82f6" }} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               <Line type="monotone" dataKey="sistolica" name="Sistólica" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
