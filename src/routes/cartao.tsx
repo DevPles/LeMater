@@ -1508,9 +1508,9 @@ async function gerarPDFCartao(args: {
   rgY += 8;
 
   // Calcula marcos a partir da DUM
-  const dumDate = parseBR(patientInfo.dum);
-  const dppDate = parseBR(patientInfo.dpp);
-  const semanaAtualNum = parseInt(patientInfo.weeks, 10) || 0;
+  const dumDate = parseBR(String(patientInfo.dum));
+  const dppDate = parseBR(String(patientInfo.dpp));
+  const semanaAtualNum = parseInt(String(patientInfo.weeks), 10) || 0;
   const addWeeks = (base: Date, w: number) => {
     const d = new Date(base);
     d.setDate(d.getDate() + w * 7);
