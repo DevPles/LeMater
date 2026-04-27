@@ -1330,61 +1330,7 @@ async function gerarPDFCartao(args: {
     iy += vH + 4;
   }
 
-  // PROXIMOS PASSOS / LEMBRETES (preenche todo espaco restante)
-  doc.setTextColor(pr, pg, pb);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.text("PROXIMOS PASSOS E ORIENTACOES", lX, iy + 3);
-  doc.setDrawColor(pr, pg, pb);
-  doc.setLineWidth(0.4);
-  doc.line(lX, iy + 5, lX + lW, iy + 5);
-  iy += 8;
-
-  const wk = Number(patientInfo.weeks) || 0;
-  const lembretes: { titulo: string; desc: string }[] = [];
-  if (wk < 14) {
-    lembretes.push({ titulo: "USG morfologica 1o tri", desc: "Realizar entre 11 e 14 semanas (translucencia nucal)." });
-    lembretes.push({ titulo: "Suplementacao", desc: "Iniciar acido folico 5mg/dia e sulfato ferroso." });
-    lembretes.push({ titulo: "Exames de rotina", desc: "Hemograma, tipagem, glicemia, sorologias e urina I." });
-    lembretes.push({ titulo: "Vacinacao", desc: "Atualizar Hepatite B e dT conforme situacao vacinal." });
-  } else if (wk < 28) {
-    lembretes.push({ titulo: "USG morfologica 2o tri", desc: "Realizar entre 20 e 24 semanas (anatomia fetal)." });
-    lembretes.push({ titulo: "Vacinas obrigatorias", desc: "dTpa apos 20 sem e Influenza no periodo da campanha." });
-    lembretes.push({ titulo: "Rastreio de DMG", desc: "TOTG 75g entre 24 e 28 sem (jejum, 1h e 2h)." });
-    lembretes.push({ titulo: "Movimentacao fetal", desc: "Sentir movimentos do bebe a partir de 20 sem." });
-  } else {
-    lembretes.push({ titulo: "Consultas quinzenais/semanais", desc: "Aumentar frequencia conforme se aproxima do parto." });
-    lembretes.push({ titulo: "Plano de parto", desc: "Preparar mala da maternidade e definir via de parto." });
-    lembretes.push({ titulo: "Monitorar movimentos", desc: "Observar movimentos fetais diariamente apos o repouso." });
-    lembretes.push({ titulo: "Sinais de alerta", desc: "Procurar UBS em caso de dor, sangramento ou perda de liquido." });
-  }
-  lembretes.push({ titulo: "Acompanhamento continuo", desc: "Manter pressao, peso e glicemia sob avaliacao a cada consulta." });
-  lembretes.push({ titulo: "Hidratacao e alimentacao", desc: "Manter dieta equilibrada, rica em ferro, calcio e fibras." });
-  lembretes.push({ titulo: "Atividade fisica leve", desc: "Caminhadas e alongamentos liberados conforme orientacao medica." });
-  lembretes.push({ titulo: "Saude bucal", desc: "Realizar avaliacao odontologica ao menos uma vez na gestacao." });
-
-  // Calcula altura dos cards para preencher exatamente o espaco disponivel
-  const availableH = pageH - iy - 6;
-  const gap = 1.5;
-  const cardH = Math.max(10, Math.min(14, (availableH - gap * (lembretes.length - 1)) / lembretes.length));
-
-  lembretes.forEach((it) => {
-    if (iy + cardH > pageH - 4) return;
-    doc.setFillColor(248, 248, 252);
-    doc.rect(lX, iy, lW, cardH, "F");
-    doc.setFillColor(pr, pg, pb);
-    doc.rect(lX, iy, 1.5, cardH, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.8);
-    doc.setTextColor(pr, pg, pb);
-    doc.text(it.titulo, lX + 4, iy + 4);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.2);
-    doc.setTextColor(...dark);
-    const dl = doc.splitTextToSize(it.desc, lW - 8);
-    doc.text(dl[0] ?? "", lX + 4, iy + cardH - 2.5);
-    iy += cardH + gap;
-  });
+  // (bloco "PROXIMOS PASSOS E ORIENTACOES" removido a pedido do usuario)
 
   const rX = halfW + 14;
   const rW = halfW - 28;
