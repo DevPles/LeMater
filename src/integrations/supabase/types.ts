@@ -694,6 +694,164 @@ export type Database = {
           },
         ]
       }
+      reel_categories: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+          ordem: number
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+          ordem?: number
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+          ordem?: number
+          slug?: string
+        }
+        Relationships: []
+      }
+      reel_comments: {
+        Row: {
+          conteudo: string
+          created_at: string
+          id: string
+          reel_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string
+          id?: string
+          reel_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          id?: string
+          reel_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reel_comments_reel_id_fkey"
+            columns: ["reel_id"]
+            isOneToOne: false
+            referencedRelation: "reels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reel_comments_reel_id_fkey"
+            columns: ["reel_id"]
+            isOneToOne: false
+            referencedRelation: "reels_feed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reel_likes: {
+        Row: {
+          created_at: string
+          id: string
+          reel_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reel_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reel_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reel_likes_reel_id_fkey"
+            columns: ["reel_id"]
+            isOneToOne: false
+            referencedRelation: "reels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reel_likes_reel_id_fkey"
+            columns: ["reel_id"]
+            isOneToOne: false
+            referencedRelation: "reels_feed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reels: {
+        Row: {
+          autor_id: string
+          categoria_slug: string | null
+          created_at: string
+          descricao: string | null
+          duracao_seg: number | null
+          id: string
+          publicado: boolean
+          thumbnail_url: string | null
+          titulo: string
+          updated_at: string
+          video_path: string | null
+          video_url: string
+          visualizacoes: number
+        }
+        Insert: {
+          autor_id: string
+          categoria_slug?: string | null
+          created_at?: string
+          descricao?: string | null
+          duracao_seg?: number | null
+          id?: string
+          publicado?: boolean
+          thumbnail_url?: string | null
+          titulo: string
+          updated_at?: string
+          video_path?: string | null
+          video_url: string
+          visualizacoes?: number
+        }
+        Update: {
+          autor_id?: string
+          categoria_slug?: string | null
+          created_at?: string
+          descricao?: string | null
+          duracao_seg?: number | null
+          id?: string
+          publicado?: boolean
+          thumbnail_url?: string | null
+          titulo?: string
+          updated_at?: string
+          video_path?: string | null
+          video_url?: string
+          visualizacoes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reels_categoria_slug_fkey"
+            columns: ["categoria_slug"]
+            isOneToOne: false
+            referencedRelation: "reel_categories"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       reference_ranges: {
         Row: {
           created_at: string
@@ -870,7 +1028,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      reels_feed: {
+        Row: {
+          autor_foto: string | null
+          autor_id: string | null
+          autor_nome: string | null
+          categoria_slug: string | null
+          created_at: string | null
+          descricao: string | null
+          duracao_seg: number | null
+          id: string | null
+          publicado: boolean | null
+          thumbnail_url: string | null
+          titulo: string | null
+          total_comentarios: number | null
+          total_likes: number | null
+          updated_at: string | null
+          video_path: string | null
+          video_url: string | null
+          visualizacoes: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reels_categoria_slug_fkey"
+            columns: ["categoria_slug"]
+            isOneToOne: false
+            referencedRelation: "reel_categories"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
     }
     Functions: {
       book_slot: {

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as VideochamadaRouteImport } from './routes/videochamada'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ReelsRouteImport } from './routes/reels'
 import { Route as ProfissionalRouteImport } from './routes/profissional'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as HomeRouteImport } from './routes/home'
@@ -35,6 +36,11 @@ const VideochamadaRoute = VideochamadaRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReelsRoute = ReelsRouteImport.update({
+  id: '/reels',
+  path: '/reels',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfissionalRoute = ProfissionalRouteImport.update({
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeRoute
   '/perfil': typeof PerfilRoute
   '/profissional': typeof ProfissionalRoute
+  '/reels': typeof ReelsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/home': typeof HomeRoute
   '/perfil': typeof PerfilRoute
   '/profissional': typeof ProfissionalRoute
+  '/reels': typeof ReelsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/home': typeof HomeRoute
   '/perfil': typeof PerfilRoute
   '/profissional': typeof ProfissionalRoute
+  '/reels': typeof ReelsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/perfil'
     | '/profissional'
+    | '/reels'
     | '/reset-password'
     | '/videochamada'
     | '/videos'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/perfil'
     | '/profissional'
+    | '/reels'
     | '/reset-password'
     | '/videochamada'
     | '/videos'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/perfil'
     | '/profissional'
+    | '/reels'
     | '/reset-password'
     | '/videochamada'
     | '/videos'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   HomeRoute: typeof HomeRoute
   PerfilRoute: typeof PerfilRoute
   ProfissionalRoute: typeof ProfissionalRoute
+  ReelsRoute: typeof ReelsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   VideochamadaRoute: typeof VideochamadaRoute
   VideosRoute: typeof VideosRoute
@@ -207,6 +220,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reels': {
+      id: '/reels'
+      path: '/reels'
+      fullPath: '/reels'
+      preLoaderRoute: typeof ReelsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profissional': {
@@ -284,6 +304,7 @@ const rootRouteChildren: RootRouteChildren = {
   HomeRoute: HomeRoute,
   PerfilRoute: PerfilRoute,
   ProfissionalRoute: ProfissionalRoute,
+  ReelsRoute: ReelsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   VideochamadaRoute: VideochamadaRoute,
   VideosRoute: VideosRoute,
