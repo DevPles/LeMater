@@ -181,7 +181,7 @@ function CartaoPage() {
     const uid = session.user.id;
     const [mRes, vRes, eRes] = await Promise.all([
       supabase.from("clinical_measurements")
-        .select("id,parametro,valor,semana_gestacional,data_medicao")
+        .select("id,parametro,valor,semana_gestacional,data_medicao,observacao")
         .eq("gestante_id", uid)
         .order("data_medicao", { ascending: true }),
       supabase.from("vaccinations")
@@ -200,6 +200,7 @@ function CartaoPage() {
         parametro: r.parametro,
         valor: Number(r.valor),
         semana: r.semana_gestacional ?? 0,
+        observacao: r.observacao ?? undefined,
       })));
     }
     if (vRes.data) {
