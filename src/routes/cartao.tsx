@@ -173,6 +173,7 @@ function CartaoPage() {
   const [medicoes, setMedicoes] = useState<MedicaoReal[]>([]);
   const [vacinas, setVacinas] = useState<VacinaReal[]>([]);
   const [exames, setExames] = useState<ExameReal[]>([]);
+  const [consultas, setConsultas] = useState<ConsultaReal[]>([]);
   const [lancamentoOpen, setLancamentoOpen] = useState(false);
 
   const carregarDados = useCallback(async () => {
