@@ -570,6 +570,7 @@ type Series = {
   pressao: { semana: number; sistolica?: number; diastolica?: number }[];
   au: { semana: number; altura: number; data: string }[];
   bcf: { semana: number; bcf: number; data: string }[];
+  glicemia: { semana: number; glicemia: number; data: string }[];
 };
 
 function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; series: Series }) {
