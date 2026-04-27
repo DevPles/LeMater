@@ -1023,9 +1023,40 @@ async function gerarPDFCartao(args: {
   ]);
 
   // ============================================================
-  // FOLDER (página 1 - paisagem) — Capa | Linha de dobra | Interior
+  // FOLDER - 4 paginas paisagem (Capa + 3 folhas internas)
+  // Cada pagina dobrada ao meio: metade esquerda + metade direita
   // ============================================================
   const halfW = pageW / 2;
+
+  // Helper: desenha estrutura base da pagina (fundos + linha de dobra)
+  const drawFolderPage = (opts?: { leftBg?: [number, number, number]; rightBg?: [number, number, number] }) => {
+    const lb = opts?.leftBg ?? [252, 252, 254];
+    const rb = opts?.rightBg ?? [252, 252, 254];
+    doc.setFillColor(lb[0], lb[1], lb[2]);
+    doc.rect(0, 0, halfW, pageH, "F");
+    doc.setFillColor(rb[0], rb[1], rb[2]);
+    doc.rect(halfW, 0, halfW, pageH, "F");
+    // linha de dobra
+    doc.setDrawColor(180, 180, 190);
+    doc.setLineDashPattern([2, 2], 0);
+    doc.setLineWidth(0.4);
+    doc.line(halfW, 6, halfW, pageH - 6);
+    doc.setLineDashPattern([], 0);
+    doc.setTextColor(160, 160, 170);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.text("DOBRE AQUI", halfW, pageH / 2, { align: "center", angle: 90 });
+  };
+
+  // Helper: cabecalho de painel (titulo dentro de uma metade)
+  const panelHeader = (title: string, x: number, w: number, py: number, color: [number, number, number] = [pr, pg, pb]) => {
+    doc.setFillColor(color[0], color[1], color[2]);
+    doc.roundedRect(x, py, w, 7, 1.5, 1.5, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(title, x + 3, py + 4.8);
+  };
 
   // ---- Painel ESQUERDO = INTERIOR (dados clínicos resumidos) ----
   doc.setFillColor(252, 252, 254);
