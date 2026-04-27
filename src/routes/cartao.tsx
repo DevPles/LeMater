@@ -630,6 +630,11 @@ function VacinasExamesTab({ vacinas, exames }: { vacinas: VacinaReal[]; exames: 
                 <p className="font-semibold text-sm text-green-900">{v.vacina}</p>
                 <span className="text-xs text-green-700">{v.data}</span>
               </div>
+              {(v.lote || v.fabricante) && (
+                <p className="text-xs text-green-800 mt-1">
+                  {[v.lote ? `Lote: ${v.lote}` : null, v.fabricante ? `Fabricante: ${v.fabricante}` : null].filter(Boolean).join(" • ")}
+                </p>
+              )}
               {v.observacao && <p className="text-xs text-green-700 mt-1">{v.observacao}</p>}
             </div>
           ))}
