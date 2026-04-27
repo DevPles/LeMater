@@ -127,6 +127,8 @@ interface VacinaReal {
   id: string;
   vacina: string;
   data: string; // BR
+  lote?: string;
+  fabricante?: string;
   observacao?: string;
 }
 
@@ -196,7 +198,7 @@ function CartaoPage() {
         .eq("gestante_id", uid)
         .order("data_medicao", { ascending: true }),
       supabase.from("vaccinations")
-        .select("id,vacina,data_aplicacao,observacao")
+        .select("id,vacina,data_aplicacao,observacao,lote,fabricante")
         .eq("gestante_id", uid)
         .order("data_aplicacao", { ascending: false }),
       supabase.from("exam_results")
@@ -224,6 +226,8 @@ function CartaoPage() {
         id: r.id,
         vacina: r.vacina,
         data: formatBR(new Date(r.data_aplicacao + "T00:00:00")),
+        lote: r.lote ?? undefined,
+        fabricante: r.fabricante ?? undefined,
         observacao: r.observacao ?? undefined,
       })));
     }
@@ -269,6 +273,8 @@ function CartaoPage() {
       id: r.id,
       vacina: r.vacina,
       data: formatBR(new Date(r.data_aplicacao + "T00:00:00")),
+      lote: r.lote ?? undefined,
+      fabricante: r.fabricante ?? undefined,
       observacao: r.observacao ?? undefined,
     })));
     setExames((publicSnap.exames ?? []).map((r: any) => ({
@@ -624,6 +630,11 @@ function VacinasExamesTab({ vacinas, exames }: { vacinas: VacinaReal[]; exames: 
                 <p className="font-semibold text-sm text-green-900">{v.vacina}</p>
                 <span className="text-xs text-green-700">{v.data}</span>
               </div>
+              {(v.lote || v.fabricante) && (
+                <p className="text-xs text-green-800 mt-1">
+                  {[v.lote ? `Lote: ${v.lote}` : null, v.fabricante ? `Fabricante: ${v.fabricante}` : null].filter(Boolean).join(" • ")}
+                </p>
+              )}
               {v.observacao && <p className="text-xs text-green-700 mt-1">{v.observacao}</p>}
             </div>
           ))}
@@ -1477,12 +1488,17 @@ async function gerarPDFCartao(args: {
   };
 
   if (vacinas.length) {
-    const vacRows = agruparPorData(vacinas, (v) => v.data, (v) => v.vacina);
+    const vacRows = vacinas
+      .slice()
+      .sort((a, b) => (parseBR(b.data)?.getTime() ?? 0) - (parseBR(a.data)?.getTime() ?? 0))
+      .map((v) => [v.data, v.vacina, v.lote || "-", v.fabricante || "-"]);
     const halfMaxY = ry + Math.max(40, (pageH - 14 - ry) * 0.45);
     ry = drawSimpleTable(rX, ry, rW,
       [
-        { label: "DATA", widthPct: 24 },
-        { label: "VACINAS APLICADAS", widthPct: 76 },
+        { label: "DATA", widthPct: 18 },
+        { label: "VACINA", widthPct: 36 },
+        { label: "LOTE", widthPct: 18 },
+        { label: "FABRICANTE", widthPct: 28 },
       ],
       vacRows, [pr, pg, pb], halfMaxY) + 4;
   } else {
@@ -2194,7 +2210,8 @@ async function gerarPDFCartao(args: {
     drawBaseFolderPage();
 
     const faceX = margin;
-    const faceWCompact = halfW - margin - 5;
+    const faceWCompact = halfW - margin * 2;
+    const faceRightEdge = halfW - margin;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
@@ -2202,36 +2219,43 @@ async function gerarPDFCartao(args: {
     doc.text("MATRIZ CRUZADA - EVOLUCAO POR CONSULTA", faceX, 13);
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.5);
-    doc.line(faceX, 15, faceX + faceWCompact, 15);
+    doc.line(faceX, 15, faceRightEdge, 15);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...muted);
     doc.text("Linhas = data da consulta  |  Colunas = parametro clinico", faceX, 19);
 
     // Datas (mais recentes primeiro)
+    const medicoesMatriz = medicoes.filter(m => !ehEstatura(m.parametro) && !ehTemperatura(m.parametro));
     const datasSet = new Set<string>();
-    medicoes.forEach(m => datasSet.add(m.data));
+    medicoesMatriz.forEach(m => datasSet.add(m.data));
     const datas = Array.from(datasSet).sort((a, b) => {
       const da = parseBR(a); const db = parseBR(b);
       return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
     });
+    const matY = 23;
+    const matMaxY = pageH - 14;
+    const matHeaderH = 13;
+    const maxRowsMatriz = Math.max(1, Math.floor((matMaxY - matY - matHeaderH) / 3.6));
+    const datasMatriz = datas.slice(0, maxRowsMatriz);
     const matrix = new Map<string, Map<string, string | number>>();
-    datas.forEach(d => matrix.set(d, new Map()));
+    datasMatriz.forEach(d => matrix.set(d, new Map()));
     const pressaoPorData = new Map<string, { sis?: number; dia?: number }>();
-    medicoes.forEach(m => {
+    medicoesMatriz.forEach(m => {
       const tipo = isPressao(m.parametro);
       if (tipo) {
-        if (!pressaoPorData.has(m.data)) pressaoPorData.set(m.data, {});
+          if (!matrix.has(m.data)) return;
+          if (!pressaoPorData.has(m.data)) pressaoPorData.set(m.data, {});
         const alvo = pressaoPorData.get(m.data)!;
         if (tipo === "sis") alvo.sis = Number(m.valor);
         if (tipo === "dia") alvo.dia = Number(m.valor);
         return;
       }
-      matrix.get(m.data)!.set(normParam(m.parametro), m.valor);
+      matrix.get(m.data)?.set(normParam(m.parametro), m.valor);
     });
     pressaoPorData.forEach((v, d) => matrix.get(d)?.set(PRESSAO_KEY, `${v.sis ?? "-"}/${v.dia ?? "-"}`));
     const semanaPorData = new Map<string, number>();
-    medicoes.forEach(m => semanaPorData.set(m.data, m.semana));
+    medicoesMatriz.forEach(m => { if (matrix.has(m.data)) semanaPorData.set(m.data, m.semana); });
 
     const compactLabel = (p: string): string => {
       const label = labelByKey.get(p) ?? p;
@@ -2246,18 +2270,16 @@ async function gerarPDFCartao(args: {
     };
 
     // Layout para caber tudo dentro da face esquerda do folder
-    const matY = 23;
-    const matMaxY = pageH - 14;
-    const fixedColW = 17;
+    const fixedColW = 16;
     const semColW = 8;
-    const matTotalW = faceWCompact;
+    const matTotalW = Math.min(faceWCompact, faceRightEdge - faceX);
+    const parametrosMatriz = parametros.slice(0, Math.max(1, Math.min(parametros.length, 9)));
     const restW = matTotalW - fixedColW - semColW;
-    const dataColW = restW / Math.max(1, parametros.length);
+    const dataColW = restW / Math.max(1, parametrosMatriz.length);
 
     // Calcula altura de header e linha para encaixar todas as datas
     const availH = matMaxY - matY;
-    const matHeaderH = 13;
-    const rowH = Math.max(3.6, Math.min(6.2, (availH - matHeaderH) / Math.max(1, datas.length)));
+    const rowH = Math.max(3.6, Math.min(6.2, (availH - matHeaderH) / Math.max(1, datasMatriz.length)));
     const fontRow = rowH >= 5.4 ? 5.9 : rowH >= 4.5 ? 5.2 : 4.6;
 
     // Header
@@ -2268,11 +2290,11 @@ async function gerarPDFCartao(args: {
     doc.setFontSize(6.2);
     doc.text("DATA", faceX + 2, matY + matHeaderH / 2 + 1.2);
     doc.text("SEM", faceX + fixedColW + 1.5, matY + matHeaderH / 2 + 1.2);
-    doc.setFontSize(dataColW < 12 ? 4.5 : 5.2);
-    parametros.forEach((p, i) => {
+    doc.setFontSize(dataColW < 10 ? 4.1 : 4.8);
+    parametrosMatriz.forEach((p, i) => {
       const cx = faceX + fixedColW + semColW + i * dataColW;
       const lines = compactLabel(p).split("\n").flatMap(ln => doc.splitTextToSize(ln, dataColW - 1) as string[]);
-      const lineH = 2.5;
+      const lineH = 2.3;
       const visibleLines = lines.slice(0, 3);
       const startY = matY + matHeaderH / 2 - ((visibleLines.length - 1) * lineH) / 2;
       visibleLines.forEach((ln: string, li: number) => {
@@ -2281,7 +2303,7 @@ async function gerarPDFCartao(args: {
     });
 
     // Rows - tabela limpa, sem cor de fundo nas celulas
-    datas.forEach((d, ri) => {
+    datasMatriz.forEach((d, ri) => {
       const ry4 = matY + matHeaderH + ri * rowH;
       if (ri % 2 === 0) {
         doc.setFillColor(246, 247, 252);
@@ -2296,7 +2318,7 @@ async function gerarPDFCartao(args: {
       doc.text(`${semanaPorData.get(d) ?? "-"}`, faceX + fixedColW + 2, ry4 + rowH / 2 + 1.1);
 
       const linhaMatrix = matrix.get(d)!;
-      parametros.forEach((p, i) => {
+      parametrosMatriz.forEach((p, i) => {
         const cx = faceX + fixedColW + semColW + i * dataColW;
         const v = linhaMatrix.get(p);
         if (v !== undefined && v !== null) {
@@ -2314,21 +2336,21 @@ async function gerarPDFCartao(args: {
     });
 
     // Bordas
-    const totalH = matHeaderH + datas.length * rowH;
+    const totalH = matHeaderH + datasMatriz.length * rowH;
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.3);
     doc.rect(faceX, matY, matTotalW, totalH, "S");
     doc.setDrawColor(220, 222, 230);
     doc.setLineWidth(0.1);
     // Linhas horizontais entre rows
-    for (let r = 1; r < datas.length; r++) {
+    for (let r = 1; r < datasMatriz.length; r++) {
       const y = matY + matHeaderH + r * rowH;
       doc.line(faceX, y, faceX + matTotalW, y);
     }
     // Linhas verticais
     doc.line(faceX + fixedColW, matY, faceX + fixedColW, matY + totalH);
     doc.line(faceX + fixedColW + semColW, matY, faceX + fixedColW + semColW, matY + totalH);
-    parametros.forEach((_p, i) => {
+    parametrosMatriz.forEach((_p, i) => {
       const cx = faceX + fixedColW + semColW + (i + 1) * dataColW;
       doc.line(cx, matY, cx, matY + totalH);
     });

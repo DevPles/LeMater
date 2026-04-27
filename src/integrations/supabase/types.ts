@@ -765,8 +765,10 @@ export type Database = {
           appointment_id: string | null
           created_at: string
           data_aplicacao: string
+          fabricante: string | null
           gestante_id: string
           id: string
+          lote: string | null
           observacao: string | null
           registrado_por: string | null
           vacina: string
@@ -775,8 +777,10 @@ export type Database = {
           appointment_id?: string | null
           created_at?: string
           data_aplicacao?: string
+          fabricante?: string | null
           gestante_id: string
           id?: string
+          lote?: string | null
           observacao?: string | null
           registrado_por?: string | null
           vacina: string
@@ -785,8 +789,10 @@ export type Database = {
           appointment_id?: string | null
           created_at?: string
           data_aplicacao?: string
+          fabricante?: string | null
           gestante_id?: string
           id?: string
+          lote?: string | null
           observacao?: string | null
           registrado_por?: string | null
           vacina?: string
