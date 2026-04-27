@@ -1600,94 +1600,156 @@ async function gerarPDFCartao(args: {
   });
   rgY += statH + 4;
 
-  // Subtitulo lista
+  // Subtitulo - MATRIZ CRUZADA
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(pr, pg, pb);
-  doc.text("HISTORICO E OBSERVACOES CLINICAS", rgX, rgY);
+  doc.text("MATRIZ CRUZADA - EVOLUCAO POR CONSULTA", rgX, rgY);
   doc.setDrawColor(220, 220, 230);
   doc.setLineWidth(0.2);
   doc.line(rgX, rgY + 1.5, rgX + rgW, rgY + 1.5);
+  rgY += 3;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.setTextColor(...muted);
+  doc.text("Linhas = data da consulta  |  Colunas = parametro clinico", rgX, rgY + 1.5);
   rgY += 4;
 
-  // Lista de consultas (ordenadas mais recentes primeiro)
-  const consultasOrd = [...consultas].sort((a, b) => {
-    const da = parseBR(a.data); const db = parseBR(b.data);
-    return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
-  });
-
-  const limiteY = pageH - 26; // espaco para rodape de contatos
-  if (consultasOrd.length === 0) {
+  // Renderiza matriz cruzada na face direita
+  const matrizMaxY = pageH - 8;
+  if (medicoes.length === 0) {
     doc.setFont("helvetica", "italic");
     doc.setFontSize(8);
     doc.setTextColor(...muted);
-    doc.text("Nenhuma consulta registrada.", rgX + 2, rgY + 5);
+    doc.text("Nenhum dado clinico registrado.", rgX + 2, rgY + 5);
   } else {
-    consultasOrd.forEach((c) => {
-      if (rgY > limiteY - 6) return;
-      // Linha header da consulta
-      doc.setFillColor(248, 248, 252);
-      doc.roundedRect(rgX, rgY, rgW, 5.5, 1, 1, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      doc.setTextColor(pr, pg, pb);
-      doc.text(`${c.data}  ${c.hora}`, rgX + 2, rgY + 3.7);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.5);
-      doc.setTextColor(...dark);
-      const tituloC = c.titulo || c.tipo || "Consulta";
-      const statusTxt = c.status === "realizado" ? "REALIZADA" : "AGENDADA";
-      doc.text(tituloC, rgX + 26, rgY + 3.7);
-      doc.setTextColor(...muted);
-      doc.text(statusTxt, rgX + rgW - 2, rgY + 3.7, { align: "right" });
-      rgY += 6;
+    const medicoesMatrizR = medicoes.filter(m => !ehEstatura(m.parametro) && !ehTemperatura(m.parametro));
+    const datasSetR = new Set<string>();
+    medicoesMatrizR.forEach(m => datasSetR.add(m.data));
+    const datasR = Array.from(datasSetR).sort((a, b) => {
+      const da = parseBR(a); const db = parseBR(b);
+      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+    });
+    const matHeaderHR = 11;
+    const availHR = matrizMaxY - rgY;
+    const maxRowsR = Math.max(1, Math.floor((availHR - matHeaderHR) / 3.6));
+    const datasMatrizR = datasR.slice(0, maxRowsR);
 
-      // Observacao
-      if (c.observacao && c.observacao.trim()) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(6.5);
-        doc.setTextColor(...dark);
-        const lines = doc.splitTextToSize(c.observacao.trim(), rgW - 4) as string[];
-        for (const ln of lines) {
-          if (rgY > limiteY - 3) break;
-          doc.text(ln, rgX + 3, rgY + 2.5);
-          rgY += 3;
-        }
-        rgY += 1.5;
-      } else {
-        doc.setFont("helvetica", "italic");
-        doc.setFontSize(6);
-        doc.setTextColor(190, 190, 200);
-        doc.text("Sem observacao registrada.", rgX + 3, rgY + 2);
-        rgY += 4;
+    const matrixR = new Map<string, Map<string, string | number>>();
+    datasMatrizR.forEach(d => matrixR.set(d, new Map()));
+    const pressaoPorDataR = new Map<string, { sis?: number; dia?: number }>();
+    medicoesMatrizR.forEach(m => {
+      const tipo = isPressao(m.parametro);
+      if (tipo) {
+        if (!matrixR.has(m.data)) return;
+        if (!pressaoPorDataR.has(m.data)) pressaoPorDataR.set(m.data, {});
+        const alvo = pressaoPorDataR.get(m.data)!;
+        if (tipo === "sis") alvo.sis = Number(m.valor);
+        if (tipo === "dia") alvo.dia = Number(m.valor);
+        return;
       }
+      matrixR.get(m.data)?.set(normParam(m.parametro), m.valor);
+    });
+    pressaoPorDataR.forEach((v, d) => matrixR.get(d)?.set(PRESSAO_KEY, `${v.sis ?? "-"}/${v.dia ?? "-"}`));
+    const semanaPorDataR = new Map<string, number>();
+    medicoesMatrizR.forEach(m => { if (matrixR.has(m.data)) semanaPorDataR.set(m.data, m.semana); });
+
+    const compactLabelR = (p: string): string => {
+      const label = labelByKey.get(p) ?? p;
+      const l = label.toLowerCase();
+      if (p === PRESSAO_KEY || l.includes("press")) return "PA\n(mmHg)";
+      if (l.includes("uterina")) return "AU\n(cm)";
+      if (l.includes("glic")) return "Glic.\ncapilar";
+      if (l.includes("pre") && l.includes("gest")) return "Peso\npre-gest.";
+      if (l.includes("peso")) return "Peso\n(kg)";
+      if (l.includes("bcf") || l.includes("batimento")) return "BCF\n(bpm)";
+      return label.replace(/\s*\(([^)]*)\)/g, "\n($1)");
+    };
+
+    const fixedColWR = 14;
+    const semColWR = 7;
+    const matTotalWR = rgW;
+    const parametrosMatrizR = parametros.slice(0, Math.max(1, Math.min(parametros.length, 7)));
+    const restWR = matTotalWR - fixedColWR - semColWR;
+    const dataColWR = restWR / Math.max(1, parametrosMatrizR.length);
+
+    const rowHR = Math.max(3.4, Math.min(5.6, (availHR - matHeaderHR) / Math.max(1, datasMatrizR.length)));
+    const fontRowR = rowHR >= 5.0 ? 5.6 : rowHR >= 4.2 ? 5.0 : 4.4;
+
+    // Header
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(rgX, rgY, matTotalWR, matHeaderHR, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(5.8);
+    doc.text("DATA", rgX + 1.5, rgY + matHeaderHR / 2 + 1);
+    doc.text("SEM", rgX + fixedColWR + 1, rgY + matHeaderHR / 2 + 1);
+    doc.setFontSize(dataColWR < 9 ? 3.9 : 4.5);
+    parametrosMatrizR.forEach((p, i) => {
+      const cx = rgX + fixedColWR + semColWR + i * dataColWR;
+      const lines = compactLabelR(p).split("\n").flatMap(ln => doc.splitTextToSize(ln, dataColWR - 1) as string[]);
+      const lineH = 2.1;
+      const visibleLines = lines.slice(0, 3);
+      const startY = rgY + matHeaderHR / 2 - ((visibleLines.length - 1) * lineH) / 2;
+      visibleLines.forEach((ln: string, li: number) => {
+        doc.text(ln, cx + dataColWR / 2, startY + li * lineH, { align: "center" });
+      });
     });
 
-    // Indicador "+N" se truncou
-    const restante = consultasOrd.findIndex(() => false);
-    if (rgY > limiteY - 6 && restante !== -1) {
-      doc.setFont("helvetica", "italic");
-      doc.setFontSize(6.5);
+    // Rows
+    datasMatrizR.forEach((d, ri) => {
+      const ry5 = rgY + matHeaderHR + ri * rowHR;
+      if (ri % 2 === 0) {
+        doc.setFillColor(246, 247, 252);
+        doc.rect(rgX, ry5, matTotalWR, rowHR, "F");
+      }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(fontRowR);
+      doc.setTextColor(pr, pg, pb);
+      doc.text(d, rgX + 1.2, ry5 + rowHR / 2 + 1);
+      doc.setFont("helvetica", "normal");
       doc.setTextColor(...muted);
-      doc.text("(+ consultas adicionais nao exibidas)", rgX + 2, limiteY);
-    }
-  }
+      doc.text(`${semanaPorDataR.get(d) ?? "-"}`, rgX + fixedColWR + 1.5, ry5 + rowHR / 2 + 1);
 
-  // Rodape da face direita: contatos uteis
-  const contatosY = pageH - 22;
-  doc.setFillColor(lr, lg, lb);
-  doc.roundedRect(rgX, contatosY, rgW, 14, 2, 2, "F");
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
-  doc.setTextColor(pr, pg, pb);
-  doc.text("CONTATOS UTEIS", rgX + 3, contatosY + 4);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.setTextColor(...dark);
-  doc.text("SAMU 192   -   Bombeiros 193   -   Disque Saude 136", rgX + 3, contatosY + 8.5);
-  doc.setFontSize(6.5);
-  doc.setTextColor(...muted);
-  doc.text("Em caso de emergencia, dirija-se a unidade de saude mais proxima.", rgX + 3, contatosY + 12);
+      const linhaMatrixR = matrixR.get(d)!;
+      parametrosMatrizR.forEach((p, i) => {
+        const cx = rgX + fixedColWR + semColWR + i * dataColWR;
+        const v = linhaMatrixR.get(p);
+        if (v !== undefined && v !== null) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(fontRowR);
+          doc.setTextColor(...dark);
+          doc.text(String(v), cx + dataColWR / 2, ry5 + rowHR / 2 + 1, { align: "center" });
+        } else {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(fontRowR - 0.4);
+          doc.setTextColor(210, 210, 215);
+          doc.text("-", cx + dataColWR / 2, ry5 + rowHR / 2 + 1, { align: "center" });
+        }
+      });
+    });
+
+    // Bordas
+    const totalHR = matHeaderHR + datasMatrizR.length * rowHR;
+    doc.setDrawColor(pr, pg, pb);
+    doc.setLineWidth(0.3);
+    doc.rect(rgX, rgY, matTotalWR, totalHR, "S");
+    doc.setDrawColor(220, 222, 230);
+    doc.setLineWidth(0.1);
+    for (let r = 1; r < datasMatrizR.length; r++) {
+      const y = rgY + matHeaderHR + r * rowHR;
+      doc.line(rgX, y, rgX + matTotalWR, y);
+    }
+    doc.line(rgX + fixedColWR, rgY, rgX + fixedColWR, rgY + totalHR);
+    doc.line(rgX + fixedColWR + semColWR, rgY, rgX + fixedColWR + semColWR, rgY + totalHR);
+    parametrosMatrizR.forEach((_p, i) => {
+      const cx = rgX + fixedColWR + semColWR + (i + 1) * dataColWR;
+      doc.line(cx, rgY, cx, rgY + totalHR);
+    });
+    doc.setDrawColor(pr, pg, pb);
+    doc.setLineWidth(0.2);
+    doc.line(rgX, rgY + matHeaderHR, rgX + matTotalWR, rgY + matHeaderHR);
+  }
 
   // ================================================================
   // PAGINAS 3 e 4 - GRAFICOS INTERCALADOS + DADOS CLINICOS EM GRADE
