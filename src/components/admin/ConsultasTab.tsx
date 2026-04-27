@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ProntuarioConsultaModal } from "@/components/ProntuarioConsultaModal";
 
 type Slot = {
   id: string;
@@ -37,6 +38,7 @@ export function ConsultasTab() {
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [prontuarioId, setProntuarioId] = useState<string | null>(null);
 
   // filtros
   const [statusFiltro, setStatusFiltro] = useState<StatusFiltro>("todos");
@@ -398,14 +400,26 @@ export function ConsultasTab() {
                         )}
                       </td>
                       <td className="px-3 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => apagar(item)}
-                          disabled={deletingId === item.id}
-                          className="inline-flex items-center justify-center rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 h-8 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {deletingId === item.id ? "Apagando..." : "Apagar"}
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          {item.gestante_id && (
+                            <button
+                              type="button"
+                              onClick={() => setProntuarioId(item.id)}
+                              className="inline-flex items-center justify-center rounded-full bg-[#1a1557] hover:opacity-90 text-white text-xs font-bold px-3 h-8 shadow-sm transition-colors"
+                              title="Ver prontuário compilado"
+                            >
+                              Prontuário
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => apagar(item)}
+                            disabled={deletingId === item.id}
+                            className="inline-flex items-center justify-center rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 h-8 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {deletingId === item.id ? "Apagando..." : "Apagar"}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -415,6 +429,12 @@ export function ConsultasTab() {
           </div>
         )}
       </div>
+      {prontuarioId && (
+        <ProntuarioConsultaModal
+          appointmentId={prontuarioId}
+          onClose={() => setProntuarioId(null)}
+        />
+      )}
     </div>
   );
 }
