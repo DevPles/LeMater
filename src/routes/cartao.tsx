@@ -1327,42 +1327,81 @@ async function gerarPDFCartao(args: {
   doc.line(rX, ry + 3, rX + rW, ry + 3);
   ry += 7;
 
-  if (vacinas.length) {
-    const vCols2 = 2;
-    const vW2 = (rW - (vCols2 - 1) * 3) / vCols2;
-    const vH2 = 14;
-    vacinas.forEach((v, i) => {
-      const col = i % vCols2;
-      const row = Math.floor(i / vCols2);
-      const x = rX + col * (vW2 + 3);
-      const yy = ry + row * (vH2 + 2);
-      doc.setFillColor(240, 253, 244);
-      doc.setDrawColor(187, 247, 208);
-      doc.roundedRect(x, yy, vW2, vH2, 1.5, 1.5, "FD");
-      doc.setFillColor(34, 197, 94);
-      doc.roundedRect(x, yy, vW2, 2, 1, 1, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8.5);
-      doc.setTextColor(22, 101, 52);
-      doc.text(v.vacina, x + 3, yy + 7.5);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      doc.setTextColor(...muted);
-      doc.text(v.data, x + 3, yy + 11.5);
+  // Helper: tabela simples reutilizavel
+  const drawSimpleTable = (
+    x: number, y: number, w: number,
+    headers: { label: string; widthPct: number; align?: "left" | "center" | "right" }[],
+    rows: string[][],
+    accentColor: [number, number, number],
+    maxY: number,
+  ): number => {
+    const headerH = 6;
+    const rowH = 5;
+    doc.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
+    doc.rect(x, y, w, headerH, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(255, 255, 255);
+    let cx = x;
+    headers.forEach((h) => {
+      const cw = (w * h.widthPct) / 100;
+      const align = h.align ?? "left";
+      const tx = align === "right" ? cx + cw - 2 : align === "center" ? cx + cw / 2 : cx + 2;
+      doc.text(h.label, tx, y + 4, { align });
+      cx += cw;
     });
-    const rows = Math.ceil(vacinas.length / vCols2);
-    ry += rows * (vH2 + 2) + 3;
+    let cy = y + headerH;
+    const maxRows = Math.max(0, Math.floor((maxY - cy) / rowH));
+    const visible = rows.slice(0, maxRows);
+    visible.forEach((row, ri) => {
+      if (ri % 2 === 0) {
+        doc.setFillColor(248, 248, 252);
+        doc.rect(x, cy, w, rowH, "F");
+      }
+      let cxr = x;
+      headers.forEach((h, ci) => {
+        const cw = (w * h.widthPct) / 100;
+        const align = h.align ?? "left";
+        const tx = align === "right" ? cxr + cw - 2 : align === "center" ? cxr + cw / 2 : cxr + 2;
+        doc.setFont("helvetica", ci === 0 ? "bold" : "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(...dark);
+        const txt = doc.splitTextToSize(row[ci] ?? "-", cw - 3)[0] ?? "";
+        doc.text(txt, tx, cy + 3.6, { align });
+        cxr += cw;
+      });
+      cy += rowH;
+    });
+    if (rows.length > maxRows) {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(6);
+      doc.setTextColor(...muted);
+      doc.text(`+ ${rows.length - maxRows} registros`, x + w / 2, cy + 3, { align: "center" });
+      cy += 4;
+    }
+    doc.setDrawColor(225, 225, 230);
+    doc.setLineWidth(0.2);
+    doc.rect(x, y, w, cy - y, "S");
+    return cy;
+  };
+
+  if (vacinas.length) {
+    const vacRows = vacinas.map((v) => [v.vacina, v.data]);
+    const halfMaxY = Math.min(ry + 60, pageH / 2);
+    ry = drawSimpleTable(rX, ry, rW,
+      [{ label: "VACINA", widthPct: 70 }, { label: "DATA", widthPct: 30, align: "right" }],
+      vacRows, [pr, pg, pb], halfMaxY) + 4;
   } else {
     doc.setFillColor(248, 248, 252);
-    doc.roundedRect(rX, ry, rW, 12, 1.5, 1.5, "F");
-    doc.setFontSize(9);
+    doc.rect(rX, ry, rW, 10, "F");
+    doc.setFontSize(8);
     doc.setTextColor(...muted);
     doc.setFont("helvetica", "italic");
-    doc.text("Nenhuma vacina registrada.", rX + 3, ry + 7.5);
-    ry += 16;
+    doc.text("Nenhuma vacina registrada.", rX + 3, ry + 6.5);
+    ry += 14;
   }
 
-  // EXAMES (grade 2 colunas)
+  // EXAMES como tabela
   doc.setTextColor(pr, pg, pb);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
@@ -1372,45 +1411,22 @@ async function gerarPDFCartao(args: {
   doc.line(rX, ry + 7, rX + rW, ry + 7);
   ry += 11;
 
-  const maxRy = pageH - 16;
   if (exames.length) {
-    const eCols = 2;
-    const eW = (rW - (eCols - 1) * 3) / eCols;
-    const eH = 16;
-    let placed = 0;
-    for (const e of exames) {
-      const col = placed % eCols;
-      const row = Math.floor(placed / eCols);
-      const yy = ry + row * (eH + 2);
-      if (yy + eH > maxRy) break;
-      const x = rX + col * (eW + 3);
-      doc.setFillColor(239, 246, 255);
-      doc.setDrawColor(191, 219, 254);
-      doc.roundedRect(x, yy, eW, eH, 1.5, 1.5, "FD");
-      doc.setFillColor(59, 130, 246);
-      doc.roundedRect(x, yy, eW, 2, 1, 1, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8);
-      doc.setTextColor(30, 64, 175);
-      const tipo = doc.splitTextToSize(e.tipo_exame, eW - 6)[0];
-      doc.text(tipo, x + 3, yy + 7);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.8);
-      doc.setTextColor(...muted);
-      doc.text(`${e.data}`, x + 3, yy + 11);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.8);
-      doc.setTextColor(34, 197, 94);
-      doc.text(e.status.toUpperCase(), x + eW - 3, yy + 11, { align: "right" });
-      placed++;
-    }
+    const exRows = exames.map((e) => [e.tipo_exame, e.data, e.status.toUpperCase()]);
+    drawSimpleTable(rX, ry, rW,
+      [
+        { label: "EXAME", widthPct: 55 },
+        { label: "DATA", widthPct: 22, align: "center" },
+        { label: "STATUS", widthPct: 23, align: "right" },
+      ],
+      exRows, [pr, pg, pb], pageH - 14);
   } else {
     doc.setFillColor(248, 248, 252);
-    doc.roundedRect(rX, ry, rW, 12, 1.5, 1.5, "F");
-    doc.setFontSize(9);
+    doc.rect(rX, ry, rW, 10, "F");
+    doc.setFontSize(8);
     doc.setTextColor(...muted);
     doc.setFont("helvetica", "italic");
-    doc.text("Nenhum exame registrado.", rX + 3, ry + 7.5);
+    doc.text("Nenhum exame registrado.", rX + 3, ry + 6.5);
   }
 
   // ================================================================
