@@ -114,6 +114,7 @@ export type Database = {
       }
       clinical_measurements: {
         Row: {
+          appointment_id: string | null
           created_at: string
           data_medicao: string
           gestante_id: string
@@ -125,6 +126,7 @@ export type Database = {
           valor: number
         }
         Insert: {
+          appointment_id?: string | null
           created_at?: string
           data_medicao?: string
           gestante_id: string
@@ -136,6 +138,7 @@ export type Database = {
           valor: number
         }
         Update: {
+          appointment_id?: string | null
           created_at?: string
           data_medicao?: string
           gestante_id?: string
@@ -237,6 +240,7 @@ export type Database = {
       }
       exam_results: {
         Row: {
+          appointment_id: string | null
           created_at: string
           data_exame: string
           gestante_id: string
@@ -248,6 +252,7 @@ export type Database = {
           tipo_exame: string
         }
         Insert: {
+          appointment_id?: string | null
           created_at?: string
           data_exame?: string
           gestante_id: string
@@ -259,6 +264,7 @@ export type Database = {
           tipo_exame: string
         }
         Update: {
+          appointment_id?: string | null
           created_at?: string
           data_exame?: string
           gestante_id?: string
@@ -330,6 +336,7 @@ export type Database = {
       }
       image_exam_results: {
         Row: {
+          appointment_id: string | null
           created_at: string
           data_exame: string
           gestante_id: string
@@ -343,6 +350,7 @@ export type Database = {
           tipo_exame: string
         }
         Insert: {
+          appointment_id?: string | null
           created_at?: string
           data_exame?: string
           gestante_id: string
@@ -356,6 +364,7 @@ export type Database = {
           tipo_exame: string
         }
         Update: {
+          appointment_id?: string | null
           created_at?: string
           data_exame?: string
           gestante_id?: string
@@ -753,6 +762,7 @@ export type Database = {
       }
       vaccinations: {
         Row: {
+          appointment_id: string | null
           created_at: string
           data_aplicacao: string
           gestante_id: string
@@ -762,6 +772,7 @@ export type Database = {
           vacina: string
         }
         Insert: {
+          appointment_id?: string | null
           created_at?: string
           data_aplicacao?: string
           gestante_id: string
@@ -771,6 +782,7 @@ export type Database = {
           vacina: string
         }
         Update: {
+          appointment_id?: string | null
           created_at?: string
           data_aplicacao?: string
           gestante_id?: string
@@ -887,6 +899,10 @@ export type Database = {
         }[]
       }
       get_cartao_publico: { Args: { _user_id: string }; Returns: Json }
+      get_consulta_prontuario: {
+        Args: { _appointment_id: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -897,6 +913,21 @@ export type Database = {
       is_professional_of_gestante: {
         Args: { _gestante_id: string; _prof_user_id: string }
         Returns: boolean
+      }
+      list_consultas_prof: {
+        Args: { _only_with_lancamentos?: boolean }
+        Returns: {
+          appointment_id: string
+          data_hora: string
+          gestante_id: string
+          gestante_nome: string
+          status: string
+          total_ex: number
+          total_img: number
+          total_med: number
+          total_obs: number
+          total_vac: number
+        }[]
       }
       promote_to_professional: {
         Args: { _user_id: string }
