@@ -128,7 +128,7 @@ function Dashboard({ session }: { session: Session }) {
         .from("appointment_slots")
         .select("*")
         .eq("professional_id", (p as Professional).id)
-        .order("data_hora", { ascending: true });
+        .order("data_hora", { ascending: false });
       if (s) setSlots(s as Slot[]);
     }
     setLoading(false);
