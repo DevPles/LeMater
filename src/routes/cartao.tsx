@@ -11,7 +11,7 @@ import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  AreaChart, Area, ComposedChart, ReferenceArea, Legend, LabelList, ReferenceLine,
+  AreaChart, Area, ComposedChart, ReferenceArea, Legend, ReferenceLine,
 } from "recharts";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
