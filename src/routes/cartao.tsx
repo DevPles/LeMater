@@ -1640,7 +1640,7 @@ async function gerarPDFCartao(args: {
         doc.setFillColor(34, 197, 94);
         doc.rect(lx2, ly2 - 2, 3, 2, "F");
         doc.setTextColor(...dark);
-        doc.text(refRange.label, lx2 + 4, ly2);
+        doc.text(`${refRange.label} (${refRange.min}-${refRange.max})`, lx2 + 4, ly2);
       }
     }
   };
