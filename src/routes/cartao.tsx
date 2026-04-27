@@ -2187,24 +2187,26 @@ async function gerarPDFCartao(args: {
   }
 
   // =============================================================
-  // PAGINA 5 - MATRIZ CRUZADA (datas x parametros) - tabela compacta, 1 face
+  // MATRIZ CRUZADA (datas x parametros) - tabela compacta em UMA face do folder
   // =============================================================
   if (medicoes.length) {
     doc.addPage("a4", "landscape");
-    doc.setFillColor(252, 252, 254);
-    doc.rect(0, 0, pageW, pageH, "F");
+    drawBaseFolderPage();
+
+    const faceX = margin;
+    const faceWCompact = halfW - margin - 5;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(pr, pg, pb);
-    doc.text("MATRIZ CRUZADA - EVOLUCAO POR CONSULTA", margin, 13);
+    doc.text("MATRIZ CRUZADA - EVOLUCAO POR CONSULTA", faceX, 13);
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.5);
-    doc.line(margin, 15, pageW - margin, 15);
+    doc.line(faceX, 15, faceX + faceWCompact, 15);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...muted);
-    doc.text("Linhas = data da consulta  |  Colunas = parametro clinico", margin, 19);
+    doc.text("Linhas = data da consulta  |  Colunas = parametro clinico", faceX, 19);
 
     // Datas (mais recentes primeiro)
     const datasSet = new Set<string>();
@@ -2215,40 +2217,65 @@ async function gerarPDFCartao(args: {
     });
     const matrix = new Map<string, Map<string, string | number>>();
     datas.forEach(d => matrix.set(d, new Map()));
-    medicoes.forEach(m => matrix.get(m.data)!.set(normParam(m.parametro), m.valor));
+    const pressaoPorData = new Map<string, { sis?: number; dia?: number }>();
+    medicoes.forEach(m => {
+      const tipo = isPressao(m.parametro);
+      if (tipo) {
+        if (!pressaoPorData.has(m.data)) pressaoPorData.set(m.data, {});
+        const alvo = pressaoPorData.get(m.data)!;
+        if (tipo === "sis") alvo.sis = Number(m.valor);
+        if (tipo === "dia") alvo.dia = Number(m.valor);
+        return;
+      }
+      matrix.get(m.data)!.set(normParam(m.parametro), m.valor);
+    });
+    pressaoPorData.forEach((v, d) => matrix.get(d)?.set(PRESSAO_KEY, `${v.sis ?? "-"}/${v.dia ?? "-"}`));
     const semanaPorData = new Map<string, number>();
     medicoes.forEach(m => semanaPorData.set(m.data, m.semana));
 
-    // Layout para caber tudo em 1 face
+    const compactLabel = (p: string): string => {
+      const label = labelByKey.get(p) ?? p;
+      const l = label.toLowerCase();
+      if (p === PRESSAO_KEY || l.includes("press")) return "PA\n(mmHg)";
+      if (l.includes("uterina")) return "AU\n(cm)";
+      if (l.includes("glic")) return "Glic.\ncapilar";
+      if (l.includes("pre") && l.includes("gest")) return "Peso\npre-gest.";
+      if (l.includes("peso")) return "Peso\n(kg)";
+      if (l.includes("bcf") || l.includes("batimento")) return "BCF\n(bpm)";
+      return label.replace(/\s*\(([^)]*)\)/g, "\n($1)");
+    };
+
+    // Layout para caber tudo dentro da face esquerda do folder
     const matY = 23;
     const matMaxY = pageH - 14;
-    const fixedColW = 18;
-    const semColW = 10;
-    const matTotalW = pageW - margin * 2;
+    const fixedColW = 17;
+    const semColW = 8;
+    const matTotalW = faceWCompact;
     const restW = matTotalW - fixedColW - semColW;
     const dataColW = restW / Math.max(1, parametros.length);
 
     // Calcula altura de header e linha para encaixar todas as datas
     const availH = matMaxY - matY;
-    const matHeaderH = 12;
-    const rowH = Math.max(4.2, Math.min(7, (availH - matHeaderH) / Math.max(1, datas.length)));
-    const fontRow = rowH >= 6 ? 7 : rowH >= 5 ? 6.2 : 5.5;
+    const matHeaderH = 13;
+    const rowH = Math.max(3.6, Math.min(6.2, (availH - matHeaderH) / Math.max(1, datas.length)));
+    const fontRow = rowH >= 5.4 ? 5.9 : rowH >= 4.5 ? 5.2 : 4.6;
 
     // Header
     doc.setFillColor(pr, pg, pb);
-    doc.rect(margin, matY, matTotalW, matHeaderH, "F");
+    doc.rect(faceX, matY, matTotalW, matHeaderH, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    doc.text("DATA", margin + 2, matY + matHeaderH / 2 + 1.2);
-    doc.text("SEM", margin + fixedColW + 2, matY + matHeaderH / 2 + 1.2);
-    doc.setFontSize(6);
+    doc.setFontSize(6.2);
+    doc.text("DATA", faceX + 2, matY + matHeaderH / 2 + 1.2);
+    doc.text("SEM", faceX + fixedColW + 1.5, matY + matHeaderH / 2 + 1.2);
+    doc.setFontSize(dataColW < 12 ? 4.5 : 5.2);
     parametros.forEach((p, i) => {
-      const cx = margin + fixedColW + semColW + i * dataColW;
-      const lines = doc.splitTextToSize(labelByKey.get(p) ?? p, dataColW - 1);
-      const lineH = 2.6;
-      const startY = matY + matHeaderH / 2 - ((Math.min(lines.length, 2) - 1) * lineH) / 2;
-      lines.slice(0, 2).forEach((ln: string, li: number) => {
+      const cx = faceX + fixedColW + semColW + i * dataColW;
+      const lines = compactLabel(p).split("\n").flatMap(ln => doc.splitTextToSize(ln, dataColW - 1) as string[]);
+      const lineH = 2.5;
+      const visibleLines = lines.slice(0, 3);
+      const startY = matY + matHeaderH / 2 - ((visibleLines.length - 1) * lineH) / 2;
+      visibleLines.forEach((ln: string, li: number) => {
         doc.text(ln, cx + dataColW / 2, startY + li * lineH, { align: "center" });
       });
     });
@@ -2258,19 +2285,19 @@ async function gerarPDFCartao(args: {
       const ry4 = matY + matHeaderH + ri * rowH;
       if (ri % 2 === 0) {
         doc.setFillColor(246, 247, 252);
-        doc.rect(margin, ry4, matTotalW, rowH, "F");
+        doc.rect(faceX, ry4, matTotalW, rowH, "F");
       }
       doc.setFont("helvetica", "bold");
       doc.setFontSize(fontRow);
       doc.setTextColor(pr, pg, pb);
-      doc.text(d, margin + 2, ry4 + rowH / 2 + 1.1);
+      doc.text(d, faceX + 1.5, ry4 + rowH / 2 + 1.1);
       doc.setFont("helvetica", "normal");
       doc.setTextColor(...muted);
-      doc.text(`${semanaPorData.get(d) ?? "-"}`, margin + fixedColW + 2, ry4 + rowH / 2 + 1.1);
+      doc.text(`${semanaPorData.get(d) ?? "-"}`, faceX + fixedColW + 2, ry4 + rowH / 2 + 1.1);
 
       const linhaMatrix = matrix.get(d)!;
       parametros.forEach((p, i) => {
-        const cx = margin + fixedColW + semColW + i * dataColW;
+        const cx = faceX + fixedColW + semColW + i * dataColW;
         const v = linhaMatrix.get(p);
         if (v !== undefined && v !== null) {
           doc.setFont("helvetica", "normal");
@@ -2290,25 +2317,25 @@ async function gerarPDFCartao(args: {
     const totalH = matHeaderH + datas.length * rowH;
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.3);
-    doc.rect(margin, matY, matTotalW, totalH, "S");
+    doc.rect(faceX, matY, matTotalW, totalH, "S");
     doc.setDrawColor(220, 222, 230);
     doc.setLineWidth(0.1);
     // Linhas horizontais entre rows
     for (let r = 1; r < datas.length; r++) {
       const y = matY + matHeaderH + r * rowH;
-      doc.line(margin, y, margin + matTotalW, y);
+      doc.line(faceX, y, faceX + matTotalW, y);
     }
     // Linhas verticais
-    doc.line(margin + fixedColW, matY, margin + fixedColW, matY + totalH);
-    doc.line(margin + fixedColW + semColW, matY, margin + fixedColW + semColW, matY + totalH);
+    doc.line(faceX + fixedColW, matY, faceX + fixedColW, matY + totalH);
+    doc.line(faceX + fixedColW + semColW, matY, faceX + fixedColW + semColW, matY + totalH);
     parametros.forEach((_p, i) => {
-      const cx = margin + fixedColW + semColW + (i + 1) * dataColW;
+      const cx = faceX + fixedColW + semColW + (i + 1) * dataColW;
       doc.line(cx, matY, cx, matY + totalH);
     });
     // Linha separando header
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.2);
-    doc.line(margin, matY + matHeaderH, margin + matTotalW, matY + matHeaderH);
+    doc.line(faceX, matY + matHeaderH, faceX + matTotalW, matY + matHeaderH);
   }
 
   // ============ Footer em todas as páginas ============
