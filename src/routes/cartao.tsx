@@ -1896,7 +1896,7 @@ async function gerarPDFCartao(args: {
     });
     const matrix = new Map<string, Map<string, string | number>>();
     datas.forEach(d => matrix.set(d, new Map()));
-    medicoes.forEach(m => matrix.get(m.data)!.set(m.parametro, m.valor));
+    medicoes.forEach(m => matrix.get(m.data)!.set(normParam(m.parametro), m.valor));
 
     // Mapa data -> semana
     const semanaPorData = new Map<string, number>();
