@@ -1026,7 +1026,7 @@ async function gerarPDFCartao(args: {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(ar, ag, ab);
-  doc.text("UNAERP  /  DRS XIII", halfW + halfW / 2, 16, { align: "center" });
+  doc.text("UNAERP", halfW + halfW / 2, 16, { align: "center" });
 
   // Bloco branco central elegante com titulo
   const coverBandY = pageH / 2 - 32;
