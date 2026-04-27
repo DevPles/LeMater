@@ -271,13 +271,34 @@ function CartaoPage() {
   };
 
   const exportarPDF = () => {
+    // Mescla dados reais do perfil logado com defaults de tela
+    const realInfo = {
+      name: profile?.nome || patientInfo.name,
+      age: patientInfo.age,
+      bloodType: patientInfo.bloodType,
+      dum: profile?.dum
+        ? formatBR(new Date(profile.dum + "T00:00:00"))
+        : patientInfo.dum,
+      dpp: patientInfo.dpp,
+      weeks: profile?.dum
+        ? String(semanaGestacional(hojeBR, formatBR(new Date(profile.dum + "T00:00:00"))))
+        : patientInfo.weeks,
+      email: profile?.email ?? null,
+      telefone: profile?.telefone ?? null,
+    };
     gerarPDFCartao({
-      patientInfo,
+      patientInfo: realInfo,
       vitals,
       lancamentos,
       vacinasExames,
       timelineEntries,
       palette,
+      charts: {
+        peso: pesoData,
+        pressao: pressaoData,
+        altura: alturaUterinaData,
+        bcf: bcfData,
+      },
     });
   };
 
