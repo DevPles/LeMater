@@ -1616,6 +1616,7 @@ async function gerarPDFCartao(args: {
     title: string,
     serie: { color: [number, number, number]; values: { x: number; y: number }[]; fill?: boolean; name?: string }[],
     refRange?: { min: number; max: number; label?: string },
+    extraRefs?: { min: number; max: number; label?: string; color?: [number, number, number] }[],
   ) => {
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(225, 225, 230);
