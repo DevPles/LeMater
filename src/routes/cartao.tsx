@@ -564,6 +564,9 @@ function LancamentosTab({ medicoes }: { medicoes: MedicaoReal[] }) {
                   <div key={m.id} className="bg-muted rounded-lg px-2 py-1.5">
                     <p className="text-[10px] text-muted-foreground">{m.parametro}</p>
                     <p className="text-sm font-semibold text-foreground">{m.valor}</p>
+                    {m.observacao && (
+                      <p className="text-[10px] text-muted-foreground mt-1 italic">{m.observacao}</p>
+                    )}
                   </div>
                 ))}
               </div>
