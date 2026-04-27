@@ -1488,12 +1488,17 @@ async function gerarPDFCartao(args: {
   };
 
   if (vacinas.length) {
-    const vacRows = agruparPorData(vacinas, (v) => v.data, (v) => v.vacina);
+    const vacRows = vacinas
+      .slice()
+      .sort((a, b) => (parseBR(b.data)?.getTime() ?? 0) - (parseBR(a.data)?.getTime() ?? 0))
+      .map((v) => [v.data, v.vacina, v.lote || "-", v.fabricante || "-"]);
     const halfMaxY = ry + Math.max(40, (pageH - 14 - ry) * 0.45);
     ry = drawSimpleTable(rX, ry, rW,
       [
-        { label: "DATA", widthPct: 24 },
-        { label: "VACINAS APLICADAS", widthPct: 76 },
+        { label: "DATA", widthPct: 18 },
+        { label: "VACINA", widthPct: 36 },
+        { label: "LOTE", widthPct: 18 },
+        { label: "FABRICANTE", widthPct: 28 },
       ],
       vacRows, [pr, pg, pb], halfMaxY) + 4;
   } else {
