@@ -427,6 +427,15 @@ function Dashboard({ session }: { session: Session }) {
                           Cancelar
                         </button>
                       )}
+                      {podeAbrir && (
+                        <button
+                          onClick={() => setProntuarioId(s.id)}
+                          className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+                          title="Ver prontuário compilado da consulta"
+                        >
+                          Prontuário
+                        </button>
+                      )}
                       <button
                         onClick={() => removerSlot(s.id)}
                         className="text-[10px] font-semibold text-red-700 hover:text-red-900"
@@ -446,6 +455,12 @@ function Dashboard({ session }: { session: Session }) {
 
       {slotDetalhe && (
         <GestanteDetalheModal slot={slotDetalhe} onClose={() => setSlotDetalhe(null)} />
+      )}
+      {prontuarioId && (
+        <ProntuarioConsultaModal
+          appointmentId={prontuarioId}
+          onClose={() => setProntuarioId(null)}
+        />
       )}
     </div>
   );
