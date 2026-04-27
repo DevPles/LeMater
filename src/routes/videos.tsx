@@ -89,6 +89,7 @@ type Comment = {
 };
 
 function VideosPage() {
+  const navigate = useNavigate();
   const { profile } = useGestanteProfile();
   const [activeCategory, setActiveCategory] = useState("Reels");
   const [selected, setSelected] = useState<Video | null>(null);
