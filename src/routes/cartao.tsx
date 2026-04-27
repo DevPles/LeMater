@@ -2317,25 +2317,25 @@ async function gerarPDFCartao(args: {
     const totalH = matHeaderH + datas.length * rowH;
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.3);
-    doc.rect(margin, matY, matTotalW, totalH, "S");
+    doc.rect(faceX, matY, matTotalW, totalH, "S");
     doc.setDrawColor(220, 222, 230);
     doc.setLineWidth(0.1);
     // Linhas horizontais entre rows
     for (let r = 1; r < datas.length; r++) {
       const y = matY + matHeaderH + r * rowH;
-      doc.line(margin, y, margin + matTotalW, y);
+      doc.line(faceX, y, faceX + matTotalW, y);
     }
     // Linhas verticais
-    doc.line(margin + fixedColW, matY, margin + fixedColW, matY + totalH);
-    doc.line(margin + fixedColW + semColW, matY, margin + fixedColW + semColW, matY + totalH);
+    doc.line(faceX + fixedColW, matY, faceX + fixedColW, matY + totalH);
+    doc.line(faceX + fixedColW + semColW, matY, faceX + fixedColW + semColW, matY + totalH);
     parametros.forEach((_p, i) => {
-      const cx = margin + fixedColW + semColW + (i + 1) * dataColW;
+      const cx = faceX + fixedColW + semColW + (i + 1) * dataColW;
       doc.line(cx, matY, cx, matY + totalH);
     });
     // Linha separando header
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.2);
-    doc.line(margin, matY + matHeaderH, margin + matTotalW, matY + matHeaderH);
+    doc.line(faceX, matY + matHeaderH, faceX + matTotalW, matY + matHeaderH);
   }
 
   // ============ Footer em todas as páginas ============
