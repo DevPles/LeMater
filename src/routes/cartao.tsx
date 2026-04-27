@@ -2233,23 +2233,29 @@ async function gerarPDFCartao(args: {
       const da = parseBR(a); const db = parseBR(b);
       return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
     });
+    const matY = 23;
+    const matMaxY = pageH - 14;
+    const matHeaderH = 13;
+    const maxRowsMatriz = Math.max(1, Math.floor((matMaxY - matY - matHeaderH) / 3.6));
+    const datasMatriz = datas.slice(0, maxRowsMatriz);
     const matrix = new Map<string, Map<string, string | number>>();
-    datas.forEach(d => matrix.set(d, new Map()));
+    datasMatriz.forEach(d => matrix.set(d, new Map()));
     const pressaoPorData = new Map<string, { sis?: number; dia?: number }>();
     medicoesMatriz.forEach(m => {
       const tipo = isPressao(m.parametro);
       if (tipo) {
-        if (!pressaoPorData.has(m.data)) pressaoPorData.set(m.data, {});
+          if (!matrix.has(m.data)) return;
+          if (!pressaoPorData.has(m.data)) pressaoPorData.set(m.data, {});
         const alvo = pressaoPorData.get(m.data)!;
         if (tipo === "sis") alvo.sis = Number(m.valor);
         if (tipo === "dia") alvo.dia = Number(m.valor);
         return;
       }
-      matrix.get(m.data)!.set(normParam(m.parametro), m.valor);
+      matrix.get(m.data)?.set(normParam(m.parametro), m.valor);
     });
     pressaoPorData.forEach((v, d) => matrix.get(d)?.set(PRESSAO_KEY, `${v.sis ?? "-"}/${v.dia ?? "-"}`));
     const semanaPorData = new Map<string, number>();
-    medicoesMatriz.forEach(m => semanaPorData.set(m.data, m.semana));
+    medicoesMatriz.forEach(m => { if (matrix.has(m.data)) semanaPorData.set(m.data, m.semana); });
 
     const compactLabel = (p: string): string => {
       const label = labelByKey.get(p) ?? p;
