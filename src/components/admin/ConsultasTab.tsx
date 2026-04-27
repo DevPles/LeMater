@@ -36,6 +36,7 @@ export function ConsultasTab() {
   const [loading, setLoading] = useState(true);
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // filtros
   const [statusFiltro, setStatusFiltro] = useState<StatusFiltro>("todos");
@@ -141,6 +142,25 @@ export function ConsultasTab() {
       alert("Erro ao gerar link: " + error.message);
     }
     setGeneratingId(null);
+  };
+
+  const apagar = async (item: Slot) => {
+    const dt = new Date(item.data_hora).toLocaleString("pt-BR");
+    const confirma = window.confirm(
+      `Apagar esta consulta de ${dt}?\n\nEssa ação é permanente e remove o registro do histórico.`,
+    );
+    if (!confirma) return;
+    setDeletingId(item.id);
+    const { error } = await supabase
+      .from("appointment_slots")
+      .delete()
+      .eq("id", item.id);
+    if (error) {
+      alert("Erro ao apagar: " + error.message);
+    } else {
+      setItems((prev) => prev.filter((x) => x.id !== item.id));
+    }
+    setDeletingId(null);
   };
 
   const fmtDur = (seg: number | null) => {
@@ -285,6 +305,7 @@ export function ConsultasTab() {
                   <th className="text-left px-3 py-2 font-semibold">Status</th>
                   <th className="text-left px-3 py-2 font-semibold">Duração</th>
                   <th className="text-right px-3 py-2 font-semibold">Gravação</th>
+                  <th className="text-right px-3 py-2 font-semibold">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -375,6 +396,16 @@ export function ConsultasTab() {
                             </a>
                           </div>
                         )}
+                      </td>
+                      <td className="px-3 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => apagar(item)}
+                          disabled={deletingId === item.id}
+                          className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline disabled:opacity-50"
+                        >
+                          {deletingId === item.id ? "Apagando..." : "Apagar"}
+                        </button>
                       </td>
                     </tr>
                   );
