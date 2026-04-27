@@ -397,6 +397,16 @@ export function ConsultasTab() {
                           </div>
                         )}
                       </td>
+                      <td className="px-3 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => apagar(item)}
+                          disabled={deletingId === item.id}
+                          className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline disabled:opacity-50"
+                        >
+                          {deletingId === item.id ? "Apagando..." : "Apagar"}
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
