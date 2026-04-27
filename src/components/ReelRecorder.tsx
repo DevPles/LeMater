@@ -109,7 +109,7 @@ export function ReelRecorder({ open, onClose, onCreated, userId, categorias, def
     setElapsed(0);
     timerRef.current = window.setInterval(() => {
       setElapsed((s) => {
-        if (s >= 60) { stopRecording(); return s; }
+        if (s >= 180) { stopRecording(); return s; }
         return s + 1;
       });
     }, 1000);
