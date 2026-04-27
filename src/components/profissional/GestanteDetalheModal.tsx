@@ -731,6 +731,9 @@ export function GestanteDetalheModal({
                 <Stat label="Abortos" value={String(profile.numero_abortos ?? 0)} />
               </section>
 
+              {/* edição obstétrica (G/P/A) */}
+              <ObstetricoEditor profile={profile} onSaved={(novo) => setProfile(novo)} />
+
               {/* alertas ativos */}
               <Bloco titulo={`Alertas ativos (${alerts.length})`}>
                 {alerts.length === 0 ? (
