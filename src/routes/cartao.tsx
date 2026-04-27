@@ -1490,6 +1490,124 @@ async function gerarPDFCartao(args: {
     doc.text("Nenhum exame registrado.", rX + 3, ry + 6.5);
   }
 
+  // =============================================================
+  // METADE DIREITA DA PAGINA 2: Linha do tempo gestacional + Orientacoes
+  // =============================================================
+  const rgX = halfW + 14;
+  const rgW = halfW - 28;
+  let rgY = 18;
+
+  // Titulo: Linha do tempo
+  doc.setTextColor(pr, pg, pb);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("LINHA DO TEMPO GESTACIONAL", rgX, rgY);
+  doc.setDrawColor(pr, pg, pb);
+  doc.setLineWidth(0.5);
+  doc.line(rgX, rgY + 3, rgX + rgW, rgY + 3);
+  rgY += 8;
+
+  // Calcula marcos a partir da DUM
+  const dumDate = parseBR(String(patientInfo.dum));
+  const dppDate = parseBR(String(patientInfo.dpp));
+  const semanaAtualNum = parseInt(String(patientInfo.weeks), 10) || 0;
+  const addWeeks = (base: Date, w: number) => {
+    const d = new Date(base);
+    d.setDate(d.getDate() + w * 7);
+    return d;
+  };
+  const fmtBR = (d: Date | null) => {
+    if (!d || isNaN(d.getTime())) return "-";
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    return `${dd}/${mm}/${d.getFullYear()}`;
+  };
+
+  const marcos: { semana: number; titulo: string; descricao: string }[] = [
+    { semana: 12, titulo: "1o trimestre", descricao: "USG morfologica inicial, exames de sangue e urina." },
+    { semana: 20, titulo: "USG morfologica", descricao: "Avaliacao detalhada da anatomia fetal." },
+    { semana: 24, titulo: "TOTG 75g", descricao: "Rastreio de diabetes gestacional (24-28 sem)." },
+    { semana: 28, titulo: "Vacina dTpa", descricao: "Imunizacao da gestante contra coqueluche." },
+    { semana: 36, titulo: "Streptococcus B", descricao: "Cultura vagino-retal para GBS." },
+    { semana: 40, titulo: "DPP - parto", descricao: "Data provavel do parto." },
+  ];
+
+  const lineX = rgX + 3;
+  const itemH = 9;
+  marcos.forEach((m, i) => {
+    const y = rgY + i * itemH;
+    const dataMarco = dumDate ? fmtBR(addWeeks(dumDate, m.semana)) : "-";
+    const passou = semanaAtualNum >= m.semana;
+    // Bolinha
+    if (passou) {
+      doc.setFillColor(pr, pg, pb);
+    } else {
+      doc.setFillColor(220, 220, 230);
+    }
+    doc.circle(lineX, y + 2, 1.6, "F");
+    // Linha vertical conectora
+    if (i < marcos.length - 1) {
+      doc.setDrawColor(220, 220, 230);
+      doc.setLineWidth(0.4);
+      doc.line(lineX, y + 4, lineX, y + itemH);
+    }
+    // Texto
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(passou ? pr : 150, passou ? pg : 150, passou ? pb : 160);
+    doc.text(`${m.semana}a sem - ${m.titulo}`, lineX + 5, y + 1.5);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(...muted);
+    doc.text(`${dataMarco}  -  ${m.descricao}`, lineX + 5, y + 5);
+  });
+  rgY += marcos.length * itemH + 4;
+
+  // Orientacoes gerais
+  doc.setTextColor(pr, pg, pb);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("ORIENTACOES GERAIS", rgX, rgY);
+  doc.setDrawColor(pr, pg, pb);
+  doc.setLineWidth(0.5);
+  doc.line(rgX, rgY + 3, rgX + rgW, rgY + 3);
+  rgY += 7;
+
+  const orientacoes = [
+    "Alimentacao equilibrada: frutas, verduras, proteinas e cereais integrais.",
+    "Hidratacao: pelo menos 2 litros de agua por dia.",
+    "Atividade fisica leve com orientacao profissional (caminhada, hidroginastica).",
+    "Evitar bebidas alcoolicas, cigarro e medicamentos sem prescricao.",
+    "Manter o cartao da gestante sempre atualizado e leva-lo a todas as consultas.",
+    "Sinais de alerta: sangramento, dor abdominal forte, perda de liquido, ausencia de movimentos fetais. Procure a unidade de saude.",
+  ];
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...dark);
+  orientacoes.forEach((o) => {
+    const lines = doc.splitTextToSize(`- ${o}`, rgW - 4) as string[];
+    lines.forEach((ln, li) => {
+      doc.text(ln, rgX + 2, rgY + 3 + li * 3.4);
+    });
+    rgY += lines.length * 3.4 + 1.5;
+  });
+
+  // Rodape da face direita: contatos uteis
+  const contatosY = pageH - 22;
+  doc.setFillColor(lr, lg, lb);
+  doc.roundedRect(rgX, contatosY, rgW, 14, 2, 2, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(pr, pg, pb);
+  doc.text("CONTATOS UTEIS", rgX + 3, contatosY + 4);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(...dark);
+  doc.text("SAMU 192   -   Bombeiros 193   -   Disque Saude 136", rgX + 3, contatosY + 8.5);
+  doc.setFontSize(6.5);
+  doc.setTextColor(...muted);
+  doc.text("Em caso de emergencia, dirija-se a unidade de saude mais proxima.", rgX + 3, contatosY + 12);
+
   // ================================================================
   // PAGINAS 3 e 4 - GRAFICOS INTERCALADOS + DADOS CLINICOS EM GRADE
   // ================================================================
