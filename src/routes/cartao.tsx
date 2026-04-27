@@ -1155,7 +1155,7 @@ async function gerarPDFCartao(args: {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(pr, pg, pb);
-  doc.text("DOCUMENTO DE ACOMPANHAMENTO PRE-NATAL", 14, 38);
+  doc.text("DOCUMENTO DE ACOMPANHAMENTO PRE-NATAL", halfW / 2, 38, { align: "center" });
 
   // Bloco central da contracapa: ficha de identificacao discreta
   const idY = pageH / 2 - 32;
