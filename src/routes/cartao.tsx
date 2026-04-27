@@ -1676,7 +1676,13 @@ async function gerarPDFCartao(args: {
     return null;
   };
   const PRESSAO_KEY = "pressao arterial";
+  // "Estatura" / "altura_pessoa" eh dado fixo da gestante (usado no IMC) -> nao entra na evolucao
+  const ehEstatura = (p: string) => {
+    const lp = normParam(p);
+    return lp === "estatura" || lp.startsWith("estatura") || lp === "altura pessoa" || lp === "altura";
+  };
   medicoes.forEach(m => {
+    if (ehEstatura(m.parametro)) return;
     const tipo = isPressao(m.parametro);
     const key = tipo ? PRESSAO_KEY : normParam(m.parametro);
     if (!porParametro.has(key)) {
