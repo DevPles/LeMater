@@ -1255,6 +1255,54 @@ async function gerarPDFCartao(args: {
   doc.text(linkLines[0], tX, linkY);
   doc.link(tX, linkY - 3, doc.getTextWidth(linkLines[0]), 4, { url: linkUrl });
 
+  // ===== Pré-cálculo de parametros (compartilhado entre matriz e graficos) =====
+  const normParam = (p: string): string => {
+    return p
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/\([^)]*\)/g, "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  };
+  const porParametro = new Map<string, MedicaoReal[]>();
+  const labelByKey = new Map<string, string>();
+  const isPressao = (p: string): "sis" | "dia" | null => {
+    const lp = normParam(p);
+    if (lp.includes("press") && lp.includes("sist")) return "sis";
+    if (lp.includes("press") && lp.includes("diast")) return "dia";
+    return null;
+  };
+  const PRESSAO_KEY = "pressao arterial";
+  const ehEstatura = (p: string) => {
+    const lp = normParam(p);
+    return lp === "estatura" || lp.startsWith("estatura") || lp === "altura pessoa" || lp === "altura";
+  };
+  const ehTemperatura = (p: string) => {
+    const lp = normParam(p);
+    return lp === "temperatura" || lp.startsWith("temperatura") || lp === "temp" || lp.includes("termic");
+  };
+  medicoes.forEach(m => {
+    if (ehEstatura(m.parametro)) return;
+    if (ehTemperatura(m.parametro)) return;
+    const tipo = isPressao(m.parametro);
+    const key = tipo ? PRESSAO_KEY : normParam(m.parametro);
+    if (!porParametro.has(key)) {
+      porParametro.set(key, []);
+      const pretty = tipo ? "Pressao Arterial (mmHg)" : m.parametro.trim();
+      labelByKey.set(key, tipo ? pretty : pretty.charAt(0).toUpperCase() + pretty.slice(1));
+    }
+    porParametro.get(key)!.push(m);
+  });
+  porParametro.forEach((arr) => {
+    arr.sort((a, b) => {
+      const da = parseBR(a.data); const db = parseBR(b.data);
+      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+    });
+  });
+  const parametros = Array.from(porParametro.keys()).sort((a, b) =>
+    (labelByKey.get(a) ?? a).localeCompare(labelByKey.get(b) ?? b)
+  );
+
 
   // =============================================================
   // PAGINA 2 - FOLHA 1 (Dados gestacionais + Sinais vitais + Vacinas + Exames)
