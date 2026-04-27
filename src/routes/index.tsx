@@ -100,13 +100,13 @@ function WelcomeScreen() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9 }}
-            className="flex flex-row items-center justify-center gap-3 w-full max-w-md"
+            className="grid grid-cols-2 items-center justify-center gap-3 w-full max-w-md"
           >
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => openModal("login")}
-              className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm px-6 py-3 rounded-full shadow-xl shadow-[#f0c040]/40 transition-colors flex-1 border-2 border-transparent"
+              className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm px-6 py-3 rounded-full shadow-xl shadow-[#f0c040]/40 transition-colors w-full border-2 border-transparent"
             >
               Entrar
             </motion.button>
@@ -115,7 +115,7 @@ function WelcomeScreen() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => openModal("register")}
-              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm px-6 py-3 rounded-full backdrop-blur-sm transition-colors flex-1"
+              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm px-6 py-3 rounded-full backdrop-blur-sm transition-colors w-full"
             >
               Cadastrar
             </motion.button>
