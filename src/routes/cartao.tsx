@@ -1661,6 +1661,12 @@ async function gerarPDFCartao(args: {
           yHi = Math.max(yHi, refRange.max + padBase * 0.3);
         }
       }
+      if (extraRefs && extraRefs.length) {
+        extraRefs.forEach(r => {
+          yLo = Math.min(yLo, r.min - padBase * 0.2);
+          yHi = Math.max(yHi, r.max + padBase * 0.2);
+        });
+      }
       // Arredonda para escala "bonita"
       const niceStep = (range: number): number => {
         const raw = range / 4;
