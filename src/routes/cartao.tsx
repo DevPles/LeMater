@@ -2094,10 +2094,29 @@ async function gerarPDFCartao(args: {
           const cx = faceX + fixedColW + semColW + i * dataColW;
           const v = linhaMatrix.get(p);
           if (v !== undefined && v !== null) {
+            // barrinha proporcional (sparkline / heatmap horizontal)
+            const rng = rangePorParam.get(p);
+            const n = numFromValor(v as string | number);
+            const [cr2, cg2, cb2] = corParam(p);
+            const barPad = 1.2;
+            const barX = cx + barPad;
+            const barW = dataColW - barPad * 2;
+            const barY = ry4 + matRowH - 1.6;
+            const barH = 0.9;
+            // trilho
+            doc.setFillColor(235, 235, 240);
+            doc.rect(barX, barY, barW, barH, "F");
+            if (n !== null && rng) {
+              const span = rng.max - rng.min;
+              const pct = span > 0 ? (n - rng.min) / span : 1;
+              const fillW = Math.max(0.6, barW * pct);
+              doc.setFillColor(cr2, cg2, cb2);
+              doc.rect(barX, barY, fillW, barH, "F");
+            }
             doc.setFont("helvetica", "bold");
             doc.setFontSize(6.5);
             doc.setTextColor(...dark);
-            doc.text(String(v), cx + dataColW / 2, ry4 + 4, { align: "center" });
+            doc.text(String(v), cx + dataColW / 2, ry4 + 3.2, { align: "center" });
           } else {
             doc.setFont("helvetica", "normal");
             doc.setFontSize(5.5);
