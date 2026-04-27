@@ -127,6 +127,8 @@ interface VacinaReal {
   id: string;
   vacina: string;
   data: string; // BR
+  lote?: string;
+  fabricante?: string;
   observacao?: string;
 }
 
@@ -196,7 +198,7 @@ function CartaoPage() {
         .eq("gestante_id", uid)
         .order("data_medicao", { ascending: true }),
       supabase.from("vaccinations")
-        .select("id,vacina,data_aplicacao,observacao")
+        .select("id,vacina,data_aplicacao,observacao,lote,fabricante")
         .eq("gestante_id", uid)
         .order("data_aplicacao", { ascending: false }),
       supabase.from("exam_results")
@@ -224,6 +226,8 @@ function CartaoPage() {
         id: r.id,
         vacina: r.vacina,
         data: formatBR(new Date(r.data_aplicacao + "T00:00:00")),
+        lote: r.lote ?? undefined,
+        fabricante: r.fabricante ?? undefined,
         observacao: r.observacao ?? undefined,
       })));
     }
@@ -269,6 +273,8 @@ function CartaoPage() {
       id: r.id,
       vacina: r.vacina,
       data: formatBR(new Date(r.data_aplicacao + "T00:00:00")),
+      lote: r.lote ?? undefined,
+      fabricante: r.fabricante ?? undefined,
       observacao: r.observacao ?? undefined,
     })));
     setExames((publicSnap.exames ?? []).map((r: any) => ({
