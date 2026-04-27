@@ -1742,48 +1742,48 @@ async function gerarPDFCartao(args: {
       const cfg = paramConfig(param);
       const items = porParametro.get(param)!;
       const accent: [number, number, number] = cfg?.color ?? [pr, pg, pb];
-      const yTop = 18 + posInPage * (blockH + 4);
+      // Cada face: esquerda (posInPage=0) inicia em x=margin, direita em x=halfW+5
+      const xFace = posInPage === 0 ? margin : halfW + 5;
+      const yChart = 18;
+      const yTable = yChart + chartH + 4;
 
-      // Lado esquerdo: GRAFICO (ou caixa "sem dados suficientes")
       if (cfg && cfg.series[0].values.length >= 2) {
-        drawChartBox(margin, yTop, chartBoxW, blockH,
+        drawChartBox(xFace, yChart, faceW, chartH,
           `Curva: ${param}`,
           cfg.series,
           cfg.refRange);
       } else {
-        // sem grafico: caixa explicativa
         doc.setFillColor(248, 248, 252);
         doc.setDrawColor(225, 225, 230);
         doc.setLineWidth(0.3);
-        doc.roundedRect(margin, yTop, chartBoxW, blockH, 2, 2, "FD");
+        doc.roundedRect(xFace, yChart, faceW, chartH, 2, 2, "FD");
         doc.setFont("helvetica", "bold");
         doc.setFontSize(9);
         doc.setTextColor(...dark);
-        doc.text(param.toUpperCase(), margin + 4, yTop + 8);
+        doc.text(param.toUpperCase(), xFace + 4, yChart + 8);
         doc.setFont("helvetica", "italic");
         doc.setFontSize(8);
         doc.setTextColor(...muted);
-        doc.text("Necessario ao menos 2 medicoes para gerar grafico.", margin + 4, yTop + 14);
-        // Mini stat: ultima leitura
+        doc.text("Necessario ao menos 2 medicoes para gerar grafico.", xFace + 4, yChart + 14);
         const ult = items[0];
         if (ult) {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(7);
           doc.setTextColor(...muted);
-          doc.text("ULTIMA LEITURA", margin + 4, yTop + 22);
+          doc.text("ULTIMA LEITURA", xFace + 4, yChart + 22);
           doc.setFont("helvetica", "bold");
           doc.setFontSize(20);
           doc.setTextColor(accent[0], accent[1], accent[2]);
-          doc.text(String(ult.valor), margin + 4, yTop + 32);
+          doc.text(String(ult.valor), xFace + 4, yChart + 32);
           doc.setFont("helvetica", "normal");
           doc.setFontSize(7);
           doc.setTextColor(...muted);
-          doc.text(`em ${ult.data}  -  semana ${ult.semana}`, margin + 4, yTop + 36);
+          doc.text(`em ${ult.data}  -  semana ${ult.semana}`, xFace + 4, yChart + 36);
         }
       }
 
-      // Lado direito: TABELA
-      drawTableBox(halfW + 5, yTop, tableBoxW, blockH, param, items, accent);
+      // TABELA logo abaixo do grafico, dentro da mesma face
+      drawTableBox(xFace, yTable, faceW, tableH, param, items, accent);
 
       posInPage = (posInPage + 1) % blocksPerPage;
     });
