@@ -1606,10 +1606,26 @@ async function gerarPDFCartao(args: {
   // ================================================================
 
   // Agrupa por parametro
+  // Normaliza nome do parametro (case-insensitive, remove acento, espacos extras e unidades entre parenteses)
+  const normParam = (p: string): string => {
+    return p
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/\([^)]*\)/g, "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  };
   const porParametro = new Map<string, MedicaoReal[]>();
+  const labelByKey = new Map<string, string>();
   medicoes.forEach(m => {
-    if (!porParametro.has(m.parametro)) porParametro.set(m.parametro, []);
-    porParametro.get(m.parametro)!.push(m);
+    const key = normParam(m.parametro);
+    if (!porParametro.has(key)) {
+      porParametro.set(key, []);
+      // Mantem o label "mais bonito" (capitalizado)
+      const pretty = m.parametro.trim();
+      labelByKey.set(key, pretty.charAt(0).toUpperCase() + pretty.slice(1));
+    }
+    porParametro.get(key)!.push(m);
   });
   porParametro.forEach((arr) => {
     arr.sort((a, b) => {
@@ -1617,7 +1633,9 @@ async function gerarPDFCartao(args: {
       return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
     });
   });
-  const parametros = Array.from(porParametro.keys()).sort();
+  const parametros = Array.from(porParametro.keys()).sort((a, b) =>
+    (labelByKey.get(a) ?? a).localeCompare(labelByKey.get(b) ?? b)
+  );
 
   // Helper: detecta valor numerico (lida com "120/80")
   const numFromValor = (v: string | number): number | null => {
