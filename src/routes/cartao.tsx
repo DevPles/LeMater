@@ -1,13 +1,41 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { useScreenContent } from "@/hooks/useScreenContent";
 import { CARTAO_DEFAULT } from "@/components/admin/TelasTab";
+import { useGestanteProfile } from "@/hooks/useGestanteProfile";
+import jsPDF from "jspdf";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area,
 } from "recharts";
+
+/** Paleta baseada no sexo do bebê — usado também no PDF. */
+function paletaPorSexo(sexo: string | null | undefined) {
+  if (sexo === "masculino") {
+    return {
+      primary: "#2563eb",      // azul
+      primaryLight: "#dbeafe",
+      accent: "#0ea5e9",
+      label: "Menino",
+    };
+  }
+  if (sexo === "feminino") {
+    return {
+      primary: "#db2777",      // rosa
+      primaryLight: "#fce7f3",
+      accent: "#f472b6",
+      label: "Menina",
+    };
+  }
+  return {
+    primary: "#7c3aed",        // roxo neutro
+    primaryLight: "#ede9fe",
+    accent: "#a78bfa",
+    label: "A descobrir",
+  };
+}
 
 export const Route = createFileRoute("/cartao")({
   head: () => ({
@@ -173,6 +201,9 @@ function CartaoPage() {
   const [vacinasExames, setVacinasExames] = useState<VacinaExame[]>(vacinasExamesIniciais);
 
   const { content: cartaoContent } = useScreenContent("cartao", CARTAO_DEFAULT);
+  const { profile } = useGestanteProfile();
+  const bebeSexo = profile?.bebe_sexo ?? null;
+  const palette = paletaPorSexo(bebeSexo);
   const patientInfo = {
     name: cartaoContent.patientName,
     age: cartaoContent.patientAge,
@@ -239,6 +270,17 @@ function CartaoPage() {
     }, ...prev]);
   };
 
+  const exportarPDF = () => {
+    gerarPDFCartao({
+      patientInfo,
+      vitals,
+      lancamentos,
+      vacinasExames,
+      timelineEntries,
+      palette,
+    });
+  };
+
   const tabs: { key: Tab; label: string }[] = [
     { key: "resumo", label: "Resumo" },
     { key: "lancamentos", label: "Lançamentos" },
@@ -254,10 +296,11 @@ function CartaoPage() {
         <div className="relative mb-1">
           <h1 className="text-2xl font-bold font-display text-foreground text-center">Cartão Digital da Gestante</h1>
           <button
-            onClick={() => window.print()}
-            className="absolute right-0 top-9 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border border-primary text-primary bg-background transition-all hover:bg-primary hover:text-primary-foreground"
+            onClick={exportarPDF}
+            className="absolute right-0 top-9 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border-2 text-primary-foreground bg-primary transition-all hover:opacity-90"
+            style={{ backgroundColor: palette.primary, borderColor: palette.primary, color: "#fff" }}
           >
-            Exportar
+            Exportar PDF
           </button>
         </div>
         <p className="text-sm text-muted-foreground text-center">Evolução da gestação</p>
@@ -329,7 +372,7 @@ function CartaoPage() {
           inputClass={inputClass}
         />
       )}
-      {tab === "graficos" && <GraficosTab />}
+      {tab === "graficos" && <GraficosTab palette={palette} dum={patientInfo.dum} />}
     </div>
   );
 }
@@ -824,27 +867,124 @@ function VacinasExamesTab({
 }
 
 /* ========== GRÁFICOS TAB ========== */
-function GraficosTab() {
+type Palette = ReturnType<typeof paletaPorSexo>;
+
+type Periodo = "todos" | "1tri" | "2tri" | "3tri" | "custom";
+
+function GraficosTab({ palette, dum }: { palette: Palette; dum: string }) {
   const chartCard = "bg-card rounded-2xl p-4 shadow-sm border border-border";
   const chartTitle = "font-display font-semibold text-sm text-foreground mb-3";
 
+  const [periodo, setPeriodo] = useState<Periodo>("todos");
+  // Para "custom" — calendário por data (DUM ⇒ semana)
+  const [dataInicio, setDataInicio] = useState<string>("");
+  const [dataFim, setDataFim] = useState<string>("");
+
+  // Converte data ISO (yyyy-mm-dd) → semana gestacional
+  const dataParaSemana = (iso: string): number | null => {
+    if (!iso) return null;
+    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return null;
+    const br = `${m[3]}/${m[2]}/${m[1]}`;
+    const s = semanaGestacional(br, dum);
+    return s > 0 ? s : null;
+  };
+
+  const range = useMemo(() => {
+    if (periodo === "1tri") return { min: 1, max: 13 };
+    if (periodo === "2tri") return { min: 14, max: 27 };
+    if (periodo === "3tri") return { min: 28, max: 42 };
+    if (periodo === "custom") {
+      const min = dataParaSemana(dataInicio) ?? 1;
+      const max = dataParaSemana(dataFim) ?? 42;
+      return { min: Math.min(min, max), max: Math.max(min, max) };
+    }
+    return { min: 0, max: 42 };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodo, dataInicio, dataFim]);
+
+  const filtrar = <T extends { semana: number }>(arr: T[]) =>
+    arr.filter(d => d.semana >= range.min && d.semana <= range.max);
+
+  const pesoFiltrado = filtrar(pesoData);
+  const pressaoFiltrada = filtrar(pressaoData);
+  const auFiltrada = filtrar(alturaUterinaData);
+  const bcfFiltrado = filtrar(bcfData);
+
+  const filtros: { key: Periodo; label: string }[] = [
+    { key: "todos", label: "Evolução Total" },
+    { key: "1tri", label: "1º Trim." },
+    { key: "2tri", label: "2º Trim." },
+    { key: "3tri", label: "3º Trim." },
+    { key: "custom", label: "Calendário" },
+  ];
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+      {/* Filtros inteligentes */}
+      <div className="bg-card rounded-2xl p-3 shadow-sm border border-border">
+        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Filtrar período</p>
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {filtros.map(f => {
+            const ativo = periodo === f.key;
+            return (
+              <button
+                key={f.key}
+                onClick={() => setPeriodo(f.key)}
+                className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border"
+                style={{
+                  backgroundColor: ativo ? palette.primary : "transparent",
+                  color: ativo ? "#fff" : palette.primary,
+                  borderColor: palette.primary,
+                }}
+              >
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
+        {periodo === "custom" && (
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <div>
+              <label className="text-[10px] font-medium text-muted-foreground mb-1 block">Início</label>
+              <input
+                type="date"
+                value={dataInicio}
+                onChange={e => setDataInicio(e.target.value)}
+                className="w-full h-9 text-xs rounded-xl border border-border bg-background px-2"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-medium text-muted-foreground mb-1 block">Fim</label>
+              <input
+                type="date"
+                value={dataFim}
+                onChange={e => setDataFim(e.target.value)}
+                className="w-full h-9 text-xs rounded-xl border border-border bg-background px-2"
+              />
+            </div>
+          </div>
+        )}
+        <p className="text-[10px] text-muted-foreground mt-2">
+          Mostrando semana {range.min} → {range.max}
+        </p>
+      </div>
+
       <div className={chartCard}>
         <h4 className={chartTitle}>Curva de Peso (kg)</h4>
         <ResponsiveContainer width="100%" height={180}>
-          <AreaChart data={pesoData}>
+          <AreaChart data={pesoFiltrado}>
             <defs>
               <linearGradient id="pesoGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
+                <stop offset="0%" stopColor={palette.primary} stopOpacity={0.3} />
+                <stop offset="100%" stopColor={palette.primary} stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis dataKey="semana" tick={{ fontSize: 10 }} label={{ value: "Semana", position: "insideBottomRight", offset: -5, fontSize: 10 }} />
             <YAxis tick={{ fontSize: 10 }} domain={["dataMin - 2", "dataMax + 2"]} />
             <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
-            <Area type="monotone" dataKey="peso" stroke="var(--primary)" fill="url(#pesoGrad)" strokeWidth={2} dot={{ r: 4, fill: "var(--primary)" }} />
+            <Area type="monotone" dataKey="peso" stroke={palette.primary} fill="url(#pesoGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.primary }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -852,7 +992,7 @@ function GraficosTab() {
       <div className={chartCard}>
         <h4 className={chartTitle}>Pressão Arterial (mmHg)</h4>
         <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={pressaoData}>
+          <LineChart data={pressaoFiltrada}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis dataKey="semana" tick={{ fontSize: 10 }} label={{ value: "Semana", position: "insideBottomRight", offset: -5, fontSize: 10 }} />
             <YAxis tick={{ fontSize: 10 }} domain={[50, 140]} />
@@ -866,18 +1006,18 @@ function GraficosTab() {
       <div className={chartCard}>
         <h4 className={chartTitle}>Altura Uterina (cm)</h4>
         <ResponsiveContainer width="100%" height={180}>
-          <AreaChart data={alturaUterinaData}>
+          <AreaChart data={auFiltrada}>
             <defs>
               <linearGradient id="auGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#f59e0b" stopOpacity={0} />
+                <stop offset="0%" stopColor={palette.accent} stopOpacity={0.3} />
+                <stop offset="100%" stopColor={palette.accent} stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis dataKey="semana" tick={{ fontSize: 10 }} label={{ value: "Semana", position: "insideBottomRight", offset: -5, fontSize: 10 }} />
             <YAxis tick={{ fontSize: 10 }} domain={[0, 40]} />
             <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
-            <Area type="monotone" dataKey="altura" stroke="#f59e0b" fill="url(#auGrad)" strokeWidth={2} dot={{ r: 4, fill: "#f59e0b" }} />
+            <Area type="monotone" dataKey="altura" stroke={palette.accent} fill="url(#auGrad)" strokeWidth={2} dot={{ r: 4, fill: palette.accent }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -885,7 +1025,7 @@ function GraficosTab() {
       <div className={chartCard}>
         <h4 className={chartTitle}>Batimentos Cardíacos Fetais (bpm)</h4>
         <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={bcfData}>
+          <LineChart data={bcfFiltrado}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <XAxis dataKey="semana" tick={{ fontSize: 10 }} label={{ value: "Semana", position: "insideBottomRight", offset: -5, fontSize: 10 }} />
             <YAxis tick={{ fontSize: 10 }} domain={[100, 180]} />
@@ -896,4 +1036,192 @@ function GraficosTab() {
       </div>
     </motion.div>
   );
+}
+
+/* ========== Geração de PDF ========== */
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  return [
+    parseInt(h.slice(0, 2), 16),
+    parseInt(h.slice(2, 4), 16),
+    parseInt(h.slice(4, 6), 16),
+  ];
+}
+
+function gerarPDFCartao(args: {
+  patientInfo: { name: string; age: string | number; bloodType: string; dum: string; dpp: string; weeks: string | number };
+  vitals: { label: string; value: string; change: string }[];
+  lancamentos: Lancamento[];
+  vacinasExames: VacinaExame[];
+  timelineEntries: TimelineEntry[];
+  palette: Palette;
+}) {
+  const { patientInfo, vitals, lancamentos, vacinasExames, timelineEntries, palette } = args;
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 14;
+  let y = 0;
+
+  const [pr, pg, pb] = hexToRgb(palette.primary);
+  const [lr, lg, lb] = hexToRgb(palette.primaryLight);
+
+  const ensureSpace = (needed: number) => {
+    if (y + needed > pageH - margin) {
+      doc.addPage();
+      y = margin;
+    }
+  };
+
+  const sectionHeader = (title: string) => {
+    ensureSpace(12);
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(margin, y, pageW - margin * 2, 7, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text(title, margin + 3, y + 5);
+    y += 10;
+    doc.setTextColor(30, 30, 30);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+  };
+
+  const linhaTexto = (texto: string, opts: { bold?: boolean; size?: number } = {}) => {
+    doc.setFont("helvetica", opts.bold ? "bold" : "normal");
+    doc.setFontSize(opts.size ?? 10);
+    const lines = doc.splitTextToSize(texto, pageW - margin * 2);
+    ensureSpace(lines.length * 5 + 1);
+    doc.text(lines, margin, y);
+    y += lines.length * 5;
+  };
+
+  // ===== CAPA / Cabeçalho colorido =====
+  doc.setFillColor(pr, pg, pb);
+  doc.rect(0, 0, pageW, 38, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.text("Cartão Digital da Gestante", pageW / 2, 16, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.text(`Sexo do bebê: ${palette.label}`, pageW / 2, 24, { align: "center" });
+  doc.setFontSize(9);
+  doc.text(`Emitido em ${formatBR(new Date())}`, pageW / 2, 31, { align: "center" });
+  y = 46;
+
+  // ===== Dados da gestante =====
+  doc.setFillColor(lr, lg, lb);
+  doc.rect(margin, y, pageW - margin * 2, 28, "F");
+  doc.setTextColor(30, 30, 30);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text(patientInfo.name, margin + 4, y + 7);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`${patientInfo.age} anos  •  Tipo sanguíneo: ${patientInfo.bloodType}`, margin + 4, y + 13);
+  doc.text(`DUM: ${patientInfo.dum}`, margin + 4, y + 19);
+  doc.text(`DPP: ${patientInfo.dpp}`, margin + 4, y + 25);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.setTextColor(pr, pg, pb);
+  doc.text(`${patientInfo.weeks}ª`, pageW - margin - 18, y + 17, { align: "center" });
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.text("semana", pageW - margin - 18, y + 23, { align: "center" });
+  y += 34;
+
+  // ===== Sinais vitais =====
+  if (vitals.length) {
+    sectionHeader("Sinais vitais");
+    vitals.forEach(v => {
+      linhaTexto(`• ${v.label}: ${v.value}  (${v.change})`);
+    });
+    y += 2;
+  }
+
+  // ===== Dados clínicos =====
+  if (lancamentos.length) {
+    sectionHeader("Dados clínicos / Lançamentos");
+    lancamentos.forEach(l => {
+      ensureSpace(20);
+      doc.setDrawColor(pr, pg, pb);
+      doc.setLineWidth(0.3);
+      doc.line(margin, y, pageW - margin, y);
+      y += 3;
+      linhaTexto(`Semana ${l.semana}  —  ${l.data}`, { bold: true });
+      linhaTexto(`Peso: ${l.peso} kg  |  PA: ${l.pressaoSis}/${l.pressaoDia} mmHg  |  BCF: ${l.bcf} bpm`);
+      linhaTexto(`Alt. Uterina: ${l.alturaUterina} cm  |  Edema: ${l.edema}`);
+      if (l.observacoes) linhaTexto(`Obs: ${l.observacoes}`);
+      y += 2;
+    });
+  }
+
+  // ===== Vacinas =====
+  const vacinas = vacinasExames.filter(v => v.tipo === "vacina");
+  if (vacinas.length) {
+    sectionHeader("Vacinas");
+    vacinas.forEach(v => {
+      ensureSpace(10);
+      linhaTexto(`• ${v.nome}  —  Sem. ${v.semana}  —  ${v.data}  [${v.status}]`, { bold: true });
+      if (v.observacoes) linhaTexto(`  ${v.observacoes}`);
+    });
+    y += 2;
+  }
+
+  // ===== Exames =====
+  const exames = vacinasExames.filter(v => v.tipo === "exame");
+  if (exames.length) {
+    sectionHeader("Exames");
+    exames.forEach(ex => {
+      ensureSpace(12);
+      linhaTexto(`• ${ex.nome}  —  Sem. ${ex.semana}  —  ${ex.data}  [${ex.status}]`, { bold: true });
+      if (ex.resultado) linhaTexto(`  Resultado: ${ex.resultado}`);
+      if (ex.observacoes) linhaTexto(`  Obs: ${ex.observacoes}`);
+      if (ex.anexoNome) linhaTexto(`  Anexo: ${ex.anexoNome}`);
+    });
+    y += 2;
+  }
+
+  // ===== Consultas / Linha do tempo =====
+  if (timelineEntries.length) {
+    sectionHeader("Linha do tempo / Consultas");
+    [...timelineEntries].sort((a, b) => b.week - a.week).forEach(t => {
+      ensureSpace(10);
+      linhaTexto(`• Semana ${t.week} (${t.date}) — ${t.event}  [${t.type}]`, { bold: true });
+      if (t.notes) linhaTexto(`  ${t.notes}`);
+    });
+    y += 2;
+  }
+
+  // ===== Gráficos (resumo de dados) =====
+  sectionHeader("Evolução — dados dos gráficos");
+  const drawDataset = (titulo: string, dados: { semana: number; valor: string }[]) => {
+    if (!dados.length) return;
+    ensureSpace(10);
+    linhaTexto(titulo, { bold: true });
+    const txt = dados.map(d => `Sem ${d.semana}: ${d.valor}`).join("  •  ");
+    linhaTexto(txt);
+    y += 1;
+  };
+  drawDataset("Peso (kg)", pesoData.map(d => ({ semana: d.semana, valor: String(d.peso) })));
+  drawDataset("Pressão Arterial (mmHg)", pressaoData.map(d => ({ semana: d.semana, valor: `${d.sistolica}/${d.diastolica}` })));
+  drawDataset("Altura Uterina (cm)", alturaUterinaData.map(d => ({ semana: d.semana, valor: String(d.altura) })));
+  drawDataset("BCF (bpm)", bcfData.map(d => ({ semana: d.semana, valor: String(d.bcf) })));
+
+  // Rodapé em todas as páginas
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(0, pageH - 8, pageW, 8, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(`Cartão da Gestante — ${patientInfo.name}`, margin, pageH - 3);
+    doc.text(`${i} / ${totalPages}`, pageW - margin, pageH - 3, { align: "right" });
+  }
+
+  const safeName = patientInfo.name.replace(/\s+/g, "_");
+  doc.save(`cartao_gestante_${safeName}.pdf`);
 }
