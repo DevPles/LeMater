@@ -1076,11 +1076,21 @@ async function gerarPDFCartao(args: {
   // Faixa gold inferior
   doc.rect(halfW, pageH - 6, halfW, 6, "F");
 
-  // Selo institucional pequeno no topo
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(ar, ag, ab);
-  doc.text("UNAERP", halfW + halfW / 2, 16, { align: "center" });
+  // Logo do Hospital Electro Bonini no topo (sobre fundo navy: caixa branca)
+  if (logoData) {
+    const logoW = 42;
+    const logoH = 18;
+    const logoX = halfW + (halfW - logoW) / 2;
+    const logoY = 10;
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(logoX - 2, logoY - 1.5, logoW + 4, logoH + 3, 1.5, 1.5, "F");
+    doc.addImage(logoData, "PNG", logoX, logoY, logoW, logoH);
+  } else {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(ar, ag, ab);
+    doc.text("HOSPITAL ELECTRO BONINI", halfW + halfW / 2, 16, { align: "center" });
+  }
 
   // Bloco branco central elegante com titulo
   const coverBandY = pageH / 2 - 32;
