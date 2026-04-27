@@ -954,10 +954,9 @@ async function gerarPDFCartao(args: {
 }) {
   const { patientInfo, vitals, medicoes, vacinas, exames, series, ganhoPeso, imc, imcInfo, altura, palette, cartaoUrl } = args;
   const doc = new jsPDF({ unit: "mm", format: "a4", compress: true, orientation: "landscape" });
-  let pageW = doc.internal.pageSize.getWidth();
-  let pageH = doc.internal.pageSize.getHeight();
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
   const margin = 14;
-  let y = 0;
 
   const [pr, pg, pb] = hexToRgb(palette.primary);
   const [ar, ag, ab] = hexToRgb(palette.accent);
