@@ -1805,12 +1805,14 @@ async function gerarPDFCartao(args: {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.5);
     doc.setTextColor(...muted);
-    const cDataW = bw * 0.38;
-    const cSemW = bw * 0.18;
-    const cValW = bw - cDataW - cSemW - 2;
+    const cDataW = bw * 0.22;
+    const cSemW = bw * 0.10;
+    const cValW = bw * 0.18;
+    const cObsW = bw - cDataW - cSemW - cValW - 2;
     doc.text("DATA", bx + 3, headerY + 3.8);
     doc.text("SEM", bx + 3 + cDataW, headerY + 3.8);
     doc.text("VALOR", bx + 3 + cDataW + cSemW, headerY + 3.8);
+    doc.text("OBSERVACAO", bx + 3 + cDataW + cSemW + cValW, headerY + 3.8);
     // Rows
     const rowsStartY = headerY + headerHt;
     const rowsH = bh - (rowsStartY - by) - 2;
@@ -1833,6 +1835,17 @@ async function gerarPDFCartao(args: {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(...dark);
       doc.text(String(m.valor), bx + 3 + cDataW + cSemW, ry5 + 3.2);
+      // Observacao (truncada para caber)
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor(...muted);
+      const obsTxt = (m.observacao ?? "").trim();
+      if (obsTxt) {
+        const lines = doc.splitTextToSize(obsTxt, cObsW - 2);
+        doc.text(String(lines[0] ?? ""), bx + 3 + cDataW + cSemW + cValW, ry5 + 3.2);
+      } else {
+        doc.text("-", bx + 3 + cDataW + cSemW + cValW, ry5 + 3.2);
+      }
     });
     if (items.length > maxRows) {
       doc.setFont("helvetica", "italic");
