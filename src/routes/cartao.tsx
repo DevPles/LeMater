@@ -1695,6 +1695,27 @@ async function gerarPDFCartao(args: {
       }
     }
 
+    // Linhas tracejadas de referencia adicionais (ex.: limites sistolica/diastolica)
+    if (extraRefs && extraRefs.length) {
+      extraRefs.forEach(r => {
+        const col = r.color ?? [120, 120, 130];
+        doc.setDrawColor(col[0], col[1], col[2]);
+        doc.setLineWidth(0.25);
+        doc.setLineDashPattern([1.2, 1.2], 0);
+        [r.min, r.max].forEach(v => {
+          if (v >= yLo && v <= yHi) {
+            const yy = sy(v);
+            doc.line(plotX, yy, plotX + plotW, yy);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(5);
+            doc.setTextColor(col[0], col[1], col[2]);
+            doc.text(`${v}`, plotX + plotW - 0.5, yy - 0.6, { align: "right" });
+          }
+        });
+        doc.setLineDashPattern([], 0);
+      });
+    }
+
     // Gridlines em escala "bonita"
     doc.setDrawColor(235, 235, 240);
     doc.setLineWidth(0.15);
