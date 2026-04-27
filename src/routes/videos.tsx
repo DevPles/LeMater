@@ -261,13 +261,16 @@ function VideosPage() {
       {isReels ? (
         <>
           <button
-            onClick={() => navigate({ to: "/reels", search: { upload: "1" } as any })}
+            onClick={() => {
+              if (!session?.user) { alert("Faça login para publicar um reel."); return; }
+              setRecorderOpen(true);
+            }}
             className="w-full mb-4 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 px-4 py-3 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
           >
             + Compartilhe seu reel
           </button>
           <div className="grid grid-cols-2 gap-3">
-            {reels.map((reel, i) => {
+            {items.map((reel, i) => {
               const liked = !!likedIds[reel.id];
               return (
                 <motion.div
