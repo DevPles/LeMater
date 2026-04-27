@@ -1661,13 +1661,21 @@ async function gerarPDFCartao(args: {
   };
   const porParametro = new Map<string, MedicaoReal[]>();
   const labelByKey = new Map<string, string>();
+  // Unifica sistolica + diastolica num unico parametro "Pressao Arterial"
+  const isPressao = (p: string): "sis" | "dia" | null => {
+    const lp = normParam(p);
+    if (lp.includes("press") && lp.includes("sist")) return "sis";
+    if (lp.includes("press") && lp.includes("diast")) return "dia";
+    return null;
+  };
+  const PRESSAO_KEY = "pressao arterial";
   medicoes.forEach(m => {
-    const key = normParam(m.parametro);
+    const tipo = isPressao(m.parametro);
+    const key = tipo ? PRESSAO_KEY : normParam(m.parametro);
     if (!porParametro.has(key)) {
       porParametro.set(key, []);
-      // Mantem o label "mais bonito" (capitalizado)
-      const pretty = m.parametro.trim();
-      labelByKey.set(key, pretty.charAt(0).toUpperCase() + pretty.slice(1));
+      const pretty = tipo ? "Pressao Arterial (mmHg)" : m.parametro.trim();
+      labelByKey.set(key, tipo ? pretty : pretty.charAt(0).toUpperCase() + pretty.slice(1));
     }
     porParametro.get(key)!.push(m);
   });
