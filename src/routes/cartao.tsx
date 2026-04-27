@@ -1800,6 +1800,7 @@ async function gerarPDFCartao(args: {
         pageIndex += 1;
         startNewPage(`EVOLUCAO CLINICA POR PARAMETRO  -  PAGINA ${pageIndex}`);
       }
+      const paramLabel = labelByKey.get(param) ?? param;
       const cfg = paramConfig(param);
       const items = porParametro.get(param)!;
       const accent: [number, number, number] = cfg?.color ?? [pr, pg, pb];
@@ -1810,7 +1811,7 @@ async function gerarPDFCartao(args: {
 
       if (cfg && cfg.series[0].values.length >= 2) {
         drawChartBox(xFace, yChart, faceW, chartH,
-          `Curva: ${param}`,
+          `Curva: ${paramLabel}`,
           cfg.series,
           cfg.refRange);
       } else {
@@ -1821,7 +1822,7 @@ async function gerarPDFCartao(args: {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(9);
         doc.setTextColor(...dark);
-        doc.text(param.toUpperCase(), xFace + 4, yChart + 8);
+        doc.text(paramLabel.toUpperCase(), xFace + 4, yChart + 8);
         doc.setFont("helvetica", "italic");
         doc.setFontSize(8);
         doc.setTextColor(...muted);
