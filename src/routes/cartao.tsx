@@ -2003,7 +2003,7 @@ async function gerarPDFCartao(args: {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...muted);
-    doc.text("Linhas = data da consulta  |  Colunas = parametro clinico  |  Ordenacao mais recente primeiro", margin, 19);
+    doc.text("Linhas = data da consulta  |  Colunas = parametro clinico  |  Barras = intensidade relativa (min-max do parametro)", margin, 19);
 
     // Constroi matriz: datas x parametros
     const datasSet = new Set<string>();
@@ -2015,6 +2015,29 @@ async function gerarPDFCartao(args: {
     const matrix = new Map<string, Map<string, string | number>>();
     datas.forEach(d => matrix.set(d, new Map()));
     medicoes.forEach(m => matrix.get(m.data)!.set(normParam(m.parametro), m.valor));
+
+    // min/max numerico por parametro -> usado para desenhar barrinha proporcional (heatmap/sparkline)
+    const rangePorParam = new Map<string, { min: number; max: number }>();
+    parametros.forEach(p => {
+      const nums: number[] = [];
+      datas.forEach(d => {
+        const v = matrix.get(d)!.get(p);
+        if (v !== undefined && v !== null) {
+          const n = numFromValor(v as string | number);
+          if (n !== null && Number.isFinite(n)) nums.push(n);
+        }
+      });
+      if (nums.length >= 1) {
+        const mn = Math.min(...nums);
+        const mx = Math.max(...nums);
+        rangePorParam.set(p, { min: mn, max: mx });
+      }
+    });
+    // cor por parametro (mesmas cores do drawChartBox)
+    const corParam = (p: string): [number, number, number] => {
+      const cfg = paramConfig(p);
+      return cfg ? cfg.color : [pr, pg, pb];
+    };
 
     // Mapa data -> semana
     const semanaPorData = new Map<string, number>();
