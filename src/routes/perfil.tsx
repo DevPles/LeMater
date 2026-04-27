@@ -206,6 +206,56 @@ function PerfilPage() {
       setSavingTema(false);
     }
   }
+
+  async function handleAlterarSenha(e: React.FormEvent) {
+    e.preventDefault();
+    if (!session) return;
+    if (novaSenha.length < 6) {
+      setMsg({ type: "err", text: "A senha deve ter ao menos 6 caracteres." });
+      return;
+    }
+    if (novaSenha !== confirmarSenha) {
+      setMsg({ type: "err", text: "As senhas não coincidem." });
+      return;
+    }
+    setSalvandoSenha(true);
+    setMsg(null);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: novaSenha });
+      if (error) throw error;
+      setNovaSenha("");
+      setConfirmarSenha("");
+      setMsg({ type: "ok", text: "Senha alterada com sucesso." });
+    } catch (err: any) {
+      setMsg({ type: "err", text: err?.message || "Erro ao alterar senha." });
+    } finally {
+      setSalvandoSenha(false);
+    }
+  }
+
+  async function handleResetSenhaEmail() {
+    if (!profile?.email) return;
+    setEnviandoReset(true);
+    setMsg(null);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        profile.email,
+        { redirectTo: `${window.location.origin}/` },
+      );
+      if (error) throw error;
+      setMsg({
+        type: "ok",
+        text: "Enviamos um link de redefinição para o seu e-mail.",
+      });
+    } catch (err: any) {
+      setMsg({
+        type: "err",
+        text: err?.message || "Erro ao enviar e-mail de redefinição.",
+      });
+    } finally {
+      setEnviandoReset(false);
+    }
+  }
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
       <motion.div
