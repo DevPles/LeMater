@@ -1869,7 +1869,8 @@ async function gerarPDFCartao(args: {
             const da = parseBR(a.data); const db = parseBR(b.data);
             return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
           })
-          .map((g) => ({
+          .map((g, idx) => ({
+            id: `pa-${idx}`,
             parametro: "Pressao Arterial",
             data: g.data,
             semana: g.semana,
