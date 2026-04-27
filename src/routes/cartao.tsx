@@ -120,6 +120,7 @@ interface MedicaoReal {
   parametro: string;
   valor: number;
   semana: number;
+  observacao?: string;
 }
 
 interface VacinaReal {
@@ -180,7 +181,7 @@ function CartaoPage() {
     const uid = session.user.id;
     const [mRes, vRes, eRes] = await Promise.all([
       supabase.from("clinical_measurements")
-        .select("id,parametro,valor,semana_gestacional,data_medicao")
+        .select("id,parametro,valor,semana_gestacional,data_medicao,observacao")
         .eq("gestante_id", uid)
         .order("data_medicao", { ascending: true }),
       supabase.from("vaccinations")
@@ -199,6 +200,7 @@ function CartaoPage() {
         parametro: r.parametro,
         valor: Number(r.valor),
         semana: r.semana_gestacional ?? 0,
+        observacao: r.observacao ?? undefined,
       })));
     }
     if (vRes.data) {
@@ -231,6 +233,7 @@ function CartaoPage() {
       parametro: r.parametro,
       valor: Number(r.valor),
       semana: r.semana_gestacional ?? 0,
+      observacao: r.observacao ?? undefined,
     })));
     setVacinas((publicSnap.vacinas ?? []).map((r: any) => ({
       id: r.id,
@@ -561,6 +564,9 @@ function LancamentosTab({ medicoes }: { medicoes: MedicaoReal[] }) {
                   <div key={m.id} className="bg-muted rounded-lg px-2 py-1.5">
                     <p className="text-[10px] text-muted-foreground">{m.parametro}</p>
                     <p className="text-sm font-semibold text-foreground">{m.valor}</p>
+                    {m.observacao && (
+                      <p className="text-[10px] text-muted-foreground mt-1 italic">{m.observacao}</p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1802,12 +1808,14 @@ async function gerarPDFCartao(args: {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.5);
     doc.setTextColor(...muted);
-    const cDataW = bw * 0.38;
-    const cSemW = bw * 0.18;
-    const cValW = bw - cDataW - cSemW - 2;
+    const cDataW = bw * 0.22;
+    const cSemW = bw * 0.10;
+    const cValW = bw * 0.18;
+    const cObsW = bw - cDataW - cSemW - cValW - 2;
     doc.text("DATA", bx + 3, headerY + 3.8);
     doc.text("SEM", bx + 3 + cDataW, headerY + 3.8);
     doc.text("VALOR", bx + 3 + cDataW + cSemW, headerY + 3.8);
+    doc.text("OBSERVACAO", bx + 3 + cDataW + cSemW + cValW, headerY + 3.8);
     // Rows
     const rowsStartY = headerY + headerHt;
     const rowsH = bh - (rowsStartY - by) - 2;
@@ -1830,6 +1838,17 @@ async function gerarPDFCartao(args: {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(...dark);
       doc.text(String(m.valor), bx + 3 + cDataW + cSemW, ry5 + 3.2);
+      // Observacao (truncada para caber)
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor(...muted);
+      const obsTxt = (m.observacao ?? "").trim();
+      if (obsTxt) {
+        const lines = doc.splitTextToSize(obsTxt, cObsW - 2);
+        doc.text(String(lines[0] ?? ""), bx + 3 + cDataW + cSemW + cValW, ry5 + 3.2);
+      } else {
+        doc.text("-", bx + 3 + cDataW + cSemW + cValW, ry5 + 3.2);
+      }
     });
     if (items.length > maxRows) {
       doc.setFont("helvetica", "italic");
