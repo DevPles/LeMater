@@ -1255,6 +1255,54 @@ async function gerarPDFCartao(args: {
   doc.text(linkLines[0], tX, linkY);
   doc.link(tX, linkY - 3, doc.getTextWidth(linkLines[0]), 4, { url: linkUrl });
 
+  // ===== Pré-cálculo de parametros (compartilhado entre matriz e graficos) =====
+  const normParam = (p: string): string => {
+    return p
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/\([^)]*\)/g, "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  };
+  const porParametro = new Map<string, MedicaoReal[]>();
+  const labelByKey = new Map<string, string>();
+  const isPressao = (p: string): "sis" | "dia" | null => {
+    const lp = normParam(p);
+    if (lp.includes("press") && lp.includes("sist")) return "sis";
+    if (lp.includes("press") && lp.includes("diast")) return "dia";
+    return null;
+  };
+  const PRESSAO_KEY = "pressao arterial";
+  const ehEstatura = (p: string) => {
+    const lp = normParam(p);
+    return lp === "estatura" || lp.startsWith("estatura") || lp === "altura pessoa" || lp === "altura";
+  };
+  const ehTemperatura = (p: string) => {
+    const lp = normParam(p);
+    return lp === "temperatura" || lp.startsWith("temperatura") || lp === "temp" || lp.includes("termic");
+  };
+  medicoes.forEach(m => {
+    if (ehEstatura(m.parametro)) return;
+    if (ehTemperatura(m.parametro)) return;
+    const tipo = isPressao(m.parametro);
+    const key = tipo ? PRESSAO_KEY : normParam(m.parametro);
+    if (!porParametro.has(key)) {
+      porParametro.set(key, []);
+      const pretty = tipo ? "Pressao Arterial (mmHg)" : m.parametro.trim();
+      labelByKey.set(key, tipo ? pretty : pretty.charAt(0).toUpperCase() + pretty.slice(1));
+    }
+    porParametro.get(key)!.push(m);
+  });
+  porParametro.forEach((arr) => {
+    arr.sort((a, b) => {
+      const da = parseBR(a.data); const db = parseBR(b.data);
+      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+    });
+  });
+  const parametros = Array.from(porParametro.keys()).sort((a, b) =>
+    (labelByKey.get(a) ?? a).localeCompare(labelByKey.get(b) ?? b)
+  );
+
 
   // =============================================================
   // PAGINA 2 - FOLHA 1 (Dados gestacionais + Sinais vitais + Vacinas + Exames)
@@ -1600,94 +1648,156 @@ async function gerarPDFCartao(args: {
   });
   rgY += statH + 4;
 
-  // Subtitulo lista
+  // Subtitulo - MATRIZ CRUZADA
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(pr, pg, pb);
-  doc.text("HISTORICO E OBSERVACOES CLINICAS", rgX, rgY);
+  doc.text("MATRIZ CRUZADA - EVOLUCAO POR CONSULTA", rgX, rgY);
   doc.setDrawColor(220, 220, 230);
   doc.setLineWidth(0.2);
   doc.line(rgX, rgY + 1.5, rgX + rgW, rgY + 1.5);
+  rgY += 3;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  doc.setTextColor(...muted);
+  doc.text("Linhas = data da consulta  |  Colunas = parametro clinico", rgX, rgY + 1.5);
   rgY += 4;
 
-  // Lista de consultas (ordenadas mais recentes primeiro)
-  const consultasOrd = [...consultas].sort((a, b) => {
-    const da = parseBR(a.data); const db = parseBR(b.data);
-    return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
-  });
-
-  const limiteY = pageH - 26; // espaco para rodape de contatos
-  if (consultasOrd.length === 0) {
+  // Renderiza matriz cruzada na face direita
+  const matrizMaxY = pageH - 8;
+  if (medicoes.length === 0) {
     doc.setFont("helvetica", "italic");
     doc.setFontSize(8);
     doc.setTextColor(...muted);
-    doc.text("Nenhuma consulta registrada.", rgX + 2, rgY + 5);
+    doc.text("Nenhum dado clinico registrado.", rgX + 2, rgY + 5);
   } else {
-    consultasOrd.forEach((c) => {
-      if (rgY > limiteY - 6) return;
-      // Linha header da consulta
-      doc.setFillColor(248, 248, 252);
-      doc.roundedRect(rgX, rgY, rgW, 5.5, 1, 1, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7.5);
-      doc.setTextColor(pr, pg, pb);
-      doc.text(`${c.data}  ${c.hora}`, rgX + 2, rgY + 3.7);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.5);
-      doc.setTextColor(...dark);
-      const tituloC = c.titulo || c.tipo || "Consulta";
-      const statusTxt = c.status === "realizado" ? "REALIZADA" : "AGENDADA";
-      doc.text(tituloC, rgX + 26, rgY + 3.7);
-      doc.setTextColor(...muted);
-      doc.text(statusTxt, rgX + rgW - 2, rgY + 3.7, { align: "right" });
-      rgY += 6;
+    const medicoesMatrizR = medicoes.filter(m => !ehEstatura(m.parametro) && !ehTemperatura(m.parametro));
+    const datasSetR = new Set<string>();
+    medicoesMatrizR.forEach(m => datasSetR.add(m.data));
+    const datasR = Array.from(datasSetR).sort((a, b) => {
+      const da = parseBR(a); const db = parseBR(b);
+      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
+    });
+    const matHeaderHR = 11;
+    const availHR = matrizMaxY - rgY;
+    const maxRowsR = Math.max(1, Math.floor((availHR - matHeaderHR) / 3.6));
+    const datasMatrizR = datasR.slice(0, maxRowsR);
 
-      // Observacao
-      if (c.observacao && c.observacao.trim()) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(6.5);
-        doc.setTextColor(...dark);
-        const lines = doc.splitTextToSize(c.observacao.trim(), rgW - 4) as string[];
-        for (const ln of lines) {
-          if (rgY > limiteY - 3) break;
-          doc.text(ln, rgX + 3, rgY + 2.5);
-          rgY += 3;
-        }
-        rgY += 1.5;
-      } else {
-        doc.setFont("helvetica", "italic");
-        doc.setFontSize(6);
-        doc.setTextColor(190, 190, 200);
-        doc.text("Sem observacao registrada.", rgX + 3, rgY + 2);
-        rgY += 4;
+    const matrixR = new Map<string, Map<string, string | number>>();
+    datasMatrizR.forEach(d => matrixR.set(d, new Map()));
+    const pressaoPorDataR = new Map<string, { sis?: number; dia?: number }>();
+    medicoesMatrizR.forEach(m => {
+      const tipo = isPressao(m.parametro);
+      if (tipo) {
+        if (!matrixR.has(m.data)) return;
+        if (!pressaoPorDataR.has(m.data)) pressaoPorDataR.set(m.data, {});
+        const alvo = pressaoPorDataR.get(m.data)!;
+        if (tipo === "sis") alvo.sis = Number(m.valor);
+        if (tipo === "dia") alvo.dia = Number(m.valor);
+        return;
       }
+      matrixR.get(m.data)?.set(normParam(m.parametro), m.valor);
+    });
+    pressaoPorDataR.forEach((v, d) => matrixR.get(d)?.set(PRESSAO_KEY, `${v.sis ?? "-"}/${v.dia ?? "-"}`));
+    const semanaPorDataR = new Map<string, number>();
+    medicoesMatrizR.forEach(m => { if (matrixR.has(m.data)) semanaPorDataR.set(m.data, m.semana); });
+
+    const compactLabelR = (p: string): string => {
+      const label = labelByKey.get(p) ?? p;
+      const l = label.toLowerCase();
+      if (p === PRESSAO_KEY || l.includes("press")) return "PA\n(mmHg)";
+      if (l.includes("uterina")) return "AU\n(cm)";
+      if (l.includes("glic")) return "Glic.\ncapilar";
+      if (l.includes("pre") && l.includes("gest")) return "Peso\npre-gest.";
+      if (l.includes("peso")) return "Peso\n(kg)";
+      if (l.includes("bcf") || l.includes("batimento")) return "BCF\n(bpm)";
+      return label.replace(/\s*\(([^)]*)\)/g, "\n($1)");
+    };
+
+    const fixedColWR = 14;
+    const semColWR = 7;
+    const matTotalWR = rgW;
+    const parametrosMatrizR = parametros.slice(0, Math.max(1, Math.min(parametros.length, 7)));
+    const restWR = matTotalWR - fixedColWR - semColWR;
+    const dataColWR = restWR / Math.max(1, parametrosMatrizR.length);
+
+    const rowHR = Math.max(3.4, Math.min(5.6, (availHR - matHeaderHR) / Math.max(1, datasMatrizR.length)));
+    const fontRowR = rowHR >= 5.0 ? 5.6 : rowHR >= 4.2 ? 5.0 : 4.4;
+
+    // Header
+    doc.setFillColor(pr, pg, pb);
+    doc.rect(rgX, rgY, matTotalWR, matHeaderHR, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(5.8);
+    doc.text("DATA", rgX + 1.5, rgY + matHeaderHR / 2 + 1);
+    doc.text("SEM", rgX + fixedColWR + 1, rgY + matHeaderHR / 2 + 1);
+    doc.setFontSize(dataColWR < 9 ? 3.9 : 4.5);
+    parametrosMatrizR.forEach((p, i) => {
+      const cx = rgX + fixedColWR + semColWR + i * dataColWR;
+      const lines = compactLabelR(p).split("\n").flatMap(ln => doc.splitTextToSize(ln, dataColWR - 1) as string[]);
+      const lineH = 2.1;
+      const visibleLines = lines.slice(0, 3);
+      const startY = rgY + matHeaderHR / 2 - ((visibleLines.length - 1) * lineH) / 2;
+      visibleLines.forEach((ln: string, li: number) => {
+        doc.text(ln, cx + dataColWR / 2, startY + li * lineH, { align: "center" });
+      });
     });
 
-    // Indicador "+N" se truncou
-    const restante = consultasOrd.findIndex(() => false);
-    if (rgY > limiteY - 6 && restante !== -1) {
-      doc.setFont("helvetica", "italic");
-      doc.setFontSize(6.5);
+    // Rows
+    datasMatrizR.forEach((d, ri) => {
+      const ry5 = rgY + matHeaderHR + ri * rowHR;
+      if (ri % 2 === 0) {
+        doc.setFillColor(246, 247, 252);
+        doc.rect(rgX, ry5, matTotalWR, rowHR, "F");
+      }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(fontRowR);
+      doc.setTextColor(pr, pg, pb);
+      doc.text(d, rgX + 1.2, ry5 + rowHR / 2 + 1);
+      doc.setFont("helvetica", "normal");
       doc.setTextColor(...muted);
-      doc.text("(+ consultas adicionais nao exibidas)", rgX + 2, limiteY);
-    }
-  }
+      doc.text(`${semanaPorDataR.get(d) ?? "-"}`, rgX + fixedColWR + 1.5, ry5 + rowHR / 2 + 1);
 
-  // Rodape da face direita: contatos uteis
-  const contatosY = pageH - 22;
-  doc.setFillColor(lr, lg, lb);
-  doc.roundedRect(rgX, contatosY, rgW, 14, 2, 2, "F");
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
-  doc.setTextColor(pr, pg, pb);
-  doc.text("CONTATOS UTEIS", rgX + 3, contatosY + 4);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.setTextColor(...dark);
-  doc.text("SAMU 192   -   Bombeiros 193   -   Disque Saude 136", rgX + 3, contatosY + 8.5);
-  doc.setFontSize(6.5);
-  doc.setTextColor(...muted);
-  doc.text("Em caso de emergencia, dirija-se a unidade de saude mais proxima.", rgX + 3, contatosY + 12);
+      const linhaMatrixR = matrixR.get(d)!;
+      parametrosMatrizR.forEach((p, i) => {
+        const cx = rgX + fixedColWR + semColWR + i * dataColWR;
+        const v = linhaMatrixR.get(p);
+        if (v !== undefined && v !== null) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(fontRowR);
+          doc.setTextColor(...dark);
+          doc.text(String(v), cx + dataColWR / 2, ry5 + rowHR / 2 + 1, { align: "center" });
+        } else {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(fontRowR - 0.4);
+          doc.setTextColor(210, 210, 215);
+          doc.text("-", cx + dataColWR / 2, ry5 + rowHR / 2 + 1, { align: "center" });
+        }
+      });
+    });
+
+    // Bordas
+    const totalHR = matHeaderHR + datasMatrizR.length * rowHR;
+    doc.setDrawColor(pr, pg, pb);
+    doc.setLineWidth(0.3);
+    doc.rect(rgX, rgY, matTotalWR, totalHR, "S");
+    doc.setDrawColor(220, 222, 230);
+    doc.setLineWidth(0.1);
+    for (let r = 1; r < datasMatrizR.length; r++) {
+      const y = rgY + matHeaderHR + r * rowHR;
+      doc.line(rgX, y, rgX + matTotalWR, y);
+    }
+    doc.line(rgX + fixedColWR, rgY, rgX + fixedColWR, rgY + totalHR);
+    doc.line(rgX + fixedColWR + semColWR, rgY, rgX + fixedColWR + semColWR, rgY + totalHR);
+    parametrosMatrizR.forEach((_p, i) => {
+      const cx = rgX + fixedColWR + semColWR + (i + 1) * dataColWR;
+      doc.line(cx, rgY, cx, rgY + totalHR);
+    });
+    doc.setDrawColor(pr, pg, pb);
+    doc.setLineWidth(0.2);
+    doc.line(rgX, rgY + matHeaderHR, rgX + matTotalWR, rgY + matHeaderHR);
+  }
 
   // ================================================================
   // PAGINAS 3 e 4 - GRAFICOS INTERCALADOS + DADOS CLINICOS EM GRADE
@@ -1894,57 +2004,7 @@ async function gerarPDFCartao(args: {
   // PAGINAS DE EVOLUCAO CLINICA: por parametro -> GRAFICO | TABELA lado a lado
   // ================================================================
 
-  // Agrupa por parametro
-  // Normaliza nome do parametro (case-insensitive, remove acento, espacos extras e unidades entre parenteses)
-  const normParam = (p: string): string => {
-    return p
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/\([^)]*\)/g, "")
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, " ");
-  };
-  const porParametro = new Map<string, MedicaoReal[]>();
-  const labelByKey = new Map<string, string>();
-  // Unifica sistolica + diastolica num unico parametro "Pressao Arterial"
-  const isPressao = (p: string): "sis" | "dia" | null => {
-    const lp = normParam(p);
-    if (lp.includes("press") && lp.includes("sist")) return "sis";
-    if (lp.includes("press") && lp.includes("diast")) return "dia";
-    return null;
-  };
-  const PRESSAO_KEY = "pressao arterial";
-  // "Estatura" / "altura_pessoa" eh dado fixo da gestante (usado no IMC) -> nao entra na evolucao
-  const ehEstatura = (p: string) => {
-    const lp = normParam(p);
-    return lp === "estatura" || lp.startsWith("estatura") || lp === "altura pessoa" || lp === "altura";
-  };
-  // Temperatura removida da evolucao clinica a pedido do usuario
-  const ehTemperatura = (p: string) => {
-    const lp = normParam(p);
-    return lp === "temperatura" || lp.startsWith("temperatura") || lp === "temp" || lp.includes("termic");
-  };
-  medicoes.forEach(m => {
-    if (ehEstatura(m.parametro)) return;
-    if (ehTemperatura(m.parametro)) return;
-    const tipo = isPressao(m.parametro);
-    const key = tipo ? PRESSAO_KEY : normParam(m.parametro);
-    if (!porParametro.has(key)) {
-      porParametro.set(key, []);
-      const pretty = tipo ? "Pressao Arterial (mmHg)" : m.parametro.trim();
-      labelByKey.set(key, tipo ? pretty : pretty.charAt(0).toUpperCase() + pretty.slice(1));
-    }
-    porParametro.get(key)!.push(m);
-  });
-  porParametro.forEach((arr) => {
-    arr.sort((a, b) => {
-      const da = parseBR(a.data); const db = parseBR(b.data);
-      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
-    });
-  });
-  const parametros = Array.from(porParametro.keys()).sort((a, b) =>
-    (labelByKey.get(a) ?? a).localeCompare(labelByKey.get(b) ?? b)
-  );
+  // (parametros, labelByKey e helpers já calculados acima — reutilizamos)
 
   // Helper: detecta valor numerico (lida com "120/80")
   const numFromValor = (v: string | number): number | null => {
@@ -2220,163 +2280,7 @@ async function gerarPDFCartao(args: {
     doc.text("Nenhum dado clinico registrado.", pageW / 2, pageH / 2 + 2, { align: "center" });
   }
 
-  // =============================================================
-  // MATRIZ CRUZADA (datas x parametros) - tabela compacta em UMA face do folder
-  // =============================================================
-  if (medicoes.length) {
-    doc.addPage("a4", "landscape");
-    drawBaseFolderPage();
-
-    const faceX = margin;
-    const faceWCompact = halfW - margin * 2;
-    const faceRightEdge = halfW - margin;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(pr, pg, pb);
-    doc.text("MATRIZ CRUZADA - EVOLUCAO POR CONSULTA", faceX, 13);
-    doc.setDrawColor(pr, pg, pb);
-    doc.setLineWidth(0.5);
-    doc.line(faceX, 15, faceRightEdge, 15);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.setTextColor(...muted);
-    doc.text("Linhas = data da consulta  |  Colunas = parametro clinico", faceX, 19);
-
-    // Datas (mais recentes primeiro)
-    const medicoesMatriz = medicoes.filter(m => !ehEstatura(m.parametro) && !ehTemperatura(m.parametro));
-    const datasSet = new Set<string>();
-    medicoesMatriz.forEach(m => datasSet.add(m.data));
-    const datas = Array.from(datasSet).sort((a, b) => {
-      const da = parseBR(a); const db = parseBR(b);
-      return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
-    });
-    const matY = 23;
-    const matMaxY = pageH - 14;
-    const matHeaderH = 13;
-    const maxRowsMatriz = Math.max(1, Math.floor((matMaxY - matY - matHeaderH) / 3.6));
-    const datasMatriz = datas.slice(0, maxRowsMatriz);
-    const matrix = new Map<string, Map<string, string | number>>();
-    datasMatriz.forEach(d => matrix.set(d, new Map()));
-    const pressaoPorData = new Map<string, { sis?: number; dia?: number }>();
-    medicoesMatriz.forEach(m => {
-      const tipo = isPressao(m.parametro);
-      if (tipo) {
-          if (!matrix.has(m.data)) return;
-          if (!pressaoPorData.has(m.data)) pressaoPorData.set(m.data, {});
-        const alvo = pressaoPorData.get(m.data)!;
-        if (tipo === "sis") alvo.sis = Number(m.valor);
-        if (tipo === "dia") alvo.dia = Number(m.valor);
-        return;
-      }
-      matrix.get(m.data)?.set(normParam(m.parametro), m.valor);
-    });
-    pressaoPorData.forEach((v, d) => matrix.get(d)?.set(PRESSAO_KEY, `${v.sis ?? "-"}/${v.dia ?? "-"}`));
-    const semanaPorData = new Map<string, number>();
-    medicoesMatriz.forEach(m => { if (matrix.has(m.data)) semanaPorData.set(m.data, m.semana); });
-
-    const compactLabel = (p: string): string => {
-      const label = labelByKey.get(p) ?? p;
-      const l = label.toLowerCase();
-      if (p === PRESSAO_KEY || l.includes("press")) return "PA\n(mmHg)";
-      if (l.includes("uterina")) return "AU\n(cm)";
-      if (l.includes("glic")) return "Glic.\ncapilar";
-      if (l.includes("pre") && l.includes("gest")) return "Peso\npre-gest.";
-      if (l.includes("peso")) return "Peso\n(kg)";
-      if (l.includes("bcf") || l.includes("batimento")) return "BCF\n(bpm)";
-      return label.replace(/\s*\(([^)]*)\)/g, "\n($1)");
-    };
-
-    // Layout para caber tudo dentro da face esquerda do folder
-    const fixedColW = 16;
-    const semColW = 8;
-    const matTotalW = Math.min(faceWCompact, faceRightEdge - faceX);
-    const parametrosMatriz = parametros.slice(0, Math.max(1, Math.min(parametros.length, 9)));
-    const restW = matTotalW - fixedColW - semColW;
-    const dataColW = restW / Math.max(1, parametrosMatriz.length);
-
-    // Calcula altura de header e linha para encaixar todas as datas
-    const availH = matMaxY - matY;
-    const rowH = Math.max(3.6, Math.min(6.2, (availH - matHeaderH) / Math.max(1, datasMatriz.length)));
-    const fontRow = rowH >= 5.4 ? 5.9 : rowH >= 4.5 ? 5.2 : 4.6;
-
-    // Header
-    doc.setFillColor(pr, pg, pb);
-    doc.rect(faceX, matY, matTotalW, matHeaderH, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.2);
-    doc.text("DATA", faceX + 2, matY + matHeaderH / 2 + 1.2);
-    doc.text("SEM", faceX + fixedColW + 1.5, matY + matHeaderH / 2 + 1.2);
-    doc.setFontSize(dataColW < 10 ? 4.1 : 4.8);
-    parametrosMatriz.forEach((p, i) => {
-      const cx = faceX + fixedColW + semColW + i * dataColW;
-      const lines = compactLabel(p).split("\n").flatMap(ln => doc.splitTextToSize(ln, dataColW - 1) as string[]);
-      const lineH = 2.3;
-      const visibleLines = lines.slice(0, 3);
-      const startY = matY + matHeaderH / 2 - ((visibleLines.length - 1) * lineH) / 2;
-      visibleLines.forEach((ln: string, li: number) => {
-        doc.text(ln, cx + dataColW / 2, startY + li * lineH, { align: "center" });
-      });
-    });
-
-    // Rows - tabela limpa, sem cor de fundo nas celulas
-    datasMatriz.forEach((d, ri) => {
-      const ry4 = matY + matHeaderH + ri * rowH;
-      if (ri % 2 === 0) {
-        doc.setFillColor(246, 247, 252);
-        doc.rect(faceX, ry4, matTotalW, rowH, "F");
-      }
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(fontRow);
-      doc.setTextColor(pr, pg, pb);
-      doc.text(d, faceX + 1.5, ry4 + rowH / 2 + 1.1);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(...muted);
-      doc.text(`${semanaPorData.get(d) ?? "-"}`, faceX + fixedColW + 2, ry4 + rowH / 2 + 1.1);
-
-      const linhaMatrix = matrix.get(d)!;
-      parametrosMatriz.forEach((p, i) => {
-        const cx = faceX + fixedColW + semColW + i * dataColW;
-        const v = linhaMatrix.get(p);
-        if (v !== undefined && v !== null) {
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(fontRow);
-          doc.setTextColor(...dark);
-          doc.text(String(v), cx + dataColW / 2, ry4 + rowH / 2 + 1.1, { align: "center" });
-        } else {
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(fontRow - 0.5);
-          doc.setTextColor(210, 210, 215);
-          doc.text("-", cx + dataColW / 2, ry4 + rowH / 2 + 1.1, { align: "center" });
-        }
-      });
-    });
-
-    // Bordas
-    const totalH = matHeaderH + datasMatriz.length * rowH;
-    doc.setDrawColor(pr, pg, pb);
-    doc.setLineWidth(0.3);
-    doc.rect(faceX, matY, matTotalW, totalH, "S");
-    doc.setDrawColor(220, 222, 230);
-    doc.setLineWidth(0.1);
-    // Linhas horizontais entre rows
-    for (let r = 1; r < datasMatriz.length; r++) {
-      const y = matY + matHeaderH + r * rowH;
-      doc.line(faceX, y, faceX + matTotalW, y);
-    }
-    // Linhas verticais
-    doc.line(faceX + fixedColW, matY, faceX + fixedColW, matY + totalH);
-    doc.line(faceX + fixedColW + semColW, matY, faceX + fixedColW + semColW, matY + totalH);
-    parametrosMatriz.forEach((_p, i) => {
-      const cx = faceX + fixedColW + semColW + (i + 1) * dataColW;
-      doc.line(cx, matY, cx, matY + totalH);
-    });
-    // Linha separando header
-    doc.setDrawColor(pr, pg, pb);
-    doc.setLineWidth(0.2);
-    doc.line(faceX, matY + matHeaderH, faceX + matTotalW, matY + matHeaderH);
-  }
+  // (Matriz Cruzada agora é renderizada na face direita da página de Consultas de Pré-Natal)
 
   // ============ Footer em todas as páginas ============
   const totalPages = doc.getNumberOfPages();
