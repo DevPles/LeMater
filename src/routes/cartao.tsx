@@ -1168,8 +1168,8 @@ async function gerarPDFCartao(args: {
   doc.setTextColor(...muted);
   doc.text(`Emitido em ${formatBR(new Date())}`, intX, pageH - 14);
 
-  // ============ A partir daqui, páginas em retrato ============
-  doc.addPage("a4", "portrait");
+  // ============ A partir daqui, páginas em formato folder (landscape) ============
+  doc.addPage("a4", "landscape");
   pageW = doc.internal.pageSize.getWidth();
   pageH = doc.internal.pageSize.getHeight();
   y = margin + 4;
