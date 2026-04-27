@@ -1187,6 +1187,7 @@ async function gerarPDFCartao(args: {
   pageW = doc.internal.pageSize.getWidth();
   pageH = doc.internal.pageSize.getHeight();
   y = margin + 4;
+  drawFoldLine();
 
   // ============ Sinais vitais (resumo do app) ============
   if (vitals.length) {
