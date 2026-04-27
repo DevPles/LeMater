@@ -1347,7 +1347,8 @@ async function gerarPDFCartao(args: {
     maxY: number,
   ): number => {
     const headerH = 6;
-    const rowH = 5;
+    const lineH = 3.6;
+    const padV = 1.6;
     doc.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
     doc.rect(x, y, w, headerH, "F");
     doc.setFont("helvetica", "bold");
@@ -1362,9 +1363,20 @@ async function gerarPDFCartao(args: {
       cx += cw;
     });
     let cy = y + headerH;
-    const maxRows = Math.max(0, Math.floor((maxY - cy) / rowH));
-    const visible = rows.slice(0, maxRows);
-    visible.forEach((row, ri) => {
+    let drawnRows = 0;
+    for (let ri = 0; ri < rows.length; ri++) {
+      const row = rows[ri];
+      // Pre-calcula a altura desta linha (maior numero de linhas entre as celulas)
+      doc.setFontSize(7);
+      let maxLines = 1;
+      const cellLines: string[][] = headers.map((h, ci) => {
+        const cw = (w * h.widthPct) / 100;
+        const lines = doc.splitTextToSize(row[ci] ?? "-", cw - 3) as string[];
+        if (lines.length > maxLines) maxLines = lines.length;
+        return lines;
+      });
+      const rowH = maxLines * lineH + padV * 2;
+      if (cy + rowH > maxY) break;
       if (ri % 2 === 0) {
         doc.setFillColor(248, 248, 252);
         doc.rect(x, cy, w, rowH, "F");
@@ -1377,17 +1389,19 @@ async function gerarPDFCartao(args: {
         doc.setFont("helvetica", ci === 0 ? "bold" : "normal");
         doc.setFontSize(7);
         doc.setTextColor(...dark);
-        const txt = doc.splitTextToSize(row[ci] ?? "-", cw - 3)[0] ?? "";
-        doc.text(txt, tx, cy + 3.6, { align });
+        cellLines[ci].forEach((ln, li) => {
+          doc.text(ln, tx, cy + padV + 2.5 + li * lineH, { align });
+        });
         cxr += cw;
       });
       cy += rowH;
-    });
-    if (rows.length > maxRows) {
+      drawnRows++;
+    }
+    if (rows.length > drawnRows) {
       doc.setFont("helvetica", "italic");
       doc.setFontSize(6);
       doc.setTextColor(...muted);
-      doc.text(`+ ${rows.length - maxRows} registros`, x + w / 2, cy + 3, { align: "center" });
+      doc.text(`+ ${rows.length - drawnRows} datas anteriores`, x + w / 2, cy + 3, { align: "center" });
       cy += 4;
     }
     doc.setDrawColor(225, 225, 230);
