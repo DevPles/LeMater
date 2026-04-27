@@ -1903,7 +1903,12 @@ async function gerarPDFCartao(args: {
     if (param === "pressao arterial" || (lp.includes("press") && (lp.includes("sist") || lp.includes("diast") || lp.includes("arter")))) {
       return {
         color: [239, 68, 68],
-        refRange: { min: 60, max: 140, label: "normal" },
+        // Em vez de uma banda unica, mostramos linhas tracejadas para os limites
+        // normais da sistolica (90-140) e da diastolica (60-90), cada uma na cor da curva.
+        extraRefs: [
+          { min: 90, max: 140, label: "Sistolica normal", color: [239, 68, 68] },
+          { min: 60, max: 90, label: "Diastolica normal", color: [59, 130, 246] },
+        ],
         series: [
           { color: [239, 68, 68], values: series.pressao.filter(p => p.sistolica !== undefined).map(d => ({ x: d.semana, y: d.sistolica! })), name: "Sistolica (mmHg)" },
           { color: [59, 130, 246], values: series.pressao.filter(p => p.diastolica !== undefined).map(d => ({ x: d.semana, y: d.diastolica! })), name: "Diastolica (mmHg)" },
