@@ -201,6 +201,9 @@ function CartaoPage() {
   const [vacinasExames, setVacinasExames] = useState<VacinaExame[]>(vacinasExamesIniciais);
 
   const { content: cartaoContent } = useScreenContent("cartao", CARTAO_DEFAULT);
+  const { profile } = useGestanteProfile();
+  const bebeSexo = profile?.bebe_sexo ?? null;
+  const palette = paletaPorSexo(bebeSexo);
   const patientInfo = {
     name: cartaoContent.patientName,
     age: cartaoContent.patientAge,
