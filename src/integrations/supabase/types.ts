@@ -886,6 +886,7 @@ export type Database = {
           titulo: string
         }[]
       }
+      get_cartao_publico: { Args: { _user_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
