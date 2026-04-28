@@ -474,3 +474,103 @@ function VideoArea({ meuNome: _meuNome }: { meuNome: string }) {
     </GridLayout>
   );
 }
+
+type RecordingHandle = {
+  recorder: MediaRecorder;
+  chunks: Blob[];
+  audioCtx: AudioContext;
+  mime: string;
+  startedAt: number;
+};
+
+function pickAudioMime(): string {
+  const candidates = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/mpeg",
+  ];
+  for (const c of candidates) {
+    try {
+      if (
+        typeof MediaRecorder !== "undefined" &&
+        MediaRecorder.isTypeSupported(c)
+      ) {
+        return c;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return "audio/webm";
+}
+
+function AudioRecordingController({
+  slotId,
+  onStart,
+  isActive,
+}: {
+  slotId: string;
+  onStart: (rec: RecordingHandle) => void;
+  isActive: () => boolean;
+}) {
+  const participants = useParticipants();
+  const audioTracks = useTracks(
+    [{ source: Track.Source.Microphone, withPlaceholder: false }],
+    { onlySubscribed: true },
+  );
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    if (startedRef.current || isActive()) return;
+    if (participants.length < 2) return;
+
+    const mediaTracks: MediaStreamTrack[] = [];
+    for (const t of audioTracks) {
+      const pub = t.publication;
+      const track = pub?.track as
+        | RemoteAudioTrack
+        | LocalAudioTrack
+        | undefined;
+      const mst = track?.mediaStreamTrack;
+      if (mst && mst.kind === "audio") mediaTracks.push(mst);
+    }
+    if (mediaTracks.length < 2) return;
+
+    startedRef.current = true;
+    try {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
+      const audioCtx = new AudioCtx();
+      const dest = audioCtx.createMediaStreamDestination();
+      for (const mst of mediaTracks) {
+        const src = audioCtx.createMediaStreamSource(new MediaStream([mst]));
+        src.connect(dest);
+      }
+      const mime = pickAudioMime();
+      const recorder = new MediaRecorder(dest.stream, { mimeType: mime });
+      const chunks: Blob[] = [];
+      recorder.addEventListener("dataavailable", (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      });
+      recorder.start(1000);
+      const startedAt = Date.now();
+
+      void supabase
+        .from("appointment_slots")
+        .update({ gravacao_iniciada_em: new Date(startedAt).toISOString() })
+        .eq("id", slotId);
+
+      onStart({ recorder, chunks, audioCtx, mime, startedAt });
+    } catch (e) {
+      console.error("iniciar gravação áudio:", e);
+      startedRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [participants.length, audioTracks.length, slotId]);
+
+  return null;
+}
+
