@@ -9,8 +9,9 @@ import {
   ControlBar,
   RoomAudioRenderer,
   useTracks,
+  useParticipants,
 } from "@livekit/components-react";
-import { Track } from "livekit-client";
+import { Track, type RemoteAudioTrack, type LocalAudioTrack } from "livekit-client";
 import "@livekit/components-styles";
 import { useServerFn } from "@tanstack/react-start";
 import { gerarTokenSala } from "@/utils/livekit.functions";
