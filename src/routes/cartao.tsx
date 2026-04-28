@@ -139,6 +139,9 @@ interface ExameReal {
   data: string; // BR
   status: string;
   resultado?: string;
+  arquivo_path?: string | null;
+  bucket?: "exam-attachments" | "image-exams";
+  origem?: "lab" | "imagem";
 }
 
 interface ConsultaReal {
@@ -193,7 +196,7 @@ function CartaoPage() {
     if (isShared) return; // dados vêm do snapshot público
     if (!session?.user?.id) return;
     const uid = session.user.id;
-    const [mRes, vRes, eRes, cRes] = await Promise.all([
+    const [mRes, vRes, eRes, iRes, cRes] = await Promise.all([
       supabase.from("clinical_measurements")
         .select("id,parametro,valor,semana_gestacional,data_medicao,observacao")
         .eq("gestante_id", uid)
@@ -203,7 +206,11 @@ function CartaoPage() {
         .eq("gestante_id", uid)
         .order("data_aplicacao", { ascending: false }),
       supabase.from("exam_results")
-        .select("id,tipo_exame,data_exame,status,resultado")
+        .select("id,tipo_exame,data_exame,status,resultado,arquivo_path")
+        .eq("gestante_id", uid)
+        .order("data_exame", { ascending: false }),
+      supabase.from("image_exam_results")
+        .select("id,tipo_exame,data_exame,status,laudo_texto,observacao,imagem_path")
         .eq("gestante_id", uid)
         .order("data_exame", { ascending: false }),
       supabase.from("appointment_slots")
@@ -232,15 +239,37 @@ function CartaoPage() {
         observacao: r.observacao ?? undefined,
       })));
     }
+    const examesAll: ExameReal[] = [];
     if (eRes.data) {
-      setExames(eRes.data.map((r: any) => ({
-        id: r.id,
-        tipo_exame: r.tipo_exame,
-        data: formatBR(new Date(r.data_exame + "T00:00:00")),
-        status: r.status,
-        resultado: r.resultado ?? undefined,
-      })));
+      for (const r of eRes.data as any[]) {
+        examesAll.push({
+          id: `lab-${r.id}`,
+          tipo_exame: r.tipo_exame,
+          data: formatBR(new Date(r.data_exame + "T00:00:00")),
+          status: r.status,
+          resultado: r.resultado ?? undefined,
+          arquivo_path: r.arquivo_path ?? null,
+          bucket: "exam-attachments",
+          origem: "lab",
+        });
+      }
     }
+    if (iRes.data) {
+      for (const r of iRes.data as any[]) {
+        const det = [r.laudo_texto, r.observacao].filter(Boolean).join(" • ");
+        examesAll.push({
+          id: `img-${r.id}`,
+          tipo_exame: r.tipo_exame,
+          data: formatBR(new Date(r.data_exame + "T00:00:00")),
+          status: r.status,
+          resultado: det || undefined,
+          arquivo_path: r.imagem_path ?? null,
+          bucket: "image-exams",
+          origem: "imagem",
+        });
+      }
+    }
+    setExames(examesAll);
     if (cRes.data) {
       setConsultas(cRes.data.map((r: any) => {
         const dt = new Date(r.data_hora);
@@ -518,7 +547,7 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
   const [filtro, setFiltro] = useState<FiltroTimeline>("geral");
 
   // Linha do tempo unificada
-  type Item = { id: string; data: string; titulo: string; tipo: "clinico" | "vacina" | "exame" | "historico"; semana?: number; nota?: string };
+  type Item = { id: string; data: string; titulo: string; tipo: "clinico" | "vacina" | "exame" | "historico"; semana?: number; nota?: string; arquivo_path?: string | null; bucket?: "exam-attachments" | "image-exams" };
 
   const labelHistorico = (t?: string) => {
     if (!t) return "Evento";
@@ -571,7 +600,7 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
       return acc;
     }, []),
     ...vacinas.map<Item>(v => ({ id: v.id, data: v.data, titulo: `Vacina: ${v.vacina}`, tipo: "vacina", nota: v.observacao })),
-    ...exames.map<Item>(e => ({ id: e.id, data: e.data, titulo: `Exame: ${e.tipo_exame}`, tipo: "exame", nota: e.resultado })),
+    ...exames.map<Item>(e => ({ id: e.id, data: e.data, titulo: `${e.origem === "imagem" ? "Imagem" : "Exame"}: ${e.tipo_exame}`, tipo: "exame", nota: e.resultado, arquivo_path: e.arquivo_path ?? null, bucket: e.bucket })),
     ...historico.map<Item>((h, idx) => {
       const dt = h.registrado_em ? new Date(h.registrado_em) : (h.ano ? new Date(h.ano, 0, 1) : null);
       const dataStr = dt ? formatBR(dt) : (h.ano ? `01/01/${h.ano}` : "—");
@@ -655,6 +684,22 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
                 </div>
                 <h4 className="font-medium text-sm text-foreground">{t.titulo}</h4>
                 {t.nota && <p className="text-xs text-muted-foreground mt-1">{t.nota}</p>}
+                {t.arquivo_path && t.bucket && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const { data, error } = await supabase.storage.from(t.bucket!).createSignedUrl(t.arquivo_path!, 60 * 10);
+                      if (error || !data?.signedUrl) {
+                        alert("Não foi possível abrir o arquivo.");
+                        return;
+                      }
+                      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+                    }}
+                    className="mt-2 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-primary text-primary-foreground hover:opacity-90"
+                  >
+                    Ver exame
+                  </button>
+                )}
               </motion.div>
             );
           })}
