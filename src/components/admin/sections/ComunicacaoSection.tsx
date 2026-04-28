@@ -538,7 +538,7 @@ function CampanhasView({ profiles, alerts }: Props) {
       <div className="bg-card border border-border rounded-2xl p-4 space-y-3 lg:col-span-1">
         <div className="flex items-center justify-between">
           <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-            Selecionar gestantes
+            Selecionar destinatários
           </p>
           <div className="flex gap-2">
             <button
@@ -546,14 +546,14 @@ function CampanhasView({ profiles, alerts }: Props) {
               onClick={selecionarTodas}
               className="text-[10px] font-bold text-[#1a1557] hover:underline"
             >
-              Todas
+              Todos
             </button>
             <button
               type="button"
               onClick={limparSelecao}
               className="text-[10px] font-bold text-muted-foreground hover:underline"
             >
-              Nenhuma
+              Nenhum
             </button>
           </div>
         </div>
@@ -561,47 +561,101 @@ function CampanhasView({ profiles, alerts }: Props) {
         <input
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
-          placeholder="Buscar por nome, e-mail ou cidade..."
+          placeholder="Buscar por nome, e-mail, cidade ou especialidade..."
           className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm"
         />
 
-        <p className="text-[10px] text-muted-foreground">
-          {filtered.length} no recorte atual · mostrando {visiveis.length}
-          {todasSelecionadas && " · todas selecionadas"}
-        </p>
-
-        <ul className="divide-y divide-border max-h-[420px] overflow-y-auto -mx-1">
-          {visiveis.length === 0 && (
-            <li className="text-xs text-muted-foreground py-4 text-center">
-              Nenhuma gestante encontrada.
-            </li>
+        <div className="max-h-[420px] overflow-y-auto -mx-1 space-y-3">
+          {incluiGestantes && (
+            <div>
+              <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-1">
+                Gestantes ({visiveis.length}/{filtered.length})
+              </p>
+              <ul className="divide-y divide-border">
+                {visiveis.length === 0 && (
+                  <li className="text-xs text-muted-foreground py-2 text-center">
+                    Nenhuma gestante encontrada.
+                  </li>
+                )}
+                {visiveis.map((p) => {
+                  const checked = selectedIds.has(p.user_id);
+                  return (
+                    <li key={p.user_id}>
+                      <label className="flex items-center gap-2 px-1 py-2 cursor-pointer hover:bg-muted/30 rounded-md">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggle(p.user_id)}
+                          className="h-4 w-4 accent-[#1a1557]"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold truncate">{p.nome ?? p.email}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">
+                            {p.cidade ?? "—"}
+                            <span className={pushUserIds.has(p.user_id) ? "text-emerald-700" : "text-amber-700"}>
+                              {pushUserIds.has(p.user_id) ? " · push ativo" : " · sem push"}
+                            </span>
+                            {!p.telefone && <span className="text-amber-700"> · sem WhatsApp</span>}
+                          </p>
+                        </div>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           )}
-          {visiveis.map((p) => {
-            const checked = selectedIds.has(p.user_id);
-            return (
-              <li key={p.user_id}>
-                <label className="flex items-center gap-2 px-1 py-2 cursor-pointer hover:bg-muted/30 rounded-md">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => toggle(p.user_id)}
-                    className="h-4 w-4 accent-[#1a1557]"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold truncate">{p.nome ?? p.email}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">
-                      {p.cidade ?? "—"}
-                      <span className={pushUserIds.has(p.user_id) ? "text-emerald-700" : "text-amber-700"}>
-                        {pushUserIds.has(p.user_id) ? " · push ativo" : " · sem push"}
-                      </span>
-                      {!p.telefone && <span className="text-amber-700"> · sem WhatsApp</span>}
-                    </p>
-                  </div>
-                </label>
-              </li>
-            );
-          })}
-        </ul>
+
+          {incluiProfissionais && (
+            <div>
+              <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-1">
+                Profissionais ({profissionais.length})
+              </p>
+              <ul className="divide-y divide-border">
+                {profissionais.length === 0 && (
+                  <li className="text-xs text-muted-foreground py-2 text-center">
+                    Nenhum profissional ativo cadastrado.
+                  </li>
+                )}
+                {profissionais
+                  .filter((p) => {
+                    const q = busca.trim().toLowerCase();
+                    if (!q) return true;
+                    return (
+                      p.nome.toLowerCase().includes(q) ||
+                      (p.email ?? "").toLowerCase().includes(q) ||
+                      (p.especialidade ?? "").toLowerCase().includes(q)
+                    );
+                  })
+                  .map((p) => {
+                    const checked = selectedProfIds.has(p.user_id);
+                    return (
+                      <li key={p.user_id}>
+                        <label className="flex items-center gap-2 px-1 py-2 cursor-pointer hover:bg-muted/30 rounded-md">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleProf(p.user_id)}
+                            className="h-4 w-4 accent-[#1a1557]"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold truncate">{p.nome}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {p.especialidade ?? "—"}
+                              <span className={pushUserIds.has(p.user_id) ? "text-emerald-700" : "text-amber-700"}>
+                                {pushUserIds.has(p.user_id) ? " · push ativo" : " · sem push"}
+                              </span>
+                              {!p.telefone && <span className="text-amber-700"> · sem WhatsApp</span>}
+                            </p>
+                          </div>
+                        </label>
+                      </li>
+                    );
+                  })}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Coluna 3: Preview da notificação */}
