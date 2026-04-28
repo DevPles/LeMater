@@ -332,7 +332,7 @@ export function LancamentoModal({
 
             <div className="p-4">
               {tab === "med" && <FormaMedicao onSubmit={salvarMedicao} semanaAtual={semanaAtual} />}
-              {tab === "exame" && <FormaExame onSubmit={salvarExame} />}
+              {tab === "exame" && <FormaExame onSubmitLab={salvarExame} onSubmitImg={salvarExameImagem} />}
               {tab === "vacina" && <FormaVacina onSubmit={salvarVacina} />}
               {tab === "historico" && <FormaHistorico onSubmit={salvarHistoricoEventos} />}
             </div>
