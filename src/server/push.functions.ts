@@ -219,7 +219,9 @@ async function encryptPushPayload(payload: string, receiverPublicKey: string, re
   const nonce = await hkdfExpand(prk, new TextEncoder().encode("Content-Encoding: nonce\0"), 12);
   const aesKey = await crypto.subtle.importKey("raw", cek, "AES-GCM", false, ["encrypt"]);
   const plain = concatBytes(new TextEncoder().encode(payload), new Uint8Array([2]));
-  const cipher = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, aesKey, plain));
+  const cipher = new Uint8Array(
+    await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, aesKey, toArrayBuffer(plain)),
+  );
   const recordSize = new Uint8Array([0, 0, 16, 0]);
   return concatBytes(salt, recordSize, new Uint8Array([senderPub.length]), senderPub, cipher);
 }
@@ -227,12 +229,12 @@ async function encryptPushPayload(payload: string, receiverPublicKey: string, re
 async function hmac(keyBytes: Uint8Array, data: Uint8Array) {
   const key = await crypto.subtle.importKey(
     "raw",
-    keyBytes,
+    toArrayBuffer(keyBytes),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"],
   );
-  return new Uint8Array(await crypto.subtle.sign("HMAC", key, data));
+  return new Uint8Array(await crypto.subtle.sign("HMAC", key, toArrayBuffer(data)));
 }
 
 async function hkdfExpand(prk: Uint8Array, info: Uint8Array, length: number) {
@@ -273,4 +275,10 @@ function concatBytes(...arrays: Uint8Array[]) {
     offset += arr.length;
   });
   return out;
+}
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return copy.buffer;
 }
