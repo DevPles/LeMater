@@ -439,21 +439,17 @@ function SalaPage() {
         )}
 
 
-        {isProfDono &&
-          notasAbertas &&
-          slot?.gestante_id &&
-          meuUserId &&
-          slot && (
-            <aside className="w-full max-w-sm border-l border-border bg-background flex flex-col overflow-hidden absolute sm:relative inset-0 sm:inset-auto z-30 sm:z-auto">
-              <ConsultationNotesPanel
-                appointmentId={slot.id}
-                gestanteId={slot.gestante_id}
-                professionalUserId={meuUserId}
-                compact
-                onClose={() => setNotasAbertas(false)}
-              />
-            </aside>
-          )}
+        {isProfDono && notasAbertas && slot?.gestante_id && meuUserId && slot ? (
+          <aside className="w-full max-w-sm border-l border-border bg-background flex flex-col overflow-hidden absolute sm:relative inset-0 sm:inset-auto z-30 sm:z-auto">
+            <ConsultationNotesPanel
+              appointmentId={slot.id}
+              gestanteId={slot.gestante_id}
+              professionalUserId={meuUserId}
+              compact
+              onClose={() => setNotasAbertas(false)}
+            />
+          </aside>
+        ) : null}
       </div>
     </div>
   );
