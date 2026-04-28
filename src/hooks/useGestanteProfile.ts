@@ -4,6 +4,13 @@ import type { Session } from "@supabase/supabase-js";
 
 export type BebeSexo = "masculino" | "feminino" | "neutro" | null;
 
+export type HistoricoEvento = {
+  tipo: string;
+  ano?: number | null;
+  observacao?: string | null;
+  registrado_em?: string | null;
+};
+
 export type GestanteProfile = {
   id: string;
   user_id: string;
@@ -20,6 +27,7 @@ export type GestanteProfile = {
   numero_gestacoes: number | null;
   numero_partos: number | null;
   numero_abortos: number | null;
+  partos_classificacao: HistoricoEvento[] | null;
 };
 
 /** Calcula semanas completas entre a DUM e hoje. */
@@ -73,7 +81,7 @@ export function useGestanteProfile() {
     async function fetchProfile(userId: string) {
       const { data } = await supabase
         .from("profiles")
-        .select("id,user_id,nome,email,dum,telefone,foto_url,bebe_sexo,data_nascimento,cidade,bairro,unidade_saude,numero_gestacoes,numero_partos,numero_abortos")
+        .select("id,user_id,nome,email,dum,telefone,foto_url,bebe_sexo,data_nascimento,cidade,bairro,unidade_saude,numero_gestacoes,numero_partos,numero_abortos,partos_classificacao")
         .eq("user_id", userId)
         .maybeSingle();
       if (active) setProfile((data as GestanteProfile | null) ?? null);

@@ -354,6 +354,10 @@ function CartaoPage() {
     ? `${window.location.origin}/cartao?u=${ownerUserId ?? ""}`
     : "";
 
+  const partosClassificacao: { tipo?: string; ano?: number | null }[] = Array.isArray(profile?.partos_classificacao)
+    ? (profile.partos_classificacao as any[])
+    : [];
+
   const exportarPDF = async () => {
     await gerarPDFCartao({
       patientInfo: {
@@ -367,6 +371,7 @@ function CartaoPage() {
         partos: profile?.numero_partos ?? null,
         abortos: profile?.numero_abortos ?? null,
         fotoUrl: profile?.foto_url ?? null,
+        partosClassificacao,
       },
       vitals,
       medicoes,
@@ -482,7 +487,7 @@ function CartaoPage() {
         </div>
       )}
 
-      {tab === "resumo" && <ResumoTab medicoes={medicoes} vacinas={vacinas} exames={exames} vitals={vitals} />}
+      {tab === "resumo" && <ResumoTab medicoes={medicoes} vacinas={vacinas} exames={exames} vitals={vitals} historico={partosClassificacao} />}
       {tab === "lancamentos" && <LancamentosTab medicoes={medicoes} />}
       {tab === "vacinas" && <VacinasExamesTab vacinas={vacinas} exames={exames} />}
       {tab === "graficos" && <GraficosTab palette={palette} dum={patientInfo.dum} series={series} />}
@@ -502,28 +507,64 @@ function CartaoPage() {
 }
 
 /* ========== RESUMO TAB ========== */
-function ResumoTab({ medicoes, vacinas, exames, vitals }: {
+function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
   medicoes: MedicaoReal[];
   vacinas: VacinaReal[];
   exames: ExameReal[];
   vitals: { label: string; value: string; change: string; color: string }[];
+  historico: { tipo?: string; ano?: number | null; observacao?: string | null; registrado_em?: string | null }[];
 }) {
+  type FiltroTimeline = "geral" | "clinico" | "exame" | "vacina" | "historico";
+  const [filtro, setFiltro] = useState<FiltroTimeline>("geral");
+
   // Linha do tempo unificada
-  type Item = { id: string; data: string; titulo: string; tipo: "consulta" | "vacina" | "exame"; semana?: number; nota?: string };
+  type Item = { id: string; data: string; titulo: string; tipo: "clinico" | "vacina" | "exame" | "historico"; semana?: number; nota?: string };
+
+  const labelHistorico = (t?: string) => {
+    switch (t) {
+      case "normal": return "Parto normal";
+      case "cesarea": return "Parto cesárea";
+      case "forceps": return "Parto fórceps";
+      case "aborto": return "Aborto";
+      case "nati_morto": return "Natimorto";
+      default: return t ?? "Evento";
+    }
+  };
+
   const itens: Item[] = [
     ...medicoes.reduce<Item[]>((acc, m) => {
-      // Agrupa por data
-      const existing = acc.find(a => a.data === m.data && a.tipo === "consulta");
-      if (!existing) acc.push({ id: m.id, data: m.data, titulo: "Registro clínico", tipo: "consulta", semana: m.semana, nota: `${m.parametro}: ${m.valor}` });
+      const existing = acc.find(a => a.data === m.data && a.tipo === "clinico");
+      if (!existing) acc.push({ id: m.id, data: m.data, titulo: "Registro clínico", tipo: "clinico", semana: m.semana, nota: `${m.parametro}: ${m.valor}` });
       else existing.nota = (existing.nota ?? "") + ` • ${m.parametro}: ${m.valor}`;
       return acc;
     }, []),
     ...vacinas.map<Item>(v => ({ id: v.id, data: v.data, titulo: `Vacina: ${v.vacina}`, tipo: "vacina", nota: v.observacao })),
     ...exames.map<Item>(e => ({ id: e.id, data: e.data, titulo: `Exame: ${e.tipo_exame}`, tipo: "exame", nota: e.resultado })),
+    ...historico.map<Item>((h, idx) => {
+      const dt = h.registrado_em ? new Date(h.registrado_em) : (h.ano ? new Date(h.ano, 0, 1) : null);
+      const dataStr = dt ? formatBR(dt) : (h.ano ? `01/01/${h.ano}` : "—");
+      return {
+        id: `hist-${idx}-${h.tipo ?? ""}-${h.ano ?? ""}`,
+        data: dataStr,
+        titulo: labelHistorico(h.tipo) + (h.ano ? ` (${h.ano})` : ""),
+        tipo: "historico",
+        nota: h.observacao ?? undefined,
+      };
+    }),
   ].sort((a, b) => {
     const da = parseBR(a.data); const db = parseBR(b.data);
     return (db?.getTime() ?? 0) - (da?.getTime() ?? 0);
   });
+
+  const itensFiltrados = filtro === "geral" ? itens : itens.filter(i => i.tipo === filtro);
+
+  const filtros: { key: FiltroTimeline; label: string }[] = [
+    { key: "geral", label: "Geral" },
+    { key: "clinico", label: "Dado clínico" },
+    { key: "exame", label: "Exame" },
+    { key: "vacina", label: "Vacina" },
+    { key: "historico", label: "Histórico" },
+  ];
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -542,19 +583,35 @@ function ResumoTab({ medicoes, vacinas, exames, vitals }: {
       </div>
 
       <h3 className="font-display font-semibold text-lg text-foreground mb-2">Linha do tempo</h3>
-      {itens.length === 0 ? (
-        <p className="text-sm text-muted-foreground italic">Nenhum registro ainda. Os profissionais inserem suas medições, vacinas e exames durante o pré-natal.</p>
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        {filtros.map(f => (
+          <button
+            key={f.key}
+            onClick={() => setFiltro(f.key)}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition ${
+              filtro === f.key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+      {itensFiltrados.length === 0 ? (
+        <p className="text-sm text-muted-foreground italic">Nenhum registro nesta categoria.</p>
       ) : (
         <div className="space-y-3">
-          {itens.map((t, i) => {
-            const cor = t.tipo === "vacina" ? "bg-green-500" : t.tipo === "exame" ? "bg-blue-500" : "bg-primary";
+          {itensFiltrados.map((t, i) => {
+            const cor =
+              t.tipo === "vacina" ? "bg-green-500" :
+              t.tipo === "exame" ? "bg-blue-500" :
+              t.tipo === "historico" ? "bg-amber-500" : "bg-primary";
             return (
               <motion.div key={t.id} className="bg-card rounded-xl p-3 shadow-sm border border-border" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <span className={`w-2 h-2 rounded-full ${cor}`} />
                     {t.semana ? <span className="text-xs font-semibold text-primary">Semana {t.semana}</span> : null}
-                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{t.tipo}</span>
+                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{t.tipo === "clinico" ? "dado clínico" : t.tipo}</span>
                   </div>
                   <span className="text-xs text-muted-foreground">{t.data}</span>
                 </div>
@@ -991,6 +1048,7 @@ async function gerarPDFCartao(args: {
     unidadeSaude?: string | null;
     gestacoes?: number | null; partos?: number | null; abortos?: number | null;
     fotoUrl?: string | null;
+    partosClassificacao?: { tipo?: string; ano?: number | null }[];
   };
   vitals: { label: string; value: string; change: string }[];
   medicoes: MedicaoReal[];
@@ -1394,21 +1452,25 @@ async function gerarPDFCartao(args: {
   doc.setFontSize(6.5);
   doc.setTextColor(...muted);
   doc.text("ANTECEDENTES", antX + 3, iy + 4.5);
+  const pcList = patientInfo.partosClassificacao ?? [];
+  const countTipo = (t: string) => pcList.filter((p) => p.tipo === t).length;
   const obs = [
     { l: "Gest", v: String(patientInfo.gestacoes ?? 0) },
     { l: "Part", v: String(patientInfo.partos ?? 0) },
+    { l: "Normal", v: String(countTipo("normal")) },
+    { l: "Cesárea", v: String(countTipo("cesarea")) },
     { l: "Abor", v: String(patientInfo.abortos ?? 0) },
   ];
-  const obsColW = antW / 3;
+  const obsColW = antW / obs.length;
   obs.forEach((o, i) => {
     const ox = antX + i * obsColW;
     doc.setTextColor(pr, pg, pb);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text(o.v, ox + obsColW / 2, iy + 13.5, { align: "center" });
+    doc.setFontSize(11);
+    doc.text(o.v, ox + obsColW / 2, iy + 13, { align: "center" });
     doc.setTextColor(...muted);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.2);
+    doc.setFontSize(5.6);
     doc.text(o.l, ox + obsColW / 2, iy + 17.5, { align: "center" });
   });
   iy += 24;
