@@ -240,13 +240,92 @@ function RiscoBadge({ sev }: { sev: "urgente" | "atencao" | null }) {
 
 function Drawer({
   gestante,
-  alerts,
+  alerts: alertsInicial,
   onClose,
+  onReload,
 }: {
   gestante: AdminProfile;
   alerts: AdminAlert[];
   onClose: () => void;
+  onReload?: () => void | Promise<void>;
 }) {
+  const [editando, setEditando] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const [alertasLocal, setAlertasLocal] = useState<AdminAlert[]>(alertasInicialOuVazio(alertsInicial));
+  const [carregandoAlertas, setCarregandoAlertas] = useState(false);
+
+  // Form state
+  const [nome, setNome] = useState(gestante.nome ?? "");
+  const [email, setEmail] = useState(gestante.email ?? "");
+  const [telefone, setTelefone] = useState(gestante.telefone ?? "");
+  const [dataNasc, setDataNasc] = useState(gestante.data_nascimento ?? "");
+  const [dum, setDum] = useState(gestante.dum ?? "");
+  const [cidade, setCidade] = useState(gestante.cidade ?? "");
+  const [bairro, setBairro] = useState(gestante.bairro ?? "");
+  const [ubs, setUbs] = useState(gestante.unidade_saude ?? "");
+
+  // Se a lista global de alertas chegou vazia (ex.: backdoor sem auth), busca sob demanda
+  useEffect(() => {
+    let ativo = true;
+    if (alertsInicial && alertsInicial.length > 0) {
+      setAlertasLocal(alertsInicial);
+      return;
+    }
+    setCarregandoAlertas(true);
+    supabase
+      .rpc("get_active_alerts", { _gestante_id: gestante.user_id })
+      .then(({ data, error }) => {
+        if (!ativo) return;
+        if (!error && Array.isArray(data)) {
+          setAlertasLocal(
+            data.map((a: { id: string; origem: string; severidade: string; titulo: string; mensagem: string; data: string }) => ({
+              ...a,
+              gestante_id: gestante.user_id,
+            })) as AdminAlert[],
+          );
+        }
+      })
+      .finally(() => {
+        if (ativo) setCarregandoAlertas(false);
+      });
+    return () => {
+      ativo = false;
+    };
+  }, [gestante.user_id, alertsInicial]);
+
+  const salvar = async () => {
+    setSalvando(true);
+    setMsg(null);
+    setErro(null);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        nome: nome.trim() || null,
+        email: email.trim() || null,
+        telefone: telefone.trim() || null,
+        data_nascimento: dataNasc || null,
+        dum: dum || null,
+        cidade: cidade.trim() || null,
+        bairro: bairro.trim() || null,
+        unidade_saude: ubs.trim() || null,
+      })
+      .eq("user_id", gestante.user_id);
+    setSalvando(false);
+    if (error) {
+      setErro(error.message);
+      return;
+    }
+    setMsg("Dados atualizados");
+    setEditando(false);
+    if (onReload) await onReload();
+    setTimeout(() => setMsg(null), 2500);
+  };
+
+  const inputCls =
+    "w-full rounded-lg border border-input bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary";
+
   return (
     <div className="fixed inset-0 z-50 flex">
       <button
@@ -256,44 +335,127 @@ function Drawer({
         className="flex-1 bg-black/40"
       />
       <aside className="w-full max-w-md bg-card border-l border-border overflow-y-auto p-5 space-y-4">
-        <div className="flex items-start justify-between">
-          <div>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
             <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">
               Gestante
             </p>
-            <h3 className="text-lg font-bold">{gestante.nome ?? gestante.email}</h3>
-            <p className="text-xs text-muted-foreground">{gestante.email}</p>
+            <h3 className="text-lg font-bold truncate">{nome || email || "—"}</h3>
+            <p className="text-xs text-muted-foreground truncate">{email}</p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-xs px-3 py-1 rounded-full bg-muted hover:bg-muted/70"
-          >
-            Fechar
-          </button>
+          <div className="flex flex-col gap-1 items-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-xs px-3 py-1 rounded-full bg-muted hover:bg-muted/70"
+            >
+              Fechar
+            </button>
+            {!editando ? (
+              <button
+                type="button"
+                onClick={() => setEditando(true)}
+                className="text-[10px] font-bold uppercase tracking-wide px-3 py-1 rounded-full bg-[#1a1557] text-white hover:opacity-90"
+              >
+                Editar dados
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditando(false);
+                  setNome(gestante.nome ?? "");
+                  setEmail(gestante.email ?? "");
+                  setTelefone(gestante.telefone ?? "");
+                  setDataNasc(gestante.data_nascimento ?? "");
+                  setDum(gestante.dum ?? "");
+                  setCidade(gestante.cidade ?? "");
+                  setBairro(gestante.bairro ?? "");
+                  setUbs(gestante.unidade_saude ?? "");
+                  setErro(null);
+                }}
+                className="text-[10px] font-bold uppercase tracking-wide px-3 py-1 rounded-full bg-muted hover:bg-muted/70"
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <Info label="Idade" value={calcAge(gestante.data_nascimento)?.toString() ?? "—"} />
-          <Info label="Semanas" value={calcWeeks(gestante.dum)?.toString() ?? "—"} />
-          <Info label="Cidade" value={gestante.cidade ?? "—"} />
-          <Info label="Bairro" value={gestante.bairro ?? "—"} />
-          <Info label="UBS" value={gestante.unidade_saude ?? "—"} />
-          <Info label="Telefone" value={gestante.telefone ?? "—"} />
-          <Info label="Gestações" value={String(gestante.numero_gestacoes ?? 0)} />
-          <Info label="Partos" value={String(gestante.numero_partos ?? 0)} />
-          <Info label="Abortos" value={String(gestante.numero_abortos ?? 0)} />
-        </div>
+        {msg && (
+          <p className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+            {msg}
+          </p>
+        )}
+        {erro && (
+          <p className="text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            Erro ao salvar: {erro}
+          </p>
+        )}
+
+        {!editando ? (
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <Info label="Idade" value={calcAge(gestante.data_nascimento)?.toString() ?? "—"} />
+            <Info label="Semanas" value={calcWeeks(gestante.dum)?.toString() ?? "—"} />
+            <Info label="Cidade" value={gestante.cidade ?? "—"} />
+            <Info label="Bairro" value={gestante.bairro ?? "—"} />
+            <Info label="UBS" value={gestante.unidade_saude ?? "—"} />
+            <Info label="Telefone" value={gestante.telefone ?? "—"} />
+            <Info label="Gestações" value={String(gestante.numero_gestacoes ?? 0)} />
+            <Info label="Partos" value={String(gestante.numero_partos ?? 0)} />
+            <Info label="Abortos" value={String(gestante.numero_abortos ?? 0)} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <Field label="Nome completo" full>
+              <input className={inputCls} value={nome} onChange={(e) => setNome(e.target.value)} />
+            </Field>
+            <Field label="E-mail" full>
+              <input type="email" className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} />
+            </Field>
+            <Field label="Telefone (WhatsApp)">
+              <input className={inputCls} value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(16) 9..." />
+            </Field>
+            <Field label="Data de nascimento">
+              <input type="date" className={inputCls} value={dataNasc} onChange={(e) => setDataNasc(e.target.value)} />
+            </Field>
+            <Field label="DUM (última menstruação)">
+              <input type="date" className={inputCls} value={dum} onChange={(e) => setDum(e.target.value)} />
+            </Field>
+            <Field label="Cidade">
+              <input className={inputCls} value={cidade} onChange={(e) => setCidade(e.target.value)} />
+            </Field>
+            <Field label="Bairro">
+              <input className={inputCls} value={bairro} onChange={(e) => setBairro(e.target.value)} />
+            </Field>
+            <Field label="UBS / Unidade de saúde" full>
+              <input className={inputCls} value={ubs} onChange={(e) => setUbs(e.target.value)} />
+            </Field>
+            <div className="col-span-2 flex justify-end pt-1">
+              <button
+                type="button"
+                onClick={salvar}
+                disabled={salvando}
+                className="px-4 py-2 rounded-full bg-[#f0c040] text-[#1a1557] text-xs font-bold hover:bg-[#e5b535] disabled:opacity-50"
+              >
+                {salvando ? "Salvando…" : "Salvar alterações"}
+              </button>
+            </div>
+          </div>
+        )}
 
         <div>
           <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">
-            Alertas ativos ({alerts.length})
+            Alertas ativos ({alertasLocal.length})
+            {carregandoAlertas && <span className="ml-2 font-normal normal-case text-[10px]">carregando…</span>}
           </p>
-          {alerts.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Nenhum alerta no momento.</p>
+          {alertasLocal.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              {carregandoAlertas ? "Buscando alertas…" : "Nenhum alerta no momento."}
+            </p>
           ) : (
             <ul className="space-y-2">
-              {alerts.map((a) => (
+              {alertasLocal.map((a) => (
                 <li key={a.id} className="border border-border rounded-xl p-3">
                   <div className="flex items-center gap-1 mb-1">
                     <span
@@ -321,11 +483,34 @@ function Drawer({
   );
 }
 
+function alertasInicialOuVazio(a: AdminAlert[] | undefined): AdminAlert[] {
+  return Array.isArray(a) ? a : [];
+}
+
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div className="border border-border rounded-lg p-2">
       <p className="text-[10px] uppercase text-muted-foreground font-semibold">{label}</p>
       <p className="font-semibold">{value}</p>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  children,
+  full,
+}: {
+  label: string;
+  children: React.ReactNode;
+  full?: boolean;
+}) {
+  return (
+    <div className={full ? "col-span-2" : ""}>
+      <label className="text-[10px] uppercase text-muted-foreground font-semibold block mb-1">
+        {label}
+      </label>
+      {children}
     </div>
   );
 }
