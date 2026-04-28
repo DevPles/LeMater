@@ -17,9 +17,10 @@ type Props = {
   alerts: AdminAlert[];
   loading: boolean;
   onAbrirComunicacao: () => void;
+  onReload?: () => void | Promise<void>;
 };
 
-export function GestantesSection({ profiles, alerts, loading, onAbrirComunicacao }: Props) {
+export function GestantesSection({ profiles, alerts, loading, onAbrirComunicacao, onReload }: Props) {
   const { filters } = useAdminFilters();
   const filtered = useMemo(() => applyFilters(profiles, alerts, filters), [profiles, alerts, filters]);
   const [drawer, setDrawer] = useState<string | null>(null);
