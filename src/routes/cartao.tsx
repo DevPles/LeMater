@@ -575,12 +575,18 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
     ...historico.map<Item>((h, idx) => {
       const dt = h.registrado_em ? new Date(h.registrado_em) : (h.ano ? new Date(h.ano, 0, 1) : null);
       const dataStr = dt ? formatBR(dt) : (h.ano ? `01/01/${h.ano}` : "—");
+      const partes: string[] = [];
+      if (h.valor !== undefined && h.valor !== null && h.valor !== "") {
+        const v = String(h.valor);
+        partes.push(v === "sim" ? "Sim" : v === "nao" ? "Não" : v);
+      }
+      if (h.observacao) partes.push(h.observacao);
       return {
         id: `hist-${idx}-${h.tipo ?? ""}-${h.ano ?? ""}`,
         data: dataStr,
         titulo: labelHistorico(h.tipo) + (h.ano ? ` (${h.ano})` : ""),
         tipo: "historico",
-        nota: h.observacao ?? undefined,
+        nota: partes.join(" — ") || undefined,
       };
     }),
   ].sort((a, b) => {
