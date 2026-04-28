@@ -526,16 +526,10 @@ function PerfilPage() {
           >
             {saving ? "Salvando..." : "Salvar alterações"}
           </button>
+          <div className="border-t border-border pt-3">
+            <NotificacoesCard />
+          </div>
         </form>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className="mt-4"
-      >
-        <NotificacoesCard />
       </motion.div>
     </div>
   );
