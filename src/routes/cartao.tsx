@@ -196,7 +196,7 @@ function CartaoPage() {
     if (isShared) return; // dados vêm do snapshot público
     if (!session?.user?.id) return;
     const uid = session.user.id;
-    const [mRes, vRes, eRes, cRes] = await Promise.all([
+    const [mRes, vRes, eRes, iRes, cRes] = await Promise.all([
       supabase.from("clinical_measurements")
         .select("id,parametro,valor,semana_gestacional,data_medicao,observacao")
         .eq("gestante_id", uid)
@@ -206,7 +206,11 @@ function CartaoPage() {
         .eq("gestante_id", uid)
         .order("data_aplicacao", { ascending: false }),
       supabase.from("exam_results")
-        .select("id,tipo_exame,data_exame,status,resultado")
+        .select("id,tipo_exame,data_exame,status,resultado,arquivo_path")
+        .eq("gestante_id", uid)
+        .order("data_exame", { ascending: false }),
+      supabase.from("image_exam_results")
+        .select("id,tipo_exame,data_exame,status,laudo_texto,observacao,imagem_path")
         .eq("gestante_id", uid)
         .order("data_exame", { ascending: false }),
       supabase.from("appointment_slots")
