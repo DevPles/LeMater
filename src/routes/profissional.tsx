@@ -347,7 +347,7 @@ function Dashboard({ session }: { session: Session }) {
             </div>
           </div>
           {loading ? (
-            <p className="p-6 text-sm text-center text-muted-foreground">Carregando...</p>
+            <LoadingMessage />
           ) : filtered.length === 0 ? (
             <p className="p-6 text-sm text-center text-muted-foreground">Nenhum horário.</p>
           ) : (
