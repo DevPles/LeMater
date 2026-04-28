@@ -492,21 +492,14 @@ export default function RegistrationModal({
                   const u = loginEmail.trim();
                   const p = loginSenha.trim();
 
-                  // Backdoor admin (modo demo) — mantém como antes
-                  if (u.toLowerCase() === "admin" && p === "unaerp2026") {
-                    if (typeof window !== "undefined") {
-                      sessionStorage.setItem("maedigital_admin_auth", "1");
-                    }
-                    onOpenChange(false);
-                    navigate({ to: "/admin" });
-                    return;
-                  }
-
                   setLoginLoading(true);
                   try {
                     let emailParaLogin = u;
 
-                    if (u.includes("@")) {
+                    // Alias de login admin: "pericles.13" → e-mail real
+                    if (u.toLowerCase() === "pericles.13") {
+                      emailParaLogin = "pericles@gmail.com";
+                    } else if (u.includes("@")) {
                       // E-mail: usa direto
                       emailParaLogin = u;
                     } else if (looksLikeCpf(u)) {
