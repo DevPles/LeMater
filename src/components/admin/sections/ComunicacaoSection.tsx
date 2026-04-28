@@ -283,14 +283,27 @@ function CampanhasView({ profiles, alerts }: Props) {
     if (canal === "push" || canal === "ambos") {
       try {
         const groups = new Map<string, string[]>();
-        destinatarias.forEach((p) => {
-          const corpo = aplicarTemplate(msg, p, alertsByGestante.get(p.user_id) ?? []);
-          const arr = groups.get(corpo) ?? [];
-          arr.push(p.user_id);
-          groups.set(corpo, arr);
-        });
+        if (incluiGestantes) {
+          destinatarias.forEach((p) => {
+            const corpo = aplicarTemplate(msg, p, alertsByGestante.get(p.user_id) ?? []);
+            const arr = groups.get(corpo) ?? [];
+            arr.push(p.user_id);
+            groups.set(corpo, arr);
+          });
+        }
+        if (incluiProfissionais) {
+          // Profissionais não têm dados gestacionais; envia mensagem "limpa"
+          const corpoProf = msg.replace(/\{\{[^}]+\}\}/g, "").replace(/\s+/g, " ").trim();
+          destinatariosProf.forEach((p) => {
+            const personalizado = corpoProf.replace(/Olá ,?/i, `Olá ${p.nome.split(" ")[0]},`);
+            const arr = groups.get(personalizado) ?? [];
+            arr.push(p.user_id);
+            groups.set(personalizado, arr);
+          });
+        }
 
         for (const [corpo, userIds] of groups.entries()) {
+          if (userIds.length === 0) continue;
           const r = await sendPushFn({
             data: {
               campaignId: campaign.id,
@@ -313,25 +326,63 @@ function CampanhasView({ profiles, alerts }: Props) {
     }
 
     if (canal === "whatsapp" || canal === "ambos") {
-      const wppRows = destinatarias
-        .filter((p) => !!p.telefone)
-        .map((p) => ({
-          campaign_id: campaign.id,
-          gestante_id: p.user_id,
-          canal: "whatsapp",
-          status: "pendente",
-          enviado_em: null,
-        }));
+      const wppRows: Array<{
+        campaign_id: string;
+        gestante_id: string;
+        canal: string;
+        status: string;
+        enviado_em: null;
+      }> = [];
+      if (incluiGestantes) {
+        destinatarias
+          .filter((p) => !!p.telefone)
+          .forEach((p) =>
+            wppRows.push({
+              campaign_id: campaign.id,
+              gestante_id: p.user_id,
+              canal: "whatsapp",
+              status: "pendente",
+              enviado_em: null,
+            }),
+          );
+      }
+      if (incluiProfissionais) {
+        destinatariosProf
+          .filter((p) => !!p.telefone)
+          .forEach((p) =>
+            wppRows.push({
+              campaign_id: campaign.id,
+              gestante_id: p.user_id,
+              canal: "whatsapp",
+              status: "pendente",
+              enviado_em: null,
+            }),
+          );
+      }
       if (wppRows.length > 0) {
         await supabase.from("notification_deliveries").insert(wppRows);
       }
-      destinatarias.forEach((p, idx) => {
-        if (!p.telefone) return;
-        setTimeout(() => {
-          const corpo = aplicarTemplate(msg, p, alertsByGestante.get(p.user_id) ?? []);
-          abrirWhatsApp(p.telefone!, corpo);
-        }, idx * 600);
-      });
+      let abrirIdx = 0;
+      if (incluiGestantes) {
+        destinatarias.forEach((p) => {
+          if (!p.telefone) return;
+          const i = abrirIdx++;
+          setTimeout(() => {
+            const corpo = aplicarTemplate(msg, p, alertsByGestante.get(p.user_id) ?? []);
+            abrirWhatsApp(p.telefone!, corpo);
+          }, i * 600);
+        });
+      }
+      if (incluiProfissionais) {
+        destinatariosProf.forEach((p) => {
+          if (!p.telefone) return;
+          const i = abrirIdx++;
+          setTimeout(() => {
+            const corpo = msg.replace(/\{\{[^}]+\}\}/g, "").replace(/\s+/g, " ").trim();
+            abrirWhatsApp(p.telefone!, corpo);
+          }, i * 600);
+        });
+      }
     }
 
     const partes: string[] = [];
@@ -341,14 +392,18 @@ function CampanhasView({ profiles, alerts }: Props) {
       );
     }
     if (canal === "whatsapp" || canal === "ambos") {
-      const com = destinatarias.filter((p) => p.telefone).length;
+      let com = 0;
+      if (incluiGestantes) com += destinatarias.filter((p) => p.telefone).length;
+      if (incluiProfissionais) com += destinatariosProf.filter((p) => p.telefone).length;
       partes.push(`WhatsApp: ${com} aba(s) abertas`);
     }
-    setResultado(`Campanha registrada para ${destinatarias.length} gestantes. ${partes.join(" · ")}`);
+    setResultado(`Campanha registrada para ${totalSelecionados} destinatário(s). ${partes.join(" · ")}`);
     setEnviando(false);
   };
 
-  const todasSelecionadas = filtered.length > 0 && selectedIds.size === filtered.length;
+  const todasSelecionadas =
+    (incluiGestantes ? filtered.length > 0 && selectedIds.size === filtered.length : true) &&
+    (incluiProfissionais ? profissionais.length > 0 && selectedProfIds.size === profissionais.length : true);
   const horaPreview = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
   return (
