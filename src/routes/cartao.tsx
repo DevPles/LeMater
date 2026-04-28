@@ -397,7 +397,7 @@ function CartaoPage() {
           <h1 className="text-2xl font-bold font-display text-foreground text-center">Cartão Digital da Gestante</h1>
           <button
             onClick={exportarPDF}
-            className="absolute right-0 top-9 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all hover:opacity-90"
+            className="absolute right-0 top-9 shrink-0 px-2 py-1 rounded-full text-[9px] font-semibold leading-tight transition-all hover:opacity-90"
             style={{ backgroundColor: palette.primary, color: "#fff" }}
           >
             Exportar PDF
