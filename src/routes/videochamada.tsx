@@ -171,7 +171,7 @@ function AgendamentosPage() {
       )}
 
       {loading ? (
-        <p className="text-center text-sm text-muted-foreground py-12">Carregando...</p>
+        <LoadingMessage />
       ) : filtrados.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground py-12">
           {tab === "disponiveis" ? "Nenhum horário disponível no momento." : "Você ainda não reservou consultas."}
