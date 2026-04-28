@@ -21,7 +21,7 @@ export function useAdminData(): State {
   const load = useCallback(async () => {
     setLoading(true);
 
-    const [profsRes, alertsRes] = await Promise.all([
+    const [profsRes, alertsRes, rolesRes] = await Promise.all([
       supabase
         .from("profiles")
         .select(
@@ -30,9 +30,18 @@ export function useAdminData(): State {
         .order("nome", { ascending: true })
         .limit(1000),
       supabase.rpc("get_all_active_alerts"),
+      supabase.from("user_roles").select("user_id, role").eq("role", "gestante"),
     ]);
 
-    setProfiles(((profsRes.data ?? []) as AdminProfile[]));
+    const gestanteIds = new Set(
+      ((rolesRes.data ?? []) as { user_id: string }[]).map((r) => r.user_id),
+    );
+    const allProfiles = (profsRes.data ?? []) as AdminProfile[];
+    // Mostrar apenas perfis cujo usuário tem o papel "gestante".
+    // Profissionais e admins não devem aparecer na lista de gestantes.
+    const onlyGestantes = allProfiles.filter((p) => gestanteIds.has(p.user_id));
+
+    setProfiles(onlyGestantes);
     setAlerts(((alertsRes.data ?? []) as AdminAlert[]));
     setLoading(false);
   }, []);
