@@ -5,6 +5,19 @@ import { registerPushSubscription } from "@/server/push.functions";
 
 type State = "unsupported" | "denied" | "default" | "granted" | "loading";
 
+function sameApplicationServerKey(sub: PushSubscription, expected: Uint8Array) {
+  const key = sub.options?.applicationServerKey;
+  if (!key) return true;
+  const actual = new Uint8Array(key);
+  return actual.length === expected.length && actual.every((byte, index) => byte === expected[index]);
+}
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return copy.buffer;
+}
+
 export function usePushSubscription() {
   const [state, setState] = useState<State>("loading");
   const [registered, setRegistered] = useState(false);
@@ -41,11 +54,16 @@ export function usePushSubscription() {
       const reg = await navigator.serviceWorker.register("/sw.js");
       await navigator.serviceWorker.ready;
 
+      const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
       let sub = await reg.pushManager.getSubscription();
+      if (sub && !sameApplicationServerKey(sub, applicationServerKey)) {
+        await sub.unsubscribe().catch(() => undefined);
+        sub = null;
+      }
       if (!sub) {
         sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
+          applicationServerKey: toArrayBuffer(applicationServerKey),
         });
       }
 
@@ -66,6 +84,7 @@ export function usePushSubscription() {
       setRegistered(true);
       return { ok: true };
     } catch (e: unknown) {
+      console.error("Falha ao ativar notificações push", e);
       const msg = e instanceof Error ? e.message : "Erro desconhecido";
       setRegistered(false);
       return { ok: false, error: msg };
