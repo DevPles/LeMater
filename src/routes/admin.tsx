@@ -115,8 +115,9 @@ function AdminShell() {
     <AdminLayout
       active={section}
       onChange={setSection}
-      onLogout={() => {
+      onLogout={async () => {
         sessionStorage.removeItem(ADMIN_KEY);
+        await supabase.auth.signOut().catch(() => {});
         navigate({ to: "/" });
       }}
       topbar={
