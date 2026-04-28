@@ -402,25 +402,84 @@ function FormaMedicao({ onSubmit, semanaAtual }: { onSubmit: (f: FormData) => Pr
   );
 }
 
-function FormaExame({ onSubmit }: { onSubmit: (f: FormData) => Promise<void> }) {
+const EXAMES_LAB = [
+  "Hb/Ht", "Leucograma", "Plaquetas", "Glicemia jejum", "TOTG 75g", "EAS", "Urocultura",
+  "VDRL", "Anti-HIV", "HBsAG", "Anti-HCV", "Rubéola", "Toxoplasmose", "CMV", "HTLV",
+  "TSH/T4L", "Vitamina D", "PTN 24H", "Bilirrubina Total", "BD/BI", "UR/CR",
+  "Ácido Úrico", "TGO/TGP", "LDH", "Coombs Indireto", "Outro",
+];
+
+const EXAMES_IMG = [
+  "Ultrassonografia obstétrica",
+  "Ultrassonografia morfológica 1º trimestre",
+  "Ultrassonografia morfológica 2º trimestre",
+  "Ultrassonografia transvaginal",
+  "Doppler obstétrico",
+  "Ecocardiograma fetal",
+  "Cardiotocografia",
+  "Outro",
+];
+
+function FormaExame({ onSubmitLab, onSubmitImg }: { onSubmitLab: (f: FormData) => Promise<void>; onSubmitImg: (f: FormData) => Promise<void> }) {
+  const [modo, setModo] = useState<"lab" | "img">("lab");
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-1">
+        <button type="button" onClick={() => setModo("lab")} className={`flex-1 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full ${modo === "lab" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+          Laboratorial
+        </button>
+        <button type="button" onClick={() => setModo("img")} className={`flex-1 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full ${modo === "img" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+          Imagem
+        </button>
+      </div>
+      {modo === "lab" ? <FormaExameLab onSubmit={onSubmitLab} /> : <FormaExameImg onSubmit={onSubmitImg} />}
+    </div>
+  );
+}
+
+function FormaExameLab({ onSubmit }: { onSubmit: (f: FormData) => Promise<void> }) {
   const [busy, setBusy] = useState(false);
+  const [tipoSel, setTipoSel] = useState(EXAMES_LAB[0]);
+  const [outro, setOutro] = useState("");
   return (
     <form
       onSubmit={async (e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
+        fd.set("tipo", tipoSel === "Outro" ? outro : tipoSel);
         setBusy(true);
         await onSubmit(fd);
         setBusy(false);
         (e.currentTarget as HTMLFormElement).reset();
+        setTipoSel(EXAMES_LAB[0]); setOutro("");
       }}
       className="space-y-2"
     >
-      <Campo label="Tipo de exame">
-        <input name="tipo" placeholder="Ex.: Hemograma, Glicemia de jejum..." className={inputClass} required />
+      <Campo label="Exame">
+        <select value={tipoSel} onChange={(e) => setTipoSel(e.target.value)} className={inputClass}>
+          {EXAMES_LAB.map((x) => <option key={x} value={x}>{x}</option>)}
+        </select>
       </Campo>
+      {tipoSel === "Outro" && (
+        <Campo label="Nome do exame">
+          <input value={outro} onChange={(e) => setOutro(e.target.value)} className={inputClass} required />
+        </Campo>
+      )}
+      <div className="grid grid-cols-2 gap-2">
+        <Campo label="Trimestre">
+          <select name="trimestre" className={inputClass} defaultValue="">
+            <option value="">—</option>
+            <option value="1º trimestre">1º trimestre</option>
+            <option value="2º trimestre">2º trimestre</option>
+            <option value="3º trimestre">3º trimestre</option>
+          </select>
+        </Campo>
+        <Campo label="Data do exame">
+          <input name="data_exame" type="date" className={inputClass} />
+        </Campo>
+      </div>
       <Campo label="Resultado">
-        <input name="resultado" className={inputClass} required />
+        <input name="resultado" className={inputClass} required placeholder="Ex.: 12,3 g/dL" />
       </Campo>
       <Campo label="Status">
         <select name="status" className={inputClass}>
@@ -429,11 +488,74 @@ function FormaExame({ onSubmit }: { onSubmit: (f: FormData) => Promise<void> }) 
           <option value="pendente">Pendente</option>
         </select>
       </Campo>
+      <Campo label="Anexo (PDF/imagem) — opcional">
+        <input name="arquivo" type="file" accept="application/pdf,image/*" className={inputClass} />
+      </Campo>
       <Campo label="Observação (opcional)">
         <input name="obs" className={inputClass} />
       </Campo>
       <button type="submit" disabled={busy} className={btnSalvar}>
         {busy ? "Salvando..." : "Registrar exame"}
+      </button>
+    </form>
+  );
+}
+
+function FormaExameImg({ onSubmit }: { onSubmit: (f: FormData) => Promise<void> }) {
+  const [busy, setBusy] = useState(false);
+  const [tipoSel, setTipoSel] = useState(EXAMES_IMG[0]);
+  const [outro, setOutro] = useState("");
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        fd.set("tipo", tipoSel === "Outro" ? outro : tipoSel);
+        setBusy(true);
+        await onSubmit(fd);
+        setBusy(false);
+        (e.currentTarget as HTMLFormElement).reset();
+        setTipoSel(EXAMES_IMG[0]); setOutro("");
+      }}
+      className="space-y-2"
+    >
+      <Campo label="Tipo de exame">
+        <select value={tipoSel} onChange={(e) => setTipoSel(e.target.value)} className={inputClass}>
+          {EXAMES_IMG.map((x) => <option key={x} value={x}>{x}</option>)}
+        </select>
+      </Campo>
+      {tipoSel === "Outro" && (
+        <Campo label="Nome do exame">
+          <input value={outro} onChange={(e) => setOutro(e.target.value)} className={inputClass} required />
+        </Campo>
+      )}
+      <div className="grid grid-cols-2 gap-2">
+        <Campo label="Data"><input name="data_exame" type="date" className={inputClass} /></Campo>
+        <Campo label="IG USG"><input name="ig_usg" placeholder="Ex.: 22s 3d" className={inputClass} /></Campo>
+        <Campo label="Peso fetal"><input name="peso_fetal" placeholder="Ex.: 520g" className={inputClass} /></Campo>
+        <Campo label="Placenta"><input name="placenta" placeholder="Ex.: posterior" className={inputClass} /></Campo>
+      </div>
+      <Campo label="Líquido amniótico">
+        <input name="liquido" placeholder="Ex.: normal / oligo / poli" className={inputClass} />
+      </Campo>
+      <Campo label="Laudo (opcional)">
+        <textarea name="laudo" rows={2} className={inputClass} />
+      </Campo>
+      <Campo label="Status">
+        <select name="status" className={inputClass}>
+          <option value="normal">Normal</option>
+          <option value="alterado">Alterado</option>
+          <option value="pendente">Pendente</option>
+        </select>
+      </Campo>
+      <Campo label="Anexo (PDF/imagem) — opcional">
+        <input name="arquivo" type="file" accept="application/pdf,image/*" className={inputClass} />
+      </Campo>
+      <Campo label="Observação (opcional)">
+        <input name="obs" className={inputClass} />
+      </Campo>
+      <button type="submit" disabled={busy} className={btnSalvar}>
+        {busy ? "Salvando..." : "Registrar exame de imagem"}
       </button>
     </form>
   );
