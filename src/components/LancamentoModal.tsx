@@ -127,10 +127,66 @@ export function LancamentoModal({
     }
   }
 
+  async function salvarHistorico(form: FormData) {
+    const tipo = String(form.get("tipo") || "").trim();
+    const anoStr = String(form.get("ano") || "").trim();
+    const observacao = String(form.get("obs") || "").trim();
+    if (!tipo) {
+      flash("err", "Selecione o tipo de evento.");
+      return;
+    }
+    const ano = anoStr ? Number(anoStr) : null;
+    if (anoStr && (Number.isNaN(ano!) || ano! < 1900 || ano! > new Date().getFullYear())) {
+      flash("err", "Ano inválido.");
+      return;
+    }
+
+    const { data: prof, error: errLoad } = await supabase
+      .from("profiles")
+      .select("partos_classificacao, numero_partos, numero_abortos, numero_gestacoes")
+      .eq("user_id", gestanteId)
+      .maybeSingle();
+    if (errLoad) {
+      console.error(errLoad);
+      flash("err", "Falha ao carregar perfil.");
+      return;
+    }
+    const atual = Array.isArray(prof?.partos_classificacao) ? (prof!.partos_classificacao as any[]) : [];
+    const novoItem: Record<string, any> = { tipo };
+    if (ano !== null) novoItem.ano = ano;
+    if (observacao) novoItem.observacao = observacao;
+    novoItem.registrado_em = new Date().toISOString();
+
+    const novaLista = [...atual, novoItem];
+    const ehParto = tipo === "normal" || tipo === "cesarea" || tipo === "forceps";
+    const ehAborto = tipo === "aborto";
+    const novoPartos = (prof?.numero_partos ?? 0) + (ehParto ? 1 : 0);
+    const novoAbortos = (prof?.numero_abortos ?? 0) + (ehAborto ? 1 : 0);
+    const novoGest = Math.max(prof?.numero_gestacoes ?? 0, novoPartos + novoAbortos);
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        partos_classificacao: novaLista as any,
+        numero_partos: novoPartos,
+        numero_abortos: novoAbortos,
+        numero_gestacoes: novoGest,
+      })
+      .eq("user_id", gestanteId);
+    if (error) {
+      console.error(error);
+      flash("err", "Falha ao salvar histórico.");
+    } else {
+      flash("ok", "Histórico registrado.");
+      onSaved?.();
+    }
+  }
+
   const tabs: { id: Tab; label: string }[] = [
     { id: "med", label: "Medição" },
     { id: "exame", label: "Exame" },
     { id: "vacina", label: "Vacina" },
+    { id: "historico", label: "Histórico" },
   ];
 
   return (
