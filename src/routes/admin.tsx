@@ -99,7 +99,7 @@ function AdminGate() {
 function AdminShell() {
   const navigate = useNavigate();
   const [section, setSection] = useState<AdminSection>("visao");
-  const { profiles, alerts, loading } = useAdminData();
+  const { profiles, alerts, loading, reload } = useAdminData();
   const { filters } = useAdminFilters();
 
   const filtered = useMemo(() => applyFilters(profiles, alerts, filters), [profiles, alerts, filters]);
