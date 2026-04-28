@@ -239,15 +239,37 @@ function CartaoPage() {
         observacao: r.observacao ?? undefined,
       })));
     }
+    const examesAll: ExameReal[] = [];
     if (eRes.data) {
-      setExames(eRes.data.map((r: any) => ({
-        id: r.id,
-        tipo_exame: r.tipo_exame,
-        data: formatBR(new Date(r.data_exame + "T00:00:00")),
-        status: r.status,
-        resultado: r.resultado ?? undefined,
-      })));
+      for (const r of eRes.data as any[]) {
+        examesAll.push({
+          id: `lab-${r.id}`,
+          tipo_exame: r.tipo_exame,
+          data: formatBR(new Date(r.data_exame + "T00:00:00")),
+          status: r.status,
+          resultado: r.resultado ?? undefined,
+          arquivo_path: r.arquivo_path ?? null,
+          bucket: "exam-attachments",
+          origem: "lab",
+        });
+      }
     }
+    if (iRes.data) {
+      for (const r of iRes.data as any[]) {
+        const det = [r.laudo_texto, r.observacao].filter(Boolean).join(" • ");
+        examesAll.push({
+          id: `img-${r.id}`,
+          tipo_exame: r.tipo_exame,
+          data: formatBR(new Date(r.data_exame + "T00:00:00")),
+          status: r.status,
+          resultado: det || undefined,
+          arquivo_path: r.imagem_path ?? null,
+          bucket: "image-exams",
+          origem: "imagem",
+        });
+      }
+    }
+    setExames(examesAll);
     if (cRes.data) {
       setConsultas(cRes.data.map((r: any) => {
         const dt = new Date(r.data_hora);
