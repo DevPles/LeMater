@@ -392,3 +392,40 @@ function FormaVacina({ onSubmit }: { onSubmit: (f: FormData) => Promise<void> })
     </form>
   );
 }
+
+function FormaHistorico({ onSubmit }: { onSubmit: (f: FormData) => Promise<void> }) {
+  const [busy, setBusy] = useState(false);
+  const [tipo, setTipo] = useState(HISTORICO_TIPOS[0].value);
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        fd.set("tipo", tipo);
+        setBusy(true);
+        await onSubmit(fd);
+        setBusy(false);
+        (e.currentTarget as HTMLFormElement).reset();
+        setTipo(HISTORICO_TIPOS[0].value);
+      }}
+      className="space-y-2"
+    >
+      <Campo label="Tipo de evento">
+        <select value={tipo} onChange={(e) => setTipo(e.target.value)} className={inputClass}>
+          {HISTORICO_TIPOS.map((t) => (
+            <option key={t.value} value={t.value}>{t.label}</option>
+          ))}
+        </select>
+      </Campo>
+      <Campo label="Ano (opcional)">
+        <input name="ano" type="number" min={1900} max={new Date().getFullYear()} placeholder="Ex.: 2022" className={inputClass} />
+      </Campo>
+      <Campo label="Observação (opcional)">
+        <input name="obs" className={inputClass} />
+      </Campo>
+      <button type="submit" disabled={busy} className={btnSalvar}>
+        {busy ? "Salvando..." : "Registrar histórico"}
+      </button>
+    </form>
+  );
+}
