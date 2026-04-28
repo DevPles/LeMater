@@ -81,7 +81,7 @@ export function useGestanteProfile() {
     async function fetchProfile(userId: string) {
       const { data } = await supabase
         .from("profiles")
-        .select("id,user_id,nome,email,dum,telefone,foto_url,bebe_sexo,data_nascimento,cidade,bairro,unidade_saude,numero_gestacoes,numero_partos,numero_abortos")
+        .select("id,user_id,nome,email,dum,telefone,foto_url,bebe_sexo,data_nascimento,cidade,bairro,unidade_saude,numero_gestacoes,numero_partos,numero_abortos,partos_classificacao")
         .eq("user_id", userId)
         .maybeSingle();
       if (active) setProfile((data as GestanteProfile | null) ?? null);
