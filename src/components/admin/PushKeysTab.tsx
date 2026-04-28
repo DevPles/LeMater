@@ -75,7 +75,7 @@ export function PushKeysTab() {
         <p className="font-semibold text-[#1a1557]">Como usar</p>
         <ol className="list-decimal pl-5 space-y-1">
           <li>Copie cada valor acima.</li>
-          <li>Cole no formulário de secrets do Lovable Cloud quando solicitado.</li>
+          <li>Cole no formulário de secrets no Banco de Dados quando solicitado.</li>
           <li>Após salvar, o backend de envio de push será ativado automaticamente.</li>
         </ol>
       </div>
