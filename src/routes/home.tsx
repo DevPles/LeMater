@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { useScreenContent } from "@/hooks/useScreenContent";
 import { HOME_DEFAULT } from "@/components/admin/TelasTab";
 import { useGestanteProfile, weeksFromDum } from "@/hooks/useGestanteProfile";
+import { LoadingMessage } from "@/components/LoadingMessage";
 
 export const Route = createFileRoute("/home")({
   head: () => ({
