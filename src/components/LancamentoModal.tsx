@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 type Tab = "med" | "exame" | "vacina" | "historico";
 
 const HISTORICO_TIPOS: { value: string; label: string }[] = [
-  { value: "normal", label: "Parto normal" },
-  { value: "cesarea", label: "Parto cesárea" },
-  { value: "forceps", label: "Parto fórceps" },
-  { value: "aborto", label: "Aborto" },
+  { value: "normal", label: "PN — Parto normal" },
+  { value: "cesarea", label: "PC — Parto cesárea" },
+  { value: "forceps", label: "PF — Parto fórceps" },
+  { value: "aborto", label: "AB — Aborto" },
   { value: "nati_morto", label: "Natimorto" },
 ];
 
