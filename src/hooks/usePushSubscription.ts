@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/push-config";
+import { useServerFn } from "@tanstack/react-start";
+import { registerPushSubscription } from "@/server/push.functions";
 
 type State = "unsupported" | "denied" | "default" | "granted" | "loading";
 
 export function usePushSubscription() {
   const [state, setState] = useState<State>("loading");
   const [registered, setRegistered] = useState(false);
+  const registerSubscription = useServerFn(registerPushSubscription);
 
   const enable = useCallback(async () => {
     if (typeof window === "undefined") return { ok: false, error: "SSR" };
@@ -48,26 +50,19 @@ export function usePushSubscription() {
       }
 
       const json = sub.toJSON();
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) return { ok: false, error: "Usuário não autenticado." };
-
-      const { error } = await supabase
-        .from("push_subscriptions")
-        .upsert(
-          {
-            user_id: auth.user.id,
-            endpoint: sub.endpoint,
-            p256dh: json.keys?.p256dh ?? "",
-            auth: json.keys?.auth ?? "",
-            user_agent: navigator.userAgent,
-          },
-          { onConflict: "user_id,endpoint" },
-        );
-
-      if (error) {
+      if (!json.keys?.p256dh || !json.keys?.auth) {
         setRegistered(false);
-        return { ok: false, error: error.message };
+        return { ok: false, error: "Navegador não retornou as chaves do dispositivo." };
       }
+
+      await registerSubscription({
+        data: {
+          endpoint: sub.endpoint,
+          p256dh: json.keys.p256dh,
+          auth: json.keys.auth,
+          userAgent: navigator.userAgent,
+        },
+      });
       setRegistered(true);
       return { ok: true };
     } catch (e: unknown) {
@@ -75,7 +70,7 @@ export function usePushSubscription() {
       setRegistered(false);
       return { ok: false, error: msg };
     }
-  }, []);
+  }, [registerSubscription]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

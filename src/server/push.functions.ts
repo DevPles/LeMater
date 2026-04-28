@@ -16,6 +16,32 @@ const InputSchema = z.object({
   userIds: z.array(z.string().uuid()).min(1).max(5000),
 });
 
+const RegisterSubscriptionSchema = z.object({
+  endpoint: z.string().url(),
+  p256dh: z.string().min(1),
+  auth: z.string().min(1),
+  userAgent: z.string().max(1000).optional(),
+});
+
+export const registerPushSubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => RegisterSubscriptionSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { error } = await supabaseAdmin.from("push_subscriptions").upsert(
+      {
+        user_id: context.userId,
+        endpoint: data.endpoint,
+        p256dh: data.p256dh,
+        auth: data.auth,
+        user_agent: data.userAgent ?? null,
+      },
+      { onConflict: "user_id,endpoint" },
+    );
+
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export const sendPushCampaign = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => InputSchema.parse(input))
