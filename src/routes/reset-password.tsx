@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingMessage } from "@/components/LoadingMessage";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
