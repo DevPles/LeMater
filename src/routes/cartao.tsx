@@ -139,6 +139,9 @@ interface ExameReal {
   data: string; // BR
   status: string;
   resultado?: string;
+  arquivo_path?: string | null;
+  bucket?: "exam-attachments" | "image-exams";
+  origem?: "lab" | "imagem";
 }
 
 interface ConsultaReal {
