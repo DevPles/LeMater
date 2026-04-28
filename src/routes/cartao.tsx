@@ -785,7 +785,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
                   padding: labelCalendario ? "0 8px" : "0",
                 }}
               >
-                <CalendarIcon className="w-3.5 h-3.5" />
+                <CalendarIcon className="w-3 h-3" />
                 {labelCalendario}
               </button>
             </PopoverTrigger>
