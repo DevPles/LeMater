@@ -100,7 +100,22 @@ function CampanhasView({ profiles, alerts }: Props) {
   const [resultado, setResultado] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [busca, setBusca] = useState("");
+  const [pushUserIds, setPushUserIds] = useState<Set<string>>(new Set());
   const sendPushFn = useServerFn(sendPushCampaign);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from("push_subscriptions")
+      .select("user_id")
+      .then(({ data }) => {
+        if (cancelled) return;
+        setPushUserIds(new Set((data ?? []).map((row) => row.user_id)));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Sempre que o recorte filtrado muda, restringe a seleção ao novo conjunto
   useEffect(() => {
@@ -129,6 +144,10 @@ function CampanhasView({ profiles, alerts }: Props) {
     () => filtered.filter((p) => selectedIds.has(p.user_id)),
     [filtered, selectedIds],
   );
+  const selecionadasComPush = useMemo(
+    () => destinatarias.filter((p) => pushUserIds.has(p.user_id)).length,
+    [destinatarias, pushUserIds],
+  );
 
   const previewProfile = destinatarias[0] ?? filtered[0];
   const preview = previewProfile
@@ -150,6 +169,12 @@ function CampanhasView({ profiles, alerts }: Props) {
     if (destinatarias.length === 0) return;
     setEnviando(true);
     setResultado(null);
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) {
+      setResultado("Erro: sessão admin expirada. Entre novamente como pericles.13 e tente de novo.");
+      setEnviando(false);
+      return;
+    }
     const { data: campaign, error } = await supabase
       .from("notification_campaigns")
       .insert({
@@ -157,6 +182,7 @@ function CampanhasView({ profiles, alerts }: Props) {
         titulo,
         mensagem: msg,
         total_destinatarios: destinatarias.length,
+        enviado_por: authData.user.id,
         filtros_snapshot: filters as never,
       })
       .select()
@@ -252,6 +278,11 @@ function CampanhasView({ profiles, alerts }: Props) {
 
         <div className="bg-muted/30 rounded-lg p-3 text-xs">
           <strong>{destinatarias.length} de {filtered.length}</strong> gestantes selecionadas.
+          {(canal === "push" || canal === "ambos") && (
+            <p className="text-muted-foreground mt-1">
+              {selecionadasComPush} têm push ativo neste dispositivo.
+            </p>
+          )}
           {canal !== "push" && (
             <p className="text-muted-foreground mt-1">
               {destinatarias.filter((p) => p.telefone).length} têm WhatsApp.
@@ -314,8 +345,14 @@ function CampanhasView({ profiles, alerts }: Props) {
           {enviando ? "Enviando..." : `Disparar para ${destinatarias.length} gestante(s)`}
         </button>
 
+        {(canal === "push" || canal === "ambos") && destinatarias.length > 0 && selecionadasComPush === 0 && (
+          <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">
+            Nenhuma gestante selecionada ativou push ainda. O disparo será registrado, mas aparecerá como sem dispositivo.
+          </p>
+        )}
+
         {resultado && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-xs text-emerald-900">
+          <div className={`rounded-lg p-2 text-xs ${resultado.startsWith("Erro") ? "bg-red-50 border border-red-200 text-red-900" : "bg-emerald-50 border border-emerald-200 text-emerald-900"}`}>
             {resultado}
           </div>
         )}
@@ -378,6 +415,9 @@ function CampanhasView({ profiles, alerts }: Props) {
                     <p className="text-xs font-semibold truncate">{p.nome ?? p.email}</p>
                     <p className="text-[10px] text-muted-foreground truncate">
                       {p.cidade ?? "—"}
+                      <span className={pushUserIds.has(p.user_id) ? "text-emerald-700" : "text-amber-700"}>
+                        {pushUserIds.has(p.user_id) ? " · push ativo" : " · sem push"}
+                      </span>
                       {!p.telefone && <span className="text-amber-700"> · sem WhatsApp</span>}
                     </p>
                   </div>

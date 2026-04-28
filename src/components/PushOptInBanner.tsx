@@ -4,7 +4,7 @@ import { usePushSubscription } from "@/hooks/usePushSubscription";
 const STORAGE_KEY = "maedigital_push_dismissed";
 
 export function PushOptInBanner() {
-  const { state, enable } = usePushSubscription();
+  const { state, registered, enable } = usePushSubscription();
   const [dismissed, setDismissed] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem(STORAGE_KEY) === "1";
@@ -14,7 +14,7 @@ export function PushOptInBanner() {
 
   if (dismissed) return null;
   if (state === "loading" || state === "unsupported") return null;
-  if (state === "granted") return null;
+  if (state === "granted" && registered) return null;
 
   const handleEnable = async () => {
     setErro(null);
@@ -44,7 +44,7 @@ export function PushOptInBanner() {
           disabled={ativando}
           className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#f0c040] text-[#1a1557] hover:bg-[#e5b535] disabled:opacity-60"
         >
-          {ativando ? "Ativando..." : "Ativar notificações"}
+          {ativando ? "Ativando..." : state === "granted" ? "Sincronizar notificações" : "Ativar notificações"}
         </button>
         <button
           type="button"
