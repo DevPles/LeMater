@@ -207,6 +207,7 @@ export function GestantesSection({ profiles, alerts, loading, onAbrirComunicacao
           gestante={profiles.find((p) => p.user_id === drawer)!}
           alerts={alertsByGestante.get(drawer) ?? []}
           onClose={() => setDrawer(null)}
+          onReload={onReload}
         />
       )}
     </div>
