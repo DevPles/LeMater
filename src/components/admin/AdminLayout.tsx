@@ -195,15 +195,26 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.id)}
+                    title={group.label}
                     className={cn(
-                      "w-full flex items-center justify-between px-3 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-lg transition-colors",
-                      groupHasActive ? "text-[#f0c040]" : "text-white/50 hover:text-white",
+                      "w-full text-left transition-colors flex items-center gap-3 rounded-lg px-3 py-2",
+                      groupHasActive
+                        ? "text-[#f0c040] font-medium"
+                        : "text-white/70 hover:text-white hover:bg-white/5",
                     )}
                   >
-                    <span>{group.label}</span>
                     <span
                       className={cn(
-                        "text-[10px] transition-transform duration-200",
+                        "flex items-center justify-center font-semibold rounded-md flex-shrink-0 text-[11px] w-6 h-6",
+                        groupHasActive ? "bg-[#f0c040] text-[#1a1557]" : "bg-white/10 text-white/70",
+                      )}
+                    >
+                      {group.label.charAt(0)}
+                    </span>
+                    <span className="truncate flex-1 text-sm">{group.label}</span>
+                    <span
+                      className={cn(
+                        "text-[10px] text-white/40 transition-transform duration-200",
                         isOpen ? "rotate-90" : "",
                       )}
                     >
@@ -217,7 +228,7 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                     className={cn(
                       collapsed
                         ? "space-y-1"
-                        : "pt-0.5 pb-1 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-150",
+                        : "pt-0.5 pb-1 space-y-0 animate-in fade-in slide-in-from-top-1 duration-150",
                     )}
                   >
                     {group.items.map((it) => {
@@ -229,11 +240,13 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                           onClick={() => handleSelect(it.key)}
                           title={collapsed ? it.label : undefined}
                           className={cn(
-                            "w-full text-left text-sm transition-colors flex items-center gap-2.5 rounded-lg",
-                            collapsed ? "px-2 py-2.5 justify-center mx-1" : "px-3 py-2 ml-3",
+                            "w-full text-left transition-colors flex items-center gap-2 rounded-md",
+                            collapsed
+                              ? "px-2 py-2.5 justify-center mx-1 text-sm"
+                              : "pl-11 pr-3 py-1.5 text-[13px]",
                             isActive
-                              ? "bg-white/10 text-[#f0c040] font-medium"
-                              : "text-white/65 hover:text-white hover:bg-white/5",
+                              ? "text-[#f0c040] font-medium"
+                              : "text-white/55 hover:text-white/85",
                           )}
                         >
                           {collapsed ? (
@@ -247,9 +260,15 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                             </span>
                           ) : (
                             <>
+                              <span
+                                className={cn(
+                                  "w-1 h-1 rounded-full flex-shrink-0",
+                                  isActive ? "bg-[#f0c040]" : "bg-white/30",
+                                )}
+                              />
                               <span className="truncate flex-1">{it.label}</span>
                               {it.badge && (
-                                <span className="text-[9px] bg-[#f0c040] text-[#1a1557] px-1.5 py-0.5 rounded-full font-bold">
+                                <span className="text-[9px] bg-[#f0c040]/80 text-[#1a1557] px-1.5 py-0.5 rounded-full font-bold">
                                   {it.badge}
                                 </span>
                               )}
@@ -258,11 +277,6 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                         </button>
                       );
                     })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
         </nav>
 
         {/* Footer */}
