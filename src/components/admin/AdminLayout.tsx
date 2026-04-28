@@ -15,7 +15,8 @@ export type AdminSection =
   | "consultas-gravacoes"
   | "config-parametros"
   | "config-profissionais"
-  | "config-telas";
+  | "config-telas"
+  | "config-push";
 
 type SubItem = {
   key: AdminSection;
@@ -76,6 +77,7 @@ const MENU: MenuGroup[] = [
       { key: "config-parametros", label: "Parâmetros clínicos" },
       { key: "config-profissionais", label: "Profissionais" },
       { key: "config-telas", label: "Conteúdo das telas" },
+      { key: "config-push", label: "Chaves Push (VAPID)", badge: "NOVA" },
     ],
   },
 ];
