@@ -80,23 +80,111 @@ export function LancamentoModal({
     const resultado = String(form.get("resultado") || "").trim();
     const status = String(form.get("status") || "normal");
     const observacao = String(form.get("obs") || "").trim();
+    const trimestre = String(form.get("trimestre") || "").trim();
+    const dataExame = String(form.get("data_exame") || "").trim();
+    const arquivo = form.get("arquivo") as File | null;
     if (!tipo_exame || !resultado) {
       flash("err", "Informe o tipo e o resultado.");
       return;
     }
-    const { error } = await supabase.from("exam_results").insert({
+
+    let arquivo_path: string | null = null;
+    if (arquivo && arquivo.size > 0) {
+      const ext = arquivo.name.split(".").pop() || "bin";
+      const nome = `${gestanteId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const up = await supabase.storage.from("exam-attachments").upload(nome, arquivo, {
+        contentType: arquivo.type || undefined,
+        upsert: false,
+      });
+      if (up.error) {
+        console.error(up.error);
+        flash("err", "Falha ao enviar arquivo.");
+        return;
+      }
+      arquivo_path = nome;
+    }
+
+    const obsFinal = [trimestre ? `Trimestre: ${trimestre}` : "", observacao].filter(Boolean).join(" • ");
+    const payload: any = {
       gestante_id: gestanteId,
       registrado_por: gestanteId,
       tipo_exame,
       resultado,
       status,
-      observacao: observacao || null,
-    });
+      observacao: obsFinal || null,
+      arquivo_path,
+    };
+    if (dataExame) payload.data_exame = dataExame;
+
+    const { error } = await supabase.from("exam_results").insert(payload);
     if (error) {
       console.error(error);
       flash("err", "Falha ao salvar exame.");
     } else {
       flash("ok", "Exame registrado.");
+      onSaved?.();
+    }
+  }
+
+  async function salvarExameImagem(form: FormData) {
+    const tipo_exame = String(form.get("tipo") || "").trim();
+    const ig_usg = String(form.get("ig_usg") || "").trim();
+    const peso_fetal = String(form.get("peso_fetal") || "").trim();
+    const placenta = String(form.get("placenta") || "").trim();
+    const liquido = String(form.get("liquido") || "").trim();
+    const laudo_texto = String(form.get("laudo") || "").trim();
+    const observacao = String(form.get("obs") || "").trim();
+    const dataExame = String(form.get("data_exame") || "").trim();
+    const status = String(form.get("status") || "normal");
+    const arquivo = form.get("arquivo") as File | null;
+    if (!tipo_exame) {
+      flash("err", "Informe o tipo de exame.");
+      return;
+    }
+
+    let imagem_path: string | null = null;
+    if (arquivo && arquivo.size > 0) {
+      const ext = arquivo.name.split(".").pop() || "bin";
+      const nome = `${gestanteId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const up = await supabase.storage.from("image-exams").upload(nome, arquivo, {
+        contentType: arquivo.type || undefined,
+        upsert: false,
+      });
+      if (up.error) {
+        console.error(up.error);
+        flash("err", "Falha ao enviar arquivo.");
+        return;
+      }
+      imagem_path = nome;
+    }
+
+    const detalhes = [
+      ig_usg && `IG USG: ${ig_usg}`,
+      peso_fetal && `Peso fetal: ${peso_fetal}`,
+      placenta && `Placenta: ${placenta}`,
+      liquido && `Líquido: ${liquido}`,
+      laudo_texto && `Laudo: ${laudo_texto}`,
+      observacao,
+    ].filter(Boolean).join(" • ");
+
+    const payload: any = {
+      gestante_id: gestanteId,
+      registrado_por: gestanteId,
+      tipo_exame,
+      status,
+      laudo_texto: laudo_texto || null,
+      observacao: detalhes || null,
+      imagem_path,
+      semana_gestacional: semanaAtual ?? null,
+    };
+    if (dataExame) payload.data_exame = dataExame;
+
+    const { error } = await supabase.from("image_exam_results").insert(payload);
+    if (error) {
+      console.error(error);
+      flash("err", "Falha ao salvar exame de imagem.");
+    } else {
+      flash("ok", "Exame de imagem registrado.");
       onSaved?.();
     }
   }
