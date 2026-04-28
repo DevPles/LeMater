@@ -35,10 +35,10 @@ export function NotificacoesCard() {
         <button
           type="button"
           onClick={handleEnable}
-          disabled={ativando || state === "denied"}
+          disabled={ativando}
           className="shrink-0 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 disabled:opacity-50 transition"
         >
-          {ativando ? "..." : "Ativar"}
+          {ativando ? "..." : state === "denied" ? "Sincronizar" : "Ativar"}
         </button>
       )}
     </div>
