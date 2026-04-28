@@ -283,6 +283,7 @@ export type Database = {
       exam_results: {
         Row: {
           appointment_id: string | null
+          arquivo_path: string | null
           created_at: string
           data_exame: string
           gestante_id: string
@@ -295,6 +296,7 @@ export type Database = {
         }
         Insert: {
           appointment_id?: string | null
+          arquivo_path?: string | null
           created_at?: string
           data_exame?: string
           gestante_id: string
@@ -307,6 +309,7 @@ export type Database = {
         }
         Update: {
           appointment_id?: string | null
+          arquivo_path?: string | null
           created_at?: string
           data_exame?: string
           gestante_id?: string
