@@ -78,6 +78,14 @@ export function ComunicacaoSection({ profiles, alerts }: Props) {
 }
 
 /* ================ CAMPANHAS ================ */
+type ProfRecipient = {
+  user_id: string;
+  nome: string;
+  email: string | null;
+  especialidade: string | null;
+  telefone: string | null;
+};
+
 function CampanhasView({ profiles, alerts }: Props) {
   const { filters } = useAdminFilters();
   const filtered = useMemo(() => applyFilters(profiles, alerts, filters), [profiles, alerts, filters]);
@@ -91,6 +99,7 @@ function CampanhasView({ profiles, alerts }: Props) {
     return m;
   }, [alerts]);
 
+  const [publico, setPublico] = useState<"gestantes" | "profissionais" | "ambos">("gestantes");
   const [canal, setCanal] = useState<"push" | "whatsapp" | "ambos">("ambos");
   const [titulo, setTitulo] = useState("MãeDigital — lembrete");
   const [msg, setMsg] = useState(
@@ -99,8 +108,10 @@ function CampanhasView({ profiles, alerts }: Props) {
   const [enviando, setEnviando] = useState(false);
   const [resultado, setResultado] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedProfIds, setSelectedProfIds] = useState<Set<string>>(new Set());
   const [busca, setBusca] = useState("");
   const [pushUserIds, setPushUserIds] = useState<Set<string>>(new Set());
+  const [profissionais, setProfissionais] = useState<ProfRecipient[]>([]);
   const sendPushFn = useServerFn(sendPushCampaign);
 
   useEffect(() => {
@@ -112,6 +123,40 @@ function CampanhasView({ profiles, alerts }: Props) {
         if (cancelled) return;
         setPushUserIds(new Set((data ?? []).map((row) => row.user_id)));
       });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Carrega profissionais ativos + dados do profile (telefone/email)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: profs } = await supabase
+        .from("professionals")
+        .select("user_id, nome, especialidade")
+        .eq("ativo", true);
+      if (!profs || profs.length === 0) {
+        if (!cancelled) setProfissionais([]);
+        return;
+      }
+      const ids = profs.map((p) => p.user_id);
+      const { data: profileRows } = await supabase
+        .from("profiles")
+        .select("user_id, email, telefone")
+        .in("user_id", ids);
+      const profileMap = new Map(
+        (profileRows ?? []).map((r) => [r.user_id, r] as const),
+      );
+      const merged: ProfRecipient[] = profs.map((p) => ({
+        user_id: p.user_id,
+        nome: p.nome,
+        especialidade: p.especialidade,
+        email: profileMap.get(p.user_id)?.email ?? null,
+        telefone: profileMap.get(p.user_id)?.telefone ?? null,
+      }));
+      if (!cancelled) setProfissionais(merged);
+    })();
     return () => {
       cancelled = true;
     };
@@ -144,15 +189,39 @@ function CampanhasView({ profiles, alerts }: Props) {
     () => filtered.filter((p) => selectedIds.has(p.user_id)),
     [filtered, selectedIds],
   );
-  const selecionadasComPush = useMemo(
-    () => destinatarias.filter((p) => pushUserIds.has(p.user_id)).length,
-    [destinatarias, pushUserIds],
+  const destinatariosProf = useMemo(
+    () => profissionais.filter((p) => selectedProfIds.has(p.user_id)),
+    [profissionais, selectedProfIds],
   );
+  const incluiGestantes = publico === "gestantes" || publico === "ambos";
+  const incluiProfissionais = publico === "profissionais" || publico === "ambos";
 
-  const previewProfile = destinatarias[0] ?? filtered[0];
+  const totalSelecionados =
+    (incluiGestantes ? destinatarias.length : 0) +
+    (incluiProfissionais ? destinatariosProf.length : 0);
+
+  const selecionadasComPush = useMemo(() => {
+    let n = 0;
+    if (incluiGestantes) n += destinatarias.filter((p) => pushUserIds.has(p.user_id)).length;
+    if (incluiProfissionais)
+      n += destinatariosProf.filter((p) => pushUserIds.has(p.user_id)).length;
+    return n;
+  }, [destinatarias, destinatariosProf, pushUserIds, incluiGestantes, incluiProfissionais]);
+
+  const previewProfile = incluiGestantes
+    ? destinatarias[0] ?? filtered[0]
+    : null;
+  const previewProfText = incluiProfissionais
+    ? destinatariosProf[0] ?? profissionais[0]
+    : null;
   const preview = previewProfile
     ? aplicarTemplate(msg, previewProfile, alertsByGestante.get(previewProfile.user_id) ?? [])
-    : msg;
+    : previewProfText
+      ? msg
+          .replace(/\{\{primeiro_nome\}\}/g, (previewProfText.nome ?? "").split(" ")[0] || "")
+          .replace(/\{\{[^}]+\}\}/g, "")
+      : msg;
+  const previewNome = previewProfile?.nome ?? previewProfile?.email ?? previewProfText?.nome ?? "—";
 
   const toggle = (id: string) => {
     setSelectedIds((prev) => {
@@ -162,11 +231,25 @@ function CampanhasView({ profiles, alerts }: Props) {
       return next;
     });
   };
-  const selecionarTodas = () => setSelectedIds(new Set(filtered.map((p) => p.user_id)));
-  const limparSelecao = () => setSelectedIds(new Set());
+  const toggleProf = (id: string) => {
+    setSelectedProfIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const selecionarTodas = () => {
+    if (incluiGestantes) setSelectedIds(new Set(filtered.map((p) => p.user_id)));
+    if (incluiProfissionais) setSelectedProfIds(new Set(profissionais.map((p) => p.user_id)));
+  };
+  const limparSelecao = () => {
+    setSelectedIds(new Set());
+    setSelectedProfIds(new Set());
+  };
 
   const disparar = async () => {
-    if (destinatarias.length === 0) return;
+    if (totalSelecionados === 0) return;
     setEnviando(true);
     setResultado(null);
     const { data: authData } = await supabase.auth.getUser();
@@ -181,9 +264,9 @@ function CampanhasView({ profiles, alerts }: Props) {
         canal,
         titulo,
         mensagem: msg,
-        total_destinatarios: destinatarias.length,
+        total_destinatarios: totalSelecionados,
         enviado_por: authData.user.id,
-        filtros_snapshot: filters as never,
+        filtros_snapshot: { ...filters, publico } as never,
       })
       .select()
       .single();
@@ -200,14 +283,27 @@ function CampanhasView({ profiles, alerts }: Props) {
     if (canal === "push" || canal === "ambos") {
       try {
         const groups = new Map<string, string[]>();
-        destinatarias.forEach((p) => {
-          const corpo = aplicarTemplate(msg, p, alertsByGestante.get(p.user_id) ?? []);
-          const arr = groups.get(corpo) ?? [];
-          arr.push(p.user_id);
-          groups.set(corpo, arr);
-        });
+        if (incluiGestantes) {
+          destinatarias.forEach((p) => {
+            const corpo = aplicarTemplate(msg, p, alertsByGestante.get(p.user_id) ?? []);
+            const arr = groups.get(corpo) ?? [];
+            arr.push(p.user_id);
+            groups.set(corpo, arr);
+          });
+        }
+        if (incluiProfissionais) {
+          // Profissionais não têm dados gestacionais; envia mensagem "limpa"
+          const corpoProf = msg.replace(/\{\{[^}]+\}\}/g, "").replace(/\s+/g, " ").trim();
+          destinatariosProf.forEach((p) => {
+            const personalizado = corpoProf.replace(/Olá ,?/i, `Olá ${p.nome.split(" ")[0]},`);
+            const arr = groups.get(personalizado) ?? [];
+            arr.push(p.user_id);
+            groups.set(personalizado, arr);
+          });
+        }
 
         for (const [corpo, userIds] of groups.entries()) {
+          if (userIds.length === 0) continue;
           const r = await sendPushFn({
             data: {
               campaignId: campaign.id,
@@ -230,25 +326,63 @@ function CampanhasView({ profiles, alerts }: Props) {
     }
 
     if (canal === "whatsapp" || canal === "ambos") {
-      const wppRows = destinatarias
-        .filter((p) => !!p.telefone)
-        .map((p) => ({
-          campaign_id: campaign.id,
-          gestante_id: p.user_id,
-          canal: "whatsapp",
-          status: "pendente",
-          enviado_em: null,
-        }));
+      const wppRows: Array<{
+        campaign_id: string;
+        gestante_id: string;
+        canal: string;
+        status: string;
+        enviado_em: null;
+      }> = [];
+      if (incluiGestantes) {
+        destinatarias
+          .filter((p) => !!p.telefone)
+          .forEach((p) =>
+            wppRows.push({
+              campaign_id: campaign.id,
+              gestante_id: p.user_id,
+              canal: "whatsapp",
+              status: "pendente",
+              enviado_em: null,
+            }),
+          );
+      }
+      if (incluiProfissionais) {
+        destinatariosProf
+          .filter((p) => !!p.telefone)
+          .forEach((p) =>
+            wppRows.push({
+              campaign_id: campaign.id,
+              gestante_id: p.user_id,
+              canal: "whatsapp",
+              status: "pendente",
+              enviado_em: null,
+            }),
+          );
+      }
       if (wppRows.length > 0) {
         await supabase.from("notification_deliveries").insert(wppRows);
       }
-      destinatarias.forEach((p, idx) => {
-        if (!p.telefone) return;
-        setTimeout(() => {
-          const corpo = aplicarTemplate(msg, p, alertsByGestante.get(p.user_id) ?? []);
-          abrirWhatsApp(p.telefone!, corpo);
-        }, idx * 600);
-      });
+      let abrirIdx = 0;
+      if (incluiGestantes) {
+        destinatarias.forEach((p) => {
+          if (!p.telefone) return;
+          const i = abrirIdx++;
+          setTimeout(() => {
+            const corpo = aplicarTemplate(msg, p, alertsByGestante.get(p.user_id) ?? []);
+            abrirWhatsApp(p.telefone!, corpo);
+          }, i * 600);
+        });
+      }
+      if (incluiProfissionais) {
+        destinatariosProf.forEach((p) => {
+          if (!p.telefone) return;
+          const i = abrirIdx++;
+          setTimeout(() => {
+            const corpo = msg.replace(/\{\{[^}]+\}\}/g, "").replace(/\s+/g, " ").trim();
+            abrirWhatsApp(p.telefone!, corpo);
+          }, i * 600);
+        });
+      }
     }
 
     const partes: string[] = [];
@@ -258,14 +392,18 @@ function CampanhasView({ profiles, alerts }: Props) {
       );
     }
     if (canal === "whatsapp" || canal === "ambos") {
-      const com = destinatarias.filter((p) => p.telefone).length;
+      let com = 0;
+      if (incluiGestantes) com += destinatarias.filter((p) => p.telefone).length;
+      if (incluiProfissionais) com += destinatariosProf.filter((p) => p.telefone).length;
       partes.push(`WhatsApp: ${com} aba(s) abertas`);
     }
-    setResultado(`Campanha registrada para ${destinatarias.length} gestantes. ${partes.join(" · ")}`);
+    setResultado(`Campanha registrada para ${totalSelecionados} destinatário(s). ${partes.join(" · ")}`);
     setEnviando(false);
   };
 
-  const todasSelecionadas = filtered.length > 0 && selectedIds.size === filtered.length;
+  const todasSelecionadas =
+    (incluiGestantes ? filtered.length > 0 && selectedIds.size === filtered.length : true) &&
+    (incluiProfissionais ? profissionais.length > 0 && selectedProfIds.size === profissionais.length : true);
   const horaPreview = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
   return (
@@ -276,18 +414,55 @@ function CampanhasView({ profiles, alerts }: Props) {
           Configurar envio
         </p>
 
-        <div className="bg-muted/30 rounded-lg p-3 text-xs">
-          <strong>{destinatarias.length} de {filtered.length}</strong> gestantes selecionadas.
+        <div className="bg-muted/30 rounded-lg p-3 text-xs space-y-1">
+          {incluiGestantes && (
+            <p>
+              <strong>{destinatarias.length} de {filtered.length}</strong> gestantes selecionadas.
+            </p>
+          )}
+          {incluiProfissionais && (
+            <p>
+              <strong>{destinatariosProf.length} de {profissionais.length}</strong> profissionais selecionados.
+            </p>
+          )}
           {(canal === "push" || canal === "ambos") && (
-            <p className="text-muted-foreground mt-1">
+            <p className="text-muted-foreground">
               {selecionadasComPush} têm push ativo neste dispositivo.
             </p>
           )}
           {canal !== "push" && (
-            <p className="text-muted-foreground mt-1">
-              {destinatarias.filter((p) => p.telefone).length} têm WhatsApp.
+            <p className="text-muted-foreground">
+              {(incluiGestantes ? destinatarias.filter((p) => p.telefone).length : 0) +
+                (incluiProfissionais ? destinatariosProf.filter((p) => p.telefone).length : 0)}{" "}
+              têm WhatsApp.
             </p>
           )}
+        </div>
+
+        <div>
+          <label className="text-[11px] font-semibold uppercase text-muted-foreground">Público</label>
+          <div className="flex gap-2 mt-1 flex-wrap">
+            {(
+              [
+                { v: "gestantes", l: "Gestantes" },
+                { v: "profissionais", l: "Profissionais" },
+                { v: "ambos", l: "Ambos" },
+              ] as const
+            ).map((p) => (
+              <button
+                key={p.v}
+                type="button"
+                onClick={() => setPublico(p.v)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold ${
+                  publico === p.v
+                    ? "bg-[#1a1557] text-white"
+                    : "bg-background border border-border text-muted-foreground"
+                }`}
+              >
+                {p.l}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>
@@ -332,22 +507,23 @@ function CampanhasView({ profiles, alerts }: Props) {
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm mt-1"
           />
           <p className="text-[10px] text-muted-foreground mt-1">
-            Variáveis: {`{{primeiro_nome}}, {{semanas}}, {{ubs}}, {{cidade}}, {{exame_pendente}}, {{vacina_pendente}}`}
+            Variáveis (gestantes): {`{{primeiro_nome}}, {{semanas}}, {{ubs}}, {{cidade}}, {{exame_pendente}}, {{vacina_pendente}}`}.
+            Para profissionais, variáveis ficam em branco.
           </p>
         </div>
 
         <button
           type="button"
           onClick={disparar}
-          disabled={enviando || destinatarias.length === 0}
+          disabled={enviando || totalSelecionados === 0}
           className="w-full px-4 py-2 rounded-full text-sm font-bold bg-[#f0c040] text-[#1a1557] hover:bg-[#e5b535] disabled:opacity-50"
         >
-          {enviando ? "Enviando..." : `Disparar para ${destinatarias.length} gestante(s)`}
+          {enviando ? "Enviando..." : `Disparar para ${totalSelecionados} destinatário(s)`}
         </button>
 
-        {(canal === "push" || canal === "ambos") && destinatarias.length > 0 && selecionadasComPush === 0 && (
+        {(canal === "push" || canal === "ambos") && totalSelecionados > 0 && selecionadasComPush === 0 && (
           <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">
-            Nenhuma gestante selecionada ativou push ainda. O disparo será registrado, mas aparecerá como sem dispositivo.
+            Nenhum dos selecionados ativou push ainda. O disparo será registrado, mas aparecerá como sem dispositivo.
           </p>
         )}
 
@@ -362,7 +538,7 @@ function CampanhasView({ profiles, alerts }: Props) {
       <div className="bg-card border border-border rounded-2xl p-4 space-y-3 lg:col-span-1">
         <div className="flex items-center justify-between">
           <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-            Selecionar gestantes
+            Selecionar destinatários
           </p>
           <div className="flex gap-2">
             <button
@@ -370,14 +546,14 @@ function CampanhasView({ profiles, alerts }: Props) {
               onClick={selecionarTodas}
               className="text-[10px] font-bold text-[#1a1557] hover:underline"
             >
-              Todas
+              Todos
             </button>
             <button
               type="button"
               onClick={limparSelecao}
               className="text-[10px] font-bold text-muted-foreground hover:underline"
             >
-              Nenhuma
+              Nenhum
             </button>
           </div>
         </div>
@@ -385,47 +561,101 @@ function CampanhasView({ profiles, alerts }: Props) {
         <input
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
-          placeholder="Buscar por nome, e-mail ou cidade..."
+          placeholder="Buscar por nome, e-mail, cidade ou especialidade..."
           className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm"
         />
 
-        <p className="text-[10px] text-muted-foreground">
-          {filtered.length} no recorte atual · mostrando {visiveis.length}
-          {todasSelecionadas && " · todas selecionadas"}
-        </p>
-
-        <ul className="divide-y divide-border max-h-[420px] overflow-y-auto -mx-1">
-          {visiveis.length === 0 && (
-            <li className="text-xs text-muted-foreground py-4 text-center">
-              Nenhuma gestante encontrada.
-            </li>
+        <div className="max-h-[420px] overflow-y-auto -mx-1 space-y-3">
+          {incluiGestantes && (
+            <div>
+              <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-1">
+                Gestantes ({visiveis.length}/{filtered.length})
+              </p>
+              <ul className="divide-y divide-border">
+                {visiveis.length === 0 && (
+                  <li className="text-xs text-muted-foreground py-2 text-center">
+                    Nenhuma gestante encontrada.
+                  </li>
+                )}
+                {visiveis.map((p) => {
+                  const checked = selectedIds.has(p.user_id);
+                  return (
+                    <li key={p.user_id}>
+                      <label className="flex items-center gap-2 px-1 py-2 cursor-pointer hover:bg-muted/30 rounded-md">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggle(p.user_id)}
+                          className="h-4 w-4 accent-[#1a1557]"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold truncate">{p.nome ?? p.email}</p>
+                          <p className="text-[10px] text-muted-foreground truncate">
+                            {p.cidade ?? "—"}
+                            <span className={pushUserIds.has(p.user_id) ? "text-emerald-700" : "text-amber-700"}>
+                              {pushUserIds.has(p.user_id) ? " · push ativo" : " · sem push"}
+                            </span>
+                            {!p.telefone && <span className="text-amber-700"> · sem WhatsApp</span>}
+                          </p>
+                        </div>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           )}
-          {visiveis.map((p) => {
-            const checked = selectedIds.has(p.user_id);
-            return (
-              <li key={p.user_id}>
-                <label className="flex items-center gap-2 px-1 py-2 cursor-pointer hover:bg-muted/30 rounded-md">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => toggle(p.user_id)}
-                    className="h-4 w-4 accent-[#1a1557]"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold truncate">{p.nome ?? p.email}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">
-                      {p.cidade ?? "—"}
-                      <span className={pushUserIds.has(p.user_id) ? "text-emerald-700" : "text-amber-700"}>
-                        {pushUserIds.has(p.user_id) ? " · push ativo" : " · sem push"}
-                      </span>
-                      {!p.telefone && <span className="text-amber-700"> · sem WhatsApp</span>}
-                    </p>
-                  </div>
-                </label>
-              </li>
-            );
-          })}
-        </ul>
+
+          {incluiProfissionais && (
+            <div>
+              <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-1">
+                Profissionais ({profissionais.length})
+              </p>
+              <ul className="divide-y divide-border">
+                {profissionais.length === 0 && (
+                  <li className="text-xs text-muted-foreground py-2 text-center">
+                    Nenhum profissional ativo cadastrado.
+                  </li>
+                )}
+                {profissionais
+                  .filter((p) => {
+                    const q = busca.trim().toLowerCase();
+                    if (!q) return true;
+                    return (
+                      p.nome.toLowerCase().includes(q) ||
+                      (p.email ?? "").toLowerCase().includes(q) ||
+                      (p.especialidade ?? "").toLowerCase().includes(q)
+                    );
+                  })
+                  .map((p) => {
+                    const checked = selectedProfIds.has(p.user_id);
+                    return (
+                      <li key={p.user_id}>
+                        <label className="flex items-center gap-2 px-1 py-2 cursor-pointer hover:bg-muted/30 rounded-md">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleProf(p.user_id)}
+                            className="h-4 w-4 accent-[#1a1557]"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold truncate">{p.nome}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {p.especialidade ?? "—"}
+                              <span className={pushUserIds.has(p.user_id) ? "text-emerald-700" : "text-amber-700"}>
+                                {pushUserIds.has(p.user_id) ? " · push ativo" : " · sem push"}
+                              </span>
+                              {!p.telefone && <span className="text-amber-700"> · sem WhatsApp</span>}
+                            </p>
+                          </div>
+                        </label>
+                      </li>
+                    );
+                  })}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Coluna 3: Preview da notificação */}
@@ -435,7 +665,7 @@ function CampanhasView({ profiles, alerts }: Props) {
         </p>
         <p className="text-[10px] text-muted-foreground">
           Como aparecerá no celular de{" "}
-          <strong>{previewProfile?.nome ?? previewProfile?.email ?? "—"}</strong>
+          <strong>{previewNome}</strong>
         </p>
 
         {/* Mock de celular */}
@@ -480,9 +710,9 @@ function CampanhasView({ profiles, alerts }: Props) {
           </div>
         </div>
 
-        {!previewProfile && (
+        {!previewProfile && !previewProfText && (
           <p className="text-[11px] text-amber-700 text-center">
-            Selecione ao menos uma gestante para ver o preview personalizado.
+            Selecione ao menos um destinatário para ver o preview personalizado.
           </p>
         )}
       </div>
