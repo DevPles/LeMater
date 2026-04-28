@@ -13,6 +13,7 @@ type CreateInput = {
   senha: string;
   nome: string;
   cpf?: string;
+  foto_url?: string | null;
   // profissional
   especialidade?: string;
   registro?: string | null;
