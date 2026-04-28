@@ -9,8 +9,9 @@ import {
   ControlBar,
   RoomAudioRenderer,
   useTracks,
+  useParticipants,
 } from "@livekit/components-react";
-import { Track } from "livekit-client";
+import { Track, type RemoteAudioTrack, type LocalAudioTrack } from "livekit-client";
 import "@livekit/components-styles";
 import { useServerFn } from "@tanstack/react-start";
 import { gerarTokenSala } from "@/utils/livekit.functions";
@@ -63,6 +64,14 @@ function SalaPage() {
   const [wsUrl, setWsUrl] = useState<string | null>(null);
   const [meuUserId, setMeuUserId] = useState<string | null>(null);
   const [notasAbertas, setNotasAbertas] = useState(false);
+  const [savingRecording, setSavingRecording] = useState(false);
+  const recordingRef = useRef<{
+    recorder: MediaRecorder;
+    chunks: Blob[];
+    audioCtx: AudioContext;
+    mime: string;
+    startedAt: number;
+  } | null>(null);
 
   const tickRef = useRef<number | null>(null);
 
@@ -141,14 +150,62 @@ function SalaPage() {
     }
   }, []);
 
-  const sairESair = useCallback(() => {
+  const finalizarGravacao = useCallback(async () => {
+    const rec = recordingRef.current;
+    if (!rec || !slot) return;
+    recordingRef.current = null;
+    try {
+      const blob = await new Promise<Blob>((resolve) => {
+        rec.recorder.addEventListener(
+          "stop",
+          () => resolve(new Blob(rec.chunks, { type: rec.mime })),
+          { once: true },
+        );
+        if (rec.recorder.state !== "inactive") rec.recorder.stop();
+        else resolve(new Blob(rec.chunks, { type: rec.mime }));
+      });
+      try {
+        rec.audioCtx.close();
+      } catch {
+        // ignore
+      }
+      const ext = rec.mime.includes("mp4") ? "m4a" : "webm";
+      const durSeg = Math.floor((Date.now() - rec.startedAt) / 1000);
+      const path = `${slot.gestante_id ?? "sem-gestante"}/${slot.id}-${Date.now()}.${ext}`;
+      setSavingRecording(true);
+      const { error: upErr } = await supabase.storage
+        .from("consultation-recordings")
+        .upload(path, blob, { contentType: rec.mime, upsert: false });
+      if (upErr) {
+        console.error("upload gravação:", upErr);
+      } else {
+        await supabase
+          .from("appointment_slots")
+          .update({
+            recording_path: path,
+            recording_duration_seg: durSeg,
+            gravacao_finalizada_em: new Date().toISOString(),
+          })
+          .eq("id", slot.id);
+      }
+    } catch (e) {
+      console.error("finalizar gravação:", e);
+    } finally {
+      setSavingRecording(false);
+    }
+  }, [slot]);
+
+  const sairESair = useCallback(async () => {
     limpar();
+    if (recordingRef.current) {
+      await finalizarGravacao();
+    }
     setEmSala(false);
     setToken(null);
     setWsUrl(null);
     setTempo(0);
     navigate({ to: isProfDono ? "/profissional" : "/videochamada" });
-  }, [limpar, navigate, isProfDono]);
+  }, [limpar, navigate, isProfDono, finalizarGravacao]);
 
   const entrarSala = useCallback(async () => {
     if (!slot) return;
@@ -359,8 +416,28 @@ function SalaPage() {
               </div>
             </div>
             <RoomAudioRenderer />
+            {isProfDono && slot && (
+              <AudioRecordingController
+                slotId={slot.id}
+                onStart={(rec) => {
+                  recordingRef.current = rec;
+                }}
+                isActive={() => !!recordingRef.current}
+              />
+            )}
           </LiveKitRoom>
         </div>
+
+        {savingRecording && (
+          <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
+            <div className="bg-card rounded-2xl p-6 max-w-xs text-center shadow-xl">
+              <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="font-semibold text-foreground">Salvando consulta...</p>
+              <p className="text-xs text-muted-foreground mt-1">Não feche esta janela.</p>
+            </div>
+          </div>
+        )}
+
 
         {isProfDono &&
           notasAbertas &&
@@ -397,3 +474,103 @@ function VideoArea({ meuNome: _meuNome }: { meuNome: string }) {
     </GridLayout>
   );
 }
+
+type RecordingHandle = {
+  recorder: MediaRecorder;
+  chunks: Blob[];
+  audioCtx: AudioContext;
+  mime: string;
+  startedAt: number;
+};
+
+function pickAudioMime(): string {
+  const candidates = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/mpeg",
+  ];
+  for (const c of candidates) {
+    try {
+      if (
+        typeof MediaRecorder !== "undefined" &&
+        MediaRecorder.isTypeSupported(c)
+      ) {
+        return c;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return "audio/webm";
+}
+
+function AudioRecordingController({
+  slotId,
+  onStart,
+  isActive,
+}: {
+  slotId: string;
+  onStart: (rec: RecordingHandle) => void;
+  isActive: () => boolean;
+}) {
+  const participants = useParticipants();
+  const audioTracks = useTracks(
+    [{ source: Track.Source.Microphone, withPlaceholder: false }],
+    { onlySubscribed: true },
+  );
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    if (startedRef.current || isActive()) return;
+    if (participants.length < 2) return;
+
+    const mediaTracks: MediaStreamTrack[] = [];
+    for (const t of audioTracks) {
+      const pub = t.publication;
+      const track = pub?.track as
+        | RemoteAudioTrack
+        | LocalAudioTrack
+        | undefined;
+      const mst = track?.mediaStreamTrack;
+      if (mst && mst.kind === "audio") mediaTracks.push(mst);
+    }
+    if (mediaTracks.length < 2) return;
+
+    startedRef.current = true;
+    try {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
+      const audioCtx = new AudioCtx();
+      const dest = audioCtx.createMediaStreamDestination();
+      for (const mst of mediaTracks) {
+        const src = audioCtx.createMediaStreamSource(new MediaStream([mst]));
+        src.connect(dest);
+      }
+      const mime = pickAudioMime();
+      const recorder = new MediaRecorder(dest.stream, { mimeType: mime });
+      const chunks: Blob[] = [];
+      recorder.addEventListener("dataavailable", (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      });
+      recorder.start(1000);
+      const startedAt = Date.now();
+
+      void supabase
+        .from("appointment_slots")
+        .update({ gravacao_iniciada_em: new Date(startedAt).toISOString() })
+        .eq("id", slotId);
+
+      onStart({ recorder, chunks, audioCtx, mime, startedAt });
+    } catch (e) {
+      console.error("iniciar gravação áudio:", e);
+      startedRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [participants.length, audioTracks.length, slotId]);
+
+  return null;
+}
+
