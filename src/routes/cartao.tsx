@@ -487,7 +487,7 @@ function CartaoPage() {
         </div>
       )}
 
-      {tab === "resumo" && <ResumoTab medicoes={medicoes} vacinas={vacinas} exames={exames} vitals={vitals} />}
+      {tab === "resumo" && <ResumoTab medicoes={medicoes} vacinas={vacinas} exames={exames} vitals={vitals} historico={partosClassificacao} />}
       {tab === "lancamentos" && <LancamentosTab medicoes={medicoes} />}
       {tab === "vacinas" && <VacinasExamesTab vacinas={vacinas} exames={exames} />}
       {tab === "graficos" && <GraficosTab palette={palette} dum={patientInfo.dum} series={series} />}
