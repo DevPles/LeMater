@@ -512,7 +512,7 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
   vacinas: VacinaReal[];
   exames: ExameReal[];
   vitals: { label: string; value: string; change: string; color: string }[];
-  historico: { tipo?: string; ano?: number | null; observacao?: string | null; registrado_em?: string | null }[];
+  historico: { tipo?: string; ano?: number | null; observacao?: string | null; registrado_em?: string | null; valor?: any }[];
 }) {
   type FiltroTimeline = "geral" | "clinico" | "exame" | "vacina" | "historico";
   const [filtro, setFiltro] = useState<FiltroTimeline>("geral");
