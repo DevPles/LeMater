@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingMessage } from "@/components/LoadingMessage";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -90,7 +91,7 @@ function ResetPasswordPage() {
         </p>
 
         {!sessionReady ? (
-          <p className="text-white/70 text-center text-sm">Carregando...</p>
+          <LoadingMessage />
         ) : !hasRecovery ? (
           <div className="text-center">
             <p className="text-red-200 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 text-sm mb-4">

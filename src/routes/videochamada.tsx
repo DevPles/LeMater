@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
+import { LoadingMessage } from "@/components/LoadingMessage";
 
 const SALA_ANTECEDENCIA_MS = 15 * 60 * 1000;
 const SALA_TOLERANCIA_MS = 30 * 60 * 1000;
@@ -170,7 +171,7 @@ function AgendamentosPage() {
       )}
 
       {loading ? (
-        <p className="text-center text-sm text-muted-foreground py-12">Carregando...</p>
+        <LoadingMessage />
       ) : filtrados.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground py-12">
           {tab === "disponiveis" ? "Nenhum horário disponível no momento." : "Você ainda não reservou consultas."}

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
+import { LoadingMessage } from "@/components/LoadingMessage";
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
@@ -59,8 +60,8 @@ function PerfilPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
-        Carregando...
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingMessage />
       </div>
     );
   }

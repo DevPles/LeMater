@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import { GestanteDetalheModal } from "@/components/profissional/GestanteDetalheModal";
 import { ProntuarioConsultaModal } from "@/components/ProntuarioConsultaModal";
+import { LoadingMessage } from "@/components/LoadingMessage";
 
 export const Route = createFileRoute("/profissional")({
   head: () => ({
@@ -89,8 +90,8 @@ function ProfissionalPage() {
 
   if (!ready || !session) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
-        Carregando...
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingMessage />
       </div>
     );
   }
@@ -346,7 +347,7 @@ function Dashboard({ session }: { session: Session }) {
             </div>
           </div>
           {loading ? (
-            <p className="p-6 text-sm text-center text-muted-foreground">Carregando...</p>
+            <LoadingMessage />
           ) : filtered.length === 0 ? (
             <p className="p-6 text-sm text-center text-muted-foreground">Nenhum horário.</p>
           ) : (

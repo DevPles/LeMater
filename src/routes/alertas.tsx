@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
+import { LoadingMessage } from "@/components/LoadingMessage";
 import { supabase } from "@/integrations/supabase/client";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 
@@ -80,7 +81,7 @@ function AlertasPage() {
       </motion.div>
 
       {loading ? (
-        <p className="text-center text-sm text-muted-foreground py-12">Calculando alertas...</p>
+        <LoadingMessage text="Calculando alertas" />
       ) : alerts.length === 0 ? (
         <LiquidCard className="p-6 text-center">
           <h3 className="font-bold text-foreground">Tudo dentro do padrão</h3>
