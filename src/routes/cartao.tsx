@@ -600,7 +600,7 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
       return acc;
     }, []),
     ...vacinas.map<Item>(v => ({ id: v.id, data: v.data, titulo: `Vacina: ${v.vacina}`, tipo: "vacina", nota: v.observacao })),
-    ...exames.map<Item>(e => ({ id: e.id, data: e.data, titulo: `Exame: ${e.tipo_exame}`, tipo: "exame", nota: e.resultado })),
+    ...exames.map<Item>(e => ({ id: e.id, data: e.data, titulo: `${e.origem === "imagem" ? "Imagem" : "Exame"}: ${e.tipo_exame}`, tipo: "exame", nota: e.resultado, arquivo_path: e.arquivo_path ?? null, bucket: e.bucket })),
     ...historico.map<Item>((h, idx) => {
       const dt = h.registrado_em ? new Date(h.registrado_em) : (h.ano ? new Date(h.ano, 0, 1) : null);
       const dataStr = dt ? formatBR(dt) : (h.ano ? `01/01/${h.ano}` : "—");
