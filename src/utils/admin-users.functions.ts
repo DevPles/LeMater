@@ -73,6 +73,7 @@ export const createUserUnified = createServerFn({ method: "POST" })
           cpf: cpfDigits || null,
           dum: data.dum || null,
           telefone: data.telefone || null,
+          foto_url: data.foto_url || null,
         },
         { onConflict: "user_id" },
       );
