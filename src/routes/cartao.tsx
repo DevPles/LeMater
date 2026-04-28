@@ -40,9 +40,9 @@ function paletaPorSexo(sexo: string | null | undefined) {
     };
   }
   return {
-    primary: "#6d28d9",
-    primaryLight: "#ede9fe",
-    accent: "#a78bfa",
+    primary: "#1a1557",
+    primaryLight: "#e8e6f2",
+    accent: "#f0c040",
     label: "A descobrir",
   };
 }
