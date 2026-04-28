@@ -414,18 +414,55 @@ function CampanhasView({ profiles, alerts }: Props) {
           Configurar envio
         </p>
 
-        <div className="bg-muted/30 rounded-lg p-3 text-xs">
-          <strong>{destinatarias.length} de {filtered.length}</strong> gestantes selecionadas.
+        <div className="bg-muted/30 rounded-lg p-3 text-xs space-y-1">
+          {incluiGestantes && (
+            <p>
+              <strong>{destinatarias.length} de {filtered.length}</strong> gestantes selecionadas.
+            </p>
+          )}
+          {incluiProfissionais && (
+            <p>
+              <strong>{destinatariosProf.length} de {profissionais.length}</strong> profissionais selecionados.
+            </p>
+          )}
           {(canal === "push" || canal === "ambos") && (
-            <p className="text-muted-foreground mt-1">
+            <p className="text-muted-foreground">
               {selecionadasComPush} têm push ativo neste dispositivo.
             </p>
           )}
           {canal !== "push" && (
-            <p className="text-muted-foreground mt-1">
-              {destinatarias.filter((p) => p.telefone).length} têm WhatsApp.
+            <p className="text-muted-foreground">
+              {(incluiGestantes ? destinatarias.filter((p) => p.telefone).length : 0) +
+                (incluiProfissionais ? destinatariosProf.filter((p) => p.telefone).length : 0)}{" "}
+              têm WhatsApp.
             </p>
           )}
+        </div>
+
+        <div>
+          <label className="text-[11px] font-semibold uppercase text-muted-foreground">Público</label>
+          <div className="flex gap-2 mt-1 flex-wrap">
+            {(
+              [
+                { v: "gestantes", l: "Gestantes" },
+                { v: "profissionais", l: "Profissionais" },
+                { v: "ambos", l: "Ambos" },
+              ] as const
+            ).map((p) => (
+              <button
+                key={p.v}
+                type="button"
+                onClick={() => setPublico(p.v)}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold ${
+                  publico === p.v
+                    ? "bg-[#1a1557] text-white"
+                    : "bg-background border border-border text-muted-foreground"
+                }`}
+              >
+                {p.l}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>
@@ -470,22 +507,23 @@ function CampanhasView({ profiles, alerts }: Props) {
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm mt-1"
           />
           <p className="text-[10px] text-muted-foreground mt-1">
-            Variáveis: {`{{primeiro_nome}}, {{semanas}}, {{ubs}}, {{cidade}}, {{exame_pendente}}, {{vacina_pendente}}`}
+            Variáveis (gestantes): {`{{primeiro_nome}}, {{semanas}}, {{ubs}}, {{cidade}}, {{exame_pendente}}, {{vacina_pendente}}`}.
+            Para profissionais, variáveis ficam em branco.
           </p>
         </div>
 
         <button
           type="button"
           onClick={disparar}
-          disabled={enviando || destinatarias.length === 0}
+          disabled={enviando || totalSelecionados === 0}
           className="w-full px-4 py-2 rounded-full text-sm font-bold bg-[#f0c040] text-[#1a1557] hover:bg-[#e5b535] disabled:opacity-50"
         >
-          {enviando ? "Enviando..." : `Disparar para ${destinatarias.length} gestante(s)`}
+          {enviando ? "Enviando..." : `Disparar para ${totalSelecionados} destinatário(s)`}
         </button>
 
-        {(canal === "push" || canal === "ambos") && destinatarias.length > 0 && selecionadasComPush === 0 && (
+        {(canal === "push" || canal === "ambos") && totalSelecionados > 0 && selecionadasComPush === 0 && (
           <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">
-            Nenhuma gestante selecionada ativou push ainda. O disparo será registrado, mas aparecerá como sem dispositivo.
+            Nenhum dos selecionados ativou push ainda. O disparo será registrado, mas aparecerá como sem dispositivo.
           </p>
         )}
 
