@@ -684,6 +684,22 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
                 </div>
                 <h4 className="font-medium text-sm text-foreground">{t.titulo}</h4>
                 {t.nota && <p className="text-xs text-muted-foreground mt-1">{t.nota}</p>}
+                {t.arquivo_path && t.bucket && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const { data, error } = await supabase.storage.from(t.bucket!).createSignedUrl(t.arquivo_path!, 60 * 10);
+                      if (error || !data?.signedUrl) {
+                        alert("Não foi possível abrir o arquivo.");
+                        return;
+                      }
+                      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+                    }}
+                    className="mt-2 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-primary text-primary-foreground hover:opacity-90"
+                  >
+                    Ver exame
+                  </button>
+                )}
               </motion.div>
             );
           })}
