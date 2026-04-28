@@ -274,9 +274,11 @@ function Drawer({
       return;
     }
     setCarregandoAlertas(true);
-    supabase
-      .rpc("get_active_alerts", { _gestante_id: gestante.user_id })
-      .then(({ data, error }) => {
+    (async () => {
+      try {
+        const { data, error } = await supabase.rpc("get_active_alerts", {
+          _gestante_id: gestante.user_id,
+        });
         if (!ativo) return;
         if (!error && Array.isArray(data)) {
           setAlertasLocal(
@@ -286,10 +288,10 @@ function Drawer({
             })) as AdminAlert[],
           );
         }
-      })
-      .finally(() => {
+      } finally {
         if (ativo) setCarregandoAlertas(false);
-      });
+      }
+    })();
     return () => {
       ativo = false;
     };
