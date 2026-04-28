@@ -2,7 +2,15 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 
-type Tab = "med" | "exame" | "vacina";
+type Tab = "med" | "exame" | "vacina" | "historico";
+
+const HISTORICO_TIPOS: { value: string; label: string }[] = [
+  { value: "normal", label: "Parto normal" },
+  { value: "cesarea", label: "Parto cesárea" },
+  { value: "forceps", label: "Parto fórceps" },
+  { value: "aborto", label: "Aborto" },
+  { value: "nati_morto", label: "Natimorto" },
+];
 
 const PARAM_OPTIONS = [
   "Pressão arterial sistólica",
