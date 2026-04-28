@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
 import { GestanteDetalheModal } from "@/components/profissional/GestanteDetalheModal";
 import { ProntuarioConsultaModal } from "@/components/ProntuarioConsultaModal";
+import { LoadingMessage } from "@/components/LoadingMessage";
 
 export const Route = createFileRoute("/profissional")({
   head: () => ({
