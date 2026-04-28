@@ -1407,7 +1407,7 @@ async function gerarPDFCartao(args: {
 
   // IMC + Antecedentes em UMA UNICA LINHA lado a lado (otimiza espaco)
   let iy = 45;
-  const imcW = lW * 0.55;
+  const imcW = lW * 0.34;
   const antW = lW - imcW - 3;
 
   // IMC
@@ -1415,9 +1415,9 @@ async function gerarPDFCartao(args: {
   doc.setDrawColor(225, 225, 230);
   doc.roundedRect(lX, iy, imcW, 20, 2, 2, "FD");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(6.8);
+  doc.setFontSize(6.2);
   doc.setTextColor(...muted);
-  doc.text("IMC E GANHO DE PESO", lX + 3, iy + 4.5);
+  doc.text("IMC / GANHO", lX + 3, iy + 4.5);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(...dark);
@@ -1454,12 +1454,20 @@ async function gerarPDFCartao(args: {
   doc.text("ANTECEDENTES", antX + 3, iy + 4.5);
   const pcList = patientInfo.partosClassificacao ?? [];
   const countTipo = (t: string) => pcList.filter((p) => p.tipo === t).length;
+  const totalPN = countTipo("normal");
+  const totalPC = countTipo("cesarea");
+  const totalPF = countTipo("forceps");
+  const totalAB = countTipo("aborto");
+  const totalGest = Math.max(
+    patientInfo.gestacoes ?? 0,
+    totalPN + totalPC + totalPF + totalAB
+  );
   const obs = [
-    { l: "Gest", v: String(patientInfo.gestacoes ?? 0) },
-    { l: "Part", v: String(patientInfo.partos ?? 0) },
-    { l: "Normal", v: String(countTipo("normal")) },
-    { l: "Cesárea", v: String(countTipo("cesarea")) },
-    { l: "Abor", v: String(patientInfo.abortos ?? 0) },
+    { l: "GEST", v: String(totalGest) },
+    { l: "PN", v: String(totalPN) },
+    { l: "PC", v: String(totalPC) },
+    { l: "PF", v: String(totalPF) },
+    { l: "AB", v: String(totalAB) },
   ];
   const obsColW = antW / obs.length;
   obs.forEach((o, i) => {
@@ -1469,7 +1477,7 @@ async function gerarPDFCartao(args: {
     doc.setFontSize(11);
     doc.text(o.v, ox + obsColW / 2, iy + 13, { align: "center" });
     doc.setTextColor(...muted);
-    doc.setFont("helvetica", "normal");
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(5.6);
     doc.text(o.l, ox + obsColW / 2, iy + 17.5, { align: "center" });
   });
