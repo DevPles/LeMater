@@ -31,8 +31,6 @@ export const Route = createFileRoute("/admin")({
   component: AdminGate,
 });
 
-const ADMIN_KEY = "maedigital_admin_auth";
-
 function AdminGate() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
@@ -41,18 +39,6 @@ function AdminGate() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // 1) backdoor demo (sessionStorage)
-      const demo =
-        typeof window !== "undefined" &&
-        sessionStorage.getItem(ADMIN_KEY) === "1";
-      if (demo) {
-        if (!cancelled) {
-          setAuthed(true);
-          setReady(true);
-        }
-        return;
-      }
-      // 2) sessão Supabase com role admin
       const { data: sess } = await supabase.auth.getSession();
       const uid = sess.session?.user?.id;
       if (uid) {
@@ -62,7 +48,6 @@ function AdminGate() {
           .eq("user_id", uid);
         const isAdmin = (roles ?? []).some((r) => r.role === "admin");
         if (isAdmin) {
-          if (typeof window !== "undefined") sessionStorage.setItem(ADMIN_KEY, "1");
           if (!cancelled) {
             setAuthed(true);
             setReady(true);
@@ -116,7 +101,6 @@ function AdminShell() {
       active={section}
       onChange={setSection}
       onLogout={async () => {
-        sessionStorage.removeItem(ADMIN_KEY);
         await supabase.auth.signOut().catch(() => {});
         navigate({ to: "/" });
       }}
