@@ -386,39 +386,296 @@ function FormaVacina({ onSubmit }: { onSubmit: (f: FormData) => Promise<void> })
   );
 }
 
-function FormaHistorico({ onSubmit }: { onSubmit: (f: FormData) => Promise<void> }) {
+type EventoHist = Record<string, any>;
+
+const SN_OPTIONS = [
+  { value: "", label: "—" },
+  { value: "sim", label: "Sim" },
+  { value: "nao", label: "Não" },
+];
+
+const ANT_CLINICOS = [
+  { key: "diabetes", label: "Diabetes" },
+  { key: "infeccao_urinaria", label: "Infecção urinária" },
+  { key: "infertilidade", label: "Infertilidade" },
+  { key: "cardiopatia", label: "Cardiopatia" },
+  { key: "tromboembolismo", label: "Tromboembolismo" },
+  { key: "hipertensao", label: "Hipertensão arterial" },
+  { key: "criterios_pelvicos", label: "Critérios pélvicos uterinos" },
+  { key: "cirurgia", label: "Cirurgia" },
+];
+
+const ANT_FAMILIARES = [
+  { key: "diabetes", label: "Diabetes" },
+  { key: "hipertensao", label: "Hipertensão" },
+  { key: "gemelar", label: "Gemelar" },
+];
+
+const GEST_ATUAL = [
+  { key: "tabagismo", label: "Tabagismo" },
+  { key: "etilismo", label: "Etilismo" },
+  { key: "outras_drogas", label: "Outras drogas" },
+  { key: "violencia_domestica", label: "Violência doméstica" },
+  { key: "hiv", label: "HIV" },
+  { key: "sifilis", label: "Sífilis" },
+  { key: "toxoplasmose", label: "Toxoplasmose" },
+  { key: "infeccao_urinaria", label: "Infecção urinária" },
+  { key: "anemia", label: "Anemia" },
+  { key: "insuf_istimocervical", label: "Insuficiência istimocervical" },
+  { key: "ameaca_parto_prematuro", label: "Ameaça de parto prematuro" },
+  { key: "hemograma_1t", label: "Hemograma 1º Trimestre" },
+  { key: "hemograma_2t", label: "Hemograma 2º Trimestre" },
+  { key: "hemograma_3t", label: "Hemograma 3º Trimestre" },
+  { key: "isoimunizacao_rh", label: "Isoimunização Rh" },
+  { key: "oligo_polidramnio", label: "Oligo / polidrâmnio" },
+  { key: "rotura_prematura", label: "Rotura prematura das membranas" },
+  { key: "ciur", label: "Crescimento intrauterino restrito" },
+  { key: "febre", label: "Febre" },
+  { key: "hipertensao", label: "Hipertensão arterial" },
+  { key: "pre_eclampsia", label: "Pré-eclâmpsia" },
+  { key: "eclampsia", label: "Eclâmpsia" },
+  { key: "cardiopatia", label: "Cardiopatia" },
+  { key: "diabetes_gestacional", label: "Diabetes gestacional" },
+  { key: "uso_insulina", label: "Uso de insulina" },
+  { key: "exantema", label: "Exantema / rash cutâneo" },
+];
+
+type SubAba = "geral" | "gestacoes" | "ant_clinicos" | "ant_familiares" | "gest_atual";
+
+function FormaHistorico({ onSubmit }: { onSubmit: (eventos: EventoHist[]) => Promise<void> }) {
+  const [sub, setSub] = useState<SubAba>("geral");
+  const subs: { id: SubAba; label: string }[] = [
+    { id: "geral", label: "Dados" },
+    { id: "gestacoes", label: "Gestações" },
+    { id: "ant_clinicos", label: "Ant. clínicos" },
+    { id: "ant_familiares", label: "Ant. familiares" },
+    { id: "gest_atual", label: "Gestação atual" },
+  ];
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-1">
+        {subs.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => setSub(s.id)}
+            className={`text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full transition ${
+              sub === s.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+      {sub === "geral" && <SubGeral onSubmit={onSubmit} />}
+      {sub === "gestacoes" && <SubGestacoes onSubmit={onSubmit} />}
+      {sub === "ant_clinicos" && <SubChecklist categoria="ant_clinico" itens={ANT_CLINICOS} onSubmit={onSubmit} />}
+      {sub === "ant_familiares" && <SubChecklist categoria="ant_fam" itens={ANT_FAMILIARES} onSubmit={onSubmit} />}
+      {sub === "gest_atual" && <SubChecklist categoria="gest_atual" itens={GEST_ATUAL} onSubmit={onSubmit} />}
+    </div>
+  );
+}
+
+function SubGeral({ onSubmit }: { onSubmit: (e: EventoHist[]) => Promise<void> }) {
   const [busy, setBusy] = useState(false);
-  const [tipo, setTipo] = useState(HISTORICO_TIPOS[0].value);
   return (
     <form
       onSubmit={async (e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
-        fd.set("tipo", tipo);
+        const eventos: EventoHist[] = [];
+        const push = (tipo: string, valor: any) => {
+          if (valor !== "" && valor !== null && valor !== undefined) eventos.push({ tipo, valor });
+        };
+        push("risco", String(fd.get("risco") || ""));
+        push("peso_anterior", String(fd.get("peso_anterior") || ""));
+        push("altura", String(fd.get("altura") || ""));
+        push("imc_anterior", String(fd.get("imc_anterior") || ""));
+        push("dpp", String(fd.get("dpp") || ""));
+        push("dpp_eco", String(fd.get("dpp_eco") || ""));
+        push("tipo_gestacao", String(fd.get("tipo_gestacao") || ""));
+        const obs = String(fd.get("obs") || "").trim();
+        if (obs) eventos.push({ tipo: "anotacao", observacao: obs });
         setBusy(true);
-        await onSubmit(fd);
+        await onSubmit(eventos);
         setBusy(false);
         (e.currentTarget as HTMLFormElement).reset();
-        setTipo(HISTORICO_TIPOS[0].value);
       }}
       className="space-y-2"
     >
-      <Campo label="Tipo de evento">
-        <select value={tipo} onChange={(e) => setTipo(e.target.value)} className={inputClass}>
-          {HISTORICO_TIPOS.map((t) => (
-            <option key={t.value} value={t.value}>{t.label}</option>
-          ))}
+      <Campo label="Risco">
+        <select name="risco" className={inputClass} defaultValue="">
+          <option value="">—</option>
+          <option value="habitual">Risco habitual</option>
+          <option value="alto">Alto risco</option>
         </select>
       </Campo>
-      <Campo label="Ano (opcional)">
-        <input name="ano" type="number" min={1900} max={new Date().getFullYear()} placeholder="Ex.: 2022" className={inputClass} />
+      <div className="grid grid-cols-3 gap-2">
+        <Campo label="Peso anterior (kg)"><input name="peso_anterior" type="number" step="0.1" className={inputClass} /></Campo>
+        <Campo label="Altura (cm)"><input name="altura" type="number" step="0.1" className={inputClass} /></Campo>
+        <Campo label="IMC anterior"><input name="imc_anterior" type="number" step="0.01" className={inputClass} /></Campo>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <Campo label="DPP"><input name="dpp" type="date" className={inputClass} /></Campo>
+        <Campo label="DPP (eco)"><input name="dpp_eco" type="date" className={inputClass} /></Campo>
+      </div>
+      <Campo label="Tipo de gestação">
+        <select name="tipo_gestacao" className={inputClass} defaultValue="">
+          <option value="">—</option>
+          <option value="unico">Único</option>
+          <option value="gemelar">Gemelar</option>
+          <option value="tripla_ou_mais">Tripla ou mais</option>
+        </select>
       </Campo>
-      <Campo label="Observação (opcional)">
-        <input name="obs" className={inputClass} />
-      </Campo>
-      <button type="submit" disabled={busy} className={btnSalvar}>
-        {busy ? "Salvando..." : "Registrar histórico"}
-      </button>
+      <Campo label="Anotação (opcional)"><input name="obs" className={inputClass} /></Campo>
+      <button type="submit" disabled={busy} className={btnSalvar}>{busy ? "Salvando..." : "Registrar dados"}</button>
+    </form>
+  );
+}
+
+function SubGestacoes({ onSubmit }: { onSubmit: (e: EventoHist[]) => Promise<void> }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        const eventos: EventoHist[] = [];
+        const ano = String(fd.get("ano") || "").trim();
+        const anoNum = ano ? Number(ano) : undefined;
+
+        // Tipo de evento (parto / cesárea / aborto / fórceps / natimorto)
+        const tipoEv = String(fd.get("tipo_evento") || "");
+        if (tipoEv) {
+          const ev: EventoHist = { tipo: tipoEv };
+          if (anoNum) ev.ano = anoNum;
+          eventos.push(ev);
+        }
+        // Contadores
+        const num = (k: string) => {
+          const v = String(fd.get(k) || "").trim();
+          return v ? Number(v) : null;
+        };
+        const pushNum = (tipo: string, v: number | null) => {
+          if (v !== null && !Number.isNaN(v)) eventos.push({ tipo, valor: v, ...(anoNum ? { ano: anoNum } : {}) });
+        };
+        pushNum("gestas", num("gestas"));
+        pushNum("abortos", num("abortos"));
+        pushNum("parto_vaginal", num("parto_vaginal"));
+        pushNum("nascidos_vivos", num("nascidos_vivos"));
+        pushNum("vivem", num("vivem"));
+        pushNum("nascidos_mortos", num("nascidos_mortos"));
+        pushNum("cesareas", num("cesareas"));
+
+        // Flags S/N
+        const flag = (tipo: string, k: string) => {
+          const v = String(fd.get(k) || "");
+          if (v) eventos.push({ tipo, valor: v, ...(anoNum ? { ano: anoNum } : {}) });
+        };
+        flag("final_gest_anterior_1ano", "final_1ano");
+        flag("ectopica", "ectopica");
+        flag("tres_ou_mais_abortos", "tres_abortos");
+        flag("bebe_menor_2500", "bebe_2500");
+        flag("bebe_menor_4500", "bebe_4500");
+        flag("pre_eclampsia_previa", "pre_eclampsia");
+        flag("duas_cesareas_previas", "duas_cesareas");
+
+        const obs = String(fd.get("obs") || "").trim();
+        if (obs) eventos.push({ tipo: "anotacao_gest", observacao: obs, ...(anoNum ? { ano: anoNum } : {}) });
+
+        setBusy(true);
+        await onSubmit(eventos);
+        setBusy(false);
+        (e.currentTarget as HTMLFormElement).reset();
+      }}
+      className="space-y-2"
+    >
+      <div className="grid grid-cols-2 gap-2">
+        <Campo label="Tipo de evento">
+          <select name="tipo_evento" className={inputClass} defaultValue="">
+            <option value="">—</option>
+            {HISTORICO_TIPOS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+        </Campo>
+        <Campo label="Ano (opcional)">
+          <input name="ano" type="number" min={1900} max={new Date().getFullYear()} className={inputClass} />
+        </Campo>
+      </div>
+      <p className="text-[10px] uppercase font-bold text-muted-foreground pt-2">Contadores</p>
+      <div className="grid grid-cols-3 gap-2">
+        <Campo label="Gestas"><input name="gestas" type="number" min={0} className={inputClass} /></Campo>
+        <Campo label="Abortos"><input name="abortos" type="number" min={0} className={inputClass} /></Campo>
+        <Campo label="Parto vaginal"><input name="parto_vaginal" type="number" min={0} className={inputClass} /></Campo>
+        <Campo label="Cesáreas"><input name="cesareas" type="number" min={0} className={inputClass} /></Campo>
+        <Campo label="Nasc. vivos"><input name="nascidos_vivos" type="number" min={0} className={inputClass} /></Campo>
+        <Campo label="Vivem"><input name="vivem" type="number" min={0} className={inputClass} /></Campo>
+        <Campo label="Nasc. mortos"><input name="nascidos_mortos" type="number" min={0} className={inputClass} /></Campo>
+      </div>
+      <p className="text-[10px] uppercase font-bold text-muted-foreground pt-2">Sinais (S/N)</p>
+      <div className="grid grid-cols-2 gap-2">
+        {[
+          ["final_1ano", "Final gest. anterior há 1 ano"],
+          ["ectopica", "Ectópica"],
+          ["tres_abortos", "3 ou mais abortos"],
+          ["bebe_2500", "Bebê < 2.500g"],
+          ["bebe_4500", "Bebê < 4.500g"],
+          ["pre_eclampsia", "Pré-eclâmpsia"],
+          ["duas_cesareas", "2 cesáreas prévias"],
+        ].map(([k, l]) => (
+          <Campo key={k} label={l}>
+            <select name={k} className={inputClass} defaultValue="">
+              {SN_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </Campo>
+        ))}
+      </div>
+      <Campo label="Anotação (opcional)"><input name="obs" className={inputClass} /></Campo>
+      <button type="submit" disabled={busy} className={btnSalvar}>{busy ? "Salvando..." : "Registrar gestações"}</button>
+    </form>
+  );
+}
+
+function SubChecklist({
+  categoria,
+  itens,
+  onSubmit,
+}: {
+  categoria: string;
+  itens: { key: string; label: string }[];
+  onSubmit: (e: EventoHist[]) => Promise<void>;
+}) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        const eventos: EventoHist[] = [];
+        for (const it of itens) {
+          const v = String(fd.get(it.key) || "");
+          if (v) eventos.push({ tipo: `${categoria}:${it.key}`, valor: v });
+        }
+        const obs = String(fd.get("obs") || "").trim();
+        if (obs) eventos.push({ tipo: `${categoria}:anotacao`, observacao: obs });
+        setBusy(true);
+        await onSubmit(eventos);
+        setBusy(false);
+        (e.currentTarget as HTMLFormElement).reset();
+      }}
+      className="space-y-2"
+    >
+      <div className="grid grid-cols-1 gap-1.5 max-h-[40vh] overflow-y-auto pr-1">
+        {itens.map((it) => (
+          <div key={it.key} className="flex items-center justify-between gap-2 border-b border-border/50 py-1">
+            <span className="text-xs text-foreground flex-1">{it.label}</span>
+            <select name={it.key} defaultValue="" className="text-xs rounded-md border border-border bg-background px-2 py-1">
+              {SN_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+        ))}
+      </div>
+      <Campo label="Anotação (opcional)"><input name="obs" className={inputClass} /></Campo>
+      <button type="submit" disabled={busy} className={btnSalvar}>{busy ? "Salvando..." : "Registrar"}</button>
     </form>
   );
 }
