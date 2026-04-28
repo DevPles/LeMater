@@ -6,19 +6,11 @@ type State = "unsupported" | "denied" | "default" | "granted" | "loading";
 
 export function usePushSubscription() {
   const [state, setState] = useState<State>("loading");
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
-      setState("unsupported");
-      return;
-    }
-    setState(Notification.permission as State);
-  }, []);
+  const [registered, setRegistered] = useState(false);
 
   const enable = useCallback(async () => {
     if (typeof window === "undefined") return { ok: false, error: "SSR" };
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
       return { ok: false, error: "Navegador sem suporte a push." };
     }
 
@@ -26,9 +18,12 @@ export function usePushSubscription() {
       const reg = await navigator.serviceWorker.register("/sw.js");
       await navigator.serviceWorker.ready;
 
-      const permission = await Notification.requestPermission();
+      const permission = Notification.permission === "granted"
+        ? "granted"
+        : await Notification.requestPermission();
       setState(permission as State);
       if (permission !== "granted") {
+        setRegistered(false);
         return { ok: false, error: "Permissão negada." };
       }
 
@@ -57,13 +52,32 @@ export function usePushSubscription() {
           { onConflict: "user_id,endpoint" },
         );
 
-      if (error) return { ok: false, error: error.message };
+      if (error) {
+        setRegistered(false);
+        return { ok: false, error: error.message };
+      }
+      setRegistered(true);
       return { ok: true };
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Erro desconhecido";
+      setRegistered(false);
       return { ok: false, error: msg };
     }
   }, []);
 
-  return { state, enable };
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+      setState("unsupported");
+      return;
+    }
+
+    const permission = Notification.permission as State;
+    setState(permission);
+    if (permission === "granted") {
+      void enable();
+    }
+  }, [enable]);
+
+  return { state, registered, enable };
 }
