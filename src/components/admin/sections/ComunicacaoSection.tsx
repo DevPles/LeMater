@@ -98,6 +98,7 @@ function CampanhasView({ profiles, alerts }: Props) {
   );
   const [enviando, setEnviando] = useState(false);
   const [resultado, setResultado] = useState<string | null>(null);
+  const sendPushFn = useServerFn(sendPushCampaign);
 
   const preview = filtered[0]
     ? aplicarTemplate(msg, filtered[0], alertsByGestante.get(filtered[0].user_id) ?? [])
@@ -124,26 +125,60 @@ function CampanhasView({ profiles, alerts }: Props) {
       return;
     }
 
-    const deliveries = filtered.flatMap((p) => {
-      const canais: ("push" | "whatsapp")[] =
-        canal === "ambos" ? ["push", "whatsapp"] : [canal];
-      return canais
-        .filter((c) => c !== "whatsapp" || !!p.telefone)
-        .map((c) => ({
-          campaign_id: campaign.id,
-          gestante_id: p.user_id,
-          canal: c,
-          status: c === "push" ? "enviado" : "pendente",
-          enviado_em: c === "push" ? new Date().toISOString() : null,
-        }));
-    });
+    let pushSent = 0;
+    let pushFailed = 0;
+    let pushNoDevice = 0;
 
-    if (deliveries.length > 0) {
-      await supabase.from("notification_deliveries").insert(deliveries);
+    if (canal === "push" || canal === "ambos") {
+      try {
+        // Personaliza por gestante: faz envios em lote agrupados pelo mesmo texto
+        // Para simplificar, usamos a mensagem do template aplicada ao grupo todo,
+        // mas com substituição básica por gestante quando possível.
+        // Aqui agrupamos por texto único para reduzir chamadas.
+        const groups = new Map<string, string[]>();
+        filtered.forEach((p) => {
+          const corpo = aplicarTemplate(msg, p, alertsByGestante.get(p.user_id) ?? []);
+          const arr = groups.get(corpo) ?? [];
+          arr.push(p.user_id);
+          groups.set(corpo, arr);
+        });
+
+        for (const [corpo, userIds] of groups.entries()) {
+          const r = await sendPushFn({
+            data: {
+              campaignId: campaign.id,
+              title: titulo || "MãeDigital",
+              body: corpo,
+              url: "/home",
+              userIds,
+            },
+          });
+          pushSent += r.sent;
+          pushFailed += r.failed;
+          pushNoDevice += r.noDevice;
+        }
+      } catch (e) {
+        const m = e instanceof Error ? e.message : "erro";
+        setResultado(`Erro ao enviar push: ${m}`);
+        setEnviando(false);
+        return;
+      }
     }
 
-    // WhatsApp: abre uma aba por gestante
+    // WhatsApp: registra deliveries pendentes e abre uma aba por gestante
     if (canal === "whatsapp" || canal === "ambos") {
+      const wppRows = filtered
+        .filter((p) => !!p.telefone)
+        .map((p) => ({
+          campaign_id: campaign.id,
+          gestante_id: p.user_id,
+          canal: "whatsapp",
+          status: "pendente",
+          enviado_em: null,
+        }));
+      if (wppRows.length > 0) {
+        await supabase.from("notification_deliveries").insert(wppRows);
+      }
       filtered.forEach((p, idx) => {
         if (!p.telefone) return;
         setTimeout(() => {
@@ -153,7 +188,17 @@ function CampanhasView({ profiles, alerts }: Props) {
       });
     }
 
-    setResultado(`Campanha registrada para ${filtered.length} gestantes (${deliveries.length} entregas).`);
+    const partes: string[] = [];
+    if (canal === "push" || canal === "ambos") {
+      partes.push(
+        `Push: ${pushSent} enviados, ${pushFailed} falharam, ${pushNoDevice} sem dispositivo`,
+      );
+    }
+    if (canal === "whatsapp" || canal === "ambos") {
+      const com = filtered.filter((p) => p.telefone).length;
+      partes.push(`WhatsApp: ${com} aba(s) abertas`);
+    }
+    setResultado(`Campanha registrada para ${filtered.length} gestantes. ${partes.join(" · ")}`);
     setEnviando(false);
   };
 
