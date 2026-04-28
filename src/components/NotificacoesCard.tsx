@@ -9,9 +9,15 @@ export function NotificacoesCard() {
   if (state === "unsupported" || state === "loading") return null;
 
   const ativo = state === "granted" && registered;
+  const isEmbedded = typeof window !== "undefined" && window.self !== window.top;
 
   const handleEnable = async () => {
     setErro(null);
+    if (state === "denied" && isEmbedded) {
+      window.open(window.location.href, "_blank", "noopener,noreferrer");
+      setErro("Ative na aba que abriu, fora do preview.");
+      return;
+    }
     setAtivando(true);
     const r = await enable();
     setAtivando(false);
@@ -26,7 +32,9 @@ export function NotificacoesCard() {
           {ativo
             ? "Ativas neste dispositivo"
             : state === "denied"
-              ? "Bloqueadas no navegador"
+              ? isEmbedded
+                ? "Abra o app fora do preview"
+                : "Bloqueadas no navegador"
               : "Não ativadas"}
         </p>
         {erro && <p className="text-[11px] text-red-600 mt-1">{erro}</p>}
@@ -38,7 +46,7 @@ export function NotificacoesCard() {
           disabled={ativando}
           className="shrink-0 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 disabled:opacity-50 transition"
         >
-          {ativando ? "..." : state === "denied" ? "Sincronizar" : "Ativar"}
+          {ativando ? "..." : state === "denied" && isEmbedded ? "Abrir app" : state === "denied" ? "Tentar" : "Ativar"}
         </button>
       )}
     </div>
