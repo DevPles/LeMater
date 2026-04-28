@@ -86,7 +86,7 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
   const toggleGroup = (id: string) =>
     setOpenGroup((prev) => (prev === id ? "" : id));
 
-  const widthClass = collapsed ? "w-[72px]" : "w-72";
+  const widthClass = collapsed ? "w-[68px]" : "w-64";
 
   const handleSelect = (key: AdminSection) => {
     onChange(key);
@@ -94,62 +94,54 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f6f4ee] via-white to-[#efeae0] flex">
+    <div className="min-h-screen bg-[#faf8f3] flex">
       {/* Sidebar */}
       <aside
         className={cn(
           "fixed md:sticky top-0 left-0 h-screen z-40 flex-shrink-0 transition-all duration-300 flex flex-col text-white",
-          "bg-gradient-to-b from-[#1a1557] via-[#1d1762] to-[#0c0830]",
-          "shadow-[0_25px_60px_-15px_rgba(26,21,87,0.6)] border-r border-white/5",
-          "md:m-3 md:h-[calc(100vh-1.5rem)] md:rounded-3xl md:overflow-hidden",
-          "before:absolute before:inset-0 before:pointer-events-none before:bg-[radial-gradient(circle_at_top_right,rgba(240,192,64,0.18),transparent_55%)]",
+          "bg-[#1a1557] border-r border-white/5",
           widthClass,
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}
       >
-        {/* Glow accent */}
-        <div className="pointer-events-none absolute -top-24 -right-16 w-56 h-56 rounded-full bg-[#f0c040]/15 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 -left-16 w-56 h-56 rounded-full bg-[#3b2fbd]/30 blur-3xl" />
-
         {/* Header */}
-        <div className="relative px-4 py-5 border-b border-white/10 flex items-center justify-between gap-2 backdrop-blur-sm">
-          {!collapsed ? (
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#f0c040] to-[#c89020] flex items-center justify-center text-[#1a1557] font-extrabold text-sm shadow-[0_8px_20px_-6px_rgba(240,192,64,0.7)] ring-1 ring-white/20">
-                CD
-              </div>
-              <div className="min-w-0">
-                <p
-                  className="font-bold text-sm truncate tracking-tight leading-none"
-                  style={{ fontFamily: "'Playfair Display', serif" }}
-                >
-                  Cartão Digital
-                </p>
-                <p className="text-[10px] text-[#f0c040]/90 uppercase tracking-[0.18em] truncate font-semibold mt-1.5">
-                  Materno · Admin
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full flex justify-center">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#f0c040] to-[#c89020] flex items-center justify-center text-[#1a1557] font-extrabold text-sm shadow-[0_8px_20px_-6px_rgba(240,192,64,0.7)] ring-1 ring-white/20">
-                CD
-              </div>
+        <div className="relative px-4 py-5 border-b border-white/10 flex items-center gap-3 min-h-[72px]">
+          <div className="w-9 h-9 rounded-xl bg-[#f0c040] flex items-center justify-center text-[#1a1557] font-extrabold text-xs flex-shrink-0">
+            CD
+          </div>
+          {!collapsed && (
+            <div className="min-w-0 flex-1">
+              <p
+                className="font-bold text-sm truncate tracking-tight leading-none"
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
+                Cartão Digital
+              </p>
+              <p className="text-[10px] text-[#f0c040]/90 uppercase tracking-[0.18em] truncate font-semibold mt-1.5">
+                Materno · Admin
+              </p>
             </div>
           )}
-          <button
-            type="button"
-            onClick={() => setCollapsed((v) => !v)}
-            className="hidden md:flex items-center justify-center bg-white/10 hover:bg-[#f0c040] hover:text-[#1a1557] rounded-xl w-8 h-8 text-xs font-bold flex-shrink-0 transition-all shadow-md hover:shadow-[0_6px_14px_-4px_rgba(240,192,64,0.6)] ring-1 ring-white/10"
-            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
-            title={collapsed ? "Expandir menu" : "Recolher menu"}
-          >
-            {collapsed ? "»" : "«"}
-          </button>
         </div>
 
+        {/* Toggle button — flutuante na borda, sempre visível */}
+        <button
+          type="button"
+          onClick={() => setCollapsed((v) => !v)}
+          className={cn(
+            "hidden md:flex items-center justify-center absolute top-7 -right-3 z-50",
+            "w-7 h-7 rounded-full bg-[#f0c040] text-[#1a1557] text-sm font-bold",
+            "shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3)] ring-2 ring-[#1a1557]",
+            "hover:scale-110 transition-transform",
+          )}
+          aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+          title={collapsed ? "Expandir menu" : "Recolher menu"}
+        >
+          {collapsed ? "›" : "‹"}
+        </button>
+
         {/* Nav */}
-        <nav className="relative py-4 px-2.5 overflow-y-auto flex-1 space-y-1.5 scrollbar-thin">
+        <nav className="py-3 px-2 overflow-y-auto flex-1 space-y-0.5">
           {MENU.map((group) => {
             const isOpen = openGroup === group.id;
             const groupHasActive = group.items.some((i) => i.key === active);
@@ -157,7 +149,6 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
             const singleItem = group.items[0];
             const singleActive = isSingle && active === singleItem.key;
 
-            // Single-item groups render as a direct link
             if (isSingle) {
               return (
                 <button
@@ -166,23 +157,18 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                   onClick={() => handleSelect(singleItem.key)}
                   title={collapsed ? group.label : undefined}
                   className={cn(
-                    "w-full text-left transition-all flex items-center gap-3 rounded-xl group relative",
-                    collapsed ? "px-2 py-2.5 justify-center" : "px-3 py-2.5",
+                    "w-full text-left transition-colors flex items-center gap-3 rounded-lg",
+                    collapsed ? "px-2 py-2.5 justify-center" : "px-3 py-2",
                     singleActive
-                      ? "bg-gradient-to-r from-[#f0c040]/25 via-[#f0c040]/10 to-transparent text-[#f0c040] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_4px_14px_-6px_rgba(240,192,64,0.5)] ring-1 ring-[#f0c040]/30"
-                      : "text-white/80 hover:text-white hover:bg-white/8 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
+                      ? "bg-white/10 text-[#f0c040] font-medium"
+                      : "text-white/70 hover:text-white hover:bg-white/5",
                   )}
                 >
-                  {singleActive && !collapsed && (
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-r bg-[#f0c040] shadow-[0_0_10px_rgba(240,192,64,0.7)]" />
-                  )}
                   <span
                     className={cn(
-                      "flex items-center justify-center font-bold rounded-lg flex-shrink-0 transition-all",
-                      collapsed ? "w-9 h-9 text-xs" : "w-7 h-7 text-[10px]",
-                      singleActive
-                        ? "bg-gradient-to-br from-[#f0c040] to-[#c89020] text-[#1a1557] shadow-[0_4px_10px_-2px_rgba(240,192,64,0.6)]"
-                        : "bg-white/10 text-white/70 group-hover:bg-white/15",
+                      "flex items-center justify-center font-semibold rounded-md flex-shrink-0 text-[11px]",
+                      collapsed ? "w-8 h-8" : "w-6 h-6",
+                      singleActive ? "bg-[#f0c040] text-[#1a1557]" : "bg-white/10 text-white/70",
                     )}
                   >
                     {group.label.charAt(0)}
@@ -191,7 +177,7 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                     <>
                       <span className="truncate flex-1 text-sm">{group.label}</span>
                       {singleItem.badge && (
-                        <span className="text-[9px] bg-[#f0c040] text-[#1a1557] px-1.5 py-0.5 rounded-full font-bold shadow-sm">
+                        <span className="text-[9px] bg-[#f0c040] text-[#1a1557] px-1.5 py-0.5 rounded-full font-bold">
                           {singleItem.badge}
                         </span>
                       )}
@@ -204,43 +190,24 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
             return (
               <div key={group.id}>
                 {collapsed ? (
-                  <div className="px-1 my-2">
-                    <div
-                      className={cn(
-                        "h-px mx-2",
-                        groupHasActive ? "bg-[#f0c040]/50" : "bg-white/10",
-                      )}
-                    />
-                  </div>
+                  <div className="my-2 mx-2 h-px bg-white/10" />
                 ) : (
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.id)}
                     className={cn(
-                      "w-full flex items-center justify-between px-3 py-2.5 text-[11px] uppercase tracking-wider font-bold rounded-xl transition-all",
-                      groupHasActive
-                        ? "text-[#f0c040] bg-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
-                        : "text-white/55 hover:text-white hover:bg-white/5",
+                      "w-full flex items-center justify-between px-3 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-lg transition-colors",
+                      groupHasActive ? "text-[#f0c040]" : "text-white/50 hover:text-white",
                     )}
                   >
-                    <span className="flex items-center gap-2">
-                      <span
-                        className={cn(
-                          "w-1.5 h-1.5 rounded-full transition-all",
-                          groupHasActive
-                            ? "bg-[#f0c040] shadow-[0_0_8px_rgba(240,192,64,0.7)]"
-                            : "bg-white/25",
-                        )}
-                      />
-                      {group.label}
-                    </span>
+                    <span>{group.label}</span>
                     <span
                       className={cn(
-                        "text-[10px] transition-transform duration-300",
+                        "text-[10px] transition-transform duration-200",
                         isOpen ? "rotate-90" : "",
                       )}
                     >
-                      ▸
+                      ›
                     </span>
                   </button>
                 )}
@@ -250,7 +217,7 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                     className={cn(
                       collapsed
                         ? "space-y-1"
-                        : "pt-1.5 pb-2 pl-2 space-y-1 animate-in fade-in slide-in-from-top-1 duration-200",
+                        : "pt-0.5 pb-1 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-150",
                     )}
                   >
                     {group.items.map((it) => {
@@ -262,42 +229,27 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                           onClick={() => handleSelect(it.key)}
                           title={collapsed ? it.label : undefined}
                           className={cn(
-                            "w-full text-left text-sm transition-all flex items-center gap-2.5 rounded-xl relative",
-                            collapsed
-                              ? "px-2 py-2.5 justify-center mx-1"
-                              : "px-3 py-2 ml-1",
+                            "w-full text-left text-sm transition-colors flex items-center gap-2.5 rounded-lg",
+                            collapsed ? "px-2 py-2.5 justify-center mx-1" : "px-3 py-2 ml-3",
                             isActive
-                              ? "bg-gradient-to-r from-[#f0c040]/20 via-[#f0c040]/5 to-transparent text-[#f0c040] font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_4px_12px_-6px_rgba(240,192,64,0.4)] ring-1 ring-[#f0c040]/25"
-                              : "text-white/75 hover:text-white hover:bg-white/8",
+                              ? "bg-white/10 text-[#f0c040] font-medium"
+                              : "text-white/65 hover:text-white hover:bg-white/5",
                           )}
                         >
-                          {isActive && !collapsed && (
-                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r bg-[#f0c040] shadow-[0_0_8px_rgba(240,192,64,0.6)]" />
-                          )}
                           {collapsed ? (
                             <span
                               className={cn(
-                                "text-xs font-bold w-7 h-7 rounded-lg flex items-center justify-center",
-                                isActive
-                                  ? "bg-gradient-to-br from-[#f0c040] to-[#c89020] text-[#1a1557] shadow-md"
-                                  : "bg-white/10",
+                                "text-[11px] font-semibold w-7 h-7 rounded-md flex items-center justify-center",
+                                isActive ? "bg-[#f0c040] text-[#1a1557]" : "bg-white/10",
                               )}
                             >
                               {it.label.charAt(0)}
                             </span>
                           ) : (
                             <>
-                              <span
-                                className={cn(
-                                  "w-1 h-1 rounded-full flex-shrink-0 transition-all",
-                                  isActive
-                                    ? "bg-[#f0c040] shadow-[0_0_6px_rgba(240,192,64,0.7)]"
-                                    : "bg-white/25",
-                                )}
-                              />
                               <span className="truncate flex-1">{it.label}</span>
                               {it.badge && (
-                                <span className="text-[9px] bg-[#f0c040] text-[#1a1557] px-1.5 py-0.5 rounded-full font-bold shadow-sm">
+                                <span className="text-[9px] bg-[#f0c040] text-[#1a1557] px-1.5 py-0.5 rounded-full font-bold">
                                   {it.badge}
                                 </span>
                               )}
@@ -314,12 +266,12 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
         </nav>
 
         {/* Footer */}
-        <div className="relative p-3 border-t border-white/10 bg-gradient-to-t from-black/20 to-transparent">
+        <div className="p-3 border-t border-white/10">
           <button
             type="button"
             onClick={onLogout}
             className={cn(
-              "w-full text-xs bg-white/5 hover:bg-[#f0c040] hover:text-[#1a1557] border border-white/10 hover:border-[#f0c040] rounded-xl py-2.5 font-semibold transition-all shadow-md hover:shadow-[0_8px_20px_-6px_rgba(240,192,64,0.6)]",
+              "w-full text-xs bg-white/5 hover:bg-[#f0c040] hover:text-[#1a1557] border border-white/10 hover:border-[#f0c040] rounded-lg py-2 font-semibold transition-colors",
               collapsed && "px-0",
             )}
             title="Sair"
@@ -341,11 +293,11 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
 
       {/* Main */}
       <main className="flex-1 min-w-0 flex flex-col">
-        <div className="md:hidden bg-gradient-to-r from-[#1a1557] to-[#0f0b3d] text-white px-4 py-3 flex items-center justify-between sticky top-0 z-20 shadow-lg">
+        <div className="md:hidden bg-[#1a1557] text-white px-4 py-3 flex items-center justify-between sticky top-0 z-20">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="bg-white/10 hover:bg-[#f0c040] hover:text-[#1a1557] px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+            className="bg-white/10 hover:bg-[#f0c040] hover:text-[#1a1557] px-3 py-1.5 rounded-full text-xs font-bold transition-colors"
           >
             Menu
           </button>
