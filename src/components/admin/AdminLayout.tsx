@@ -48,19 +48,12 @@ const MENU: MenuGroup[] = [
   {
     id: "consultas",
     label: "Consultas",
-    items: [
-      { key: "consultas-todas", label: "Todas as consultas", badge: "NOVA" },
-      { key: "consultas-gravacoes", label: "Gravações" },
-    ],
+    items: [{ key: "consultas-todas", label: "Consultas" }],
   },
   {
     id: "config",
     label: "Configuração",
-    items: [
-      { key: "config-parametros", label: "Parâmetros clínicos" },
-      { key: "config-profissionais", label: "Profissionais" },
-      { key: "config-telas", label: "Conteúdo das telas" },
-    ],
+    items: [{ key: "config-parametros", label: "Configuração" }],
   },
 ];
 
