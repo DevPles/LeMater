@@ -156,3 +156,121 @@ async function sendWebPush(input: SendWebPushInput) {
     };
   }
 }
+
+async function createVapidToken(endpoint: string) {
+  const aud = new URL(endpoint).origin;
+  const exp = Math.floor(Date.now() / 1000) + 12 * 60 * 60;
+  const header = base64UrlEncode(new TextEncoder().encode(JSON.stringify({ typ: "JWT", alg: "ES256" })));
+  const body = base64UrlEncode(
+    new TextEncoder().encode(JSON.stringify({ aud, exp, sub: VAPID_SUBJECT })),
+  );
+  const publicKey = base64UrlDecode(VAPID_PUBLIC_KEY);
+  const key = await crypto.subtle.importKey(
+    "jwk",
+    {
+      kty: "EC",
+      crv: "P-256",
+      d: VAPID_PRIVATE_KEY,
+      x: base64UrlEncode(publicKey.slice(1, 33)),
+      y: base64UrlEncode(publicKey.slice(33, 65)),
+      ext: true,
+    },
+    { name: "ECDSA", namedCurve: "P-256" },
+    false,
+    ["sign"],
+  );
+  const signed = `${header}.${body}`;
+  const signature = await crypto.subtle.sign(
+    { name: "ECDSA", hash: "SHA-256" },
+    key,
+    new TextEncoder().encode(signed),
+  );
+  return `${signed}.${base64UrlEncode(new Uint8Array(signature))}`;
+}
+
+async function encryptPushPayload(payload: string, receiverPublicKey: string, receiverAuth: string) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const receiverPub = base64UrlDecode(receiverPublicKey);
+  const authSecret = base64UrlDecode(receiverAuth);
+  const receiverKey = await crypto.subtle.importKey(
+    "raw",
+    receiverPub,
+    { name: "ECDH", namedCurve: "P-256" },
+    false,
+    [],
+  );
+  const senderKeys = await crypto.subtle.generateKey(
+    { name: "ECDH", namedCurve: "P-256" },
+    true,
+    ["deriveBits"],
+  );
+  const sharedSecret = new Uint8Array(
+    await crypto.subtle.deriveBits({ name: "ECDH", public: receiverKey }, senderKeys.privateKey, 256),
+  );
+  const senderPub = new Uint8Array(await crypto.subtle.exportKey("raw", senderKeys.publicKey));
+  const keyInfo = concatBytes(
+    new TextEncoder().encode("WebPush: info\0"),
+    receiverPub,
+    senderPub,
+  );
+  const ikm = await hkdfExpand(await hmac(authSecret, sharedSecret), keyInfo, 32);
+  const prk = await hmac(salt, ikm);
+  const cek = await hkdfExpand(prk, new TextEncoder().encode("Content-Encoding: aes128gcm\0"), 16);
+  const nonce = await hkdfExpand(prk, new TextEncoder().encode("Content-Encoding: nonce\0"), 12);
+  const aesKey = await crypto.subtle.importKey("raw", cek, "AES-GCM", false, ["encrypt"]);
+  const plain = concatBytes(new TextEncoder().encode(payload), new Uint8Array([2]));
+  const cipher = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, aesKey, plain));
+  const recordSize = new Uint8Array([0, 0, 16, 0]);
+  return concatBytes(salt, recordSize, new Uint8Array([senderPub.length]), senderPub, cipher);
+}
+
+async function hmac(keyBytes: Uint8Array, data: Uint8Array) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyBytes,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  return new Uint8Array(await crypto.subtle.sign("HMAC", key, data));
+}
+
+async function hkdfExpand(prk: Uint8Array, info: Uint8Array, length: number) {
+  const blocks: Uint8Array[] = [];
+  let previous = new Uint8Array(0);
+  let generated = 0;
+  for (let counter = 1; generated < length; counter++) {
+    previous = await hmac(prk, concatBytes(previous, info, new Uint8Array([counter])));
+    blocks.push(previous);
+    generated += previous.length;
+  }
+  return concatBytes(...blocks).slice(0, length);
+}
+
+function base64UrlDecode(value: string) {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function base64UrlEncode(bytes: Uint8Array) {
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function concatBytes(...arrays: Uint8Array[]) {
+  const total = arrays.reduce((sum, arr) => sum + arr.length, 0);
+  const out = new Uint8Array(total);
+  let offset = 0;
+  arrays.forEach((arr) => {
+    out.set(arr, offset);
+    offset += arr.length;
+  });
+  return out;
+}
