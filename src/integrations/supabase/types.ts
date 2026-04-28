@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_managed_passwords: {
+        Row: {
+          password_plaintext: string
+          set_by: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          password_plaintext: string
+          set_by?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          password_plaintext?: string
+          set_by?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_content: {
         Row: {
           content: Json
