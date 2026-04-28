@@ -211,11 +211,15 @@ export type UnifiedUser = {
   email: string | null;
   nome: string | null;
   cpf: string | null;
+  telefone: string | null;
+  foto_url: string | null;
+  dum: string | null;
   roles: string[];
   professional: {
     id: string;
     especialidade: string;
     registro: string | null;
+    bio: string | null;
     ativo: boolean;
   } | null;
   password_plaintext: string | null;
