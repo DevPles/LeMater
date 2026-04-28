@@ -1407,7 +1407,7 @@ async function gerarPDFCartao(args: {
 
   // IMC + Antecedentes em UMA UNICA LINHA lado a lado (otimiza espaco)
   let iy = 45;
-  const imcW = lW * 0.55;
+  const imcW = lW * 0.34;
   const antW = lW - imcW - 3;
 
   // IMC
