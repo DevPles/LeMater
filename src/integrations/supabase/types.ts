@@ -181,6 +181,27 @@ export type Database = {
         }
         Relationships: []
       }
+      dismissed_alerts: {
+        Row: {
+          alert_id: string
+          dismissed_at: string
+          gestante_id: string
+          id: string
+        }
+        Insert: {
+          alert_id: string
+          dismissed_at?: string
+          gestante_id: string
+          id?: string
+        }
+        Update: {
+          alert_id?: string
+          dismissed_at?: string
+          gestante_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       districts: {
         Row: {
           cidade: string

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { LoadingMessage } from "@/components/LoadingMessage";
@@ -19,8 +19,8 @@ export const Route = createFileRoute("/alertas")({
 
 type Alerta = {
   id: string;
-  origem: string; // medicao | exame | vacina
-  severidade: string; // atencao | urgente
+  origem: string;
+  severidade: string;
   titulo: string;
   mensagem: string;
   data: string;
@@ -30,6 +30,7 @@ const origemLabel: Record<string, string> = {
   medicao: "Sinal clínico",
   exame: "Exame",
   vacina: "Vacina",
+  imagem: "Imagem",
 };
 
 const severidadeStyle: Record<string, { bg: string; dot: string; text: string; label: string }> = {
@@ -41,6 +42,8 @@ function AlertasPage() {
   const { session, loading: authLoading } = useGestanteProfile();
   const [alerts, setAlerts] = useState<Alerta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Alerta | null>(null);
+  const [dismissing, setDismissing] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -64,6 +67,23 @@ function AlertasPage() {
     };
   }, [authLoading, session?.user?.id]);
 
+  async function handleDismiss() {
+    if (!selected || !session?.user?.id) return;
+    setDismissing(true);
+    const alertId = selected.id;
+    const { error } = await supabase
+      .from("dismissed_alerts")
+      .insert({ gestante_id: session.user.id, alert_id: alertId });
+    if (error) {
+      console.error("dismiss alert:", error);
+      setDismissing(false);
+      return;
+    }
+    setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+    setSelected(null);
+    setDismissing(false);
+  }
+
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -76,7 +96,7 @@ function AlertasPage() {
           )}
         </div>
         <p className="text-sm text-muted-foreground mb-5">
-          Gerados automaticamente a partir dos seus dados clínicos, exames e calendário vacinal.
+          Gerados automaticamente a partir dos seus dados clínicos, exames e calendário vacinal. Toque em um alerta para marcá-lo como resolvido.
         </p>
       </motion.div>
 
@@ -98,9 +118,12 @@ function AlertasPage() {
                 key={a.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -50 }}
                 transition={{ delay: i * 0.05 }}
+                onClick={() => setSelected(a)}
+                className="cursor-pointer"
               >
-                <LiquidCard className="p-4">
+                <LiquidCard className="p-4 active:scale-[0.98] transition-transform">
                   <div className="flex gap-3">
                     <div className={`w-2 h-2 rounded-full ${sev.dot} mt-1.5 shrink-0`} />
                     <div className="flex-1">
@@ -125,6 +148,63 @@ function AlertasPage() {
           })}
         </div>
       )}
+
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !dismissing && setSelected(null)}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 50, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card rounded-2xl p-6 w-full max-w-md shadow-xl"
+            >
+              {(() => {
+                const sev = severidadeStyle[selected.severidade] ?? severidadeStyle.atencao;
+                return (
+                  <>
+                    <div className="flex items-center gap-2 mb-3 flex-wrap">
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${sev.bg} ${sev.text}`}>
+                        {sev.label}
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                        {origemLabel[selected.origem] ?? selected.origem}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-base text-foreground mb-2">{selected.titulo}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-2">{selected.mensagem}</p>
+                    <p className="text-xs text-muted-foreground mb-5">
+                      {new Date(selected.data).toLocaleDateString("pt-BR")}
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setSelected(null)}
+                        disabled={dismissing}
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground disabled:opacity-50"
+                      >
+                        Fechar
+                      </button>
+                      <button
+                        onClick={handleDismiss}
+                        disabled={dismissing}
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50"
+                      >
+                        {dismissing ? "Resolvendo..." : "Marcar como resolvido"}
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
