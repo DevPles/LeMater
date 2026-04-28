@@ -98,14 +98,56 @@ function CampanhasView({ profiles, alerts }: Props) {
   );
   const [enviando, setEnviando] = useState(false);
   const [resultado, setResultado] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [busca, setBusca] = useState("");
   const sendPushFn = useServerFn(sendPushCampaign);
 
-  const preview = filtered[0]
-    ? aplicarTemplate(msg, filtered[0], alertsByGestante.get(filtered[0].user_id) ?? [])
+  // Sempre que o recorte filtrado muda, restringe a seleção ao novo conjunto
+  useEffect(() => {
+    setSelectedIds((prev) => {
+      const allowed = new Set(filtered.map((p) => p.user_id));
+      const next = new Set<string>();
+      prev.forEach((id) => {
+        if (allowed.has(id)) next.add(id);
+      });
+      return next;
+    });
+  }, [filtered]);
+
+  const visiveis = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    if (!q) return filtered;
+    return filtered.filter((p) => {
+      const nome = (p.nome ?? "").toLowerCase();
+      const email = (p.email ?? "").toLowerCase();
+      const cidade = (p.cidade ?? "").toLowerCase();
+      return nome.includes(q) || email.includes(q) || cidade.includes(q);
+    });
+  }, [filtered, busca]);
+
+  const destinatarias = useMemo(
+    () => filtered.filter((p) => selectedIds.has(p.user_id)),
+    [filtered, selectedIds],
+  );
+
+  const previewProfile = destinatarias[0] ?? filtered[0];
+  const preview = previewProfile
+    ? aplicarTemplate(msg, previewProfile, alertsByGestante.get(previewProfile.user_id) ?? [])
     : msg;
 
+  const toggle = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const selecionarTodas = () => setSelectedIds(new Set(filtered.map((p) => p.user_id)));
+  const limparSelecao = () => setSelectedIds(new Set());
+
   const disparar = async () => {
-    if (filtered.length === 0) return;
+    if (destinatarias.length === 0) return;
     setEnviando(true);
     setResultado(null);
     const { data: campaign, error } = await supabase
