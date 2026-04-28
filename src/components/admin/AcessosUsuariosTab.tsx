@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   createUserUnified,
   resetUserPassword,
   deleteUser,
   listAllUsers,
+  updateUserUnified,
   type UnifiedUser,
 } from "@/utils/admin-users.functions";
 import { updateProfessional } from "@/utils/admin-professionals.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 const ADMIN_SECRET = "unaerp2026";
 
@@ -18,6 +20,26 @@ const tipoLabel: Record<Tipo, string> = {
   profissional: "Profissional",
   gestante: "Gestante",
 };
+
+const normalizeCpf = (v: string) => v.replace(/\D/g, "");
+const formatCpf = (v: string) => {
+  const d = normalizeCpf(v).slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+  if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+};
+
+async function uploadAvatar(file: File, userId: string): Promise<string> {
+  const ext = file.name.split(".").pop() || "jpg";
+  const path = `${userId}/${Date.now()}.${ext}`;
+  const { error } = await supabase.storage
+    .from("avatars")
+    .upload(path, file, { upsert: true, contentType: file.type });
+  if (error) throw new Error("Erro ao enviar foto: " + error.message);
+  const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+  return data.publicUrl;
+}
 
 export function AcessosUsuariosTab() {
   const [list, setList] = useState<UnifiedUser[]>([]);
@@ -37,19 +59,15 @@ export function AcessosUsuariosTab() {
     dum: "",
     telefone: "",
   });
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(null);
+  const fotoInputRef = useRef<HTMLInputElement>(null);
+
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [showSenhasIds, setShowSenhasIds] = useState<Set<string>>(new Set());
   const [resetUserId, setResetUserId] = useState<UnifiedUser | null>(null);
-
-  const normalizeCpf = (v: string) => v.replace(/\D/g, "");
-  const formatCpf = (v: string) => {
-    const d = normalizeCpf(v).slice(0, 11);
-    if (d.length <= 3) return d;
-    if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
-    if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
-    return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
-  };
+  const [editUser, setEditUser] = useState<UnifiedUser | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -68,6 +86,12 @@ export function AcessosUsuariosTab() {
     load();
   }, []);
 
+  const onPickFoto = (f: File | null) => {
+    setFotoFile(f);
+    if (fotoPreview) URL.revokeObjectURL(fotoPreview);
+    setFotoPreview(f ? URL.createObjectURL(f) : null);
+  };
+
   const handleCreate = async () => {
     setMsg(null);
     if (!form.email || !form.senha || !form.nome) {
@@ -85,7 +109,7 @@ export function AcessosUsuariosTab() {
     }
     setSaving(true);
     try {
-      await createUserUnified({
+      const created = await createUserUnified({
         data: {
           adminSecret: ADMIN_SECRET,
           tipo,
@@ -100,6 +124,24 @@ export function AcessosUsuariosTab() {
           telefone: tipo === "gestante" ? form.telefone || null : undefined,
         },
       });
+
+      // upload da foto após criar (precisa do userId)
+      if (fotoFile && created?.userId) {
+        try {
+          const url = await uploadAvatar(fotoFile, created.userId);
+          await updateUserUnified({
+            data: {
+              adminSecret: ADMIN_SECRET,
+              userId: created.userId,
+              foto_url: url,
+            },
+          });
+        } catch (err) {
+          console.error(err);
+          setMsg("Usuário criado, mas houve erro ao enviar foto: " + (err as Error).message);
+        }
+      }
+
       setMsg(`${tipoLabel[tipo]} cadastrado com sucesso.`);
       setForm({
         email: "",
@@ -112,6 +154,8 @@ export function AcessosUsuariosTab() {
         dum: "",
         telefone: "",
       });
+      onPickFoto(null);
+      if (fotoInputRef.current) fotoInputRef.current.value = "";
       await load();
     } catch (e) {
       setMsg("Erro: " + (e as Error).message);
@@ -216,6 +260,44 @@ export function AcessosUsuariosTab() {
               {tipoLabel[t]}
             </button>
           ))}
+        </div>
+
+        {/* Foto */}
+        <div className="flex items-center gap-4">
+          <div className="w-20 h-20 rounded-full bg-muted overflow-hidden flex items-center justify-center border border-border">
+            {fotoPreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={fotoPreview} alt="Pré-visualização" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-[10px] text-muted-foreground text-center px-1">
+                Sem foto
+              </span>
+            )}
+          </div>
+          <div className="flex-1">
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+              Foto de perfil (opcional)
+            </label>
+            <input
+              ref={fotoInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => onPickFoto(e.target.files?.[0] ?? null)}
+              className="text-xs"
+            />
+            {fotoFile && (
+              <button
+                type="button"
+                onClick={() => {
+                  onPickFoto(null);
+                  if (fotoInputRef.current) fotoInputRef.current.value = "";
+                }}
+                className="mt-1 text-[10px] font-semibold text-rose-700 hover:underline"
+              >
+                Remover foto selecionada
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-3">
@@ -352,74 +434,94 @@ export function AcessosUsuariosTab() {
                   key={u.user_id}
                   className="p-4 flex items-start justify-between gap-3 flex-wrap"
                 >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-sm text-foreground">
-                        {u.nome ?? "(sem nome)"}
-                      </p>
-                      <span
-                        className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${
-                          isAdmin
-                            ? "bg-[#1a1557] text-[#f0c040]"
-                            : isProf
-                              ? "bg-[#f0c040]/20 text-[#1a1557]"
-                              : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {tipoTxt}
-                      </span>
-                      {u.professional && (
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div className="w-12 h-12 rounded-full bg-muted overflow-hidden flex items-center justify-center border border-border shrink-0">
+                      {u.foto_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={u.foto_url} alt={u.nome ?? ""} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground">
+                          {(u.nome ?? "?").slice(0, 2).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold text-sm text-foreground">
+                          {u.nome ?? "(sem nome)"}
+                        </p>
                         <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                            u.professional.ativo
-                              ? "bg-green-100 text-green-700"
-                              : "bg-muted text-muted-foreground"
+                          className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${
+                            isAdmin
+                              ? "bg-[#1a1557] text-[#f0c040]"
+                              : isProf
+                                ? "bg-[#f0c040]/20 text-[#1a1557]"
+                                : "bg-muted text-muted-foreground"
                           }`}
                         >
-                          {u.professional.ativo ? "Ativo" : "Inativo"}
+                          {tipoTxt}
                         </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {u.email ?? "—"}
-                      {u.cpf && ` • CPF ${u.cpf}`}
-                      {u.professional &&
-                        ` • ${u.professional.especialidade}${u.professional.registro ? ` (${u.professional.registro})` : ""}`}
-                    </p>
-                    <div className="mt-2 flex items-center gap-2 flex-wrap">
-                      <span className="text-[11px] font-semibold text-muted-foreground">
-                        Senha:
-                      </span>
-                      {u.password_plaintext ? (
-                        <>
-                          <code className="text-[11px] bg-muted px-2 py-0.5 rounded font-mono">
-                            {senhaVisivel ? u.password_plaintext : "••••••••"}
-                          </code>
-                          <button
-                            type="button"
-                            onClick={() => toggleSenha(u.user_id)}
-                            className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+                        {u.professional && (
+                          <span
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                              u.professional.ativo
+                                ? "bg-green-100 text-green-700"
+                                : "bg-muted text-muted-foreground"
+                            }`}
                           >
-                            {senhaVisivel ? "ocultar" : "mostrar"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              navigator.clipboard.writeText(u.password_plaintext!)
-                            }
-                            className="text-[10px] font-semibold text-[#1a1557] hover:underline"
-                          >
-                            copiar
-                          </button>
-                        </>
-                      ) : (
-                        <span className="text-[11px] italic text-muted-foreground">
-                          definida pelo próprio usuário (não armazenada)
+                            {u.professional.ativo ? "Ativo" : "Inativo"}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {u.email ?? "—"}
+                        {u.cpf && ` • CPF ${u.cpf}`}
+                        {u.telefone && ` • ${u.telefone}`}
+                        {u.professional &&
+                          ` • ${u.professional.especialidade}${u.professional.registro ? ` (${u.professional.registro})` : ""}`}
+                      </p>
+                      <div className="mt-2 flex items-center gap-2 flex-wrap">
+                        <span className="text-[11px] font-semibold text-muted-foreground">
+                          Senha:
                         </span>
-                      )}
+                        {u.password_plaintext ? (
+                          <>
+                            <code className="text-[11px] bg-muted px-2 py-0.5 rounded font-mono">
+                              {senhaVisivel ? u.password_plaintext : "••••••••"}
+                            </code>
+                            <button
+                              type="button"
+                              onClick={() => toggleSenha(u.user_id)}
+                              className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+                            >
+                              {senhaVisivel ? "ocultar" : "mostrar"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                navigator.clipboard.writeText(u.password_plaintext!)
+                              }
+                              className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+                            >
+                              copiar
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-[11px] italic text-muted-foreground">
+                            definida pelo próprio usuário (não armazenada)
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => setEditUser(u)}
+                      className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#f0c040] text-[#1a1557] hover:bg-[#e6b730]"
+                    >
+                      Editar
+                    </button>
                     {u.professional && (
                       <button
                         type="button"
@@ -461,6 +563,17 @@ export function AcessosUsuariosTab() {
           onClose={() => setResetUserId(null)}
           onSaved={async () => {
             setResetUserId(null);
+            await load();
+          }}
+        />
+      )}
+
+      {editUser && (
+        <EditUserModal
+          user={editUser}
+          onClose={() => setEditUser(null)}
+          onSaved={async () => {
+            setEditUser(null);
             await load();
           }}
         />
@@ -541,6 +654,178 @@ function ResetPasswordModal({
             className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a] disabled:opacity-50"
           >
             {saving ? "Salvando..." : "Salvar nova senha"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditUserModal({
+  user,
+  onClose,
+  onSaved,
+}: {
+  user: UnifiedUser;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [nome, setNome] = useState(user.nome ?? "");
+  const [email, setEmail] = useState(user.email ?? "");
+  const [cpf, setCpf] = useState(user.cpf ? formatCpf(user.cpf) : "");
+  const [telefone, setTelefone] = useState(user.telefone ?? "");
+  const [dum, setDum] = useState(user.dum ?? "");
+  const [especialidade, setEspecialidade] = useState(user.professional?.especialidade ?? "");
+  const [registro, setRegistro] = useState(user.professional?.registro ?? "");
+  const [bio, setBio] = useState(user.professional?.bio ?? "");
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoPreview, setFotoPreview] = useState<string | null>(user.foto_url);
+  const [saving, setSaving] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  const onPick = (f: File | null) => {
+    setFotoFile(f);
+    if (f) {
+      const url = URL.createObjectURL(f);
+      setFotoPreview(url);
+    } else {
+      setFotoPreview(user.foto_url);
+    }
+  };
+
+  const salvar = async () => {
+    setErro(null);
+    const cpfDigits = normalizeCpf(cpf);
+    if (cpf && cpfDigits.length !== 11) {
+      setErro("CPF inválido. Informe os 11 dígitos ou deixe em branco.");
+      return;
+    }
+    setSaving(true);
+    try {
+      let fotoUrl: string | undefined = undefined;
+      if (fotoFile) {
+        fotoUrl = await uploadAvatar(fotoFile, user.user_id);
+      }
+      await updateUserUnified({
+        data: {
+          adminSecret: ADMIN_SECRET,
+          userId: user.user_id,
+          nome,
+          email,
+          cpf: cpfDigits,
+          telefone,
+          dum: dum || null,
+          foto_url: fotoUrl ?? undefined,
+          professionalId: user.professional?.id ?? null,
+          especialidade: user.professional ? especialidade : undefined,
+          registro: user.professional ? registro : undefined,
+          bio: user.professional ? bio : undefined,
+        },
+      });
+      onSaved();
+    } catch (e) {
+      setErro((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center p-4 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card w-full max-w-2xl rounded-2xl border border-border p-5 space-y-4 my-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div>
+          <h3 className="text-lg font-bold font-display text-foreground">Editar usuário</h3>
+          <p className="text-xs text-muted-foreground">
+            Atualize os dados de {user.nome ?? user.email}.
+          </p>
+        </div>
+
+        {/* Foto */}
+        <div className="flex items-center gap-4">
+          <div className="w-20 h-20 rounded-full bg-muted overflow-hidden flex items-center justify-center border border-border">
+            {fotoPreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={fotoPreview} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-[10px] text-muted-foreground">Sem foto</span>
+            )}
+          </div>
+          <div className="flex-1">
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+              Trocar foto
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+              className="text-xs"
+            />
+          </div>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-3">
+          <Input label="Nome completo" value={nome} onChange={setNome} />
+          <Input label="Email" value={email} onChange={setEmail} type="email" />
+          <Input
+            label="CPF"
+            value={cpf}
+            onChange={(v) => setCpf(formatCpf(v))}
+            placeholder="000.000.000-00"
+          />
+          <Input label="Telefone" value={telefone} onChange={setTelefone} />
+
+          {user.roles.includes("gestante") &&
+            !user.roles.includes("profissional") &&
+            !user.roles.includes("admin") && (
+              <Input label="DUM" value={dum} onChange={setDum} type="date" />
+            )}
+
+          {user.professional && (
+            <>
+              <Input label="Especialidade" value={especialidade} onChange={setEspecialidade} />
+              <Input label="Registro (CRM/COREN)" value={registro} onChange={setRegistro} />
+              <div className="sm:col-span-2">
+                <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+                  Bio / apresentação
+                </label>
+                <textarea
+                  rows={2}
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  className="w-full text-sm rounded-xl border border-border bg-background p-3"
+                />
+              </div>
+            </>
+          )}
+        </div>
+
+        {erro && (
+          <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 px-3 py-2 rounded-lg">
+            {erro}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-full text-xs font-bold bg-muted text-foreground hover:bg-muted/70"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={salvar}
+            disabled={saving}
+            className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a] disabled:opacity-50"
+          >
+            {saving ? "Salvando..." : "Salvar alterações"}
           </button>
         </div>
       </div>
