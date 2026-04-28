@@ -14,7 +14,7 @@ import { ProfissionaisTab } from "@/components/admin/ProfissionaisTab";
 import { ParametrosTab } from "@/components/admin/ParametrosTab";
 import { GravacoesTab } from "@/components/admin/GravacoesTab";
 import { ConsultasTab } from "@/components/admin/ConsultasTab";
-import { PushKeysTab } from "@/components/admin/PushKeysTab";
+
 
 import { RelatoriosEpidemiologicosTab } from "@/components/admin/RelatoriosEpidemiologicosTab";
 
