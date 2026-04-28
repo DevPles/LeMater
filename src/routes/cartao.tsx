@@ -996,6 +996,7 @@ async function gerarPDFCartao(args: {
     unidadeSaude?: string | null;
     gestacoes?: number | null; partos?: number | null; abortos?: number | null;
     fotoUrl?: string | null;
+    partosClassificacao?: { tipo?: string; ano?: number | null }[];
   };
   vitals: { label: string; value: string; change: string }[];
   medicoes: MedicaoReal[];
