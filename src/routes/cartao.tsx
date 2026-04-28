@@ -751,14 +751,14 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
       <div className="bg-card rounded-2xl p-3 shadow-sm border border-border">
         <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Filtrar período</p>
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-nowrap items-center gap-1">
           {filtros.map(f => {
             const ativo = periodo === f.key;
             return (
               <button
                 key={f.key}
                 onClick={() => { setPeriodo(f.key); setRange(undefined); }}
-                className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border"
+                className="px-2 py-1 rounded-full text-[9px] font-semibold transition-all border whitespace-nowrap shrink-0"
                 style={{
                   backgroundColor: ativo ? palette.primary : "transparent",
                   color: ativo ? "#fff" : palette.primary,
