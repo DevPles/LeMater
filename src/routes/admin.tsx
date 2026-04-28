@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { AdminFiltersProvider } from "@/contexts/AdminFiltersContext";
 import { AdminLayout, type AdminSection } from "@/components/admin/AdminLayout";
 import { AdminTopbarFilters } from "@/components/admin/AdminTopbarFilters";
@@ -38,12 +39,45 @@ function AdminGate() {
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const ok = sessionStorage.getItem(ADMIN_KEY) === "1";
-      setAuthed(ok);
-      setReady(true);
-      if (!ok) navigate({ to: "/" });
-    }
+    let cancelled = false;
+    (async () => {
+      // 1) backdoor demo (sessionStorage)
+      const demo =
+        typeof window !== "undefined" &&
+        sessionStorage.getItem(ADMIN_KEY) === "1";
+      if (demo) {
+        if (!cancelled) {
+          setAuthed(true);
+          setReady(true);
+        }
+        return;
+      }
+      // 2) sessão Supabase com role admin
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess.session?.user?.id;
+      if (uid) {
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", uid);
+        const isAdmin = (roles ?? []).some((r) => r.role === "admin");
+        if (isAdmin) {
+          if (typeof window !== "undefined") sessionStorage.setItem(ADMIN_KEY, "1");
+          if (!cancelled) {
+            setAuthed(true);
+            setReady(true);
+          }
+          return;
+        }
+      }
+      if (!cancelled) {
+        setReady(true);
+        navigate({ to: "/" });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [navigate]);
 
   if (!ready) return null;
@@ -65,7 +99,7 @@ function AdminGate() {
 function AdminShell() {
   const navigate = useNavigate();
   const [section, setSection] = useState<AdminSection>("visao");
-  const { profiles, alerts, loading } = useAdminData();
+  const { profiles, alerts, loading, reload } = useAdminData();
   const { filters } = useAdminFilters();
 
   const filtered = useMemo(() => applyFilters(profiles, alerts, filters), [profiles, alerts, filters]);
@@ -81,8 +115,9 @@ function AdminShell() {
     <AdminLayout
       active={section}
       onChange={setSection}
-      onLogout={() => {
+      onLogout={async () => {
         sessionStorage.removeItem(ADMIN_KEY);
+        await supabase.auth.signOut().catch(() => {});
         navigate({ to: "/" });
       }}
       topbar={
@@ -117,6 +152,7 @@ function AdminShell() {
           alerts={alerts}
           loading={loading}
           onAbrirComunicacao={() => setSection("comunicacao-campanhas")}
+          onReload={reload}
         />
       )}
       {isEpi && <RelatoriosEpidemiologicosTab />}
