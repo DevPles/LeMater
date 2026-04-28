@@ -124,6 +124,7 @@ function AdminShell() {
       {section === "config-parametros" && <ParametrosTab />}
       {section === "config-profissionais" && <ProfissionaisTab />}
       {section === "config-telas" && <TelasTab />}
+      {section === "config-push" && <PushKeysTab />}
       {section === "consultas-todas" && <ConsultasTab />}
       {section === "consultas-gravacoes" && <GravacoesTab />}
     </AdminLayout>
