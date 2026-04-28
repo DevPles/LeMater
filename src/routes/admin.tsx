@@ -151,6 +151,7 @@ function AdminShell() {
           alerts={alerts}
           loading={loading}
           onAbrirComunicacao={() => setSection("comunicacao-campanhas")}
+          onReload={reload}
         />
       )}
       {isEpi && <RelatoriosEpidemiologicosTab />}
