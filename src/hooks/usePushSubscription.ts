@@ -15,17 +15,29 @@ export function usePushSubscription() {
     }
 
     try {
-      const reg = await navigator.serviceWorker.register("/sw.js");
-      await navigator.serviceWorker.ready;
-
-      const permission = Notification.permission === "granted"
-        ? "granted"
-        : await Notification.requestPermission();
+      // CRÍTICO: requestPermission() precisa ser chamado SÍNCRONO no clique,
+      // sem await antes. Senão o navegador rejeita silenciosamente.
+      let permission: NotificationPermission = Notification.permission;
+      if (permission === "default") {
+        permission = await Notification.requestPermission();
+      }
       setState(permission as State);
+
+      if (permission === "denied") {
+        setRegistered(false);
+        return {
+          ok: false,
+          error:
+            "Notificações bloqueadas. Clique no cadeado ao lado da URL → Permissões do site → Notificações: Permitir, e recarregue a página.",
+        };
+      }
       if (permission !== "granted") {
         setRegistered(false);
-        return { ok: false, error: "Permissão negada." };
+        return { ok: false, error: "Permissão não concedida." };
       }
+
+      const reg = await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
 
       let sub = await reg.pushManager.getSubscription();
       if (!sub) {
