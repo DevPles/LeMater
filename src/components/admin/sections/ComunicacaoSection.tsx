@@ -78,6 +78,14 @@ export function ComunicacaoSection({ profiles, alerts }: Props) {
 }
 
 /* ================ CAMPANHAS ================ */
+type ProfRecipient = {
+  user_id: string;
+  nome: string;
+  email: string | null;
+  especialidade: string | null;
+  telefone: string | null;
+};
+
 function CampanhasView({ profiles, alerts }: Props) {
   const { filters } = useAdminFilters();
   const filtered = useMemo(() => applyFilters(profiles, alerts, filters), [profiles, alerts, filters]);
@@ -91,6 +99,7 @@ function CampanhasView({ profiles, alerts }: Props) {
     return m;
   }, [alerts]);
 
+  const [publico, setPublico] = useState<"gestantes" | "profissionais" | "ambos">("gestantes");
   const [canal, setCanal] = useState<"push" | "whatsapp" | "ambos">("ambos");
   const [titulo, setTitulo] = useState("MãeDigital — lembrete");
   const [msg, setMsg] = useState(
@@ -99,8 +108,10 @@ function CampanhasView({ profiles, alerts }: Props) {
   const [enviando, setEnviando] = useState(false);
   const [resultado, setResultado] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedProfIds, setSelectedProfIds] = useState<Set<string>>(new Set());
   const [busca, setBusca] = useState("");
   const [pushUserIds, setPushUserIds] = useState<Set<string>>(new Set());
+  const [profissionais, setProfissionais] = useState<ProfRecipient[]>([]);
   const sendPushFn = useServerFn(sendPushCampaign);
 
   useEffect(() => {
@@ -112,6 +123,40 @@ function CampanhasView({ profiles, alerts }: Props) {
         if (cancelled) return;
         setPushUserIds(new Set((data ?? []).map((row) => row.user_id)));
       });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Carrega profissionais ativos + dados do profile (telefone/email)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: profs } = await supabase
+        .from("professionals")
+        .select("user_id, nome, especialidade")
+        .eq("ativo", true);
+      if (!profs || profs.length === 0) {
+        if (!cancelled) setProfissionais([]);
+        return;
+      }
+      const ids = profs.map((p) => p.user_id);
+      const { data: profileRows } = await supabase
+        .from("profiles")
+        .select("user_id, email, telefone")
+        .in("user_id", ids);
+      const profileMap = new Map(
+        (profileRows ?? []).map((r) => [r.user_id, r] as const),
+      );
+      const merged: ProfRecipient[] = profs.map((p) => ({
+        user_id: p.user_id,
+        nome: p.nome,
+        especialidade: p.especialidade,
+        email: profileMap.get(p.user_id)?.email ?? null,
+        telefone: profileMap.get(p.user_id)?.telefone ?? null,
+      }));
+      if (!cancelled) setProfissionais(merged);
+    })();
     return () => {
       cancelled = true;
     };
