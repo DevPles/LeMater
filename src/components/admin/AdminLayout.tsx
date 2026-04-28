@@ -77,6 +77,7 @@ const MENU: MenuGroup[] = [
       { key: "config-parametros", label: "Parâmetros clínicos" },
       { key: "config-profissionais", label: "Profissionais" },
       { key: "config-telas", label: "Conteúdo das telas" },
+      { key: "config-push", label: "Chaves Push (VAPID)", badge: "NOVA" },
     ],
   },
 ];
