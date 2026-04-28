@@ -150,14 +150,62 @@ function SalaPage() {
     }
   }, []);
 
-  const sairESair = useCallback(() => {
+  const finalizarGravacao = useCallback(async () => {
+    const rec = recordingRef.current;
+    if (!rec || !slot) return;
+    recordingRef.current = null;
+    try {
+      const blob = await new Promise<Blob>((resolve) => {
+        rec.recorder.addEventListener(
+          "stop",
+          () => resolve(new Blob(rec.chunks, { type: rec.mime })),
+          { once: true },
+        );
+        if (rec.recorder.state !== "inactive") rec.recorder.stop();
+        else resolve(new Blob(rec.chunks, { type: rec.mime }));
+      });
+      try {
+        rec.audioCtx.close();
+      } catch {
+        // ignore
+      }
+      const ext = rec.mime.includes("mp4") ? "m4a" : "webm";
+      const durSeg = Math.floor((Date.now() - rec.startedAt) / 1000);
+      const path = `${slot.gestante_id ?? "sem-gestante"}/${slot.id}-${Date.now()}.${ext}`;
+      setSavingRecording(true);
+      const { error: upErr } = await supabase.storage
+        .from("consultation-recordings")
+        .upload(path, blob, { contentType: rec.mime, upsert: false });
+      if (upErr) {
+        console.error("upload gravação:", upErr);
+      } else {
+        await supabase
+          .from("appointment_slots")
+          .update({
+            recording_path: path,
+            recording_duration_seg: durSeg,
+            gravacao_finalizada_em: new Date().toISOString(),
+          })
+          .eq("id", slot.id);
+      }
+    } catch (e) {
+      console.error("finalizar gravação:", e);
+    } finally {
+      setSavingRecording(false);
+    }
+  }, [slot]);
+
+  const sairESair = useCallback(async () => {
     limpar();
+    if (recordingRef.current) {
+      await finalizarGravacao();
+    }
     setEmSala(false);
     setToken(null);
     setWsUrl(null);
     setTempo(0);
     navigate({ to: isProfDono ? "/profissional" : "/videochamada" });
-  }, [limpar, navigate, isProfDono]);
+  }, [limpar, navigate, isProfDono, finalizarGravacao]);
 
   const entrarSala = useCallback(async () => {
     if (!slot) return;
