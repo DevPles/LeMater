@@ -512,7 +512,7 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
   vacinas: VacinaReal[];
   exames: ExameReal[];
   vitals: { label: string; value: string; change: string; color: string }[];
-  historico: { tipo?: string; ano?: number | null; observacao?: string | null; registrado_em?: string | null }[];
+  historico: { tipo?: string; ano?: number | null; observacao?: string | null; registrado_em?: string | null; valor?: any }[];
 }) {
   type FiltroTimeline = "geral" | "clinico" | "exame" | "vacina" | "historico";
   const [filtro, setFiltro] = useState<FiltroTimeline>("geral");
@@ -521,14 +521,46 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
   type Item = { id: string; data: string; titulo: string; tipo: "clinico" | "vacina" | "exame" | "historico"; semana?: number; nota?: string };
 
   const labelHistorico = (t?: string) => {
-    switch (t) {
-      case "normal": return "Parto normal";
-      case "cesarea": return "Parto cesárea";
-      case "forceps": return "Parto fórceps";
-      case "aborto": return "Aborto";
-      case "nati_morto": return "Natimorto";
-      default: return t ?? "Evento";
-    }
+    if (!t) return "Evento";
+    const map: Record<string, string> = {
+      normal: "Parto normal",
+      cesarea: "Parto cesárea",
+      forceps: "Parto fórceps",
+      aborto: "Aborto",
+      nati_morto: "Natimorto",
+      risco: "Classificação de risco",
+      peso_anterior: "Peso anterior",
+      altura: "Altura",
+      imc_anterior: "IMC anterior",
+      dpp: "DPP",
+      dpp_eco: "DPP (eco)",
+      tipo_gestacao: "Tipo de gestação",
+      anotacao: "Anotação",
+      anotacao_gest: "Anotação (gestações)",
+      gestas: "Gestas",
+      abortos: "Abortos",
+      parto_vaginal: "Parto vaginal",
+      cesareas: "Cesáreas",
+      nascidos_vivos: "Nascidos vivos",
+      vivem: "Vivem",
+      nascidos_mortos: "Nascidos mortos",
+      final_gest_anterior_1ano: "Final gestação anterior há 1 ano",
+      ectopica: "Ectópica",
+      tres_ou_mais_abortos: "3 ou mais abortos",
+      bebe_menor_2500: "Bebê < 2.500g",
+      bebe_menor_4500: "Bebê < 4.500g",
+      pre_eclampsia_previa: "Pré-eclâmpsia prévia",
+      duas_cesareas_previas: "2 cesáreas prévias",
+    };
+    if (map[t]) return map[t];
+    if (t.startsWith("ant_clinico:")) return `Antec. clínico — ${humanizeKey(t.split(":")[1])}`;
+    if (t.startsWith("ant_fam:")) return `Antec. familiar — ${humanizeKey(t.split(":")[1])}`;
+    if (t.startsWith("gest_atual:")) return `Gestação atual — ${humanizeKey(t.split(":")[1])}`;
+    return t;
+  };
+  const humanizeKey = (k?: string) => {
+    if (!k) return "";
+    return k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
   const itens: Item[] = [
@@ -543,12 +575,18 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
     ...historico.map<Item>((h, idx) => {
       const dt = h.registrado_em ? new Date(h.registrado_em) : (h.ano ? new Date(h.ano, 0, 1) : null);
       const dataStr = dt ? formatBR(dt) : (h.ano ? `01/01/${h.ano}` : "—");
+      const partes: string[] = [];
+      if (h.valor !== undefined && h.valor !== null && h.valor !== "") {
+        const v = String(h.valor);
+        partes.push(v === "sim" ? "Sim" : v === "nao" ? "Não" : v);
+      }
+      if (h.observacao) partes.push(h.observacao);
       return {
         id: `hist-${idx}-${h.tipo ?? ""}-${h.ano ?? ""}`,
         data: dataStr,
         titulo: labelHistorico(h.tipo) + (h.ano ? ` (${h.ano})` : ""),
         tipo: "historico",
-        nota: h.observacao ?? undefined,
+        nota: partes.join(" — ") || undefined,
       };
     }),
   ].sort((a, b) => {
