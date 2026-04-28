@@ -751,14 +751,14 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
       <div className="bg-card rounded-2xl p-3 shadow-sm border border-border">
         <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Filtrar período</p>
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-nowrap items-center gap-1">
           {filtros.map(f => {
             const ativo = periodo === f.key;
             return (
               <button
                 key={f.key}
                 onClick={() => { setPeriodo(f.key); setRange(undefined); }}
-                className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all border"
+                className="px-2 py-1 rounded-full text-[9px] font-semibold transition-all border whitespace-nowrap shrink-0"
                 style={{
                   backgroundColor: ativo ? palette.primary : "transparent",
                   color: ativo ? "#fff" : palette.primary,
@@ -775,17 +775,17 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
                 onClick={() => setPeriodo("custom")}
                 aria-label="Selecionar período no calendário"
                 title="Calendário"
-                className="rounded-full text-[11px] font-semibold transition-all border inline-flex items-center justify-center gap-1.5"
+                className="rounded-full text-[9px] font-semibold transition-all border inline-flex items-center justify-center gap-1 shrink-0"
                 style={{
                   backgroundColor: calendarioAtivo ? palette.primary : "transparent",
                   color: calendarioAtivo ? "#fff" : palette.primary,
                   borderColor: palette.primary,
-                  width: labelCalendario ? "auto" : "30px",
-                  height: "30px",
-                  padding: labelCalendario ? "0 10px" : "0",
+                  width: labelCalendario ? "auto" : "24px",
+                  height: "24px",
+                  padding: labelCalendario ? "0 8px" : "0",
                 }}
               >
-                <CalendarIcon className="w-3.5 h-3.5" />
+                <CalendarIcon className="w-3 h-3" />
                 {labelCalendario}
               </button>
             </PopoverTrigger>
