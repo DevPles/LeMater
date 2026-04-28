@@ -15,7 +15,8 @@ export type AdminSection =
   | "consultas-gravacoes"
   | "config-parametros"
   | "config-profissionais"
-  | "config-telas";
+  | "config-telas"
+  | "config-push";
 
 type SubItem = {
   key: AdminSection;
