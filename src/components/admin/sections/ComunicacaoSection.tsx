@@ -710,9 +710,9 @@ function CampanhasView({ profiles, alerts }: Props) {
           </div>
         </div>
 
-        {!previewProfile && (
+        {!previewProfile && !previewProfText && (
           <p className="text-[11px] text-amber-700 text-center">
-            Selecione ao menos uma gestante para ver o preview personalizado.
+            Selecione ao menos um destinatário para ver o preview personalizado.
           </p>
         )}
       </div>
