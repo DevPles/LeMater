@@ -11,7 +11,7 @@ import { VisaoGeralSection } from "@/components/admin/sections/VisaoGeralSection
 import { GestantesSection } from "@/components/admin/sections/GestantesSection";
 import { ComunicacaoSection } from "@/components/admin/sections/ComunicacaoSection";
 import { TelasTab } from "@/components/admin/TelasTab";
-import { UsuariosTab } from "@/components/admin/UsuariosTab";
+import { AcessosUsuariosTab } from "@/components/admin/AcessosUsuariosTab";
 import { ParametrosTab } from "@/components/admin/ParametrosTab";
 import { GravacoesTab } from "@/components/admin/GravacoesTab";
 import { ConsultasTab } from "@/components/admin/ConsultasTab";
@@ -142,7 +142,7 @@ function AdminShell() {
       {isEpi && <RelatoriosEpidemiologicosTab />}
       {isComunicacao && <ComunicacaoSection profiles={profiles} alerts={alerts} />}
       {section === "config-parametros" && <ParametrosTab />}
-      {section === "config-profissionais" && <UsuariosTab />}
+      {section === "config-profissionais" && <AcessosUsuariosTab />}
       {section === "config-telas" && <TelasTab />}
       
       {section === "consultas-todas" && <ConsultasTab />}

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { AdminProfile } from "@/utils/admin-filters";
 
 const ADMIN_SECRET = "unaerp2026";
 
@@ -144,6 +145,44 @@ export const resetUserPassword = createServerFn({ method: "POST" })
     );
 
     return { success: true };
+  });
+
+export const listGestanteProfilesForAdmin = createServerFn({ method: "POST" })
+  .inputValidator((input: { adminSecret: string }) => input)
+  .handler(async ({ data }): Promise<{ profiles: AdminProfile[] }> => {
+    if (data.adminSecret !== ADMIN_SECRET) throw new Error("Não autorizado");
+
+    const { data: roles, error: rolesErr } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id, role");
+    if (rolesErr) throw new Error(rolesErr.message);
+
+    const rolesByUser = new Map<string, Set<string>>();
+    for (const r of roles ?? []) {
+      const set = rolesByUser.get(r.user_id) ?? new Set<string>();
+      set.add(r.role as string);
+      rolesByUser.set(r.user_id, set);
+    }
+
+    const gestanteIds = [...rolesByUser.entries()]
+      .filter(([, rolesSet]) =>
+        rolesSet.has("gestante") && !rolesSet.has("admin") && !rolesSet.has("profissional"),
+      )
+      .map(([userId]) => userId);
+
+    if (gestanteIds.length === 0) return { profiles: [] };
+
+    const { data: profiles, error: profilesErr } = await supabaseAdmin
+      .from("profiles")
+      .select(
+        "user_id, nome, email, telefone, cidade, bairro, unidade_saude, data_nascimento, dum, numero_gestacoes, numero_partos, numero_abortos",
+      )
+      .in("user_id", gestanteIds)
+      .order("nome", { ascending: true })
+      .limit(1000);
+    if (profilesErr) throw new Error(profilesErr.message);
+
+    return { profiles: (profiles ?? []) as AdminProfile[] };
   });
 
 type DeleteUserInput = {
