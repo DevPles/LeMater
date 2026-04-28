@@ -665,7 +665,7 @@ function CampanhasView({ profiles, alerts }: Props) {
         </p>
         <p className="text-[10px] text-muted-foreground">
           Como aparecerá no celular de{" "}
-          <strong>{previewProfile?.nome ?? previewProfile?.email ?? "—"}</strong>
+          <strong>{previewNome}</strong>
         </p>
 
         {/* Mock de celular */}
