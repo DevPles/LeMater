@@ -242,11 +242,14 @@ export const listAllUsers = createServerFn({ method: "POST" })
     const ids = users.map((u) => u.id);
 
     const [profilesRes, rolesRes, profsRes, pwdsRes] = await Promise.all([
-      supabaseAdmin.from("profiles").select("user_id, nome, email, cpf").in("user_id", ids),
+      supabaseAdmin
+        .from("profiles")
+        .select("user_id, nome, email, cpf, telefone, foto_url, dum")
+        .in("user_id", ids),
       supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", ids),
       supabaseAdmin
         .from("professionals")
-        .select("id, user_id, especialidade, registro, ativo")
+        .select("id, user_id, especialidade, registro, bio, ativo")
         .in("user_id", ids),
       supabaseAdmin
         .from("admin_managed_passwords")
