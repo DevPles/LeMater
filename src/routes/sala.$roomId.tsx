@@ -64,6 +64,14 @@ function SalaPage() {
   const [wsUrl, setWsUrl] = useState<string | null>(null);
   const [meuUserId, setMeuUserId] = useState<string | null>(null);
   const [notasAbertas, setNotasAbertas] = useState(false);
+  const [savingRecording, setSavingRecording] = useState(false);
+  const recordingRef = useRef<{
+    recorder: MediaRecorder;
+    chunks: Blob[];
+    audioCtx: AudioContext;
+    mime: string;
+    startedAt: number;
+  } | null>(null);
 
   const tickRef = useRef<number | null>(null);
 
