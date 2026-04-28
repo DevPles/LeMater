@@ -437,7 +437,7 @@ function SalaPage() {
             </div>
           </div>
         )}
-        </div>
+
 
         {isProfDono &&
           notasAbertas &&
