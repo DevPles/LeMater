@@ -158,7 +158,7 @@ export function BabySize({ week }: { week: number }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 p-0 md:p-4"
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 p-0 md:p-4 pb-28 md:pb-4"
             onClick={() => setAberto(false)}
           >
             <motion.div
