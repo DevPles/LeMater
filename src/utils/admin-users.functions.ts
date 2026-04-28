@@ -334,7 +334,14 @@ export const updateUserUnified = createServerFn({ method: "POST" })
     }
 
     // Profile patch
-    const profilePatch: Record<string, unknown> = {};
+    const profilePatch: {
+      nome?: string;
+      email?: string;
+      cpf?: string | null;
+      telefone?: string | null;
+      foto_url?: string | null;
+      dum?: string | null;
+    } = {};
     if (data.nome !== undefined) profilePatch.nome = data.nome;
     if (data.email !== undefined) profilePatch.email = data.email;
     if (cpfDigits !== undefined) profilePatch.cpf = cpfDigits || null;
@@ -360,7 +367,13 @@ export const updateUserUnified = createServerFn({ method: "POST" })
 
     // Professional patch
     if (data.professionalId) {
-      const profPatch: Record<string, unknown> = {};
+      const profPatch: {
+        nome?: string;
+        especialidade?: string;
+        registro?: string | null;
+        bio?: string | null;
+        ativo?: boolean;
+      } = {};
       if (data.nome !== undefined) profPatch.nome = data.nome;
       if (data.especialidade !== undefined && data.especialidade !== null)
         profPatch.especialidade = data.especialidade;
