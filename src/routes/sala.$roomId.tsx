@@ -416,7 +416,27 @@ function SalaPage() {
               </div>
             </div>
             <RoomAudioRenderer />
+            {isProfDono && slot && (
+              <AudioRecordingController
+                slotId={slot.id}
+                onStart={(rec) => {
+                  recordingRef.current = rec;
+                }}
+                isActive={() => !!recordingRef.current}
+              />
+            )}
           </LiveKitRoom>
+        </div>
+
+        {savingRecording && (
+          <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
+            <div className="bg-card rounded-2xl p-6 max-w-xs text-center shadow-xl">
+              <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="font-semibold text-foreground">Salvando consulta...</p>
+              <p className="text-xs text-muted-foreground mt-1">Não feche esta janela.</p>
+            </div>
+          </div>
+        )}
         </div>
 
         {isProfDono &&
