@@ -127,20 +127,11 @@ export function LancamentoModal({
     }
   }
 
-  async function salvarHistorico(form: FormData) {
-    const tipo = String(form.get("tipo") || "").trim();
-    const anoStr = String(form.get("ano") || "").trim();
-    const observacao = String(form.get("obs") || "").trim();
-    if (!tipo) {
-      flash("err", "Selecione o tipo de evento.");
+  async function salvarHistoricoEventos(eventos: Record<string, any>[]) {
+    if (!eventos.length) {
+      flash("err", "Preencha ao menos um campo.");
       return;
     }
-    const ano = anoStr ? Number(anoStr) : null;
-    if (anoStr && (Number.isNaN(ano!) || ano! < 1900 || ano! > new Date().getFullYear())) {
-      flash("err", "Ano inválido.");
-      return;
-    }
-
     const { data: prof, error: errLoad } = await supabase
       .from("profiles")
       .select("partos_classificacao, numero_partos, numero_abortos, numero_gestacoes")
@@ -152,16 +143,18 @@ export function LancamentoModal({
       return;
     }
     const atual = Array.isArray(prof?.partos_classificacao) ? (prof!.partos_classificacao as any[]) : [];
-    const novoItem: Record<string, any> = { tipo };
-    if (ano !== null) novoItem.ano = ano;
-    if (observacao) novoItem.observacao = observacao;
-    novoItem.registrado_em = new Date().toISOString();
+    const stamped = eventos.map((e) => ({ registrado_em: new Date().toISOString(), ...e }));
+    const novaLista = [...atual, ...stamped];
 
-    const novaLista = [...atual, novoItem];
-    const ehParto = tipo === "normal" || tipo === "cesarea" || tipo === "forceps";
-    const ehAborto = tipo === "aborto";
-    const novoPartos = (prof?.numero_partos ?? 0) + (ehParto ? 1 : 0);
-    const novoAbortos = (prof?.numero_abortos ?? 0) + (ehAborto ? 1 : 0);
+    let addPartos = 0;
+    let addAbortos = 0;
+    for (const e of eventos) {
+      const t = String(e.tipo || "");
+      if (t === "normal" || t === "cesarea" || t === "forceps") addPartos++;
+      if (t === "aborto") addAbortos++;
+    }
+    const novoPartos = (prof?.numero_partos ?? 0) + addPartos;
+    const novoAbortos = (prof?.numero_abortos ?? 0) + addAbortos;
     const novoGest = Math.max(prof?.numero_gestacoes ?? 0, novoPartos + novoAbortos);
 
     const { error } = await supabase
@@ -177,7 +170,7 @@ export function LancamentoModal({
       console.error(error);
       flash("err", "Falha ao salvar histórico.");
     } else {
-      flash("ok", "Histórico registrado.");
+      flash("ok", `Histórico registrado (${eventos.length}).`);
       onSaved?.();
     }
   }
