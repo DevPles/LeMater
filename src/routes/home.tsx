@@ -2,7 +2,6 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { WeekProgress } from "@/components/WeekProgress";
 import { BabySize } from "@/components/BabySize";
 import { QuickActions } from "@/components/QuickActions";
-import { PushOptInBanner } from "@/components/PushOptInBanner";
 import { TipCard } from "@/components/TipCard";
 import { UserAvatar } from "@/components/UserAvatar";
 import { FlyingStork } from "@/components/FlyingStork";
@@ -94,7 +93,6 @@ function HomePage() {
         </motion.div>
 
         <div className="space-y-5">
-          <PushOptInBanner />
           <WeekProgress currentWeek={currentWeek} />
           <BabySize week={currentWeek} />
           <QuickActions />
