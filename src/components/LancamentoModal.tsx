@@ -253,6 +253,7 @@ export function LancamentoModal({
               {tab === "med" && <FormaMedicao onSubmit={salvarMedicao} semanaAtual={semanaAtual} />}
               {tab === "exame" && <FormaExame onSubmit={salvarExame} />}
               {tab === "vacina" && <FormaVacina onSubmit={salvarVacina} />}
+              {tab === "historico" && <FormaHistorico onSubmit={salvarHistorico} />}
             </div>
           </motion.div>
         </motion.div>
