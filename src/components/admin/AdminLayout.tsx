@@ -97,42 +97,48 @@ const findLabel = (key: AdminSection) =>
 export function AdminLayout({ active, onChange, topbar, children, onLogout }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    MENU.forEach((g) => {
-      initial[g.id] = g.id === findGroup(active);
-    });
-    return initial;
-  });
+  // Accordion: apenas um grupo aberto por vez
+  const [openGroup, setOpenGroup] = useState<string>(() => findGroup(active));
 
   const toggleGroup = (id: string) =>
-    setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
+    setOpenGroup((prev) => (prev === id ? "" : id));
 
-  const widthClass = collapsed ? "w-16" : "w-64";
+  const widthClass = collapsed ? "w-[68px]" : "w-64";
 
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed md:sticky top-0 left-0 h-screen z-40 bg-[#1a1557] text-white flex-shrink-0 transition-all duration-200 flex flex-col",
+          "fixed md:sticky top-0 left-0 h-screen z-40 flex-shrink-0 transition-all duration-300 flex flex-col text-white",
+          "bg-gradient-to-b from-[#1a1557] via-[#211b6b] to-[#0f0b3d]",
+          "shadow-2xl shadow-[#1a1557]/40 border-r border-white/5",
           widthClass,
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}
       >
-        <div className="px-3 py-4 border-b border-white/10 flex items-center justify-between gap-2">
-          {!collapsed && (
+        {/* Header */}
+        <div className="px-4 py-5 border-b border-white/10 flex items-center justify-between gap-2">
+          {!collapsed ? (
             <div className="min-w-0">
-              <p className="font-bold text-sm truncate">Cartão Digital Materno</p>
-              <p className="text-[10px] text-white/60 uppercase tracking-wide truncate">
-                Painel administrativo
+              <p className="font-bold text-sm truncate tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Cartão Digital
               </p>
+              <p className="text-[10px] text-[#f0c040]/80 uppercase tracking-[0.15em] truncate font-semibold mt-0.5">
+                Materno · Admin
+              </p>
+            </div>
+          ) : (
+            <div className="w-full flex justify-center">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#f0c040] to-[#d4a020] flex items-center justify-center text-[#1a1557] font-bold text-sm shadow-lg">
+                CD
+              </div>
             </div>
           )}
           <button
             type="button"
             onClick={() => setCollapsed((v) => !v)}
-            className="hidden md:flex items-center justify-center bg-white/10 hover:bg-white/20 rounded w-7 h-7 text-xs font-bold flex-shrink-0"
+            className="hidden md:flex items-center justify-center bg-white/10 hover:bg-[#f0c040]/20 hover:text-[#f0c040] rounded-lg w-7 h-7 text-xs font-bold flex-shrink-0 transition-colors"
             aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
             title={collapsed ? "Expandir menu" : "Recolher menu"}
           >
@@ -140,35 +146,56 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
           </button>
         </div>
 
-        <nav className="py-2 overflow-y-auto flex-1">
+        {/* Nav */}
+        <nav className="py-3 px-2 overflow-y-auto flex-1 space-y-1 scrollbar-thin">
           {MENU.map((group) => {
-            const isOpen = openGroups[group.id] ?? false;
+            const isOpen = openGroup === group.id;
             const groupHasActive = group.items.some((i) => i.key === active);
             return (
-              <div key={group.id} className="mb-1">
+              <div key={group.id}>
                 {collapsed ? (
-                  <p
-                    className="px-2 text-[9px] uppercase tracking-wide text-white/40 font-bold mt-3 mb-1 text-center"
-                    title={group.label}
-                  >
-                    {group.label.slice(0, 3)}
-                  </p>
+                  <div className="px-1 mb-1">
+                    <div
+                      className={cn(
+                        "h-px mx-2 my-2",
+                        groupHasActive ? "bg-[#f0c040]/40" : "bg-white/10",
+                      )}
+                    />
+                  </div>
                 ) : (
                   <button
                     type="button"
                     onClick={() => toggleGroup(group.id)}
                     className={cn(
-                      "w-full flex items-center justify-between px-4 py-2 text-[11px] uppercase tracking-wide font-bold transition-colors",
-                      groupHasActive ? "text-[#f0c040]" : "text-white/60 hover:text-white",
+                      "w-full flex items-center justify-between px-3 py-2.5 text-[11px] uppercase tracking-wider font-bold rounded-lg transition-all",
+                      groupHasActive
+                        ? "text-[#f0c040] bg-white/5"
+                        : "text-white/55 hover:text-white hover:bg-white/5",
                     )}
                   >
-                    <span>{group.label}</span>
-                    <span className="text-[10px]">{isOpen ? "▾" : "▸"}</span>
+                    <span className="flex items-center gap-2">
+                      {groupHasActive && (
+                        <span className="w-1 h-1 rounded-full bg-[#f0c040]" />
+                      )}
+                      {group.label}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[10px] transition-transform duration-200",
+                        isOpen ? "rotate-90" : "",
+                      )}
+                    >
+                      ▸
+                    </span>
                   </button>
                 )}
 
                 {(collapsed || isOpen) && (
-                  <div className={collapsed ? "" : "pb-1"}>
+                  <div
+                    className={cn(
+                      collapsed ? "space-y-1" : "pt-1 pb-2 pl-2 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-200",
+                    )}
+                  >
                     {group.items.map((it) => {
                       const isActive = active === it.key;
                       return (
@@ -181,26 +208,35 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                           }}
                           title={collapsed ? it.label : undefined}
                           className={cn(
-                            "w-full text-left text-sm transition-colors flex items-center gap-2",
+                            "w-full text-left text-sm transition-all flex items-center gap-2 rounded-lg",
                             collapsed
-                              ? "px-2 py-2 justify-center"
-                              : "px-6 py-2 border-l-2",
+                              ? "px-2 py-2.5 justify-center mx-1"
+                              : "px-3 py-2 ml-1",
                             isActive
-                              ? collapsed
-                                ? "bg-white/15 font-bold"
-                                : "bg-white/15 border-[#f0c040] font-bold text-white"
-                              : collapsed
-                                ? "hover:bg-white/5"
-                                : "border-transparent hover:bg-white/5 text-white/85",
+                              ? "bg-gradient-to-r from-[#f0c040]/20 to-[#f0c040]/5 text-[#f0c040] font-semibold shadow-inner border border-[#f0c040]/20"
+                              : "text-white/75 hover:text-white hover:bg-white/8",
                           )}
                         >
                           {collapsed ? (
-                            <span className="text-xs font-bold">
+                            <span
+                              className={cn(
+                                "text-xs font-bold w-7 h-7 rounded-md flex items-center justify-center",
+                                isActive
+                                  ? "bg-[#f0c040] text-[#1a1557]"
+                                  : "bg-white/10",
+                              )}
+                            >
                               {it.label.charAt(0)}
                             </span>
                           ) : (
                             <>
-                              <span className="truncate">{it.label}</span>
+                              <span
+                                className={cn(
+                                  "w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors",
+                                  isActive ? "bg-[#f0c040]" : "bg-white/20",
+                                )}
+                              />
+                              <span className="truncate flex-1">{it.label}</span>
                               {it.badge && (
                                 <span className="text-[9px] bg-[#f0c040] text-[#1a1557] px-1.5 py-0.5 rounded-full font-bold">
                                   {it.badge}
@@ -218,17 +254,18 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
           })}
         </nav>
 
-        <div className="p-2 border-t border-white/10">
+        {/* Footer */}
+        <div className="p-3 border-t border-white/10">
           <button
             type="button"
             onClick={onLogout}
             className={cn(
-              "w-full text-xs bg-white/10 hover:bg-white/20 rounded-full py-1.5 font-semibold",
+              "w-full text-xs bg-white/5 hover:bg-[#f0c040] hover:text-[#1a1557] border border-white/10 hover:border-[#f0c040] rounded-xl py-2 font-semibold transition-all",
               collapsed && "px-0",
             )}
             title="Sair"
           >
-            {collapsed ? "⎋" : "Sair"}
+            {collapsed ? "⎋" : "Sair da conta"}
           </button>
         </div>
       </aside>
