@@ -385,7 +385,7 @@ function SalaPage() {
         </div>
       </header>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         <div className="flex-1 bg-black overflow-hidden">
           <LiveKitRoom
             token={token}
