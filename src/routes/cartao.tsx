@@ -775,14 +775,14 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
                 onClick={() => setPeriodo("custom")}
                 aria-label="Selecionar período no calendário"
                 title="Calendário"
-                className="rounded-full text-[11px] font-semibold transition-all border inline-flex items-center justify-center gap-1.5"
+                className="rounded-full text-[9px] font-semibold transition-all border inline-flex items-center justify-center gap-1 shrink-0"
                 style={{
                   backgroundColor: calendarioAtivo ? palette.primary : "transparent",
                   color: calendarioAtivo ? "#fff" : palette.primary,
                   borderColor: palette.primary,
-                  width: labelCalendario ? "auto" : "30px",
-                  height: "30px",
-                  padding: labelCalendario ? "0 10px" : "0",
+                  width: labelCalendario ? "auto" : "24px",
+                  height: "24px",
+                  padding: labelCalendario ? "0 8px" : "0",
                 }}
               >
                 <CalendarIcon className="w-3.5 h-3.5" />
