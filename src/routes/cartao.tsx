@@ -1415,9 +1415,9 @@ async function gerarPDFCartao(args: {
   doc.setDrawColor(225, 225, 230);
   doc.roundedRect(lX, iy, imcW, 20, 2, 2, "FD");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(6.8);
+  doc.setFontSize(6.2);
   doc.setTextColor(...muted);
-  doc.text("IMC E GANHO DE PESO", lX + 3, iy + 4.5);
+  doc.text("IMC / GANHO", lX + 3, iy + 4.5);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(...dark);
