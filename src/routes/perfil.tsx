@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import { LoadingMessage } from "@/components/LoadingMessage";
+import { NotificacoesCard } from "@/components/NotificacoesCard";
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
@@ -526,6 +527,15 @@ function PerfilPage() {
             {saving ? "Salvando..." : "Salvar alterações"}
           </button>
         </form>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="mt-4"
+      >
+        <NotificacoesCard />
       </motion.div>
     </div>
   );
