@@ -547,7 +547,7 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
   const [filtro, setFiltro] = useState<FiltroTimeline>("geral");
 
   // Linha do tempo unificada
-  type Item = { id: string; data: string; titulo: string; tipo: "clinico" | "vacina" | "exame" | "historico"; semana?: number; nota?: string };
+  type Item = { id: string; data: string; titulo: string; tipo: "clinico" | "vacina" | "exame" | "historico"; semana?: number; nota?: string; arquivo_path?: string | null; bucket?: "exam-attachments" | "image-exams" };
 
   const labelHistorico = (t?: string) => {
     if (!t) return "Evento";
