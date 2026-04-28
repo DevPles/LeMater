@@ -158,7 +158,7 @@ export function BabySize({ week }: { week: number }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 p-0 md:p-4"
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 p-0 md:p-4 pb-28 md:pb-4"
             onClick={() => setAberto(false)}
           >
             <motion.div
@@ -166,7 +166,7 @@ export function BabySize({ week }: { week: number }) {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 60, opacity: 0 }}
               transition={{ type: "spring", damping: 26, stiffness: 260 }}
-              className="bg-card w-full md:max-w-md rounded-t-3xl md:rounded-3xl max-h-[88vh] overflow-y-auto border border-border shadow-2xl"
+              className="bg-card w-full md:max-w-md rounded-3xl md:rounded-3xl max-h-[75vh] overflow-y-auto border border-border shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="sticky top-0 bg-card border-b border-border p-4 flex items-start justify-between gap-3 z-10">
