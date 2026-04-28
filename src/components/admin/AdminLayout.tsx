@@ -277,6 +277,11 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                         </button>
                       );
                     })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </nav>
 
         {/* Footer */}
