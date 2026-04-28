@@ -354,6 +354,10 @@ function CartaoPage() {
     ? `${window.location.origin}/cartao?u=${ownerUserId ?? ""}`
     : "";
 
+  const partosClassificacao: { tipo?: string; ano?: number | null }[] = Array.isArray(profile?.partos_classificacao)
+    ? (profile.partos_classificacao as any[])
+    : [];
+
   const exportarPDF = async () => {
     await gerarPDFCartao({
       patientInfo: {
@@ -367,6 +371,7 @@ function CartaoPage() {
         partos: profile?.numero_partos ?? null,
         abortos: profile?.numero_abortos ?? null,
         fotoUrl: profile?.foto_url ?? null,
+        partosClassificacao,
       },
       vitals,
       medicoes,
