@@ -269,17 +269,22 @@ export const listAllUsers = createServerFn({ method: "POST" })
 
     const result: UnifiedUser[] = users.map((u) => {
       const prof = profMap.get(u.id);
+      const profile = profileMap.get(u.id);
       return {
         user_id: u.id,
-        email: u.email ?? profileMap.get(u.id)?.email ?? null,
-        nome: profileMap.get(u.id)?.nome ?? (u.user_metadata?.nome as string) ?? null,
-        cpf: profileMap.get(u.id)?.cpf ?? null,
+        email: u.email ?? profile?.email ?? null,
+        nome: profile?.nome ?? (u.user_metadata?.nome as string) ?? null,
+        cpf: profile?.cpf ?? null,
+        telefone: profile?.telefone ?? null,
+        foto_url: profile?.foto_url ?? null,
+        dum: profile?.dum ?? null,
         roles: roleMap.get(u.id) ?? [],
         professional: prof
           ? {
               id: prof.id,
               especialidade: prof.especialidade,
               registro: prof.registro,
+              bio: prof.bio,
               ativo: prof.ativo,
             }
           : null,
