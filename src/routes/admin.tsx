@@ -39,12 +39,45 @@ function AdminGate() {
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const ok = sessionStorage.getItem(ADMIN_KEY) === "1";
-      setAuthed(ok);
-      setReady(true);
-      if (!ok) navigate({ to: "/" });
-    }
+    let cancelled = false;
+    (async () => {
+      // 1) backdoor demo (sessionStorage)
+      const demo =
+        typeof window !== "undefined" &&
+        sessionStorage.getItem(ADMIN_KEY) === "1";
+      if (demo) {
+        if (!cancelled) {
+          setAuthed(true);
+          setReady(true);
+        }
+        return;
+      }
+      // 2) sessão Supabase com role admin
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess.session?.user?.id;
+      if (uid) {
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", uid);
+        const isAdmin = (roles ?? []).some((r) => r.role === "admin");
+        if (isAdmin) {
+          if (typeof window !== "undefined") sessionStorage.setItem(ADMIN_KEY, "1");
+          if (!cancelled) {
+            setAuthed(true);
+            setReady(true);
+          }
+          return;
+        }
+      }
+      if (!cancelled) {
+        setReady(true);
+        navigate({ to: "/" });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [navigate]);
 
   if (!ready) return null;
