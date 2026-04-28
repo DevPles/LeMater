@@ -98,14 +98,56 @@ function CampanhasView({ profiles, alerts }: Props) {
   );
   const [enviando, setEnviando] = useState(false);
   const [resultado, setResultado] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [busca, setBusca] = useState("");
   const sendPushFn = useServerFn(sendPushCampaign);
 
-  const preview = filtered[0]
-    ? aplicarTemplate(msg, filtered[0], alertsByGestante.get(filtered[0].user_id) ?? [])
+  // Sempre que o recorte filtrado muda, restringe a seleção ao novo conjunto
+  useEffect(() => {
+    setSelectedIds((prev) => {
+      const allowed = new Set(filtered.map((p) => p.user_id));
+      const next = new Set<string>();
+      prev.forEach((id) => {
+        if (allowed.has(id)) next.add(id);
+      });
+      return next;
+    });
+  }, [filtered]);
+
+  const visiveis = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    if (!q) return filtered;
+    return filtered.filter((p) => {
+      const nome = (p.nome ?? "").toLowerCase();
+      const email = (p.email ?? "").toLowerCase();
+      const cidade = (p.cidade ?? "").toLowerCase();
+      return nome.includes(q) || email.includes(q) || cidade.includes(q);
+    });
+  }, [filtered, busca]);
+
+  const destinatarias = useMemo(
+    () => filtered.filter((p) => selectedIds.has(p.user_id)),
+    [filtered, selectedIds],
+  );
+
+  const previewProfile = destinatarias[0] ?? filtered[0];
+  const preview = previewProfile
+    ? aplicarTemplate(msg, previewProfile, alertsByGestante.get(previewProfile.user_id) ?? [])
     : msg;
 
+  const toggle = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const selecionarTodas = () => setSelectedIds(new Set(filtered.map((p) => p.user_id)));
+  const limparSelecao = () => setSelectedIds(new Set());
+
   const disparar = async () => {
-    if (filtered.length === 0) return;
+    if (destinatarias.length === 0) return;
     setEnviando(true);
     setResultado(null);
     const { data: campaign, error } = await supabase
@@ -114,7 +156,7 @@ function CampanhasView({ profiles, alerts }: Props) {
         canal,
         titulo,
         mensagem: msg,
-        total_destinatarios: filtered.length,
+        total_destinatarios: destinatarias.length,
         filtros_snapshot: filters as never,
       })
       .select()
@@ -131,12 +173,8 @@ function CampanhasView({ profiles, alerts }: Props) {
 
     if (canal === "push" || canal === "ambos") {
       try {
-        // Personaliza por gestante: faz envios em lote agrupados pelo mesmo texto
-        // Para simplificar, usamos a mensagem do template aplicada ao grupo todo,
-        // mas com substituição básica por gestante quando possível.
-        // Aqui agrupamos por texto único para reduzir chamadas.
         const groups = new Map<string, string[]>();
-        filtered.forEach((p) => {
+        destinatarias.forEach((p) => {
           const corpo = aplicarTemplate(msg, p, alertsByGestante.get(p.user_id) ?? []);
           const arr = groups.get(corpo) ?? [];
           arr.push(p.user_id);
@@ -165,9 +203,8 @@ function CampanhasView({ profiles, alerts }: Props) {
       }
     }
 
-    // WhatsApp: registra deliveries pendentes e abre uma aba por gestante
     if (canal === "whatsapp" || canal === "ambos") {
-      const wppRows = filtered
+      const wppRows = destinatarias
         .filter((p) => !!p.telefone)
         .map((p) => ({
           campaign_id: campaign.id,
@@ -179,7 +216,7 @@ function CampanhasView({ profiles, alerts }: Props) {
       if (wppRows.length > 0) {
         await supabase.from("notification_deliveries").insert(wppRows);
       }
-      filtered.forEach((p, idx) => {
+      destinatarias.forEach((p, idx) => {
         if (!p.telefone) return;
         setTimeout(() => {
           const corpo = aplicarTemplate(msg, p, alertsByGestante.get(p.user_id) ?? []);
@@ -195,25 +232,29 @@ function CampanhasView({ profiles, alerts }: Props) {
       );
     }
     if (canal === "whatsapp" || canal === "ambos") {
-      const com = filtered.filter((p) => p.telefone).length;
+      const com = destinatarias.filter((p) => p.telefone).length;
       partes.push(`WhatsApp: ${com} aba(s) abertas`);
     }
-    setResultado(`Campanha registrada para ${filtered.length} gestantes. ${partes.join(" · ")}`);
+    setResultado(`Campanha registrada para ${destinatarias.length} gestantes. ${partes.join(" · ")}`);
     setEnviando(false);
   };
 
+  const todasSelecionadas = filtered.length > 0 && selectedIds.size === filtered.length;
+  const horaPreview = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
   return (
-    <div className="grid lg:grid-cols-2 gap-4">
-      <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+    <div className="grid lg:grid-cols-3 gap-4">
+      {/* Coluna 1: Configuração */}
+      <div className="bg-card border border-border rounded-2xl p-4 space-y-3 lg:col-span-1">
         <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
           Configurar envio
         </p>
 
         <div className="bg-muted/30 rounded-lg p-3 text-xs">
-          <strong>{filtered.length} destinatárias</strong> com base nos filtros globais.
+          <strong>{destinatarias.length} de {filtered.length}</strong> gestantes selecionadas.
           {canal !== "push" && (
             <p className="text-muted-foreground mt-1">
-              {filtered.filter((p) => p.telefone).length} têm WhatsApp cadastrado.
+              {destinatarias.filter((p) => p.telefone).length} têm WhatsApp.
             </p>
           )}
         </div>
@@ -243,29 +284,34 @@ function CampanhasView({ profiles, alerts }: Props) {
           <input
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
+            maxLength={120}
             className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm mt-1"
           />
         </div>
 
         <div>
           <label className="text-[11px] font-semibold uppercase text-muted-foreground">
-            Mensagem (variáveis: {`{{primeiro_nome}}, {{semanas}}, {{ubs}}, {{cidade}}, {{exame_pendente}}, {{vacina_pendente}}`})
+            Mensagem
           </label>
           <textarea
             value={msg}
             onChange={(e) => setMsg(e.target.value)}
             rows={5}
+            maxLength={2000}
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm mt-1"
           />
+          <p className="text-[10px] text-muted-foreground mt-1">
+            Variáveis: {`{{primeiro_nome}}, {{semanas}}, {{ubs}}, {{cidade}}, {{exame_pendente}}, {{vacina_pendente}}`}
+          </p>
         </div>
 
         <button
           type="button"
           onClick={disparar}
-          disabled={enviando || filtered.length === 0}
+          disabled={enviando || destinatarias.length === 0}
           className="w-full px-4 py-2 rounded-full text-sm font-bold bg-[#f0c040] text-[#1a1557] hover:bg-[#e5b535] disabled:opacity-50"
         >
-          {enviando ? "Enviando..." : `Disparar para ${filtered.length} gestante(s)`}
+          {enviando ? "Enviando..." : `Disparar para ${destinatarias.length} gestante(s)`}
         </button>
 
         {resultado && (
@@ -275,29 +321,130 @@ function CampanhasView({ profiles, alerts }: Props) {
         )}
       </div>
 
-      <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
-        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-          Pré-visualização (primeira gestante)
-        </p>
-        <div className="bg-muted/30 rounded-lg p-3 text-sm space-y-1">
-          <p className="font-bold">{titulo}</p>
-          <p className="whitespace-pre-wrap">{preview}</p>
+      {/* Coluna 2: Seleção de gestantes */}
+      <div className="bg-card border border-border rounded-2xl p-4 space-y-3 lg:col-span-1">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            Selecionar gestantes
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={selecionarTodas}
+              className="text-[10px] font-bold text-[#1a1557] hover:underline"
+            >
+              Todas
+            </button>
+            <button
+              type="button"
+              onClick={limparSelecao}
+              className="text-[10px] font-bold text-muted-foreground hover:underline"
+            >
+              Nenhuma
+            </button>
+          </div>
         </div>
 
-        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mt-3">
-          Destinatárias (primeiras 10)
+        <input
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="Buscar por nome, e-mail ou cidade..."
+          className="w-full h-9 rounded-lg border border-border bg-background px-3 text-sm"
+        />
+
+        <p className="text-[10px] text-muted-foreground">
+          {filtered.length} no recorte atual · mostrando {visiveis.length}
+          {todasSelecionadas && " · todas selecionadas"}
         </p>
-        <ul className="text-xs divide-y divide-border max-h-64 overflow-y-auto">
-          {filtered.slice(0, 10).map((p) => (
-            <li key={p.user_id} className="py-1.5">
-              <span className="font-semibold">{p.nome ?? p.email}</span>
-              <span className="text-muted-foreground"> — {p.cidade ?? "—"}</span>
-              {!p.telefone && (
-                <span className="ml-2 text-[10px] text-amber-700">sem WhatsApp</span>
-              )}
+
+        <ul className="divide-y divide-border max-h-[420px] overflow-y-auto -mx-1">
+          {visiveis.length === 0 && (
+            <li className="text-xs text-muted-foreground py-4 text-center">
+              Nenhuma gestante encontrada.
             </li>
-          ))}
+          )}
+          {visiveis.map((p) => {
+            const checked = selectedIds.has(p.user_id);
+            return (
+              <li key={p.user_id}>
+                <label className="flex items-center gap-2 px-1 py-2 cursor-pointer hover:bg-muted/30 rounded-md">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggle(p.user_id)}
+                    className="h-4 w-4 accent-[#1a1557]"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold truncate">{p.nome ?? p.email}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {p.cidade ?? "—"}
+                      {!p.telefone && <span className="text-amber-700"> · sem WhatsApp</span>}
+                    </p>
+                  </div>
+                </label>
+              </li>
+            );
+          })}
         </ul>
+      </div>
+
+      {/* Coluna 3: Preview da notificação */}
+      <div className="bg-card border border-border rounded-2xl p-4 space-y-3 lg:col-span-1">
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          Pré-visualização da notificação
+        </p>
+        <p className="text-[10px] text-muted-foreground">
+          Como aparecerá no celular de{" "}
+          <strong>{previewProfile?.nome ?? previewProfile?.email ?? "—"}</strong>
+        </p>
+
+        {/* Mock de celular */}
+        <div className="mx-auto w-full max-w-[280px] bg-gradient-to-b from-slate-800 to-slate-900 rounded-[2.2rem] p-3 shadow-xl">
+          <div className="bg-slate-100 rounded-[1.6rem] overflow-hidden min-h-[460px] relative">
+            {/* Notch */}
+            <div className="bg-slate-900 h-5 flex items-center justify-center">
+              <div className="bg-slate-700 h-1.5 w-16 rounded-full" />
+            </div>
+            {/* Status bar */}
+            <div className="flex items-center justify-between px-4 py-1.5 text-[10px] font-bold text-slate-700">
+              <span>{horaPreview}</span>
+              <span>•••• 5G</span>
+            </div>
+            {/* Notificação */}
+            <div className="px-3 pt-6 space-y-2">
+              <p className="text-[10px] uppercase font-bold text-slate-500 px-1">
+                Agora
+              </p>
+              <div className="bg-white/95 backdrop-blur rounded-2xl p-3 shadow-md border border-white">
+                <div className="flex items-start gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-[#1a1557] flex items-center justify-center text-[#f0c040] text-[10px] font-bold shrink-0">
+                    MD
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[11px] font-bold text-slate-800 truncate">
+                        MãeDigital
+                      </p>
+                      <span className="text-[9px] text-slate-500">agora</span>
+                    </div>
+                    <p className="text-[12px] font-bold text-slate-900 leading-tight mt-0.5">
+                      {titulo || "Sem título"}
+                    </p>
+                    <p className="text-[11px] text-slate-700 leading-snug mt-0.5 whitespace-pre-wrap">
+                      {preview}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {!previewProfile && (
+          <p className="text-[11px] text-amber-700 text-center">
+            Selecione ao menos uma gestante para ver o preview personalizado.
+          </p>
+        )}
       </div>
     </div>
   );
