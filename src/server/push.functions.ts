@@ -4,8 +4,8 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
 
 const VAPID_PUBLIC_KEY =
-  "BEUwolCHHTeUsqVpf96fwnuZHboKS671cpkYk8PYkTKr6z8BiYe0bGL9fJK96-HpEKP6z1Ahrmw-v5B2xkCwksA";
-const VAPID_PRIVATE_KEY = "wT4pK6bN5oYsR_qj1fXmZdHv8aLgC3eUiB2nW0xPyMA";
+  "BAvb-o89v2-Xo1qHb6lStDfw9ce9r3cvnlZ7d_QEvr3y7t0_SHEh3OQsQ4aHenNZTtCb6CyJO09qVy-_Z_TJ_Cs";
+const VAPID_PRIVATE_KEY = "IApzuJoPtcq8E_mXhmrYLxFZld5VO8xyIHefdkvjSQo";
 const VAPID_SUBJECT = "mailto:admin@maedigital.app";
 
 const InputSchema = z.object({
