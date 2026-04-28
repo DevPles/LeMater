@@ -13,6 +13,7 @@ type CreateInput = {
   senha: string;
   nome: string;
   cpf?: string;
+  foto_url?: string | null;
   // profissional
   especialidade?: string;
   registro?: string | null;
@@ -72,6 +73,7 @@ export const createUserUnified = createServerFn({ method: "POST" })
           cpf: cpfDigits || null,
           dum: data.dum || null,
           telefone: data.telefone || null,
+          foto_url: data.foto_url || null,
         },
         { onConflict: "user_id" },
       );
@@ -209,11 +211,15 @@ export type UnifiedUser = {
   email: string | null;
   nome: string | null;
   cpf: string | null;
+  telefone: string | null;
+  foto_url: string | null;
+  dum: string | null;
   roles: string[];
   professional: {
     id: string;
     especialidade: string;
     registro: string | null;
+    bio: string | null;
     ativo: boolean;
   } | null;
   password_plaintext: string | null;
@@ -236,11 +242,14 @@ export const listAllUsers = createServerFn({ method: "POST" })
     const ids = users.map((u) => u.id);
 
     const [profilesRes, rolesRes, profsRes, pwdsRes] = await Promise.all([
-      supabaseAdmin.from("profiles").select("user_id, nome, email, cpf").in("user_id", ids),
+      supabaseAdmin
+        .from("profiles")
+        .select("user_id, nome, email, cpf, telefone, foto_url, dum")
+        .in("user_id", ids),
       supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", ids),
       supabaseAdmin
         .from("professionals")
-        .select("id, user_id, especialidade, registro, ativo")
+        .select("id, user_id, especialidade, registro, bio, ativo")
         .in("user_id", ids),
       supabaseAdmin
         .from("admin_managed_passwords")
@@ -260,17 +269,22 @@ export const listAllUsers = createServerFn({ method: "POST" })
 
     const result: UnifiedUser[] = users.map((u) => {
       const prof = profMap.get(u.id);
+      const profile = profileMap.get(u.id);
       return {
         user_id: u.id,
-        email: u.email ?? profileMap.get(u.id)?.email ?? null,
-        nome: profileMap.get(u.id)?.nome ?? (u.user_metadata?.nome as string) ?? null,
-        cpf: profileMap.get(u.id)?.cpf ?? null,
+        email: u.email ?? profile?.email ?? null,
+        nome: profile?.nome ?? (u.user_metadata?.nome as string) ?? null,
+        cpf: profile?.cpf ?? null,
+        telefone: profile?.telefone ?? null,
+        foto_url: profile?.foto_url ?? null,
+        dum: profile?.dum ?? null,
         roles: roleMap.get(u.id) ?? [],
         professional: prof
           ? {
               id: prof.id,
               especialidade: prof.especialidade,
               registro: prof.registro,
+              bio: prof.bio,
               ativo: prof.ativo,
             }
           : null,
@@ -289,4 +303,91 @@ export const listAllUsers = createServerFn({ method: "POST" })
     });
 
     return { users: result };
+  });
+
+type UpdateUnifiedInput = {
+  adminSecret: string;
+  userId: string;
+  nome?: string;
+  email?: string;
+  cpf?: string;
+  telefone?: string | null;
+  foto_url?: string | null;
+  dum?: string | null;
+  // profissional
+  professionalId?: string | null;
+  especialidade?: string | null;
+  registro?: string | null;
+  bio?: string | null;
+  ativo?: boolean;
+};
+
+export const updateUserUnified = createServerFn({ method: "POST" })
+  .inputValidator((input: UpdateUnifiedInput) => input)
+  .handler(async ({ data }) => {
+    if (data.adminSecret !== ADMIN_SECRET) throw new Error("Não autorizado");
+
+    const cpfDigits =
+      data.cpf !== undefined ? data.cpf.replace(/\D/g, "") : undefined;
+    if (cpfDigits !== undefined && cpfDigits.length > 0 && cpfDigits.length !== 11) {
+      throw new Error("CPF inválido. Informe os 11 dígitos ou deixe em branco.");
+    }
+
+    // Profile patch
+    const profilePatch: {
+      nome?: string;
+      email?: string;
+      cpf?: string | null;
+      telefone?: string | null;
+      foto_url?: string | null;
+      dum?: string | null;
+    } = {};
+    if (data.nome !== undefined) profilePatch.nome = data.nome;
+    if (data.email !== undefined) profilePatch.email = data.email;
+    if (cpfDigits !== undefined) profilePatch.cpf = cpfDigits || null;
+    if (data.telefone !== undefined) profilePatch.telefone = data.telefone || null;
+    if (data.foto_url !== undefined) profilePatch.foto_url = data.foto_url || null;
+    if (data.dum !== undefined) profilePatch.dum = data.dum || null;
+
+    if (Object.keys(profilePatch).length > 0) {
+      const { error } = await supabaseAdmin
+        .from("profiles")
+        .update(profilePatch)
+        .eq("user_id", data.userId);
+      if (error) throw new Error("Erro ao atualizar perfil: " + error.message);
+    }
+
+    // Auth email
+    if (data.email !== undefined) {
+      const { error } = await supabaseAdmin.auth.admin.updateUserById(data.userId, {
+        email: data.email,
+      });
+      if (error) throw new Error(amigavelAuthError(error.message));
+    }
+
+    // Professional patch
+    if (data.professionalId) {
+      const profPatch: {
+        nome?: string;
+        especialidade?: string;
+        registro?: string | null;
+        bio?: string | null;
+        ativo?: boolean;
+      } = {};
+      if (data.nome !== undefined) profPatch.nome = data.nome;
+      if (data.especialidade !== undefined && data.especialidade !== null)
+        profPatch.especialidade = data.especialidade;
+      if (data.registro !== undefined) profPatch.registro = data.registro || null;
+      if (data.bio !== undefined) profPatch.bio = data.bio || null;
+      if (data.ativo !== undefined) profPatch.ativo = data.ativo;
+      if (Object.keys(profPatch).length > 0) {
+        const { error } = await supabaseAdmin
+          .from("professionals")
+          .update(profPatch)
+          .eq("id", data.professionalId);
+        if (error) throw new Error("Erro ao atualizar profissional: " + error.message);
+      }
+    }
+
+    return { success: true };
   });
