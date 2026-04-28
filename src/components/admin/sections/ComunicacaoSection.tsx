@@ -189,15 +189,39 @@ function CampanhasView({ profiles, alerts }: Props) {
     () => filtered.filter((p) => selectedIds.has(p.user_id)),
     [filtered, selectedIds],
   );
-  const selecionadasComPush = useMemo(
-    () => destinatarias.filter((p) => pushUserIds.has(p.user_id)).length,
-    [destinatarias, pushUserIds],
+  const destinatariosProf = useMemo(
+    () => profissionais.filter((p) => selectedProfIds.has(p.user_id)),
+    [profissionais, selectedProfIds],
   );
+  const incluiGestantes = publico === "gestantes" || publico === "ambos";
+  const incluiProfissionais = publico === "profissionais" || publico === "ambos";
 
-  const previewProfile = destinatarias[0] ?? filtered[0];
+  const totalSelecionados =
+    (incluiGestantes ? destinatarias.length : 0) +
+    (incluiProfissionais ? destinatariosProf.length : 0);
+
+  const selecionadasComPush = useMemo(() => {
+    let n = 0;
+    if (incluiGestantes) n += destinatarias.filter((p) => pushUserIds.has(p.user_id)).length;
+    if (incluiProfissionais)
+      n += destinatariosProf.filter((p) => pushUserIds.has(p.user_id)).length;
+    return n;
+  }, [destinatarias, destinatariosProf, pushUserIds, incluiGestantes, incluiProfissionais]);
+
+  const previewProfile = incluiGestantes
+    ? destinatarias[0] ?? filtered[0]
+    : null;
+  const previewProfText = incluiProfissionais
+    ? destinatariosProf[0] ?? profissionais[0]
+    : null;
   const preview = previewProfile
     ? aplicarTemplate(msg, previewProfile, alertsByGestante.get(previewProfile.user_id) ?? [])
-    : msg;
+    : previewProfText
+      ? msg
+          .replace(/\{\{primeiro_nome\}\}/g, (previewProfText.nome ?? "").split(" ")[0] || "")
+          .replace(/\{\{[^}]+\}\}/g, "")
+      : msg;
+  const previewNome = previewProfile?.nome ?? previewProfile?.email ?? previewProfText?.nome ?? "—";
 
   const toggle = (id: string) => {
     setSelectedIds((prev) => {
@@ -207,11 +231,25 @@ function CampanhasView({ profiles, alerts }: Props) {
       return next;
     });
   };
-  const selecionarTodas = () => setSelectedIds(new Set(filtered.map((p) => p.user_id)));
-  const limparSelecao = () => setSelectedIds(new Set());
+  const toggleProf = (id: string) => {
+    setSelectedProfIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const selecionarTodas = () => {
+    if (incluiGestantes) setSelectedIds(new Set(filtered.map((p) => p.user_id)));
+    if (incluiProfissionais) setSelectedProfIds(new Set(profissionais.map((p) => p.user_id)));
+  };
+  const limparSelecao = () => {
+    setSelectedIds(new Set());
+    setSelectedProfIds(new Set());
+  };
 
   const disparar = async () => {
-    if (destinatarias.length === 0) return;
+    if (totalSelecionados === 0) return;
     setEnviando(true);
     setResultado(null);
     const { data: authData } = await supabase.auth.getUser();
@@ -226,9 +264,9 @@ function CampanhasView({ profiles, alerts }: Props) {
         canal,
         titulo,
         mensagem: msg,
-        total_destinatarios: destinatarias.length,
+        total_destinatarios: totalSelecionados,
         enviado_por: authData.user.id,
-        filtros_snapshot: filters as never,
+        filtros_snapshot: { ...filters, publico } as never,
       })
       .select()
       .single();
