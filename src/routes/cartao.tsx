@@ -1400,21 +1400,25 @@ async function gerarPDFCartao(args: {
   doc.setFontSize(6.5);
   doc.setTextColor(...muted);
   doc.text("ANTECEDENTES", antX + 3, iy + 4.5);
+  const pcList = patientInfo.partosClassificacao ?? [];
+  const countTipo = (t: string) => pcList.filter((p) => p.tipo === t).length;
   const obs = [
     { l: "Gest", v: String(patientInfo.gestacoes ?? 0) },
     { l: "Part", v: String(patientInfo.partos ?? 0) },
+    { l: "Normal", v: String(countTipo("normal")) },
+    { l: "Cesárea", v: String(countTipo("cesarea")) },
     { l: "Abor", v: String(patientInfo.abortos ?? 0) },
   ];
-  const obsColW = antW / 3;
+  const obsColW = antW / obs.length;
   obs.forEach((o, i) => {
     const ox = antX + i * obsColW;
     doc.setTextColor(pr, pg, pb);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text(o.v, ox + obsColW / 2, iy + 13.5, { align: "center" });
+    doc.setFontSize(11);
+    doc.text(o.v, ox + obsColW / 2, iy + 13, { align: "center" });
     doc.setTextColor(...muted);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.2);
+    doc.setFontSize(5.6);
     doc.text(o.l, ox + obsColW / 2, iy + 17.5, { align: "center" });
   });
   iy += 24;
