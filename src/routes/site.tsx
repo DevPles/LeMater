@@ -218,7 +218,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             ))}
           </div>
         </div>
-        <div style={{ flex: "1 1 420px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: 40, minHeight: 500 }}>
+        <div style={{ flex: "0 1 380px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: 32, minHeight: 440, alignSelf: "center", borderRadius: 16 }}>
           <img
             src={rayssa}
             alt="Rayssa Leslie, Enfermeira Obstetra"
