@@ -15,21 +15,22 @@ export const Route = createFileRoute("/site")({
 });
 
 const palette = {
-  bg: "#f4ebe1",
-  bgSoft: "#efe4d8",
-  rose: "#e8a6c3",
-  rosePale: "#f5d3e0",
-  gold: "#c9a66b",
-  ink: "#2b2226",
-  inkSoft: "#5a4a52",
-  cream: "#fbf6f1",
+  cream: "#FAF5EE",
+  warm: "#F5EDE0",
+  sage: "#5C8A6E",
+  sageLight: "#8AB89A",
+  sageDark: "#2D5A42",
+  terracotta: "#C4714A",
+  ink: "#1C1C1A",
+  muted: "#6B6560",
+  border: "#E8DDD2",
 };
 
 function SitePage() {
   return (
     <div
       style={{
-        backgroundColor: palette.bg,
+        backgroundColor: palette.cream,
         color: palette.ink,
         fontFamily: "'DM Sans', system-ui, sans-serif",
         minHeight: "100vh",
@@ -42,6 +43,7 @@ function SitePage() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "24px 56px",
+          borderBottom: `1px solid ${palette.border}`,
         }}
       >
         <div>
@@ -59,7 +61,7 @@ function SitePage() {
             style={{
               fontSize: 10,
               letterSpacing: 3,
-              color: palette.gold,
+              color: palette.sage,
               marginTop: 2,
             }}
           >
@@ -79,22 +81,19 @@ function SitePage() {
           ))}
         </nav>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Link
-            to="/"
-            style={{
-              backgroundColor: palette.cream,
-              color: palette.ink,
-              padding: "10px 24px",
-              borderRadius: 999,
-              fontWeight: 600,
-              textDecoration: "none",
-              border: `1px solid ${palette.rosePale}`,
-            }}
-          >
-            Entrar
-          </Link>
-        </div>
+        <Link
+          to="/"
+          style={{
+            backgroundColor: palette.sageDark,
+            color: palette.cream,
+            padding: "10px 24px",
+            borderRadius: 999,
+            fontWeight: 600,
+            textDecoration: "none",
+          }}
+        >
+          Entrar
+        </Link>
       </header>
 
       {/* HERO */}
@@ -103,7 +102,7 @@ function SitePage() {
           display: "grid",
           gridTemplateColumns: "1.2fr 1fr",
           gap: 48,
-          padding: "40px 56px 80px",
+          padding: "60px 56px 80px",
           alignItems: "center",
         }}
       >
@@ -111,11 +110,12 @@ function SitePage() {
           <span
             style={{
               display: "inline-block",
-              backgroundColor: palette.rosePale,
-              color: palette.ink,
+              backgroundColor: palette.warm,
+              color: palette.sageDark,
               padding: "8px 18px",
               borderRadius: 999,
               fontSize: 14,
+              border: `1px solid ${palette.border}`,
               marginBottom: 28,
             }}
           >
@@ -136,9 +136,9 @@ function SitePage() {
             <br />
             Especializada em
             <br />
-            <span style={{ color: palette.rose }}>Cada Fase</span>
+            <span style={{ color: palette.sage }}>Cada Fase</span>
             <br />
-            da Vida da <span style={{ color: palette.rose }}>Mulher</span>
+            da Vida da <span style={{ color: palette.sage }}>Mulher</span>
           </h1>
 
           <p
@@ -146,7 +146,7 @@ function SitePage() {
               marginTop: 28,
               fontSize: 17,
               lineHeight: 1.6,
-              color: palette.inkSoft,
+              color: palette.muted,
               maxWidth: 560,
             }}
           >
@@ -159,8 +159,8 @@ function SitePage() {
           <div style={{ marginTop: 36, display: "flex", gap: 16 }}>
             <button
               style={{
-                background: `linear-gradient(135deg, ${palette.rose}, #c98bb0)`,
-                color: "white",
+                backgroundColor: palette.sageDark,
+                color: palette.cream,
                 border: "none",
                 padding: "16px 32px",
                 borderRadius: 999,
@@ -173,9 +173,9 @@ function SitePage() {
             </button>
             <button
               style={{
-                backgroundColor: palette.cream,
+                backgroundColor: palette.warm,
                 color: palette.ink,
-                border: "none",
+                border: `1px solid ${palette.border}`,
                 padding: "16px 32px",
                 borderRadius: 999,
                 fontSize: 16,
@@ -192,11 +192,11 @@ function SitePage() {
         <div
           style={{
             position: "relative",
-            backgroundColor: palette.cream,
+            backgroundColor: palette.warm,
             borderRadius: 24,
             padding: 28,
-            boxShadow: "0 30px 60px -20px rgba(120, 70, 90, 0.25)",
-            border: `1px solid ${palette.rosePale}`,
+            border: `1px solid ${palette.border}`,
+            boxShadow: "0 30px 60px -25px rgba(45, 90, 66, 0.25)",
           }}
         >
           <div
@@ -204,8 +204,8 @@ function SitePage() {
               position: "absolute",
               top: -14,
               right: 24,
-              backgroundColor: palette.rose,
-              color: "white",
+              backgroundColor: palette.terracotta,
+              color: palette.cream,
               padding: "6px 16px",
               borderRadius: 999,
               fontSize: 13,
@@ -219,13 +219,13 @@ function SitePage() {
             style={{
               aspectRatio: "1 / 1",
               borderRadius: 18,
-              background: `linear-gradient(160deg, ${palette.rosePale}, ${palette.bgSoft})`,
+              background: `linear-gradient(160deg, ${palette.sageLight}, ${palette.sage})`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontFamily: "'Playfair Display', serif",
-              fontSize: 80,
-              color: palette.gold,
+              fontSize: 96,
+              color: palette.cream,
               fontStyle: "italic",
             }}
           >
@@ -242,20 +242,54 @@ function SitePage() {
             >
               Rayssa Leslie
             </div>
-            <div style={{ fontSize: 14, color: palette.inkSoft, marginTop: 4 }}>
+            <div style={{ fontSize: 14, color: palette.muted, marginTop: 4 }}>
               Esteticista & Enfermeira Obstetra
             </div>
           </div>
         </div>
       </section>
 
-      {/* PALETA */}
-      <section style={{ padding: "0 56px 80px" }}>
+      {/* APP — fundo escuro */}
+      <section
+        style={{
+          backgroundColor: palette.sageDark,
+          color: palette.cream,
+          padding: "72px 56px",
+        }}
+      >
         <div
           style={{
             fontSize: 11,
             letterSpacing: 3,
-            color: palette.gold,
+            color: palette.sageLight,
+            marginBottom: 12,
+          }}
+        >
+          APLICATIVO MÃEDIGITAL
+        </div>
+        <h2
+          style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: 44,
+            margin: 0,
+            maxWidth: 720,
+          }}
+        >
+          Acompanhamento contínuo, na palma da sua mão.
+        </h2>
+        <p style={{ color: palette.sageLight, maxWidth: 620, marginTop: 16 }}>
+          Cartão digital da gestante, lembretes, exames e videoconsulta — tudo
+          integrado ao seu cuidado.
+        </p>
+      </section>
+
+      {/* PALETA */}
+      <section style={{ padding: "72px 56px" }}>
+        <div
+          style={{
+            fontSize: 11,
+            letterSpacing: 3,
+            color: palette.sage,
             marginBottom: 16,
           }}
         >
@@ -263,27 +297,30 @@ function SitePage() {
         </div>
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
           {[
-            { c: palette.bg, n: "Areia" },
-            { c: palette.rosePale, n: "Rosé Claro" },
-            { c: palette.rose, n: "Rosé" },
-            { c: palette.gold, n: "Dourado" },
-            { c: palette.ink, n: "Tinta" },
-            { c: palette.cream, n: "Creme" },
+            { c: palette.cream, n: "Cream" },
+            { c: palette.warm, n: "Warm" },
+            { c: palette.sage, n: "Sage" },
+            { c: palette.sageLight, n: "Sage Light" },
+            { c: palette.sageDark, n: "Sage Dark" },
+            { c: palette.terracotta, n: "Terracotta" },
+            { c: palette.ink, n: "Ink" },
+            { c: palette.muted, n: "Muted" },
+            { c: palette.border, n: "Border" },
           ].map((s) => (
-            <div key={s.n} style={{ width: 140 }}>
+            <div key={s.n} style={{ width: 130 }}>
               <div
                 style={{
                   height: 90,
                   borderRadius: 14,
                   backgroundColor: s.c,
-                  border: `1px solid ${palette.rosePale}`,
+                  border: `1px solid ${palette.border}`,
                 }}
               />
               <div style={{ marginTop: 8, fontSize: 13 }}>{s.n}</div>
               <div
                 style={{
                   fontSize: 11,
-                  color: palette.inkSoft,
+                  color: palette.muted,
                   fontFamily: "monospace",
                 }}
               >
