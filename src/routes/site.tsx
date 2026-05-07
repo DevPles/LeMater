@@ -194,9 +194,9 @@ const btnSecondary: CSSProperties = {
 
 function Inicio({ go }: { go: (id: SectionId) => void }) {
   return (
-    <section style={{ paddingTop: 60, minHeight: "85vh", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", flex: 1, flexWrap: "wrap", alignItems: "center" }}>
-        <div style={{ flex: "1 1 480px", display: "flex", flexDirection: "column", justifyContent: "center", padding: "40px 48px 40px" }}>
+    <section style={{ paddingTop: 40, minHeight: "75vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", flex: 1, flexWrap: "wrap", alignItems: "flex-start" }}>
+        <div style={{ flex: "1 1 480px", display: "flex", flexDirection: "column", justifyContent: "flex-start", padding: "20px 48px 40px" }}>
           <SectionTag text="Saúde materna com credencial clínica real" />
           <h1 style={{ fontFamily: serif, fontSize: "clamp(36px,5vw,64px)", fontWeight: 300, lineHeight: 1.05, marginBottom: 20 }}>
             A gestação<br />que você<br />
