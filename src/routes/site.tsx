@@ -150,20 +150,20 @@ const SectionTag = ({ text, light = false, center = false }: { text: string; lig
 
 const h2: CSSProperties = {
   fontFamily: serif,
-  fontSize: "clamp(36px, 4vw, 56px)",
+  fontSize: "clamp(28px, 3vw, 44px)",
   fontWeight: 300,
   lineHeight: 1.1,
   color: c.ink,
-  marginBottom: 24,
+  marginBottom: 20,
 };
 
 const sectionP: CSSProperties = {
-  fontSize: 15,
-  lineHeight: 1.8,
+  fontSize: 14,
+  lineHeight: 1.6,
   color: c.muted,
   fontWeight: 300,
-  maxWidth: 520,
-  marginBottom: 32,
+  maxWidth: 480,
+  marginBottom: 24,
 };
 
 const btnPrimary: CSSProperties = {
