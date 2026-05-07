@@ -395,7 +395,7 @@ function Contato() {
 
 function Footer() {
   return (
-    <footer style={{ padding: "32px 64px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: `1px solid ${c.border}`, fontSize: 11, color: c.muted, letterSpacing: "0.06em", flexWrap: "wrap", gap: 16 }}>
+    <footer style={{ padding: "24px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: `1px solid ${c.border}`, fontSize: 11, color: c.muted, letterSpacing: "0.06em", flexWrap: "wrap", gap: 16 }}>
       <div style={{ fontFamily: serif, fontSize: 18, fontWeight: 300, color: c.ink, letterSpacing: "0.06em" }}>
         Le<span style={{ color: c.sage }}>Mater</span>
       </div>
