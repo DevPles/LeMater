@@ -339,9 +339,9 @@ function Produtos() {
           <ProdutoCard num="03" titulo="Pós-Gestação" desc="Puerpério, recuperação física, saúde mental pós-parto e os primeiros dias com o bebê em casa." />
           <ProdutoCard num="04" titulo="Bebê & Primeiros Cuidados" desc="Banho, amamentação, cólica, sono e tudo o que ninguém ensina antes do bebê chegar." dark badge="Mais vendido" />
         </div>
-        <div style={{ marginTop: 2, background: c.warm, padding: "40px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
+        <div style={{ marginTop: 2, background: c.warm, padding: "32px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
           <div>
-            <div style={{ fontFamily: serif, fontSize: 28, fontWeight: 400 }}>Combo Completo + App LeMater 1 ano</div>
+            <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 400 }}>Combo Completo + App LeMater 1 ano</div>
             <div style={{ fontSize: 13, color: c.muted, marginTop: 4 }}>4 programas · App com cartão digital · Alertas clínicos · Teleconsulta</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
