@@ -224,14 +224,14 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             alt="Rayssa Leslie, Enfermeira Obstetra"
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
           />
-          <div style={{ background: "white", padding: "20px 24px", boxShadow: "0 4px 32px rgba(0,0,0,0.12)", display: "flex", alignItems: "center", gap: 16, position: "relative", zIndex: 2 }}>
+          <LiquidCard bgOpacity={0.35} style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 16, position: "relative", zIndex: 2, backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
             <div>
-              <div style={{ fontSize: 14, fontWeight: 500 }}>Rayssa Leslie</div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: c.ink }}>Rayssa Leslie</div>
               <div style={{ fontSize: 11, color: c.muted, letterSpacing: "0.04em", marginTop: 2 }}>Enf. Obstetra · COREN · ACLS · PICC</div>
             </div>
             <div style={{ marginLeft: "auto", background: c.sageDark, color: "white", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 10px" }}>★ 5.0</div>
-          </div>
+          </LiquidCard>
         </div>
       </div>
       <Ticker />
