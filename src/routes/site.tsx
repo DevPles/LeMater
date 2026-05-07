@@ -299,7 +299,7 @@ function ProdutoCard({ num, titulo, desc, dark = false, badge }: { num: string; 
       onMouseLeave={() => setHover(false)}
       style={{
         background: isDark ? c.sageDark : c.warm,
-        padding: 48,
+        padding: 40,
         transition: "background .3s",
         cursor: "pointer",
         position: "relative",
