@@ -225,7 +225,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             alt="Rayssa Leslie, Enfermeira Obstetra"
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
           />
-          <LiquidCard bgOpacity={0} style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 16, position: "relative", zIndex: 2, background: "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))", backdropFilter: "blur(14px) saturate(180%) contrast(110%)", WebkitBackdropFilter: "blur(14px) saturate(180%) contrast(110%)", borderColor: "rgba(255,255,255,0.3)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.35), inset 0 -1px 0 0 rgba(255,255,255,0.08), 0 10px 30px -12px rgba(0,0,0,0.2)" }}>
+          <LiquidCard bgOpacity={0} style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 16, position: "relative", zIndex: 2, background: "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))", backdropFilter: "blur(8px) saturate(180%) contrast(110%)", WebkitBackdropFilter: "blur(8px) saturate(180%) contrast(110%)", borderColor: "rgba(255,255,255,0.18)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.2), 0 8px 24px -14px rgba(0,0,0,0.18)" }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
             <div>
               <div style={{ fontSize: 14, fontWeight: 500, color: c.ink }}>Rayssa Leslie</div>
