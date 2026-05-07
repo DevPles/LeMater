@@ -347,7 +347,7 @@ function Produtos() {
           <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
             <div style={{ textAlign: "right" }}>
               <div style={{ fontSize: 12, color: c.muted, textDecoration: "line-through" }}>R$ 1.188</div>
-              <div style={{ fontFamily: serif, fontSize: 48, fontWeight: 300, color: c.sageDark }}>
+              <div style={{ fontFamily: serif, fontSize: 36, fontWeight: 300, color: c.sageDark }}>
                 <span style={{ fontSize: 18 }}>R$</span> 797
               </div>
             </div>
