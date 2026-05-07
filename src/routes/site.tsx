@@ -144,7 +144,7 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
   );
 }
 
-const sectionTag = (text: string, withDash = true): JSX.Element => (
+const sectionTag = (text: string, withDash = true) => (
   <div
     style={{
       fontSize: 11,
