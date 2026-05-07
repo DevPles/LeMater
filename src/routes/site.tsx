@@ -324,9 +324,9 @@ function ProdutoCard({ num, titulo, desc, dark = false, badge }: { num: string; 
 
 function Produtos() {
   return (
-    <section style={{ paddingTop: 80, minHeight: "100vh" }}>
-      <div style={{ padding: "120px 64px" }}>
-        <div style={{ marginBottom: 64 }}>
+    <section style={{ paddingTop: 70, minHeight: "100vh" }}>
+      <div style={{ padding: "80px 48px" }}>
+        <div style={{ marginBottom: 48 }}>
           <SectionTag text="Programas" />
           <h2 style={h2}>
             Quatro fases.<br />
