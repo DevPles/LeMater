@@ -86,6 +86,7 @@ function RootComponent() {
 
   const hideAllNav =
     location.pathname === "/" ||
+    location.pathname === "/site" ||
     location.pathname.startsWith("/admin") ||
     location.pathname.startsWith("/sala");
 

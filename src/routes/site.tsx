@@ -1,18 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, type CSSProperties } from "react";
+import rayssa from "@/assets/rayssa-portrait.jpg";
 
 export const Route = createFileRoute("/site")({
   head: () => ({
     meta: [
-      { title: "LeMater — Saúde materna com credencial clínica" },
+      { title: "LeMater · Saúde materna com credencial clínica" },
       {
         name: "description",
         content:
-          "Acompanhamento pré-natal, cursos para gestantes e sistema digital — por Rayssa Leslie, Enf. Obstetra UNAERP.",
-      },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap",
+          "Programas, app e teleconsulta materna por Rayssa Leslie, Enf. Obstetra UNAERP.",
       },
     ],
     links: [
@@ -40,36 +37,31 @@ const c = {
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type SectionId = "inicio" | "sobre" | "produtos" | "app" | "contato";
+type SectionId = "inicio" | "sobre" | "produtos" | "contato";
+
+const NAV_ITEMS: ReadonlyArray<readonly [SectionId, string]> = [
+  ["inicio", "Início"],
+  ["sobre", "Sobre"],
+  ["produtos", "Programas"],
+  ["contato", "Contato"],
+];
 
 function SitePage() {
   const [active, setActive] = useState<SectionId>("inicio");
-
   const go = (id: SectionId) => {
     setActive(id);
     if (typeof window !== "undefined") window.scrollTo(0, 0);
   };
 
   return (
-    <div
-      style={{
-        fontFamily: sans,
-        background: c.cream,
-        color: c.ink,
-        minHeight: "100vh",
-        overflowX: "hidden",
-      }}
-    >
+    <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh", overflowX: "hidden" }}>
       <Nav active={active} go={go} />
-
       <main>
         {active === "inicio" && <Inicio go={go} />}
         {active === "sobre" && <Sobre />}
         {active === "produtos" && <Produtos />}
-        {active === "app" && <App />}
         {active === "contato" && <Contato />}
       </main>
-
       <Footer />
     </div>
   );
@@ -109,17 +101,9 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
         Le<span style={{ color: c.sage }}>Mater</span>
       </div>
       <ul style={{ display: "flex", gap: 32, listStyle: "none", margin: 0, padding: 0 }}>
-        {([
-          ["inicio", "Início"],
-          ["sobre", "Sobre"],
-          ["produtos", "Programas"],
-          ["app", "App"],
-          ["contato", "Contato"],
-        ] as const).map(([id, label]) => (
+        {NAV_ITEMS.map(([id, label]) => (
           <li key={id}>
-            <button onClick={() => go(id)} style={linkStyle(id)}>
-              {label}
-            </button>
+            <button onClick={() => go(id)} style={linkStyle(id)}>{label}</button>
           </li>
         ))}
       </ul>
@@ -138,27 +122,28 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
           fontFamily: sans,
         }}
       >
-        Acessar Sistema →
+        Acessar Sistema
       </button>
     </nav>
   );
 }
 
-const sectionTag = (text: string, withDash = true) => (
+const SectionTag = ({ text, light = false, center = false }: { text: string; light?: boolean; center?: boolean }) => (
   <div
     style={{
       fontSize: 11,
       letterSpacing: "0.12em",
       textTransform: "uppercase",
-      color: c.sage,
+      color: light ? c.sageLight : c.sage,
       fontWeight: 500,
       marginBottom: 24,
       display: "flex",
       alignItems: "center",
       gap: 8,
+      justifyContent: center ? "center" : "flex-start",
     }}
   >
-    {withDash && <span style={{ width: 24, height: 1, background: c.sage }} />}
+    <span style={{ width: 24, height: 1, background: light ? c.sageLight : c.sage }} />
     {text}
   </div>
 );
@@ -210,29 +195,22 @@ const btnSecondary: CSSProperties = {
 function Inicio({ go }: { go: (id: SectionId) => void }) {
   return (
     <section style={{ paddingTop: 80, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", flex: 1 }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "120px 64px 80px" }}>
-          <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sage, fontWeight: 500, marginBottom: 32, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 24, height: 1, background: c.sage }} />
-            Saúde materna com credencial clínica real
-          </div>
+      <div style={{ display: "flex", flex: 1, flexWrap: "wrap" }}>
+        <div style={{ flex: "1 1 480px", display: "flex", flexDirection: "column", justifyContent: "center", padding: "120px 64px 80px" }}>
+          <SectionTag text="Saúde materna com credencial clínica real" />
           <h1 style={{ fontFamily: serif, fontSize: "clamp(48px,6vw,80px)", fontWeight: 300, lineHeight: 1.05, marginBottom: 24 }}>
             A gestação<br />que você<br />
             <em style={{ fontStyle: "italic", color: c.sage }}>merece viver.</em>
           </h1>
-          <p style={{ fontSize: 15, lineHeight: 1.7, color: c.muted, maxWidth: 440, marginBottom: 48, fontWeight: 300 }}>
-            Acompanhamento pré-natal, cursos para gestantes e sistema digital de saúde materna — por Rayssa Leslie, Enfermeira Obstetra com formação UNAERP e 6 anos em alta complexidade.
+          <p style={{ fontSize: 15, lineHeight: 1.7, color: c.muted, maxWidth: 460, marginBottom: 48, fontWeight: 300 }}>
+            Acompanhamento pré-natal, cursos para gestantes e sistema digital de saúde materna por Rayssa Leslie, Enfermeira Obstetra com formação UNAERP e seis anos de experiência em alta complexidade.
           </p>
           <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
-            <button style={btnPrimary} onClick={() => go("produtos")}>Ver Programas →</button>
-            <button style={btnSecondary} onClick={() => go("app")}>Conhecer o App</button>
+            <button style={btnPrimary} onClick={() => go("produtos")}>Ver Programas</button>
+            <button style={btnSecondary} onClick={() => go("sobre")}>Conhecer a Rayssa</button>
           </div>
-          <div style={{ display: "flex", gap: 40, marginTop: 64, paddingTop: 40, borderTop: `1px solid ${c.border}` }}>
-            {[
-              ["6+", "Anos em obstetrícia"],
-              ["3", "Idiomas disponíveis"],
-              ["UNAERP", "Parceria institucional"],
-            ].map(([num, lbl]) => (
+          <div style={{ display: "flex", gap: 40, marginTop: 64, paddingTop: 40, borderTop: `1px solid ${c.border}`, flexWrap: "wrap" }}>
+            {[["6+", "Anos em obstetrícia"], ["3", "Idiomas disponíveis"], ["UNAERP", "Parceria institucional"]].map(([num, lbl]) => (
               <div key={lbl}>
                 <div style={{ fontFamily: serif, fontSize: 36, fontWeight: 300, color: c.sageDark }}>{num}</div>
                 <div style={{ fontSize: 11, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 2 }}>{lbl}</div>
@@ -240,9 +218,13 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             ))}
           </div>
         </div>
-        <div style={{ width: "42%", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: 48 }}>
-          <div style={{ width: "100%", flex: 1, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: serif, fontSize: 120, fontWeight: 300, color: c.border, letterSpacing: -4, userSelect: "none" }}>RL</div>
-          <div style={{ background: "white", padding: "20px 24px", boxShadow: "0 4px 32px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 16, position: "relative", zIndex: 2 }}>
+        <div style={{ flex: "1 1 420px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: 48, minHeight: 600 }}>
+          <img
+            src={rayssa}
+            alt="Rayssa Leslie, Enfermeira Obstetra"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+          />
+          <div style={{ background: "white", padding: "20px 24px", boxShadow: "0 4px 32px rgba(0,0,0,0.12)", display: "flex", alignItems: "center", gap: 16, position: "relative", zIndex: 2 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
             <div>
               <div style={{ fontSize: 14, fontWeight: 500 }}>Rayssa Leslie</div>
@@ -277,10 +259,10 @@ function Ticker() {
 function Sobre() {
   return (
     <section style={{ paddingTop: 80, minHeight: "100vh" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 80, padding: "120px 64px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 80, padding: "120px 64px", flexWrap: "wrap" }}>
         <div style={{ fontFamily: serif, fontSize: 200, fontWeight: 300, color: c.border, lineHeight: 1, flexShrink: 0, userSelect: "none" }}>01</div>
-        <div>
-          {sectionTag("Sobre Rayssa Leslie")}
+        <div style={{ flex: "1 1 320px" }}>
+          <SectionTag text="Sobre Rayssa Leslie" />
           <h2 style={h2}>
             Experiência clínica<br />que <em style={{ fontStyle: "italic", color: c.sage }}>transforma</em><br />o cuidado.
           </h2>
@@ -289,12 +271,12 @@ function Sobre() {
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[
-              "Graduação e Pós-Graduação em Obstetrícia — UNAERP",
-              "ACLS — Advanced Cardiac Life Support · American Heart Association",
+              "Graduação e Pós-Graduação em Obstetrícia · UNAERP",
+              "ACLS · Advanced Cardiac Life Support · American Heart Association",
               "Especialização em PICC",
-              "Enf. Obstetra III — Hospital Regional Baixada Santista",
-              "Parto Seguro — CEJAM / Hospital Dr. João Amorim, SP",
-              "Hospital Electro Bonini UNAERP — Ribeirão Preto",
+              "Enf. Obstetra III · Hospital Regional Baixada Santista",
+              "Parto Seguro · CEJAM · Hospital Dr. João Amorim, SP",
+              "Hospital Electro Bonini UNAERP · Ribeirão Preto",
             ].map((t) => (
               <div key={t} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13 }}>
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
@@ -331,7 +313,7 @@ function ProdutoCard({ num, titulo, desc, dark = false, badge }: { num: string; 
         <span style={{ fontSize: 16 }}>R$</span> 297
       </div>
       <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: isDark ? "white" : c.sageDark, borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.4)" : c.sageDark}`, paddingBottom: 2, display: "inline-block" }}>
-        Acessar programa →
+        Acessar programa
       </div>
       {badge && (
         <div style={{ position: "absolute", top: 24, right: 24, background: c.terracotta, color: "white", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", padding: "4px 10px" }}>{badge}</div>
@@ -345,7 +327,7 @@ function Produtos() {
     <section style={{ paddingTop: 80, minHeight: "100vh" }}>
       <div style={{ padding: "120px 64px" }}>
         <div style={{ marginBottom: 64 }}>
-          {sectionTag("Programas")}
+          <SectionTag text="Programas" />
           <h2 style={h2}>
             Quatro fases.<br />
             <em style={{ fontStyle: "italic", color: c.sage }}>Uma jornada completa.</em>
@@ -369,63 +351,7 @@ function Produtos() {
                 <span style={{ fontSize: 18 }}>R$</span> 797
               </div>
             </div>
-            <button style={{ ...btnPrimary, whiteSpace: "nowrap" }}>Garantir acesso →</button>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function App() {
-  return (
-    <section style={{ paddingTop: 80 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 80, padding: "120px 64px", background: c.sageDark, color: "white", flexWrap: "wrap" }}>
-        <div style={{ flex: 1, minWidth: 320 }}>
-          <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sageLight, fontWeight: 500, marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 24, height: 1, background: c.sageLight }} />
-            App LeMater
-          </div>
-          <h2 style={{ ...h2, color: "white" }}>
-            Sua gestação<br />
-            <em style={{ fontStyle: "italic", color: c.sageLight }}>no seu bolso.</em>
-          </h2>
-          <p style={{ ...sectionP, color: "rgba(255,255,255,0.6)" }}>
-            O único app de saúde materna com alertas clínicos automáticos baseados em protocolos do Ministério da Saúde, OMS e FEBRASGO — com cartão digital da gestante via QR Code.
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 20, marginTop: 40 }}>
-            {[
-              ["Cartão Digital da Gestante", "QR Code para acesso em emergências. Sinais vitais, vacinas, exames e histórico."],
-              ["Alertas Clínicos Automáticos", "Parâmetros configurados conforme MS Caderno 32, OMS e FEBRASGO."],
-              ["Teleconsulta Integrada", "Consulta por vídeo com prontuário e gravação disponível diretamente no app."],
-            ].map(([t, d]) => (
-              <div key={t} style={{ display: "flex", alignItems: "flex-start", gap: 16, padding: 20, border: "1px solid rgba(255,255,255,0.1)" }}>
-                <div style={{ width: 40, height: 40, background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: serif, fontSize: 20 }}>·</div>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: "white", marginBottom: 4 }}>{t}</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>{d}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", minWidth: 280 }}>
-          <div style={{ width: 260, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", padding: 24, fontFamily: serif }}>
-            <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 16, fontFamily: sans }}>Minha gestação</div>
-            <div style={{ fontSize: 72, fontWeight: 300, color: "white", lineHeight: 1 }}>31</div>
-            <div style={{ fontSize: 13, color: c.sageLight, marginBottom: 24 }}>Semana · 3º Trimestre</div>
-            <div style={{ height: 4, background: "rgba(255,255,255,0.1)", marginBottom: 8 }}>
-              <div style={{ height: "100%", background: c.sageLight, width: "74%" }} />
-            </div>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 20, fontFamily: sans }}>9 semanas restantes</div>
-            <div style={{ display: "flex", gap: 16 }}>
-              {[["68,5", "Peso kg"], ["110/70", "Pressão"], ["142", "BCF bpm"]].map(([v, l]) => (
-                <div key={l} style={{ flex: 1, padding: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <div style={{ fontSize: 18, fontWeight: 300, color: "white" }}>{v}</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 2, fontFamily: sans }}>{l}</div>
-                </div>
-              ))}
-            </div>
+            <button style={{ ...btnPrimary, whiteSpace: "nowrap" }}>Garantir acesso</button>
           </div>
         </div>
       </div>
@@ -437,10 +363,7 @@ function Contato() {
   return (
     <section style={{ paddingTop: 80, minHeight: "100vh" }}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "120px 64px", textAlign: "center" }}>
-        <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sage, fontWeight: 500, marginBottom: 24, display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
-          <span style={{ width: 24, height: 1, background: c.sage }} />
-          Fale conosco
-        </div>
+        <SectionTag text="Fale conosco" center />
         <h2 style={{ ...h2, maxWidth: 600, margin: "0 auto 24px" }}>
           Pronta para começar<br />
           <em style={{ fontStyle: "italic", color: c.sage }}>sua jornada?</em>
@@ -449,7 +372,7 @@ function Contato() {
           Entre em contato ou acesse o sistema para iniciar seu acompanhamento com a Rayssa Leslie.
         </p>
         <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-          <button style={btnPrimary}>Agendar Consulta →</button>
+          <button style={btnPrimary}>Agendar Consulta</button>
           <button style={btnSecondary}>Acessar Sistema</button>
         </div>
         <div style={{ display: "flex", gap: 48, marginTop: 80, paddingTop: 48, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: "center" }}>
@@ -476,7 +399,7 @@ function Footer() {
       <div style={{ fontFamily: serif, fontSize: 18, fontWeight: 300, color: c.ink, letterSpacing: "0.06em" }}>
         Le<span style={{ color: c.sage }}>Mater</span>
       </div>
-      <div>© 2026 — Rayssa Leslie · Todos os direitos reservados</div>
+      <div>© 2026 · Rayssa Leslie · Todos os direitos reservados</div>
       <div>UNAERP · COREN · ACLS</div>
     </footer>
   );
