@@ -375,7 +375,7 @@ function Contato() {
           <button style={btnPrimary}>Agendar Consulta</button>
           <button style={btnSecondary}>Acessar Sistema</button>
         </div>
-        <div style={{ display: "flex", gap: 48, marginTop: 80, paddingTop: 48, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: "center" }}>
+        <div style={{ display: "flex", gap: 36, marginTop: 60, paddingTop: 40, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: "center" }}>
           {[
             ["Localização", "Ribeirão Preto, SP"],
             ["Email", "contato@lemater.com"],
