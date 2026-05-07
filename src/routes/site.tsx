@@ -361,8 +361,8 @@ function Produtos() {
 
 function Contato() {
   return (
-    <section style={{ paddingTop: 80, minHeight: "100vh" }}>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "120px 64px", textAlign: "center" }}>
+    <section style={{ paddingTop: 70, minHeight: "100vh" }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 48px", textAlign: "center" }}>
         <SectionTag text="Fale conosco" center />
         <h2 style={{ ...h2, maxWidth: 600, margin: "0 auto 24px" }}>
           Pronta para começar<br />
