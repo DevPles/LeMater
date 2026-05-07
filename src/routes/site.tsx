@@ -225,7 +225,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             alt="Rayssa Leslie, Enfermeira Obstetra"
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
           />
-          <LiquidCard bgOpacity={0.05} style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 16, position: "relative", zIndex: 2, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}>
+          <LiquidCard bgOpacity={0} style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 16, position: "relative", zIndex: 2, backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)", background: "rgba(255, 255, 255, 0.01)" }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
             <div>
               <div style={{ fontSize: 14, fontWeight: 500, color: c.ink }}>Rayssa Leslie</div>
