@@ -258,9 +258,9 @@ function Ticker() {
 
 function Sobre() {
   return (
-    <section style={{ paddingTop: 80, minHeight: "100vh" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 80, padding: "120px 64px", flexWrap: "wrap" }}>
-        <div style={{ fontFamily: serif, fontSize: 200, fontWeight: 300, color: c.border, lineHeight: 1, flexShrink: 0, userSelect: "none" }}>01</div>
+    <section style={{ paddingTop: 70, minHeight: "100vh" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 60, padding: "80px 48px", flexWrap: "wrap" }}>
+        <div style={{ fontFamily: serif, fontSize: 140, fontWeight: 300, color: c.border, lineHeight: 1, flexShrink: 0, userSelect: "none" }}>01</div>
         <div style={{ flex: "1 1 320px" }}>
           <SectionTag text="Sobre Rayssa Leslie" />
           <h2 style={h2}>
