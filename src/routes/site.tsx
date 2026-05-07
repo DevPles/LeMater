@@ -194,31 +194,31 @@ const btnSecondary: CSSProperties = {
 
 function Inicio({ go }: { go: (id: SectionId) => void }) {
   return (
-    <section style={{ paddingTop: 80, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <section style={{ paddingTop: 70, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", flex: 1, flexWrap: "wrap" }}>
-        <div style={{ flex: "1 1 480px", display: "flex", flexDirection: "column", justifyContent: "center", padding: "120px 64px 80px" }}>
+        <div style={{ flex: "1 1 480px", display: "flex", flexDirection: "column", justifyContent: "center", padding: "80px 48px 60px" }}>
           <SectionTag text="Saúde materna com credencial clínica real" />
-          <h1 style={{ fontFamily: serif, fontSize: "clamp(48px,6vw,80px)", fontWeight: 300, lineHeight: 1.05, marginBottom: 24 }}>
+          <h1 style={{ fontFamily: serif, fontSize: "clamp(36px,5vw,64px)", fontWeight: 300, lineHeight: 1.05, marginBottom: 20 }}>
             A gestação<br />que você<br />
             <em style={{ fontStyle: "italic", color: c.sage }}>merece viver.</em>
           </h1>
-          <p style={{ fontSize: 15, lineHeight: 1.7, color: c.muted, maxWidth: 460, marginBottom: 48, fontWeight: 300 }}>
+          <p style={{ fontSize: 14, lineHeight: 1.6, color: c.muted, maxWidth: 440, marginBottom: 36, fontWeight: 300 }}>
             Acompanhamento pré-natal, cursos para gestantes e sistema digital de saúde materna por Rayssa Leslie, Enfermeira Obstetra com formação UNAERP e seis anos de experiência em alta complexidade.
           </p>
-          <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
             <button style={btnPrimary} onClick={() => go("produtos")}>Ver Programas</button>
             <button style={btnSecondary} onClick={() => go("sobre")}>Conhecer a Rayssa</button>
           </div>
-          <div style={{ display: "flex", gap: 40, marginTop: 64, paddingTop: 40, borderTop: `1px solid ${c.border}`, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap" }}>
             {[["6+", "Anos em obstetrícia"], ["3", "Idiomas disponíveis"], ["UNAERP", "Parceria institucional"]].map(([num, lbl]) => (
               <div key={lbl}>
-                <div style={{ fontFamily: serif, fontSize: 36, fontWeight: 300, color: c.sageDark }}>{num}</div>
-                <div style={{ fontSize: 11, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 2 }}>{lbl}</div>
+                <div style={{ fontFamily: serif, fontSize: 32, fontWeight: 300, color: c.sageDark }}>{num}</div>
+                <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 2 }}>{lbl}</div>
               </div>
             ))}
           </div>
         </div>
-        <div style={{ flex: "1 1 420px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: 48, minHeight: 600 }}>
+        <div style={{ flex: "1 1 420px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: 40, minHeight: 500 }}>
           <img
             src={rayssa}
             alt="Rayssa Leslie, Enfermeira Obstetra"
