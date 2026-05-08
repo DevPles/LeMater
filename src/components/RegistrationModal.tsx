@@ -900,7 +900,8 @@ export default function RegistrationModal({
                           setUbs("");
                           setHealthUnitId(null);
                         }}
-                        className="text-[10px] text-white/60 hover:text-[#f0c040] underline whitespace-nowrap self-center"
+                        className="text-[10px] underline whitespace-nowrap self-center hover:opacity-70"
+                        style={{ color: c.muted }}
                       >
                         usar lista
                       </button>
