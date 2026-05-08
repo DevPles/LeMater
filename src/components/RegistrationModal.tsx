@@ -864,7 +864,7 @@ export default function RegistrationModal({
                               : "Selecione a UBS"}
                         </option>
                         {ubsCatalogo.map((u) => (
-                          <option key={u.id} value={u.id} className="text-[#1a1557]">
+                          <option key={u.id} value={u.id} style={{ color: c.ink }}>
                             {u.nome}
                           </option>
                         ))}
