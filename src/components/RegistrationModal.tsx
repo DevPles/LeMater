@@ -869,7 +869,7 @@ export default function RegistrationModal({
                           </option>
                         ))}
                         {ubsCatalogo.length > 0 && (
-                          <option value="__manual__" className="text-[#1a1557]">
+                          <option value="__manual__" style={{ color: c.ink }}>
                             + Outra UBS (digitar)
                           </option>
                         )}
