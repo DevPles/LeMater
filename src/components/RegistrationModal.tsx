@@ -324,9 +324,24 @@ export default function RegistrationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 w-[calc(100vw-1rem)] max-w-md max-h-[85vh] p-0 rounded-2xl relative overflow-hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fixed [&>button]:text-white [&>button]:opacity-100 [&>button]:z-20">
-        {/* Rising particles / bokeh animation - confined inside the modal */}
+      <DialogContent 
+        className="w-[calc(100vw-1rem)] max-w-md max-h-[85vh] p-0 rounded-2xl relative overflow-hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fixed"
+        style={{ 
+          background: c.warm, 
+          border: `1px solid ${c.border}`,
+          fontFamily: sans,
+          color: c.ink
+        }}
+      >
+        <style>{`
+          .registration-modal-close-btn { color: ${c.ink} !important; }
+          [data-radix-collection-item] > svg { color: ${c.ink} !important; }
+        `}</style>
+        {/* Subtle decorative background - softer than the blue particles */}
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-2xl">
+          <div style={{ position: "absolute", top: -50, right: -50, width: 200, height: 200, borderRadius: "50%", background: `radial-gradient(circle, ${c.sageLight}11 0%, transparent 70%)` }} />
+          <div style={{ position: "absolute", bottom: -50, left: -50, width: 200, height: 200, borderRadius: "50%", background: `radial-gradient(circle, ${c.sage}11 0%, transparent 70%)` }} />
+        </div>
           {Array.from({ length: 18 }).map((_, i) => {
             const size = 4 + ((i * 7) % 14);
             const left = (i * 53) % 100;
