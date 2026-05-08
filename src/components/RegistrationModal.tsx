@@ -607,7 +607,8 @@ export default function RegistrationModal({
                 whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={() => setMode("register")}
-                className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm py-2.5 rounded-full backdrop-blur-sm transition-colors"
+                style={{ color: c.sageDark, border: `1.5px solid ${c.sage}` }}
+                className="bg-transparent font-bold text-sm py-2.5 rounded-full transition-colors"
               >
                 Cadastrar
               </motion.button>
