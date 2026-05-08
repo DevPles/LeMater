@@ -856,7 +856,7 @@ export default function RegistrationModal({
                         className={`${inputClass} appearance-none`}
                         disabled={temDistritos && !districtId}
                       >
-                        <option value="" className="text-[#1a1557]">
+                        <option value="" style={{ color: c.ink }}>
                           {temDistritos && !districtId
                             ? "Selecione o distrito primeiro"
                             : ubsCatalogo.length === 0
