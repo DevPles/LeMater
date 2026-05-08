@@ -1088,7 +1088,8 @@ export default function RegistrationModal({
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="flex-1 py-3 rounded-full text-sm font-bold bg-white/10 text-white/60 border border-white/20"
+                  style={{ background: "transparent", color: c.muted, border: `1px solid ${c.border}` }}
+                  className="flex-1 py-3 rounded-full text-sm font-bold"
                 >
                   Voltar
                 </button>
