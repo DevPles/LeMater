@@ -878,7 +878,8 @@ export default function RegistrationModal({
                         <button
                           type="button"
                           onClick={() => setUbsManual(true)}
-                          className="mt-1 text-[10px] text-[#f0c040] hover:underline"
+                          className="mt-1 text-[10px] hover:underline"
+                          style={{ color: c.sage }}
                         >
                           + Digitar nome da UBS manualmente
                         </button>
