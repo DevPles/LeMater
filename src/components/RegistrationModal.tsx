@@ -760,7 +760,7 @@ export default function RegistrationModal({
                       className={inputClass}
                     />
                     {cepLoading && (
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[#f0c040] text-[10px]">
+                      <span style={{ color: c.sage }} className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]">
                         ...
                       </span>
                     )}
