@@ -48,9 +48,9 @@ function WelcomeScreen() {
       {/* Logo Section */}
       <div style={{ padding: "40px 24px", display: "flex", justifyContent: "center" }}>
         <img
-          src="/images/hospital-bonini-logo.png"
-          alt="Hospital Electro Bonini - UNAERP"
-          style={{ width: "100%", maxWidth: 220, objectFit: "contain" }}
+          src="https://cvbgrjauqjawrsyknhyj.supabase.co/storage/v1/object/public/files/uploads/hsIaJ1cV77Y8R02Q0Rs8lMxhMw62/1778266256438-v21ec-logo-esI4Subg.png"
+          alt="LeMater Logo"
+          style={{ width: "100%", maxWidth: 180, objectFit: "contain" }}
         />
       </div>
 
