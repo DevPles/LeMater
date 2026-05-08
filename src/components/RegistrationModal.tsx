@@ -497,7 +497,8 @@ export default function RegistrationModal({
                         }
                       }}
                       disabled={forgotLoading}
-                      className="flex-1 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-xs py-2 rounded-full transition-colors disabled:opacity-40"
+                      style={{ background: c.sageDark, color: "white" }}
+                      className="flex-1 font-bold text-xs py-2 rounded-full transition-colors disabled:opacity-40"
                     >
                       {forgotLoading ? "Enviando..." : "Enviar link"}
                     </button>
