@@ -1095,7 +1095,7 @@ export default function RegistrationModal({
               )}
 
               {submitErro && (
-                <p className="text-red-300 text-xs bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">
+                <p className="text-red-500 text-xs bg-red-100 border border-red-200 px-3 py-2 rounded-lg">
                   {submitErro}
                 </p>
               )}
