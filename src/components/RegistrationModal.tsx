@@ -319,8 +319,8 @@ export default function RegistrationModal({
   };
 
   const inputClass =
-    `bg-white border-${c.border} text-${c.ink} placeholder:${c.muted} focus:border-${c.sage} focus:ring-${c.sage}/30 h-10 text-sm w-full min-w-0 block appearance-none shadow-sm`;
-  const labelClass = `text-${c.ink}/90 text-xs font-medium`;
+    `bg-white border-[#E8DDD2] text-[#1C1C1A] placeholder-[#6B6560] focus:border-[#5C8A6E] focus:ring-[#5C8A6E]/30 h-10 text-sm w-full min-w-0 block appearance-none shadow-sm`;
+  const labelClass = `text-[#1C1C1A]/90 text-xs font-medium mb-1.5 block`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
