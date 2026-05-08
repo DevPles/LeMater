@@ -640,7 +640,8 @@ export default function RegistrationModal({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-[#f0c040] text-2xl font-display font-bold text-center"
+                style={{ color: c.sageDark, fontFamily: serif }}
+                className="text-2xl font-bold text-center"
               >
                 Parabéns, mamãe!
               </motion.p>
