@@ -379,7 +379,10 @@ export default function RegistrationModal({
         <div className="relative z-10 p-3 sm:p-4 overflow-y-auto max-h-[85vh]">
 
         <DialogHeader className="relative z-10">
-          <DialogTitle className="text-[#f0c040] text-xl font-display text-center">
+          <DialogTitle 
+            style={{ color: c.sageDark, fontFamily: serif }}
+            className="text-xl text-center"
+          >
             {mode === "login"
               ? "Entrar"
               : step === 1
