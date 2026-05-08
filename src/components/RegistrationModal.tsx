@@ -908,7 +908,7 @@ export default function RegistrationModal({
                     </div>
                   )}
                   {ubs && !ubsManual && (
-                    <p className="mt-1 text-[10px] text-[#f0c040]/80">
+                    <p className="mt-1 text-[10px]" style={{ color: `${c.sage}cc` }}>
                       Selecionada: <span className="font-bold">{ubs}</span>
                     </p>
                   )}
