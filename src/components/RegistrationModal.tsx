@@ -823,7 +823,7 @@ export default function RegistrationModal({
                     }}
                     className={`${inputClass} appearance-none`}
                   >
-                    <option value="" className="text-[#1a1557]">Selecione o distrito</option>
+                    <option value="" style={{ color: c.ink }}>Selecione o distrito</option>
                     {distritosCatalogo.map((d) => (
                       <option key={d.id} value={d.id} className="text-[#1a1557]">
                         {d.nome}
