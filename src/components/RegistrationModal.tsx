@@ -7,6 +7,21 @@ import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistritos, useBairros, useUbs } from "@/hooks/useLocalidades";
 
+const c = {
+  cream: "#FAF5EE",
+  warm: "#F5EDE0",
+  sage: "#5C8A6E",
+  sageLight: "#8AB89A",
+  sageDark: "#2D5A42",
+  terracotta: "#C4714A",
+  ink: "#1C1C1A",
+  muted: "#6B6560",
+  border: "#E8DDD2",
+};
+
+const serif = "'Cormorant Garamond', serif";
+const sans = "'DM Sans', sans-serif";
+
 type Mode = "login" | "register";
 
 function EyeToggleIcon({ open }: { open: boolean }) {
