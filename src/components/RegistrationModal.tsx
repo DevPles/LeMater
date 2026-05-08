@@ -341,7 +341,7 @@ export default function RegistrationModal({
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-2xl">
           <div style={{ position: "absolute", top: -50, right: -50, width: 200, height: 200, borderRadius: "50%", background: `radial-gradient(circle, ${c.sageLight}11 0%, transparent 70%)` }} />
           <div style={{ position: "absolute", bottom: -50, left: -50, width: 200, height: 200, borderRadius: "50%", background: `radial-gradient(circle, ${c.sage}11 0%, transparent 70%)` }} />
-        </div>
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-2xl">
           {Array.from({ length: 18 }).map((_, i) => {
             const size = 4 + ((i * 7) % 14);
             const left = (i * 53) % 100;
