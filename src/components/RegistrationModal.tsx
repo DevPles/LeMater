@@ -956,9 +956,10 @@ export default function RegistrationModal({
                     onClick={() => setGestante(true)}
                     className={`flex-1 py-2 rounded-full text-xs font-bold transition-all ${
                       gestante === true
-                        ? "bg-[#f0c040] text-[#1a1557]"
-                        : "bg-white/10 text-white/60 border border-white/20"
+                        ? "text-white"
+                        : "bg-transparent text-muted"
                     }`}
+                    style={gestante === true ? { background: c.sageDark } : { border: `1px solid ${c.border}` }}
                   >
                     Sim
                   </button>
