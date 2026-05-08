@@ -597,9 +597,9 @@ export default function RegistrationModal({
               </motion.button>
 
               <div className="flex items-center gap-2 my-1">
-                <div className="flex-1 h-px bg-white/20" />
-                <span className="text-white/40 text-xs">ou</span>
-                <div className="flex-1 h-px bg-white/20" />
+                <div className="flex-1 h-px" style={{ background: c.border }} />
+                <span style={{ color: c.muted }} className="text-xs">ou</span>
+                <div className="flex-1 h-px" style={{ background: c.border }} />
               </div>
 
               <motion.button
