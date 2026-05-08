@@ -810,7 +810,7 @@ export default function RegistrationModal({
               {cidade && temDistritos && (
                 <div>
                   <Label className={labelClass}>
-                    Distrito sanitário {!districtId && <span className="text-[#f0c040]">— selecione</span>}
+                    Distrito sanitário {!districtId && <span style={{ color: c.sage }}>— selecione</span>}
                   </Label>
                   <select
                     value={districtId ?? ""}
