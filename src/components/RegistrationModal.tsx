@@ -649,7 +649,8 @@ export default function RegistrationModal({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="text-white/70 text-center text-sm"
+                className="text-center text-sm"
+                style={{ color: c.muted }}
               >
                 Vamos coletar mais alguns dados sobre a sua gestação
               </motion.p>
