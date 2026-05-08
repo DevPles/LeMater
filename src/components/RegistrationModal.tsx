@@ -697,7 +697,7 @@ export default function RegistrationModal({
                   {foto ? (
                     <img src={foto} alt="Foto" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-white/40 text-xs text-center leading-tight">Adicionar<br/>foto</span>
+                    <span style={{ color: c.muted }} className="text-xs text-center leading-tight">Adicionar<br/>foto</span>
                   )}
                 </div>
                 <input
