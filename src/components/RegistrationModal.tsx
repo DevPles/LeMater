@@ -1069,9 +1069,10 @@ export default function RegistrationModal({
                     onClick={() => setTesteGravidez(false)}
                     className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-all ${
                       testeGravidez === false
-                        ? "bg-[#f0c040] text-[#1a1557]"
-                        : "bg-white/10 text-white/60 border border-white/20"
+                        ? "text-white"
+                        : "bg-transparent text-muted"
                     }`}
+                    style={testeGravidez === false ? { background: c.sageDark } : { border: `1px solid ${c.border}` }}
                   >
                     Não
                   </button>
