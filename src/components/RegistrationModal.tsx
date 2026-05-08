@@ -1037,8 +1037,8 @@ export default function RegistrationModal({
                   className="rounded-2xl p-4 space-y-2"
                 >
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Idade gestacional</span>
-                    <span className="text-[#f0c040] font-bold">
+                    <span style={{ color: c.muted }} className="text-sm">Idade gestacional</span>
+                    <span style={{ color: c.sageDark }} className="font-bold">
                       {gestAge.weeks} semanas e {gestAge.days} dias
                     </span>
                   </div>
