@@ -1033,7 +1033,8 @@ export default function RegistrationModal({
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-2xl p-4 space-y-2"
+                  style={{ background: `${c.sageLight}15`, borderColor: `${c.sage}33` }}
+                  className="rounded-2xl p-4 space-y-2"
                 >
                   <div className="flex justify-between items-center">
                     <span className="text-white/70 text-sm">Idade gestacional</span>
