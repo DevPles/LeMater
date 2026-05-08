@@ -9,9 +9,30 @@ export const Route = createFileRoute("/")({
       { title: "MãeDigital — Cartão Digital da Gestante" },
       { name: "description", content: "Iniciativa UNAERP. Acompanhe sua gestação com suporte profissional." },
     ],
+    links: [
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap",
+      },
+    ],
   }),
   component: WelcomeScreen,
 });
+
+const c = {
+  cream: "#FAF5EE",
+  warm: "#F5EDE0",
+  sage: "#5C8A6E",
+  sageLight: "#8AB89A",
+  sageDark: "#2D5A42",
+  terracotta: "#C4714A",
+  ink: "#1C1C1A",
+  muted: "#6B6560",
+  border: "#E8DDD2",
+};
+
+const serif = "'Cormorant Garamond', serif";
+const sans = "'DM Sans', sans-serif";
 
 function WelcomeScreen() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -23,107 +44,128 @@ function WelcomeScreen() {
   };
 
   return (
-    <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-white via-blue-100 to-[#1a4ba8] flex flex-col">
-      {/* Logo do hospital no topo */}
-      <div className="flex items-start justify-center px-8 pt-2 pb-2">
+    <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      {/* Logo Section */}
+      <div style={{ padding: "40px 24px", display: "flex", justifyContent: "center" }}>
         <img
           src="/images/hospital-bonini-logo.png"
           alt="Hospital Electro Bonini - UNAERP"
-          className="w-full max-w-[220px] object-contain"
+          style={{ width: "100%", maxWidth: 220, objectFit: "contain" }}
         />
       </div>
 
-      {/* Card inferior com gradiente roxo — preenche até o rodapé */}
-      <div className="relative bg-gradient-to-b from-[#1a4ba8] to-[#1a1557] px-8 pt-6 pb-6 rounded-t-3xl mt-3 flex-1 flex items-start justify-center overflow-hidden">
-        {/* Rising particles / bokeh animation */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          {Array.from({ length: 18 }).map((_, i) => {
-            const size = 4 + ((i * 7) % 14);
-            const left = (i * 53) % 100;
-            const duration = 8 + ((i * 3) % 10);
-            const delay = (i * 0.7) % 8;
-            const blur = i % 3 === 0 ? "blur-[2px]" : i % 3 === 1 ? "blur-[1px]" : "";
-            const opacity = 0.25 + ((i % 5) * 0.12);
-            return (
-              <motion.span
-                key={i}
-                className={`absolute rounded-full bg-white ${blur}`}
-                style={{
-                  width: size,
-                  height: size,
-                  left: `${left}%`,
-                  bottom: `-${size}px`,
-                  opacity,
-                }}
-                animate={{
-                  y: ["0%", "-1200%"],
-                  x: [0, i % 2 === 0 ? 20 : -20, 0],
-                  opacity: [0, opacity, opacity, 0],
-                }}
-                transition={{
-                  duration,
-                  delay,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  times: [0, 0.1, 0.9, 1],
-                }}
-              />
-            );
-          })}
-        </div>
+      {/* Main Content Card */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        style={{ 
+          flex: 1, 
+          background: c.warm, 
+          borderTopLeftRadius: 40, 
+          borderTopRightRadius: 40, 
+          padding: "48px 32px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+          position: "relative",
+          overflow: "hidden",
+          border: `1px solid ${c.border}`,
+          borderBottom: "none"
+        }}
+      >
+        {/* Subtle decorative elements */}
+        <div style={{ position: "absolute", top: -100, right: -100, width: 300, height: 300, borderRadius: "50%", background: `radial-gradient(circle, ${c.sageLight}22 0%, transparent 70%)` }} />
+        
+        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 400 }}>
+          <div style={{ 
+            fontSize: 12, 
+            letterSpacing: "0.15em", 
+            textTransform: "uppercase", 
+            color: c.sage, 
+            fontWeight: 500, 
+            marginBottom: 16,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12
+          }}>
+            <span style={{ width: 24, height: 1, background: c.sage }} />
+            Iniciativa UNAERP
+            <span style={{ width: 24, height: 1, background: c.sage }} />
+          </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="relative z-10 flex flex-col items-center text-center"
-        >
-          <motion.h1
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-3xl font-bold font-display text-white mb-1 tracking-tight"
-          >
-            Mãe Digital
-          </motion.h1>
+          <h1 style={{ fontFamily: serif, fontSize: "42px", fontWeight: 300, lineHeight: 1.1, marginBottom: 12, color: c.ink }}>
+            Mãe <em style={{ fontStyle: "italic", color: c.sage }}>Digital</em>
+          </h1>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-white/90 text-sm mb-5"
-          >
-            Cartão Digital da Gestante
-          </motion.p>
+          <p style={{ fontSize: 15, lineHeight: 1.6, color: c.muted, marginBottom: 48, fontWeight: 300 }}>
+            Seu cartão digital da gestante com <br />
+            apoio clínico especializado.
+          </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-            className="grid grid-cols-2 items-center justify-center gap-3 w-full max-w-md"
-          >
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => openModal("login")}
-              className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm px-6 py-3 rounded-full shadow-xl shadow-[#f0c040]/40 transition-colors w-full border-2 border-transparent"
+              style={{
+                background: c.sageDark,
+                color: "white",
+                fontSize: 13,
+                fontWeight: 500,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                padding: "16px 32px",
+                border: "none",
+                borderRadius: 4,
+                cursor: "pointer",
+                fontFamily: sans,
+                boxShadow: "0 4px 12px rgba(45, 90, 66, 0.2)"
+              }}
             >
-              Entrar
+              Entrar no Sistema
             </motion.button>
 
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => openModal("register")}
-              className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm px-6 py-3 rounded-full backdrop-blur-sm transition-colors w-full"
+              style={{
+                background: "transparent",
+                color: c.ink,
+                fontSize: 13,
+                fontWeight: 500,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                padding: "16px 32px",
+                border: `1.5px solid ${c.sage}`,
+                borderRadius: 4,
+                cursor: "pointer",
+                fontFamily: sans,
+              }}
             >
-              Cadastrar
+              Criar minha conta
             </motion.button>
-          </motion.div>
-        </motion.div>
-      </div>
+          </div>
+
+          <div style={{ marginTop: 60, display: "flex", justifyContent: "center", gap: 24 }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontFamily: serif, fontSize: 24, color: c.sageDark }}>100%</div>
+              <div style={{ fontSize: 9, color: c.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>Seguro</div>
+            </div>
+            <div style={{ width: 1, height: 40, background: c.border }} />
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontFamily: serif, fontSize: 24, color: c.sageDark }}>PICC</div>
+              <div style={{ fontSize: 9, color: c.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>Certificado</div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
       <RegistrationModal open={modalOpen} onOpenChange={setModalOpen} initialMode={modalMode} />
     </div>
   );
 }
+
