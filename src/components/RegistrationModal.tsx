@@ -1043,8 +1043,8 @@ export default function RegistrationModal({
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Data provável do parto</span>
-                    <span className="text-[#f0c040] font-bold">{formatDate(dueDate)}</span>
+                    <span style={{ color: c.muted }} className="text-sm">Data provável do parto</span>
+                    <span style={{ color: c.sageDark }} className="font-bold">{formatDate(dueDate)}</span>
                   </div>
                 </motion.div>
               )}
