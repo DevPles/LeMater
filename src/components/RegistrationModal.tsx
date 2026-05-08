@@ -319,7 +319,7 @@ export default function RegistrationModal({
   };
 
   const inputClass =
-    `bg-white border-${c.border} text-${c.ink} placeholder:${c.muted} focus:border-${c.sage} focus:ring-${c.sage}/30 h-9 text-sm w-full min-w-0 block appearance-none`;
+    `bg-white border-${c.border} text-${c.ink} placeholder:${c.muted} focus:border-${c.sage} focus:ring-${c.sage}/30 h-10 text-sm w-full min-w-0 block appearance-none shadow-sm`;
   const labelClass = `text-${c.ink}/90 text-xs font-medium`;
 
   return (
