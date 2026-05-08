@@ -691,7 +691,8 @@ export default function RegistrationModal({
               <div className="flex flex-col items-center gap-1 mb-1">
                 <div
                   onClick={() => fileRef.current?.click()}
-                  className="w-16 h-16 rounded-full bg-white/10 border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-[#f0c040]/60 transition-colors overflow-hidden"
+                  style={{ background: "white", borderColor: c.border, borderStyle: "dashed" }}
+                  className="w-16 h-16 rounded-full border-2 flex items-center justify-center cursor-pointer hover:opacity-80 transition-colors overflow-hidden"
                 >
                   {foto ? (
                     <img src={foto} alt="Foto" className="w-full h-full object-cover" />
