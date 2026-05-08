@@ -440,7 +440,8 @@ export default function RegistrationModal({
                   setForgotMsg(null);
                   if (!forgotEmail && loginEmail.includes("@")) setForgotEmail(loginEmail);
                 }}
-                className="text-white/60 hover:text-[#f0c040] text-xs text-right transition-colors self-end"
+                className="hover:opacity-70 text-xs text-right transition-colors self-end"
+                style={{ color: c.muted }}
               >
                 Esqueci minha senha
               </button>
