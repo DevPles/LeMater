@@ -825,7 +825,7 @@ export default function RegistrationModal({
                   >
                     <option value="" style={{ color: c.ink }}>Selecione o distrito</option>
                     {distritosCatalogo.map((d) => (
-                      <option key={d.id} value={d.id} className="text-[#1a1557]">
+                      <option key={d.id} value={d.id} style={{ color: c.ink }}>
                         {d.nome}
                       </option>
                     ))}
