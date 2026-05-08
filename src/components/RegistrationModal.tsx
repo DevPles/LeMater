@@ -7,6 +7,21 @@ import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistritos, useBairros, useUbs } from "@/hooks/useLocalidades";
 
+const c = {
+  cream: "#FAF5EE",
+  warm: "#F5EDE0",
+  sage: "#5C8A6E",
+  sageLight: "#8AB89A",
+  sageDark: "#2D5A42",
+  terracotta: "#C4714A",
+  ink: "#1C1C1A",
+  muted: "#6B6560",
+  border: "#E8DDD2",
+};
+
+const serif = "'Cormorant Garamond', serif";
+const sans = "'DM Sans', sans-serif";
+
 type Mode = "login" | "register";
 
 function EyeToggleIcon({ open }: { open: boolean }) {
@@ -304,14 +319,28 @@ export default function RegistrationModal({
   };
 
   const inputClass =
-    "bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#f0c040] focus:ring-[#f0c040]/30 h-9 text-sm w-full min-w-0 block appearance-none";
-  const labelClass = "text-white/90 text-xs font-medium";
+    `bg-white border-[#E8DDD2] text-[#1C1C1A] placeholder-[#6B6560] focus:border-[#5C8A6E] focus:ring-[#5C8A6E]/30 h-10 text-sm w-full min-w-0 block appearance-none shadow-sm`;
+  const labelClass = `text-[#1C1C1A]/90 text-xs font-medium mb-1.5 block`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1a1557] border-[#f0c040]/30 w-[calc(100vw-1rem)] max-w-md max-h-[85vh] p-0 rounded-2xl relative overflow-hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fixed [&>button]:text-white [&>button]:opacity-100 [&>button]:z-20">
-        {/* Rising particles / bokeh animation - confined inside the modal */}
+      <DialogContent 
+        className="w-[calc(100vw-1rem)] max-w-md max-h-[85vh] p-0 rounded-2xl relative overflow-hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fixed"
+        style={{ 
+          background: c.warm, 
+          border: `1px solid ${c.border}`,
+          fontFamily: sans,
+          color: c.ink
+        }}
+      >
+        <style>{`
+          .registration-modal-close-btn { color: ${c.ink} !important; }
+          [data-radix-collection-item] > svg { color: ${c.ink} !important; }
+        `}</style>
+        {/* Subtle decorative background - softer than the blue particles */}
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-2xl">
+          <div style={{ position: "absolute", top: -50, right: -50, width: 200, height: 200, borderRadius: "50%", background: `radial-gradient(circle, ${c.sageLight}11 0%, transparent 70%)` }} />
+          <div style={{ position: "absolute", bottom: -50, left: -50, width: 200, height: 200, borderRadius: "50%", background: `radial-gradient(circle, ${c.sage}11 0%, transparent 70%)` }} />
           {Array.from({ length: 18 }).map((_, i) => {
             const size = 4 + ((i * 7) % 14);
             const left = (i * 53) % 100;
@@ -349,7 +378,10 @@ export default function RegistrationModal({
         <div className="relative z-10 p-3 sm:p-4 overflow-y-auto max-h-[85vh]">
 
         <DialogHeader className="relative z-10">
-          <DialogTitle className="text-[#f0c040] text-xl font-display text-center">
+          <DialogTitle 
+            style={{ color: c.sageDark, fontFamily: serif }}
+            className="text-xl text-center"
+          >
             {mode === "login"
               ? "Entrar"
               : step === 1
@@ -392,7 +424,8 @@ export default function RegistrationModal({
                       type="button"
                       onClick={() => setShowLoginPassword((v) => !v)}
                       aria-label={showLoginPassword ? "Ocultar senha" : "Mostrar senha"}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#f0c040] hover:text-[#e5b535] transition-colors p-1"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 transition-colors p-1"
+                      style={{ color: c.sage }}
                     >
                       <EyeToggleIcon open={showLoginPassword} />
                     </button>
@@ -407,7 +440,8 @@ export default function RegistrationModal({
                   setForgotMsg(null);
                   if (!forgotEmail && loginEmail.includes("@")) setForgotEmail(loginEmail);
                 }}
-                className="text-white/60 hover:text-[#f0c040] text-xs text-right transition-colors self-end"
+                className="hover:opacity-70 text-xs text-right transition-colors self-end"
+                style={{ color: c.muted }}
               >
                 Esqueci minha senha
               </button>
@@ -463,7 +497,8 @@ export default function RegistrationModal({
                         }
                       }}
                       disabled={forgotLoading}
-                      className="flex-1 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-xs py-2 rounded-full transition-colors disabled:opacity-40"
+                      style={{ background: c.sageDark, color: "white" }}
+                      className="flex-1 font-bold text-xs py-2 rounded-full transition-colors disabled:opacity-40"
                     >
                       {forgotLoading ? "Enviando..." : "Enviar link"}
                     </button>
@@ -555,15 +590,16 @@ export default function RegistrationModal({
                   }
                 }}
                 disabled={!loginEmail.trim() || !loginSenha.trim() || loginLoading}
-                className="mt-2 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: c.sageDark, color: "white" }}
+                className="mt-2 font-bold text-sm py-2.5 rounded-full shadow-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {loginLoading ? "Entrando..." : "Entrar"}
               </motion.button>
 
               <div className="flex items-center gap-2 my-1">
-                <div className="flex-1 h-px bg-white/20" />
-                <span className="text-white/40 text-xs">ou</span>
-                <div className="flex-1 h-px bg-white/20" />
+                <div className="flex-1 h-px" style={{ background: c.border }} />
+                <span style={{ color: c.muted }} className="text-xs">ou</span>
+                <div className="flex-1 h-px" style={{ background: c.border }} />
               </div>
 
               <motion.button
@@ -571,7 +607,8 @@ export default function RegistrationModal({
                 whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={() => setMode("register")}
-                className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm py-2.5 rounded-full backdrop-blur-sm transition-colors"
+                style={{ color: c.sageDark, border: `1.5px solid ${c.sage}` }}
+                className="bg-transparent font-bold text-sm py-2.5 rounded-full transition-colors"
               >
                 Cadastrar
               </motion.button>
@@ -603,7 +640,8 @@ export default function RegistrationModal({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-[#f0c040] text-2xl font-display font-bold text-center"
+                style={{ color: c.sageDark, fontFamily: serif }}
+                className="text-2xl font-bold text-center"
               >
                 Parabéns, mamãe!
               </motion.p>
@@ -611,7 +649,8 @@ export default function RegistrationModal({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                className="text-white/70 text-center text-sm"
+                className="text-center text-sm"
+                style={{ color: c.muted }}
               >
                 Vamos coletar mais alguns dados sobre a sua gestação
               </motion.p>
@@ -652,12 +691,13 @@ export default function RegistrationModal({
               <div className="flex flex-col items-center gap-1 mb-1">
                 <div
                   onClick={() => fileRef.current?.click()}
-                  className="w-16 h-16 rounded-full bg-white/10 border-2 border-dashed border-white/30 flex items-center justify-center cursor-pointer hover:border-[#f0c040]/60 transition-colors overflow-hidden"
+                  style={{ background: "white", borderColor: c.border, borderStyle: "dashed" }}
+                  className="w-16 h-16 rounded-full border-2 flex items-center justify-center cursor-pointer hover:opacity-80 transition-colors overflow-hidden"
                 >
                   {foto ? (
                     <img src={foto} alt="Foto" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-white/40 text-xs text-center leading-tight">Adicionar<br/>foto</span>
+                    <span style={{ color: c.muted }} className="text-xs text-center leading-tight">Adicionar<br/>foto</span>
                   )}
                 </div>
                 <input
@@ -720,7 +760,7 @@ export default function RegistrationModal({
                       className={inputClass}
                     />
                     {cepLoading && (
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[#f0c040] text-[10px]">
+                      <span style={{ color: c.sage }} className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px]">
                         ...
                       </span>
                     )}
@@ -770,7 +810,7 @@ export default function RegistrationModal({
               {cidade && temDistritos && (
                 <div>
                   <Label className={labelClass}>
-                    Distrito sanitário {!districtId && <span className="text-[#f0c040]">— selecione</span>}
+                    Distrito sanitário {!districtId && <span style={{ color: c.sage }}>— selecione</span>}
                   </Label>
                   <select
                     value={districtId ?? ""}
@@ -783,9 +823,9 @@ export default function RegistrationModal({
                     }}
                     className={`${inputClass} appearance-none`}
                   >
-                    <option value="" className="text-[#1a1557]">Selecione o distrito</option>
+                    <option value="" style={{ color: c.ink }}>Selecione o distrito</option>
                     {distritosCatalogo.map((d) => (
-                      <option key={d.id} value={d.id} className="text-[#1a1557]">
+                      <option key={d.id} value={d.id} style={{ color: c.ink }}>
                         {d.nome}
                       </option>
                     ))}
@@ -816,7 +856,7 @@ export default function RegistrationModal({
                         className={`${inputClass} appearance-none`}
                         disabled={temDistritos && !districtId}
                       >
-                        <option value="" className="text-[#1a1557]">
+                        <option value="" style={{ color: c.ink }}>
                           {temDistritos && !districtId
                             ? "Selecione o distrito primeiro"
                             : ubsCatalogo.length === 0
@@ -824,12 +864,12 @@ export default function RegistrationModal({
                               : "Selecione a UBS"}
                         </option>
                         {ubsCatalogo.map((u) => (
-                          <option key={u.id} value={u.id} className="text-[#1a1557]">
+                          <option key={u.id} value={u.id} style={{ color: c.ink }}>
                             {u.nome}
                           </option>
                         ))}
                         {ubsCatalogo.length > 0 && (
-                          <option value="__manual__" className="text-[#1a1557]">
+                          <option value="__manual__" style={{ color: c.ink }}>
                             + Outra UBS (digitar)
                           </option>
                         )}
@@ -838,7 +878,8 @@ export default function RegistrationModal({
                         <button
                           type="button"
                           onClick={() => setUbsManual(true)}
-                          className="mt-1 text-[10px] text-[#f0c040] hover:underline"
+                          className="mt-1 text-[10px] hover:underline"
+                          style={{ color: c.sage }}
                         >
                           + Digitar nome da UBS manualmente
                         </button>
@@ -859,14 +900,15 @@ export default function RegistrationModal({
                           setUbs("");
                           setHealthUnitId(null);
                         }}
-                        className="text-[10px] text-white/60 hover:text-[#f0c040] underline whitespace-nowrap self-center"
+                        className="text-[10px] underline whitespace-nowrap self-center hover:opacity-70"
+                        style={{ color: c.muted }}
                       >
                         usar lista
                       </button>
                     </div>
                   )}
                   {ubs && !ubsManual && (
-                    <p className="mt-1 text-[10px] text-[#f0c040]/80">
+                    <p className="mt-1 text-[10px]" style={{ color: `${c.sage}cc` }}>
                       Selecionada: <span className="font-bold">{ubs}</span>
                     </p>
                   )}
@@ -914,9 +956,10 @@ export default function RegistrationModal({
                     onClick={() => setGestante(true)}
                     className={`flex-1 py-2 rounded-full text-xs font-bold transition-all ${
                       gestante === true
-                        ? "bg-[#f0c040] text-[#1a1557]"
-                        : "bg-white/10 text-white/60 border border-white/20"
+                        ? "text-white"
+                        : "bg-transparent text-muted"
                     }`}
+                    style={gestante === true ? { background: c.sageDark } : { border: `1px solid ${c.border}` }}
                   >
                     Sim
                   </button>
@@ -925,9 +968,10 @@ export default function RegistrationModal({
                     onClick={() => setGestante(false)}
                     className={`flex-1 py-2 rounded-full text-xs font-bold transition-all ${
                       gestante === false
-                        ? "bg-[#f0c040] text-[#1a1557]"
-                        : "bg-white/10 text-white/60 border border-white/20"
+                        ? "text-white"
+                        : "bg-transparent text-muted"
                     }`}
+                    style={gestante === false ? { background: c.sageDark } : { border: `1px solid ${c.border}` }}
                   >
                     Não
                   </button>
@@ -946,7 +990,8 @@ export default function RegistrationModal({
                   whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={() => setMode("login")}
-                  className="flex-1 bg-white/10 hover:bg-white/20 text-white border-2 border-white/40 font-bold text-sm py-2.5 rounded-full backdrop-blur-sm transition-colors"
+                  style={{ color: c.sageDark, border: `1.5px solid ${c.sage}` }}
+                  className="flex-1 bg-transparent font-bold text-sm py-2.5 rounded-full transition-colors"
                 >
                   Entrar
                 </motion.button>
@@ -955,7 +1000,8 @@ export default function RegistrationModal({
                   whileTap={{ scale: 0.98 }}
                   onClick={handleStep1Continue}
                   disabled={!nome.trim() || gestante === null || submitting}
-                  className="flex-1 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ background: c.sageDark, color: "white" }}
+                  className="flex-1 font-bold text-sm py-2.5 rounded-full shadow-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {submitting ? "Criando conta..." : gestante === true ? "Continuar" : "Finalizar"}
                 </motion.button>
@@ -987,17 +1033,18 @@ export default function RegistrationModal({
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-2xl p-4 space-y-2"
+                  style={{ background: `${c.sageLight}15`, borderColor: `${c.sage}33` }}
+                  className="rounded-2xl p-4 space-y-2"
                 >
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Idade gestacional</span>
-                    <span className="text-[#f0c040] font-bold">
+                    <span style={{ color: c.muted }} className="text-sm">Idade gestacional</span>
+                    <span style={{ color: c.sageDark }} className="font-bold">
                       {gestAge.weeks} semanas e {gestAge.days} dias
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70 text-sm">Data provável do parto</span>
-                    <span className="text-[#f0c040] font-bold">{formatDate(dueDate)}</span>
+                    <span style={{ color: c.muted }} className="text-sm">Data provável do parto</span>
+                    <span style={{ color: c.sageDark }} className="font-bold">{formatDate(dueDate)}</span>
                   </div>
                 </motion.div>
               )}
@@ -1010,9 +1057,10 @@ export default function RegistrationModal({
                     onClick={() => setTesteGravidez(true)}
                     className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-all ${
                       testeGravidez === true
-                        ? "bg-[#f0c040] text-[#1a1557]"
-                        : "bg-white/10 text-white/60 border border-white/20"
+                        ? "text-white"
+                        : "bg-transparent text-muted"
                     }`}
+                    style={testeGravidez === true ? { background: c.sageDark } : { border: `1px solid ${c.border}` }}
                   >
                     Sim
                   </button>
@@ -1021,9 +1069,10 @@ export default function RegistrationModal({
                     onClick={() => setTesteGravidez(false)}
                     className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-all ${
                       testeGravidez === false
-                        ? "bg-[#f0c040] text-[#1a1557]"
-                        : "bg-white/10 text-white/60 border border-white/20"
+                        ? "text-white"
+                        : "bg-transparent text-muted"
                     }`}
+                    style={testeGravidez === false ? { background: c.sageDark } : { border: `1px solid ${c.border}` }}
                   >
                     Não
                   </button>
@@ -1046,7 +1095,7 @@ export default function RegistrationModal({
               )}
 
               {submitErro && (
-                <p className="text-red-300 text-xs bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">
+                <p className="text-red-500 text-xs bg-red-100 border border-red-200 px-3 py-2 rounded-lg">
                   {submitErro}
                 </p>
               )}
@@ -1055,16 +1104,18 @@ export default function RegistrationModal({
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="flex-1 py-3 rounded-full text-sm font-bold bg-white/10 text-white/60 border border-white/20"
+                  style={{ background: "transparent", color: c.muted, border: `1px solid ${c.border}` }}
+                  className="flex-1 py-3 rounded-full text-sm font-bold"
                 >
                   Voltar
                 </button>
-                <motion.button
+                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleFinish}
                   disabled={submitting}
-                  className="flex-1 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-base py-3 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ background: c.sageDark, color: "white" }}
+                  className="flex-1 font-bold text-base py-3 rounded-full shadow-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {submitting ? "Criando conta..." : "Finalizar"}
                 </motion.button>
