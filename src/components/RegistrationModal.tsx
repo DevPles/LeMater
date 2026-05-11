@@ -954,24 +954,24 @@ export default function RegistrationModal({
                   <button
                     type="button"
                     onClick={() => setGestante(true)}
-                    className={`flex-1 py-2 rounded-full text-xs font-bold transition-all ${
+                    className={`flex-1 py-2 rounded-full text-xs font-bold transition-all`}
+                    style={
                       gestante === true
-                        ? "text-white"
-                        : "bg-transparent text-muted"
-                    }`}
-                    style={gestante === true ? { background: c.sageDark } : { border: `1px solid ${c.border}` }}
+                        ? { background: c.sage, color: "white" }
+                        : { border: `1.5px solid ${c.sage}`, color: c.sage, background: "transparent" }
+                    }
                   >
                     Sim
                   </button>
                   <button
                     type="button"
                     onClick={() => setGestante(false)}
-                    className={`flex-1 py-2 rounded-full text-xs font-bold transition-all ${
+                    className={`flex-1 py-2 rounded-full text-xs font-bold transition-all`}
+                    style={
                       gestante === false
-                        ? "text-white"
-                        : "bg-transparent text-muted"
-                    }`}
-                    style={gestante === false ? { background: c.sageDark } : { border: `1px solid ${c.border}` }}
+                        ? { background: c.sage, color: "white" }
+                        : { border: `1.5px solid ${c.sage}`, color: c.sage, background: "transparent" }
+                    }
                   >
                     Não
                   </button>
