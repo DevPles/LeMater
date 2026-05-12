@@ -256,34 +256,44 @@ const btnSecondary: CSSProperties = {
 };
 
 function Inicio({ go }: { go: (id: SectionId) => void }) {
+  const isMobile = useIsMobile();
   return (
-    <section style={{ paddingTop: 40, minHeight: "75vh", display: "flex", flexDirection: "column" }}>
+    <section style={{ paddingTop: isMobile ? 80 : 40, minHeight: "75vh", display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", flex: 1, flexWrap: "wrap", alignItems: "flex-start" }}>
-        <div style={{ flex: "1 1 480px", display: "flex", flexDirection: "column", justifyContent: "flex-start", padding: "20px 48px 40px" }}>
-          <SectionTag text="Saúde materna com credencial clínica real" />
+        <div
+          style={{
+            flex: "1 1 480px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            padding: isMobile ? "20px 24px 32px" : "20px 48px 40px",
+            alignItems: isMobile ? "center" : "flex-start",
+            textAlign: isMobile ? "center" : "left",
+          }}
+        >
+          <SectionTag text="Saúde materna com credencial clínica real" center={isMobile} />
           <h1 style={{ fontFamily: serif, fontSize: "clamp(32px,4vw,54px)", fontWeight: 300, lineHeight: 1.1, marginBottom: 20 }}>
             A gestação que você <em style={{ fontStyle: "italic", color: c.sage }}>merece viver.</em>
           </h1>
-          <p 
-            className="text-center text-lg"
-            style={{ lineHeight: 1.6, color: c.muted, maxWidth: 640, marginBottom: 36, marginInline: "auto" }}
+          <p
+            style={{ fontSize: isMobile ? 15 : 16, lineHeight: 1.6, color: c.muted, maxWidth: 640, marginBottom: 36, textAlign: "center", marginInline: "auto" }}
           >
             Criada por Rayssa Leslie, Enfermeira Obstetra formada pela UNAERP, a Le Mater une orientação Pré-Concepcional, Educação Materna, Cartão Digital da Gestante e Inteligência Artificial para acompanhar mulheres da Tentativa Natural de Engravidar aos Primeiros Cuidados com o bebê.
           </p>
-          <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
             <button style={btnPrimary} onClick={() => go("produtos")}>Ver Programas</button>
             <button style={btnSecondary} onClick={() => go("sobre")}>Conhecer a Rayssa</button>
           </div>
-          <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
             {[["6+", "Anos em obstetrícia"], ["3", "Idiomas disponíveis"], ["UNAERP", "Parceria institucional"]].map(([num, lbl]) => (
-              <div key={lbl}>
+              <div key={lbl} style={{ textAlign: isMobile ? "center" : "left" }}>
                 <div style={{ fontFamily: serif, fontSize: 32, fontWeight: 300, color: c.sageDark }}>{num}</div>
                 <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 2 }}>{lbl}</div>
               </div>
             ))}
           </div>
         </div>
-        <div style={{ flex: "0 1 380px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: 32, minHeight: 440, alignSelf: "center", borderRadius: 16 }}>
+        <div style={{ flex: "0 1 380px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: isMobile ? 20 : 32, minHeight: isMobile ? 360 : 440, alignSelf: "center", borderRadius: 16, width: isMobile ? "calc(100% - 40px)" : undefined, marginInline: isMobile ? 20 : undefined, marginBottom: isMobile ? 24 : undefined }}>
           <img
             src={rayssa}
             alt="Rayssa Leslie, Enfermeira Obstetra"
