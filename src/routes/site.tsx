@@ -281,7 +281,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             Criada por Rayssa Leslie, Enfermeira Obstetra formada pela UNAERP, a Le Mater une orientação Pré-Concepcional, Educação Materna, Cartão Digital da Gestante e Inteligência Artificial para acompanhar mulheres da Tentativa Natural de Engravidar aos Primeiros Cuidados com o bebê.
           </p>
           <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
-            <button style={btnPrimary} onClick={() => go("produtos")}>Ver Programas</button>
+            <button style={btnPrimary} onClick={() => go("produtos")}>ACESSAR ATLAS MATERNO</button>
             <button style={btnSecondary} onClick={() => go("sobre")}>Conhecer a Rayssa</button>
           </div>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
