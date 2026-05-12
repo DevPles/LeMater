@@ -272,7 +272,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           }}
         >
           <SectionTag text="Saúde materna com credencial clínica real" center={isMobile} />
-          <h1 style={{ fontFamily: serif, fontSize: "clamp(32px,4vw,54px)", fontWeight: 300, lineHeight: 1.1, marginBottom: 20 }}>
+          <h1 style={{ fontFamily: serif, fontSize: "clamp(32px,4vw,54px)", fontWeight: 300, lineHeight: 1.1, marginBottom: 20, marginTop: isMobile ? 0 : 60 }}>
             A gestação que você <em style={{ fontStyle: "italic", color: c.sage }}>merece viver.</em>
           </h1>
           <p
