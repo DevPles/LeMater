@@ -183,7 +183,7 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
               marginTop: 16,
             }}
           >
-            Acessar Sistema
+            ACESSE APP
           </button>
         </div>
       )}
