@@ -44,7 +44,7 @@ type SectionId = "inicio" | "sobre" | "produtos" | "contato";
 const NAV_ITEMS: ReadonlyArray<readonly [SectionId, string]> = [
   ["inicio", "Início"],
   ["sobre", "Sobre"],
-  ["produtos", "Programas"],
+  ["produtos", "ATLAS MATERNO"],
   ["contato", "Contato"],
 ];
 
