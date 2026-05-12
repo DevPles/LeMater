@@ -402,7 +402,7 @@ function Produtos() {
     <section style={{ paddingTop: 70, minHeight: "100vh" }}>
       <div style={{ padding: "80px 48px" }}>
         <div style={{ marginBottom: 48 }}>
-          <SectionTag text="Programas" />
+          <SectionTag text="ATLAS MATERNO" />
           <h2 style={h2}>
             Quatro fases.<br />
             <em style={{ fontStyle: "italic", color: c.sage }}>Uma jornada completa.</em>
