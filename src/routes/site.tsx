@@ -199,7 +199,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
       <div style={{ display: "flex", flex: 1, flexWrap: "wrap", alignItems: "flex-start" }}>
         <div style={{ flex: "1 1 480px", display: "flex", flexDirection: "column", justifyContent: "flex-start", padding: "20px 48px 40px" }}>
           <SectionTag text="Saúde materna com credencial clínica real" />
-          <h1 style={{ fontFamily: serif, fontSize: "clamp(36px,5vw,64px)", fontWeight: 300, lineHeight: 1.05, marginBottom: 20 }}>
+          <h1 style={{ fontFamily: serif, fontSize: "clamp(32px,4vw,54px)", fontWeight: 300, lineHeight: 1.1, marginBottom: 20 }}>
             A gestação que você <em style={{ fontStyle: "italic", color: c.sage }}>merece viver.</em>
           </h1>
           <p 
