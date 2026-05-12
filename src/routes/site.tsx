@@ -70,8 +70,10 @@ function SitePage() {
 }
 
 function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void }) {
+  const isMobile = useIsMobile();
+  const [open, setOpen] = useState(false);
   const linkStyle = (id: SectionId): CSSProperties => ({
-    fontSize: 13,
+    fontSize: isMobile ? 15 : 13,
     fontWeight: 400,
     letterSpacing: "0.06em",
     textTransform: "uppercase",
@@ -79,9 +81,13 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
     cursor: "pointer",
     background: "none",
     border: "none",
-    padding: 0,
+    padding: isMobile ? "12px 0" : 0,
     fontFamily: sans,
   });
+  const handleGo = (id: SectionId) => {
+    setOpen(false);
+    go(id);
+  };
   return (
     <nav
       style={{
@@ -90,42 +96,97 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
         left: 0,
         right: 0,
         zIndex: 100,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "20px 48px",
         background: "rgba(250,245,238,0.92)",
         backdropFilter: "blur(12px)",
         borderBottom: `1px solid ${c.border}`,
       }}
     >
-      <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 300, letterSpacing: "0.08em" }}>
-        Le<span style={{ color: c.sage }}>Mater</span>
-      </div>
-      <ul style={{ display: "flex", gap: 32, listStyle: "none", margin: 0, padding: 0 }}>
-        {NAV_ITEMS.map(([id, label]) => (
-          <li key={id}>
-            <button onClick={() => go(id)} style={linkStyle(id)}>{label}</button>
-          </li>
-        ))}
-      </ul>
-      <button
-        onClick={() => go("contato")}
+      <div
         style={{
-          background: c.sageDark,
-          color: "white",
-          fontSize: 12,
-          fontWeight: 500,
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          padding: "10px 24px",
-          border: "none",
-          cursor: "pointer",
-          fontFamily: sans,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: isMobile ? "16px 20px" : "20px 48px",
         }}
       >
-        Acessar Sistema
-      </button>
+        <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 300, letterSpacing: "0.08em" }}>
+          Le<span style={{ color: c.sage }}>Mater</span>
+        </div>
+        {!isMobile && (
+          <ul style={{ display: "flex", gap: 32, listStyle: "none", margin: 0, padding: 0 }}>
+            {NAV_ITEMS.map(([id, label]) => (
+              <li key={id}>
+                <button onClick={() => handleGo(id)} style={linkStyle(id)}>{label}</button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {!isMobile ? (
+          <button
+            onClick={() => handleGo("contato")}
+            style={{
+              background: c.sageDark,
+              color: "white",
+              fontSize: 12,
+              fontWeight: 500,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              padding: "10px 24px",
+              border: "none",
+              cursor: "pointer",
+              fontFamily: sans,
+            }}
+          >
+            Acessar Sistema
+          </button>
+        ) : (
+          <button
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Abrir menu"
+            style={{
+              background: "none",
+              border: `1px solid ${c.border}`,
+              color: c.ink,
+              fontSize: 11,
+              fontWeight: 500,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              padding: "8px 14px",
+              cursor: "pointer",
+              fontFamily: sans,
+            }}
+          >
+            {open ? "Fechar" : "Menu"}
+          </button>
+        )}
+      </div>
+      {isMobile && open && (
+        <div style={{ padding: "8px 20px 20px", borderTop: `1px solid ${c.border}`, display: "flex", flexDirection: "column" }}>
+          {NAV_ITEMS.map(([id, label]) => (
+            <button key={id} onClick={() => handleGo(id)} style={{ ...linkStyle(id), textAlign: "left", borderBottom: `1px solid ${c.border}` }}>
+              {label}
+            </button>
+          ))}
+          <button
+            onClick={() => handleGo("contato")}
+            style={{
+              background: c.sageDark,
+              color: "white",
+              fontSize: 12,
+              fontWeight: 500,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              padding: "14px 24px",
+              border: "none",
+              cursor: "pointer",
+              fontFamily: sans,
+              marginTop: 16,
+            }}
+          >
+            Acessar Sistema
+          </button>
+        </div>
+      )}
     </nav>
   );
 }
