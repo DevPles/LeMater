@@ -203,7 +203,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             A gestação que você <em style={{ fontStyle: "italic", color: c.sage }}>merece viver.</em>
           </h1>
           <p 
-            className="font-extralight text-lg text-center"
+            className="text-3xl text-center"
             style={{ lineHeight: 1.6, color: c.muted, maxWidth: 640, marginBottom: 36, marginInline: "auto" }}
           >
             Criada por Rayssa Leslie, Enfermeira Obstetra formada pela UNAERP, a Le Mater une orientação Pré-Concepcional, Educação Materna, Cartão Digital da Gestante e Inteligência Artificial para acompanhar mulheres da Tentativa Natural de Engravidar aos Primeiros Cuidados com o bebê.
