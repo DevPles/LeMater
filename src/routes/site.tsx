@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, type CSSProperties } from "react";
 import rayssa from "@/assets/rayssa-portrait.jpg";
 import { LiquidCard } from "@/components/LiquidCard";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/site")({
   head: () => ({
