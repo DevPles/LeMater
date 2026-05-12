@@ -203,8 +203,11 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             A gestação<br />que você<br />
             <em style={{ fontStyle: "italic", color: c.sage }}>merece viver.</em>
           </h1>
-          <p style={{ fontSize: 14, lineHeight: 1.6, color: c.muted, maxWidth: 440, marginBottom: 36, fontWeight: 300 }}>
-            Criada por Rayssa Leslie, Enfermeira Obstetra formada pela UNAERP, a Le Mater nasce em Ribeirão Preto, centro de referência em saúde no Brasil, para unir obstetrícia, educação materna, cartão digital materno e inteligência artificial em uma nova experiência de saúde materna para Brasil, EUA, Espanha e Canadá.
+          <p 
+            className="font-extralight text-lg text-center"
+            style={{ lineHeight: 1.6, color: c.muted, maxWidth: 640, marginBottom: 36, marginInline: "auto" }}
+          >
+            Criada por Rayssa Leslie, Enfermeira Obstetra formada pela UNAERP, a Le Mater une orientação Pré-Concepcional, Educação Materna, Cartão Digital da Gestante e Inteligência Artificial para acompanhar mulheres da Tentativa Natural de Engravidar aos Primeiros Cuidados com o bebê.
           </p>
           <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
             <button style={btnPrimary} onClick={() => go("produtos")}>Ver Programas</button>
