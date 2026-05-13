@@ -1167,7 +1167,7 @@ async function gerarPDFCartao(args: {
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    doc.text("MaeDigital - Cartao Digital da Gestante", margin, pageH - 3.5);
+    doc.text("LeMater - Cartao Digital da Gestante", margin, pageH - 3.5);
     doc.setFont("helvetica", "normal");
     doc.text(`Pag. ${pageNum} de ${totalPages}`, pageW - margin, pageH - 3.5, { align: "right" });
   };
