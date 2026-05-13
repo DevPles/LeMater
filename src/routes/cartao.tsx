@@ -1228,9 +1228,9 @@ async function gerarPDFCartao(args: {
     doc.addImage(logoData, "PNG", logoX, logoY, logoW, logoH);
   } else {
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(10);
     doc.setTextColor(ar, ag, ab);
-    doc.text("HOSPITAL ELECTRO BONINI", halfW + halfW / 2, 16, { align: "center" });
+    doc.text("LeMater", halfW + halfW / 2, 16, { align: "center" });
   }
 
   // Bloco branco central elegante com titulo
