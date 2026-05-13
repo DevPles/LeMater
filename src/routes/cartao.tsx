@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LancamentoModal } from "@/components/LancamentoModal";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
-import logoHospitalUrl from "@/assets/logo-hospital-electro-bonini.png";
+import logoHospitalUrl from "@/assets/logo-lemater.png";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, ComposedChart, ReferenceArea, Legend, ReferenceLine,
@@ -1167,7 +1167,7 @@ async function gerarPDFCartao(args: {
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    doc.text("MaeDigital - Cartao Digital da Gestante", margin, pageH - 3.5);
+    doc.text("LeMater - Cartao Digital da Gestante", margin, pageH - 3.5);
     doc.setFont("helvetica", "normal");
     doc.text(`Pag. ${pageNum} de ${totalPages}`, pageW - margin, pageH - 3.5, { align: "right" });
   };
@@ -1228,9 +1228,9 @@ async function gerarPDFCartao(args: {
     doc.addImage(logoData, "PNG", logoX, logoY, logoW, logoH);
   } else {
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(10);
     doc.setTextColor(ar, ag, ab);
-    doc.text("HOSPITAL ELECTRO BONINI", halfW + halfW / 2, 16, { align: "center" });
+    doc.text("LeMater", halfW + halfW / 2, 16, { align: "center" });
   }
 
   // Bloco branco central elegante com titulo
@@ -1259,7 +1259,7 @@ async function gerarPDFCartao(args: {
   doc.setFontSize(9);
   doc.setTextColor(...muted);
   doc.text("Acompanhamento Pre-Natal", halfW + halfW / 2, coverBandY + 50, { align: "center" });
-  doc.text("Sistema MaeDigital", halfW + halfW / 2, coverBandY + 56, { align: "center" });
+  doc.text("Sistema LeMater", halfW + halfW / 2, coverBandY + 56, { align: "center" });
 
   // Nome da gestante (em destaque na parte inferior da capa)
   doc.setFont("helvetica", "bold");
@@ -1276,10 +1276,10 @@ async function gerarPDFCartao(args: {
   doc.setTextColor(...muted);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.text("UNAERP", 14, pageH - 18);
+  doc.text("LeMater", 14, pageH - 18);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
-  doc.text("Universidade de Ribeirao Preto", 14, pageH - 13);
+  doc.text("Saude materna com credencial clinica", 14, pageH - 13);
 
   // Pequena marca decorativa centralizada / logo institucional
   if (logoData) {
