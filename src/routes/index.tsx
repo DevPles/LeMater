@@ -7,7 +7,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "MãeDigital — Cartão Digital da Gestante" },
-      { name: "description", content: "Iniciativa UNAERP. Acompanhe sua gestação com suporte profissional." },
+      { name: "description", content: "\n. Acompanhe sua gestação com suporte profissional." },
     ],
     links: [
       {
@@ -48,7 +48,7 @@ function WelcomeScreen() {
       {/* Logo Section */}
       <div style={{ padding: "40px 24px", display: "flex", justifyContent: "center" }}>
         <img
-          src="https://cvbgrjauqjawrsyknhyj.supabase.co/storage/v1/object/public/files/uploads/hsIaJ1cV77Y8R02Q0Rs8lMxhMw62/1778266256438-v21ec-logo-esI4Subg.png"
+          src="/logo-mater.png"
           alt="LeMater Logo"
           style={{ width: "100%", maxWidth: 180, objectFit: "contain" }}
         />
@@ -92,7 +92,7 @@ function WelcomeScreen() {
             gap: 12
           }}>
             <span style={{ width: 24, height: 1, background: c.sage }} />
-            Iniciativa UNAERP
+            {"\n"}
             <span style={{ width: 24, height: 1, background: c.sage }} />
           </div>
 
