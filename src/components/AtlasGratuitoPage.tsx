@@ -202,11 +202,11 @@ export function AtlasGratuitoPage({ categoria, titulo, intro, aprendizados, slug
               <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 400, marginBottom: 8, color: c.ink }}>{programa.titulo}</div>
               <p style={{ fontSize: 14, lineHeight: 1.6, color: c.muted, margin: 0 }}>{programa.descricao}</p>
             </div>
-            <Link to={programa.rota} style={{ textDecoration: "none" }}>
+            <a href={programa.rota} style={{ textDecoration: "none" }}>
               <button style={{ ...btnPrimary, background: "transparent", color: c.sageDark, border: `1.5px solid ${c.sageDark}`, whiteSpace: "nowrap" }}>
                 CONHECER PROGRAMA COMPLETO
               </button>
-            </Link>
+            </a>
           </div>
         </div>
       </main>
