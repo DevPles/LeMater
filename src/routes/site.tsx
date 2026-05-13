@@ -365,9 +365,65 @@ function Sobre() {
   );
 }
 
-function ProdutoCard({ num, titulo, desc, dark = false, badge }: { num: string; titulo: string; desc: string; dark?: boolean; badge?: string }) {
+type Momento = {
+  num: string;
+  categoria: string;
+  titulo: string;
+  texto: string;
+  conteudoGratuito: string;
+  rotaGratuita: string;
+  caminhoRecomendado: string;
+  rotaPrograma: string;
+  dark?: boolean;
+};
+
+const MOMENTOS: Momento[] = [
+  {
+    num: "01",
+    categoria: "Concepção",
+    titulo: "Estou tentando engravidar",
+    texto: "Entenda seu ciclo, sua janela fértil e os sinais reais do corpo antes de depender apenas de aplicativos.",
+    conteudoGratuito: "Guia gratuito: 7 sinais de que você pode estar errando sua janela fértil",
+    rotaGratuita: "/atlas-materno/concepcao",
+    caminhoRecomendado: "Ajuda na Concepção Le Mater",
+    rotaPrograma: "/programas/concepcao",
+  },
+  {
+    num: "02",
+    categoria: "Gestação",
+    titulo: "Estou grávida",
+    texto: "Organize os primeiros passos da gestação, entenda exames, consultas e sinais importantes de acompanhamento.",
+    conteudoGratuito: "Mapa gratuito: primeiros passos depois do positivo",
+    rotaGratuita: "/atlas-materno/gestacao",
+    caminhoRecomendado: "Programa Gestação Le Mater",
+    rotaPrograma: "/programas/gestacao",
+  },
+  {
+    num: "03",
+    categoria: "Puerpério",
+    titulo: "Estou no pós-parto",
+    texto: "Cuide da recuperação, da saúde emocional, da adaptação materna e dos sinais importantes dessa fase.",
+    conteudoGratuito: "Checklist gratuito: cuidados essenciais no puerpério",
+    rotaGratuita: "/atlas-materno/pos-parto",
+    caminhoRecomendado: "Pós-Parto Le Mater",
+    rotaPrograma: "/programas/pos-parto",
+  },
+  {
+    num: "04",
+    categoria: "Bebê e primeiros cuidados",
+    titulo: "Quero cuidar melhor do bebê",
+    texto: "Receba orientações simples sobre banho, amamentação, sono, cólicas, rotina e primeiros cuidados neonatais.",
+    conteudoGratuito: "Guia gratuito: primeiros cuidados com o recém-nascido",
+    rotaGratuita: "/atlas-materno/bebe",
+    caminhoRecomendado: "Bebê e Primeiros Cuidados Le Mater",
+    rotaPrograma: "/programas/bebe-primeiros-cuidados",
+    dark: true,
+  },
+];
+
+function MomentoCard({ m }: { m: Momento }) {
   const [hover, setHover] = useState(false);
-  const isDark = dark || hover;
+  const isDark = m.dark || hover;
   return (
     <div
       onMouseEnter={() => setHover(true)}
@@ -376,58 +432,121 @@ function ProdutoCard({ num, titulo, desc, dark = false, badge }: { num: string; 
         background: isDark ? c.sageDark : c.warm,
         padding: 40,
         transition: "background .3s",
-        cursor: "pointer",
         position: "relative",
         overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      <div style={{ fontFamily: serif, fontSize: 64, fontWeight: 300, color: isDark ? "rgba(255,255,255,0.15)" : c.border, lineHeight: 1, marginBottom: 24 }}>{num}</div>
-      <div style={{ fontFamily: serif, fontSize: 28, fontWeight: 400, color: isDark ? "white" : c.ink, marginBottom: 12 }}>{titulo}</div>
-      <p style={{ fontSize: 13, lineHeight: 1.7, color: isDark ? "rgba(255,255,255,0.7)" : c.muted, marginBottom: 32 }}>{desc}</p>
-      <div style={{ fontFamily: serif, fontSize: 40, fontWeight: 300, color: isDark ? c.sageLight : c.sageDark, marginBottom: 24 }}>
-        <span style={{ fontSize: 16 }}>R$</span> 297
+      <div style={{ fontFamily: serif, fontSize: 64, fontWeight: 300, color: isDark ? "rgba(255,255,255,0.18)" : c.border, lineHeight: 1, marginBottom: 16 }}>
+        {m.num}
       </div>
-      <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: isDark ? "white" : c.sageDark, borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.4)" : c.sageDark}`, paddingBottom: 2, display: "inline-block" }}>
-        Acessar programa
+      <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: isDark ? c.sageLight : c.sage, marginBottom: 14, fontWeight: 500 }}>
+        {m.categoria}
       </div>
-      {badge && (
-        <div style={{ position: "absolute", top: 24, right: 24, background: c.terracotta, color: "white", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", padding: "4px 10px" }}>{badge}</div>
-      )}
+      <div style={{ fontFamily: serif, fontSize: 28, fontWeight: 400, color: isDark ? "white" : c.ink, marginBottom: 14, lineHeight: 1.15 }}>
+        {m.titulo}
+      </div>
+      <p style={{ fontSize: 14, lineHeight: 1.7, color: isDark ? "rgba(255,255,255,0.75)" : c.muted, marginBottom: 24 }}>
+        {m.texto}
+      </p>
+      <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : c.border}`, paddingTop: 20, marginBottom: 20 }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 8 }}>
+          Conteúdo gratuito
+        </div>
+        <div style={{ fontSize: 14, lineHeight: 1.5, color: isDark ? "white" : c.ink, fontWeight: 400 }}>
+          {m.conteudoGratuito}
+        </div>
+      </div>
+      <a href={m.rotaGratuita} style={{ textDecoration: "none", marginBottom: 24 }}>
+        <button style={{
+          background: isDark ? "white" : c.sageDark,
+          color: isDark ? c.sageDark : "white",
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          padding: "14px 24px",
+          border: "none",
+          cursor: "pointer",
+          fontFamily: sans,
+          width: "100%",
+        }}>
+          Acessar conteúdo gratuito
+        </button>
+      </a>
+      <div style={{ marginTop: "auto", paddingTop: 8 }}>
+        <div style={{ fontSize: 12, color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 8, fontStyle: "italic", fontFamily: serif }}>
+          Caminho recomendado: {m.caminhoRecomendado}
+        </div>
+        <a href={m.rotaPrograma} style={{
+          fontSize: 10,
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          color: isDark ? "white" : c.sageDark,
+          textDecoration: "none",
+          borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.5)" : c.sageDark}`,
+          paddingBottom: 2,
+          display: "inline-block",
+          fontWeight: 500,
+        }}>
+          Ver caminho completo
+        </a>
+      </div>
     </div>
   );
 }
 
 function Produtos() {
+  const isMobile = useIsMobile();
   return (
     <section style={{ paddingTop: 70, minHeight: "100vh" }}>
-      <div style={{ padding: "80px 48px" }}>
-        <div style={{ marginBottom: 48 }}>
+      <div style={{ padding: isMobile ? "60px 24px" : "80px 48px" }}>
+        <div style={{ marginBottom: 48, maxWidth: 720 }}>
           <SectionTag text="ATLAS MATERNO" />
           <h2 style={h2}>
             Quatro fases.<br />
             <em style={{ fontStyle: "italic", color: c.sage }}>Uma jornada completa.</em>
           </h2>
+          <p style={{ fontSize: 15, lineHeight: 1.6, color: c.muted, fontWeight: 300, maxWidth: 560, marginTop: 8 }}>
+            Escolha seu momento, acesse um conteúdo gratuito e descubra o caminho Le Mater recomendado para você.
+          </p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 2 }}>
-          <ProdutoCard num="01" titulo="Ajuda na Concepção" desc="Orientação especializada para quem está planejando engravidar. Saúde pré-concepcional, ciclo menstrual e preparo do corpo." />
-          <ProdutoCard num="02" titulo="Gestação" desc="Acompanhamento completo trimestre a trimestre. Pré-natal, exames, desenvolvimento fetal e preparação para o parto." />
-          <ProdutoCard num="03" titulo="Pós-Gestação" desc="Puerpério, recuperação física, saúde mental pós-parto e os primeiros dias com o bebê em casa." />
-          <ProdutoCard num="04" titulo="Bebê & Primeiros Cuidados" desc="Banho, amamentação, cólica, sono e tudo o que ninguém ensina antes do bebê chegar." dark badge="Mais vendido" />
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2,1fr)", gap: 2 }}>
+          {MOMENTOS.map((m) => <MomentoCard key={m.num} m={m} />)}
         </div>
-        <div style={{ marginTop: 2, background: c.warm, padding: "32px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
-          <div>
-            <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 400 }}>Combo Completo + App LeMater 1 ano</div>
-            <div style={{ fontSize: 13, color: c.muted, marginTop: 4 }}>4 programas · App com cartão digital · Alertas clínicos · Teleconsulta</div>
+        <div style={{ marginTop: 2, background: c.warm, padding: isMobile ? "36px 28px" : "48px 56px" }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.sage, marginBottom: 14, fontWeight: 500 }}>
+            Plano completo
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 12, color: c.muted, textDecoration: "line-through" }}>R$ 1.188</div>
-              <div style={{ fontFamily: serif, fontSize: 36, fontWeight: 300, color: c.sageDark }}>
-                <span style={{ fontSize: 18 }}>R$</span> 797
+          <div style={{ fontFamily: serif, fontSize: isMobile ? 28 : 34, fontWeight: 400, color: c.ink, marginBottom: 14 }}>
+            Plano Completo Le Mater
+          </div>
+          <p style={{ fontSize: 15, lineHeight: 1.7, color: c.muted, maxWidth: 620, marginBottom: 28, fontWeight: 300 }}>
+            Para quem deseja acesso aos principais conteúdos da jornada materna, organização digital, cartão da gestante e recomendações inteligentes por fase.
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 0, marginBottom: 32, borderTop: `1px solid ${c.border}`, borderBottom: `1px solid ${c.border}` }}>
+            {["Conteúdos por fase", "Cartão digital da gestante", "Recomendações inteligentes"].map((b, i, arr) => (
+              <div key={b} style={{
+                flex: isMobile ? "1 1 100%" : "1 1 0",
+                padding: "20px 24px",
+                fontSize: 13,
+                color: c.ink,
+                fontWeight: 400,
+                letterSpacing: "0.02em",
+                borderRight: !isMobile && i < arr.length - 1 ? `1px solid ${c.border}` : "none",
+                borderBottom: isMobile && i < arr.length - 1 ? `1px solid ${c.border}` : "none",
+              }}>
+                {b}
               </div>
-            </div>
-            <button style={{ ...btnPrimary, whiteSpace: "nowrap" }}>Garantir acesso</button>
+            ))}
           </div>
+          <a href="/planos/completo" style={{ textDecoration: "none" }}>
+            <button style={{ ...btnPrimary, whiteSpace: "nowrap" }}>Conhecer plano completo</button>
+          </a>
+          <p style={{ fontSize: 12, color: c.muted, marginTop: 20, fontStyle: "italic", fontFamily: serif, maxWidth: 560 }}>
+            Ideal para quem quer uma experiência materna mais organizada, do início da jornada aos primeiros cuidados com o bebê.
+          </p>
         </div>
       </div>
     </section>
