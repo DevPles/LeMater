@@ -133,6 +133,36 @@ export type Database = {
           },
         ]
       }
+      atlas_leads: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          momento: string
+          nome: string
+          origem: string
+          whatsapp: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          momento: string
+          nome: string
+          origem: string
+          whatsapp: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          momento?: string
+          nome?: string
+          origem?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       clinical_measurements: {
         Row: {
           appointment_id: string | null

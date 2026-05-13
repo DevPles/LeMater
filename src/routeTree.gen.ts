@@ -22,6 +22,10 @@ import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SalaRoomIdRouteImport } from './routes/sala.$roomId'
+import { Route as AtlasMaternoPosPartoRouteImport } from './routes/atlas-materno.pos-parto'
+import { Route as AtlasMaternoGestacaoRouteImport } from './routes/atlas-materno.gestacao'
+import { Route as AtlasMaternoConcepcaoRouteImport } from './routes/atlas-materno.concepcao'
+import { Route as AtlasMaternoBebeRouteImport } from './routes/atlas-materno.bebe'
 
 const VideosRoute = VideosRouteImport.update({
   id: '/videos',
@@ -88,6 +92,26 @@ const SalaRoomIdRoute = SalaRoomIdRouteImport.update({
   path: '/sala/$roomId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AtlasMaternoPosPartoRoute = AtlasMaternoPosPartoRouteImport.update({
+  id: '/atlas-materno/pos-parto',
+  path: '/atlas-materno/pos-parto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AtlasMaternoGestacaoRoute = AtlasMaternoGestacaoRouteImport.update({
+  id: '/atlas-materno/gestacao',
+  path: '/atlas-materno/gestacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AtlasMaternoConcepcaoRoute = AtlasMaternoConcepcaoRouteImport.update({
+  id: '/atlas-materno/concepcao',
+  path: '/atlas-materno/concepcao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AtlasMaternoBebeRoute = AtlasMaternoBebeRouteImport.update({
+  id: '/atlas-materno/bebe',
+  path: '/atlas-materno/bebe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -102,6 +126,10 @@ export interface FileRoutesByFullPath {
   '/site': typeof SiteRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
+  '/atlas-materno/bebe': typeof AtlasMaternoBebeRoute
+  '/atlas-materno/concepcao': typeof AtlasMaternoConcepcaoRoute
+  '/atlas-materno/gestacao': typeof AtlasMaternoGestacaoRoute
+  '/atlas-materno/pos-parto': typeof AtlasMaternoPosPartoRoute
   '/sala/$roomId': typeof SalaRoomIdRoute
 }
 export interface FileRoutesByTo {
@@ -117,6 +145,10 @@ export interface FileRoutesByTo {
   '/site': typeof SiteRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
+  '/atlas-materno/bebe': typeof AtlasMaternoBebeRoute
+  '/atlas-materno/concepcao': typeof AtlasMaternoConcepcaoRoute
+  '/atlas-materno/gestacao': typeof AtlasMaternoGestacaoRoute
+  '/atlas-materno/pos-parto': typeof AtlasMaternoPosPartoRoute
   '/sala/$roomId': typeof SalaRoomIdRoute
 }
 export interface FileRoutesById {
@@ -133,6 +165,10 @@ export interface FileRoutesById {
   '/site': typeof SiteRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
+  '/atlas-materno/bebe': typeof AtlasMaternoBebeRoute
+  '/atlas-materno/concepcao': typeof AtlasMaternoConcepcaoRoute
+  '/atlas-materno/gestacao': typeof AtlasMaternoGestacaoRoute
+  '/atlas-materno/pos-parto': typeof AtlasMaternoPosPartoRoute
   '/sala/$roomId': typeof SalaRoomIdRoute
 }
 export interface FileRouteTypes {
@@ -150,6 +186,10 @@ export interface FileRouteTypes {
     | '/site'
     | '/videochamada'
     | '/videos'
+    | '/atlas-materno/bebe'
+    | '/atlas-materno/concepcao'
+    | '/atlas-materno/gestacao'
+    | '/atlas-materno/pos-parto'
     | '/sala/$roomId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -165,6 +205,10 @@ export interface FileRouteTypes {
     | '/site'
     | '/videochamada'
     | '/videos'
+    | '/atlas-materno/bebe'
+    | '/atlas-materno/concepcao'
+    | '/atlas-materno/gestacao'
+    | '/atlas-materno/pos-parto'
     | '/sala/$roomId'
   id:
     | '__root__'
@@ -180,6 +224,10 @@ export interface FileRouteTypes {
     | '/site'
     | '/videochamada'
     | '/videos'
+    | '/atlas-materno/bebe'
+    | '/atlas-materno/concepcao'
+    | '/atlas-materno/gestacao'
+    | '/atlas-materno/pos-parto'
     | '/sala/$roomId'
   fileRoutesById: FileRoutesById
 }
@@ -196,6 +244,10 @@ export interface RootRouteChildren {
   SiteRoute: typeof SiteRoute
   VideochamadaRoute: typeof VideochamadaRoute
   VideosRoute: typeof VideosRoute
+  AtlasMaternoBebeRoute: typeof AtlasMaternoBebeRoute
+  AtlasMaternoConcepcaoRoute: typeof AtlasMaternoConcepcaoRoute
+  AtlasMaternoGestacaoRoute: typeof AtlasMaternoGestacaoRoute
+  AtlasMaternoPosPartoRoute: typeof AtlasMaternoPosPartoRoute
   SalaRoomIdRoute: typeof SalaRoomIdRoute
 }
 
@@ -292,6 +344,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SalaRoomIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/atlas-materno/pos-parto': {
+      id: '/atlas-materno/pos-parto'
+      path: '/atlas-materno/pos-parto'
+      fullPath: '/atlas-materno/pos-parto'
+      preLoaderRoute: typeof AtlasMaternoPosPartoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/atlas-materno/gestacao': {
+      id: '/atlas-materno/gestacao'
+      path: '/atlas-materno/gestacao'
+      fullPath: '/atlas-materno/gestacao'
+      preLoaderRoute: typeof AtlasMaternoGestacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/atlas-materno/concepcao': {
+      id: '/atlas-materno/concepcao'
+      path: '/atlas-materno/concepcao'
+      fullPath: '/atlas-materno/concepcao'
+      preLoaderRoute: typeof AtlasMaternoConcepcaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/atlas-materno/bebe': {
+      id: '/atlas-materno/bebe'
+      path: '/atlas-materno/bebe'
+      fullPath: '/atlas-materno/bebe'
+      preLoaderRoute: typeof AtlasMaternoBebeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -308,6 +388,10 @@ const rootRouteChildren: RootRouteChildren = {
   SiteRoute: SiteRoute,
   VideochamadaRoute: VideochamadaRoute,
   VideosRoute: VideosRoute,
+  AtlasMaternoBebeRoute: AtlasMaternoBebeRoute,
+  AtlasMaternoConcepcaoRoute: AtlasMaternoConcepcaoRoute,
+  AtlasMaternoGestacaoRoute: AtlasMaternoGestacaoRoute,
+  AtlasMaternoPosPartoRoute: AtlasMaternoPosPartoRoute,
   SalaRoomIdRoute: SalaRoomIdRoute,
 }
 export const routeTree = rootRouteImport
