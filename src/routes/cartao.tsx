@@ -1276,10 +1276,10 @@ async function gerarPDFCartao(args: {
   doc.setTextColor(...muted);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.text("UNAERP", 14, pageH - 18);
+  doc.text("LeMater", 14, pageH - 18);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
-  doc.text("Universidade de Ribeirao Preto", 14, pageH - 13);
+  doc.text("Saude materna com credencial clinica", 14, pageH - 13);
 
   // Pequena marca decorativa centralizada / logo institucional
   if (logoData) {
