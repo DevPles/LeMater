@@ -1259,7 +1259,7 @@ async function gerarPDFCartao(args: {
   doc.setFontSize(9);
   doc.setTextColor(...muted);
   doc.text("Acompanhamento Pre-Natal", halfW + halfW / 2, coverBandY + 50, { align: "center" });
-  doc.text("Sistema MaeDigital", halfW + halfW / 2, coverBandY + 56, { align: "center" });
+  doc.text("Sistema LeMater", halfW + halfW / 2, coverBandY + 56, { align: "center" });
 
   // Nome da gestante (em destaque na parte inferior da capa)
   doc.setFont("helvetica", "bold");
