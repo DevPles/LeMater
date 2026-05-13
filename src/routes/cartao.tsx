@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LancamentoModal } from "@/components/LancamentoModal";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
-import logoHospitalUrl from "@/assets/logo-hospital-electro-bonini.png";
+import logoHospitalUrl from "@/assets/logo-lemater.png";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, ComposedChart, ReferenceArea, Legend, ReferenceLine,
