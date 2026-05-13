@@ -325,7 +325,7 @@ export default function RegistrationModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="w-[calc(100vw-1rem)] max-w-md max-h-[85vh] p-0 rounded-2xl relative overflow-hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fixed"
+        className="w-[calc(100vw-1rem)] max-w-md max-h-[85vh] p-0 rounded-2xl relative overflow-hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fixed [&>button[type=button]]:z-50"
         style={{ 
           background: c.warm, 
           border: `1px solid ${c.border}`,
