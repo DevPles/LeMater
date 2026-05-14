@@ -5,6 +5,7 @@ import { ProfissionalNav } from "@/components/ProfissionalNav";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import { useUserRole } from "@/hooks/useUserRole";
 import appCss from "../styles.css?url";
+import { LangProvider } from "@/lib/translate.context";
 
 // Rotas que profissionais NÃO podem acessar (são exclusivas da gestante)
 const PROFISSIONAL_BLOCKED = [
