@@ -307,9 +307,6 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               <div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.55, marginTop: 8 }}>
                 Especialista em Obstetrícia, Suporte Avançado à Gestação e Autocuidado Gestacional.
               </div>
-              <div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.55, marginTop: 6 }}>
-                Criadora do Método Le Mater, uma abordagem que une inovação e perícia técnica no cuidado materno, da concepção aos primeiros cuidados com o bebê.
-              </div>
             </div>
             <div style={{ marginLeft: "auto", alignSelf: "flex-start", background: c.sageDark, color: "white", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 10px" }}>★ 5.0</div>
           </LiquidCard>
