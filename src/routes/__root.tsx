@@ -155,6 +155,6 @@ function RootComponent() {
           </div>
         </div>
       )}
-    </LangProvider>
+    </>
   );
 }
