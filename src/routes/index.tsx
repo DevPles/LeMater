@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import RegistrationModal from "@/components/RegistrationModal";
+import { useLang, FLAG_TO_LANG, isTranslatable, type Lang } from "@/lib/translate.context";
+import { translateBatch } from "@/lib/translate.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
