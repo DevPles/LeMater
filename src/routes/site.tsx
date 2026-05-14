@@ -285,7 +285,11 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             <button style={btnSecondary} onClick={() => go("sobre")}>Conhecer a Rayssa</button>
           </div>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
-            {[["6+", "Anos em obstetrícia"], ["3", "Idiomas disponíveis"], ["UNAERP", "Parceria institucional"]].map(([num, lbl]) => (
+            {[
+              ["+10", "Anos em obstetrícia"],
+              ["🇧🇷 🇪🇸 🇺🇸", "Atuação em 3 países"],
+              ["UNAERP · Leslie", "Parceria institucional"],
+            ].map(([num, lbl]) => (
               <div key={lbl} style={{ textAlign: isMobile ? "center" : "left" }}>
                 <div style={{ fontFamily: serif, fontSize: 32, fontWeight: 300, color: c.sageDark }}>{num}</div>
                 <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 2 }}>{lbl}</div>
