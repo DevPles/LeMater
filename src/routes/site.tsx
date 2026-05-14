@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  createContext,
-  useContext,
   useEffect,
   useRef,
   useState,
@@ -12,23 +10,7 @@ import rayssa from "@/assets/rayssa-portrait.jpg";
 import { LiquidCard } from "@/components/LiquidCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { translateBatch } from "@/lib/translate.functions";
-
-type Lang = "pt" | "es" | "en" | "fr";
-const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({
-  lang: "pt",
-  setLang: () => {},
-});
-const useLang = () => useContext(LangContext);
-
-const FLAG_TO_LANG: Record<string, Lang> = { br: "pt", es: "es", us: "en", fr: "fr" };
-
-function isTranslatable(text: string) {
-  const t = text.trim();
-  if (t.length < 2) return false;
-  // skip pure numbers / symbols
-  if (!/[A-Za-zÀ-ÿ]/.test(t)) return false;
-  return true;
-}
+import { useLang, FLAG_TO_LANG, isTranslatable, type Lang } from "@/lib/translate.context";
 
 export const Route = createFileRoute("/site")({
   head: () => ({
