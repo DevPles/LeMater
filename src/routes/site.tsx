@@ -552,13 +552,12 @@ function Produtos() {
   return (
     <section style={{ paddingTop: 70, minHeight: "100vh" }}>
       <div style={{ padding: isMobile ? "60px 24px" : "80px 48px" }}>
-        <div style={{ marginBottom: 48, maxWidth: 720 }}>
+        <div style={{ marginBottom: 48, maxWidth: "100%" }}>
           <SectionTag text="ATLAS MATERNO" />
-          <h2 style={h2}>
-            Quatro fases.<br />
-            <em style={{ fontStyle: "italic", color: c.sage }}>Uma jornada completa.</em>
+          <h2 style={{ ...h2, whiteSpace: "nowrap", fontSize: "clamp(20px, 2.2vw, 32px)" }}>
+            Quatro fases. <em style={{ fontStyle: "italic", color: c.sage }}>Uma jornada completa.</em>
           </h2>
-          <p style={{ fontSize: 15, lineHeight: 1.6, color: c.muted, fontWeight: 300, maxWidth: 560, marginTop: 8 }}>
+          <p style={{ fontSize: 15, lineHeight: 1.6, color: c.muted, fontWeight: 300, marginTop: 8, whiteSpace: "nowrap" }}>
             Escolha seu momento, acesse um conteúdo gratuito e descubra o caminho Le Mater recomendado para você.
           </p>
         </div>
