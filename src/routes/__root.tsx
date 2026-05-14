@@ -90,8 +90,7 @@ function RootComponent() {
   const navigate = useNavigate();
   const { profile } = useGestanteProfile();
   const { isProfissional, isAdmin, loading: roleLoading } = useUserRole();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { translating } = useAutoTranslate(containerRef);
+  const { translating } = useAutoTranslate();
 
   const hideAllNav =
     location.pathname === "/" ||
@@ -120,11 +119,10 @@ function RootComponent() {
 
   return (
     <>
-      <div ref={containerRef} style={{ minHeight: "100vh" }}>
-        <Outlet />
-        {showGestanteNav && <BottomNav />}
-        {showProfissionalNav && <ProfissionalNav />}
-      </div>
+      <Outlet />
+      {showGestanteNav && <BottomNav />}
+      {showProfissionalNav && <ProfissionalNav />}
+
       
       {translating && (
         <div style={{
