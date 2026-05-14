@@ -338,33 +338,56 @@ function Ticker() {
 }
 
 function Sobre() {
+  const paragrafos = [
+    "Rayssa Leslie é Enfermeira Pós-Graduada em Obstetrícia e Neonatologia, especialista em ACLS pelo American Heart Association (AHA) e Certificada pela ALSO (Advanced Life Support in Obstetrics).",
+    "Com mais de 10 anos de experiência clínica em Saúde da Mulher, Obstetrícia e Cuidado Neonatal, desenvolveu o Método Le Mater, uma abordagem que une conhecimento técnico, inovação tecnológica, educação materna e cuidado especializado para acompanhar mulheres da concepção aos primeiros cuidados com o bebê.",
+    "Sua trajetória profissional inclui atuação em ambientes hospitalares de média e alta complexidade, com foco em segurança do paciente, humanização da assistência, parto seguro, cuidado neonatal e protocolos baseados em evidências.",
+    "Como Enfermeira Obstetra Senior III no Hospital Regional da Baixada Santista, participou de ações estratégicas voltadas à qualificação da assistência obstétrica, fortalecimento do parto seguro, promoção do parto normal e melhoria de indicadores materno-infantis.",
+    "Também atuou no Centro de Estudos e Pesquisas Dr. João Amorim — CEJAM, com participação ativa na assistência direta e na construção de protocolos relacionados ao Programa Parto Seguro Paulista, na capital paulista.",
+    "Além da atuação em saúde materna, Rayssa Leslie é fundadora da Clínica de Estética Leslie, Pós-Graduada em Estética Avançada pelo Centro de Referência Estético NEPUGA, ampliando sua atuação para o autocuidado feminino, estética avançada e recuperação no pós-parto.",
+    "A Clínica de Estética Leslie nasce com uma linha de cuidados voltada especialmente para gestantes e mulheres no pós-parto, integrando estética, bem-estar, acolhimento, recuperação corporal e respeito às necessidades de cada fase da maternidade.",
+    "A partir dessa vivência prática, Rayssa criou o Método Le Mater, transformando sua experiência clínica em uma jornada de inovação no cuidado materno, com orientação profissional, educação, tecnologia e acolhimento.",
+  ];
+  const formacoes = [
+    "Enfermeira Pós-Graduada em Obstetrícia",
+    "Enfermeira Pós-Graduada em Neonatologia",
+    "Pós-Graduada em Estética Avançada pela NEPUGA",
+    "ACLS — Advanced Cardiovascular Life Support — American Heart Association",
+    "ALSO — Advanced Life Support in Obstetrics",
+    "Especialização em PICC",
+    "Criadora do Método Le Mater",
+    "Fundadora da Clínica de Estética Leslie",
+  ];
   return (
     <section style={{ paddingTop: 70, minHeight: "100vh" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 60, padding: "80px 48px", flexWrap: "wrap" }}>
-        <div style={{ fontFamily: serif, fontSize: 140, fontWeight: 300, color: c.border, lineHeight: 1, flexShrink: 0, userSelect: "none" }}>01</div>
-        <div style={{ flex: "1 1 320px" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 60, padding: "80px 48px", flexWrap: "wrap" }}>
+        <div style={{ flex: "0 1 380px", position: "sticky", top: 100, alignSelf: "flex-start" }}>
+          <img
+            src={rayssa}
+            alt="Rayssa Leslie, Enfermeira Pós Graduada em Obstetrícia"
+            style={{ width: "100%", borderRadius: 4, display: "block", boxShadow: "0 20px 60px -20px rgba(0,0,0,0.25)" }}
+          />
+        </div>
+        <div style={{ flex: "1 1 420px" }}>
           <SectionTag text="Sobre Rayssa Leslie" />
           <h2 style={h2}>
-            Experiência clínica<br />que <em style={{ fontStyle: "italic", color: c.sage }}>transforma</em><br />o cuidado.
+            Experiência clínica<br />que <em style={{ fontStyle: "italic", color: c.sage }}>transforma</em><br />o cuidado materno.
           </h2>
-          <p style={sectionP}>
-            Enfermeira Pós Graduada em Obstetricia e Neonatologista com sólida experiência em assistência ao parto seguro, saúde da mulher e cuidado neonatal. Atuação em ambientes hospitalares de média e alta complexidade, com foco em segurança do paciente, humanização do cuidado e protocolos baseados em evidências.
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {[
-              "Graduação e Pós-Graduação em Obstetrícia · UNAERP",
-              "ACLS · Advanced Cardiovascular Life Support · American Heart Association",
-              "ALSO · Advanced Life Support in Obstetrics",
-              "Especialização em PICC",
-              "Enf. Obstetra III · Hospital Regional Baixada Santista",
-              "Parto Seguro · CEJAM · Hospital Dr. João Amorim, SP",
-              "Hospital Electro Bonini UNAERP · Ribeirão Preto",
-            ].map((t) => (
-              <div key={t} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
-                {t}
-              </div>
-            ))}
+          {paragrafos.map((p, i) => (
+            <p key={i} style={{ ...sectionP, marginBottom: 18 }}>{p}</p>
+          ))}
+          <div style={{ marginTop: 36, paddingTop: 28, borderTop: `1px solid ${c.border}` }}>
+            <div style={{ fontFamily: serif, fontStyle: "italic", fontSize: 22, color: c.ink, marginBottom: 18 }}>
+              Formação e Qualificações
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {formacoes.map((t) => (
+                <div key={t} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
+                  {t}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
