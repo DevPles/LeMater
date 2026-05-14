@@ -287,26 +287,28 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
             {[
               { num: "+10", lbl: "Anos em obstetrícia" },
-              { flags: ["br", "es", "us"], lbl: "Atuação em 3 países" },
-              { num: "UNAERP · Leslie", lbl: "Parceria institucional" },
+              { flags: ["br", "es", "us"] as string[], lbl: "Atuação em 3 países" },
+              { num: "UNAERP · Clínica Estética Leslie", lbl: "Parceria institucional", small: true },
             ].map((stat) => (
-              <div key={stat.lbl} style={{ textAlign: isMobile ? "center" : "left" }}>
-                {stat.flags ? (
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", height: 38, justifyContent: isMobile ? "center" : "flex-start" }}>
-                    {stat.flags.map((code) => (
-                      <img
-                        key={code}
-                        src={`https://flagcdn.com/w40/${code}.png`}
-                        srcSet={`https://flagcdn.com/w80/${code}.png 2x`}
-                        alt={code.toUpperCase()}
-                        style={{ width: 32, height: 22, objectFit: "cover", borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div style={{ fontFamily: serif, fontSize: 32, fontWeight: 300, color: c.sageDark }}>{stat.num}</div>
-                )}
-                <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 2 }}>{stat.lbl}</div>
+              <div key={stat.lbl} style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
+                <div style={{ height: 38, display: "flex", alignItems: "center", justifyContent: isMobile ? "center" : "flex-start" }}>
+                  {stat.flags ? (
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      {stat.flags.map((code) => (
+                        <img
+                          key={code}
+                          src={`https://flagcdn.com/w40/${code}.png`}
+                          srcSet={`https://flagcdn.com/w80/${code}.png 2x`}
+                          alt={code.toUpperCase()}
+                          style={{ width: 32, height: 22, objectFit: "cover", borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ fontFamily: serif, fontSize: stat.small ? 18 : 32, fontWeight: 300, color: c.sageDark, lineHeight: 1.1, maxWidth: stat.small ? 220 : undefined }}>{stat.num}</div>
+                  )}
+                </div>
+                <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 6 }}>{stat.lbl}</div>
               </div>
             ))}
           </div>
