@@ -119,7 +119,7 @@ function RootComponent() {
   }, [profile?.bebe_sexo]);
 
   return (
-    <LangProvider>
+    <>
       <div ref={containerRef} style={{ minHeight: "100vh" }}>
         <Outlet />
         {showGestanteNav && <BottomNav />}
