@@ -353,7 +353,8 @@ function Sobre() {
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[
               "Graduação e Pós-Graduação em Obstetrícia · UNAERP",
-              "ACLS · Advanced Cardiac Life Support · American Heart Association",
+              "ACLS · Advanced Cardiovascular Life Support · American Heart Association",
+              "ALSO · Advanced Life Support in Obstetrics",
               "Especialização em PICC",
               "Enf. Obstetra III · Hospital Regional Baixada Santista",
               "Parto Seguro · CEJAM · Hospital Dr. João Amorim, SP",
