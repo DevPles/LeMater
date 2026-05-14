@@ -296,32 +296,9 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
         <div style={{ flex: "0 1 380px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: isMobile ? 20 : 32, minHeight: isMobile ? 360 : 440, alignSelf: "center", borderRadius: 16, width: isMobile ? "calc(100% - 40px)" : undefined, marginInline: isMobile ? 20 : undefined, marginBottom: isMobile ? 24 : undefined }}>
           <img
             src={rayssa}
-            alt="Rayssa Leslie, Enfermeira Obstetra"
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
-          />
-          <LiquidCard bgOpacity={0} style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 16, position: "relative", zIndex: 2, background: "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))", backdropFilter: "blur(8px) saturate(180%) contrast(110%)", WebkitBackdropFilter: "blur(8px) saturate(180%) contrast(110%)", borderColor: "rgba(255,255,255,0.18)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.2), 0 8px 24px -14px rgba(0,0,0,0.18)" }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 500, color: c.ink }}>Rayssa Leslie</div>
-              <div style={{ fontSize: 11, color: c.muted, letterSpacing: "0.04em", marginTop: 2 }}>Enf. Obstetra · COREN</div>
-              <div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.55, marginTop: 8 }}>
-                Especialista em Obstetrícia, Suporte Avançado à Gestação e Autocuidado Gestacional.
-              </div>
-              <div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.55, marginTop: 6 }}>
-                Criadora do Método Le Mater, uma abordagem que une inovação e perícia técnica no cuidado materno, da concepção aos primeiros cuidados com o bebê.
-              </div>
-            </div>
-            <div style={{ marginLeft: "auto", alignSelf: "flex-start", background: c.sageDark, color: "white", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 10px" }}>★ 5.0</div>
-          </LiquidCard>
-        </div>
-      </div>
-      <Ticker />
-    </section>
-  );
-}
-
-function Ticker() {
-  const items = ["Pré-Natal", "Parto Humanizado", "Cuidados Neonatais", "Cartão Digital da Gestante", "Pós-Parto", "Amamentação", "UTI Neonatal", "UNAERP"];
+            alt="Rayssa Leslie, Enfermeira Pós Graduada em Obstetricia"
+...
+  const items = ["Pré-Natal", "Parto Humanizado", "Cuidados Neonatais", "Carteira Digital da Gestante", "Pós-Parto", "Amamentação", "UTI Neonatal", "UNAERP"];
   const all = [...items, ...items];
   return (
     <div style={{ background: c.sageDark, color: "white", padding: "12px 0", overflow: "hidden", whiteSpace: "nowrap" }}>
