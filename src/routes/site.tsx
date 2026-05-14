@@ -303,7 +303,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 500, color: c.ink }}>Rayssa Leslie</div>
-              <div style={{ fontSize: 11, color: c.muted, letterSpacing: "0.04em", marginTop: 2 }}>Enfermeira Pós Graduada em Obstetricia · COREN</div>
+              
               <div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.55, marginTop: 8 }}>
                 Especialista em Obstetrícia, Suporte Avançado à Gestação e Autocuidado Gestacional.
               </div>
