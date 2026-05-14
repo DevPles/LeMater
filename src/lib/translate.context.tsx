@@ -1,6 +1,6 @@
 import { createContext, useContext, ReactNode, useState } from "react";
 
-export type Lang = "pt" | "es" | "en" | "fr";
+export type Lang = "pt" | "es" | "en";
 
 export const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({
   lang: "pt",
@@ -9,7 +9,7 @@ export const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => voi
 
 export const useLang = () => useContext(LangContext);
 
-export const FLAG_TO_LANG: Record<string, Lang> = { br: "pt", es: "es", us: "en", fr: "fr" };
+export const FLAG_TO_LANG: Record<string, Lang> = { br: "pt", es: "es", us: "en" };
 
 export function isTranslatable(text: string) {
   const t = text.trim();

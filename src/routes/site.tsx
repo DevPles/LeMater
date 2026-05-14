@@ -90,7 +90,6 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
     { code: "br", target: "pt", country: "Brasil", label: "Português" },
     { code: "es", target: "es", country: "España", label: "Español" },
     { code: "us", target: "en", country: "United States", label: "English" },
-    { code: "fr", target: "fr", country: "France", label: "Français" },
   ];
   const currentFlag = LANG_OPTIONS.find((o) => o.target === lang) ?? LANG_OPTIONS[0];
   const linkStyle = (id: SectionId): CSSProperties => ({
@@ -408,7 +407,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
             {[
               { num: "+10", lbl: "Anos em obstetrícia" },
-              { flags: ["br", "es", "us", "fr"] as string[], lbl: "Atuação em 4 países" },
+              { flags: ["br", "es", "us"] as string[], lbl: "Atuação em 3 países" },
               { num: "UNAERP\nClínica Estética Leslie", lbl: "Parceria institucional", small: true },
             ].map((stat) => (
               <div key={stat.lbl} style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
@@ -428,8 +427,6 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                                 ? "Português"
                                 : targetLang === "es"
                                 ? "Español"
-                                : targetLang === "fr"
-                                ? "Français"
                                 : "English"
                             }
                             aria-label={`Mudar idioma para ${code.toUpperCase()}`}
