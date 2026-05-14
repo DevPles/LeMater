@@ -301,11 +301,20 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           />
           <LiquidCard bgOpacity={0} style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 16, position: "relative", zIndex: 2, background: "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))", backdropFilter: "blur(8px) saturate(180%) contrast(110%)", WebkitBackdropFilter: "blur(8px) saturate(180%) contrast(110%)", borderColor: "rgba(255,255,255,0.18)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.2), 0 8px 24px -14px rgba(0,0,0,0.18)" }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
-            <div>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 500, color: c.ink }}>Rayssa Leslie</div>
-              <div style={{ fontSize: 11, color: c.muted, letterSpacing: "0.04em", marginTop: 2 }}>Enf. Obstetra · COREN · ACLS · PICC</div>
+              <div style={{ fontSize: 11, color: c.muted, letterSpacing: "0.04em", marginTop: 2 }}>Enf. Obstetra · COREN</div>
+              <div style={{ fontSize: 10.5, color: c.muted, lineHeight: 1.5, marginTop: 6 }}>
+                Advanced Cardiovascular Life Support (ACLS) — AHA · American Heart Association
+              </div>
+              <div style={{ fontSize: 10.5, color: c.muted, lineHeight: 1.5, marginTop: 3 }}>
+                Pós-Graduada em Obstetrícia — UNAERP
+              </div>
+              <div style={{ fontSize: 10.5, color: c.muted, lineHeight: 1.5, marginTop: 3 }}>
+                ALSO — Advanced Life Support in Obstetrics
+              </div>
             </div>
-            <div style={{ marginLeft: "auto", background: c.sageDark, color: "white", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 10px" }}>★ 5.0</div>
+            <div style={{ marginLeft: "auto", alignSelf: "flex-start", background: c.sageDark, color: "white", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 10px" }}>★ 5.0</div>
           </LiquidCard>
         </div>
       </div>
