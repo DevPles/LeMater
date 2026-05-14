@@ -403,7 +403,7 @@ function Sobre() {
         </div>
         <div style={{ flex: "1 1 420px" }}>
           <SectionTag text="Sobre Rayssa Leslie" />
-          <h2 className="text-2xl" style={{ ...h2, whiteSpace: "nowrap" }}>
+          <h2 className="text-2xl" style={{ ...h2, fontSize: undefined, whiteSpace: "nowrap" }}>
             Experiência clínica que <em style={{ fontStyle: "italic", color: c.sage }}>transforma</em> o cuidado materno.
           </h2>
           {paragrafos.map((p, i) => (
