@@ -1,5 +1,7 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useAutoTranslate } from "@/hooks/useAutoTranslate";
+import { useLang } from "@/lib/translate.context";
 import { BottomNav } from "@/components/BottomNav";
 import { ProfissionalNav } from "@/components/ProfissionalNav";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
