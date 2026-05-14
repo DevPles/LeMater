@@ -445,16 +445,45 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               <div key={stat.lbl} style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
                 <div style={{ height: 38, display: "flex", alignItems: "center", justifyContent: isMobile ? "center" : "flex-start" }}>
                   {stat.flags ? (
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      {stat.flags.map((code) => (
-                        <img
-                          key={code}
-                          src={`https://flagcdn.com/w40/${code}.png`}
-                          srcSet={`https://flagcdn.com/w80/${code}.png 2x`}
-                          alt={code.toUpperCase()}
-                          style={{ width: 32, height: 22, objectFit: "cover", borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }}
-                        />
-                      ))}
+                    <div data-no-translate style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      {stat.flags.map((code) => {
+                        const targetLang = FLAG_TO_LANG[code];
+                        const isActive = lang === targetLang;
+                        return (
+                          <button
+                            key={code}
+                            type="button"
+                            onClick={() => setLang(targetLang)}
+                            title={
+                              targetLang === "pt"
+                                ? "Português"
+                                : targetLang === "es"
+                                ? "Español"
+                                : "English"
+                            }
+                            aria-label={`Mudar idioma para ${code.toUpperCase()}`}
+                            style={{
+                              padding: 0,
+                              border: isActive ? `2px solid ${c.sageDark}` : "2px solid transparent",
+                              borderRadius: 4,
+                              background: "none",
+                              cursor: "pointer",
+                              lineHeight: 0,
+                              opacity: isActive ? 1 : 0.7,
+                              transition: "opacity 150ms, border-color 150ms",
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+                            onMouseLeave={(e) => (e.currentTarget.style.opacity = isActive ? "1" : "0.7")}
+                          >
+                            <img
+                              src={`https://flagcdn.com/w40/${code}.png`}
+                              srcSet={`https://flagcdn.com/w80/${code}.png 2x`}
+                              alt={code.toUpperCase()}
+                              style={{ width: 32, height: 22, objectFit: "cover", borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.15)", display: "block" }}
+                            />
+                          </button>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div style={{ fontFamily: serif, fontSize: stat.small ? 14 : 32, fontWeight: 400, color: c.sageDark, lineHeight: 1.25, maxWidth: stat.small ? 220 : undefined, whiteSpace: "pre-line" }}>{stat.num}</div>
