@@ -63,7 +63,11 @@ export const Route = createRootRoute({
     ],
   }),
   shellComponent: RootShell,
-  component: RootComponent,
+  component: () => (
+    <LangProvider>
+      <RootComponent />
+    </LangProvider>
+  ),
   notFoundComponent: NotFoundComponent,
 });
 
