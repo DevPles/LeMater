@@ -304,8 +304,11 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 500, color: c.ink }}>Rayssa Leslie</div>
               
-              <div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.55, marginTop: 8 }}>
-                Especialista em Obstetrícia, Suporte Avançado à Gestação e Autocuidado Gestacional.
+              <div style={{ fontSize: 11, color: c.muted, lineHeight: 1.4, marginTop: 8 }}>
+                Enfermeira Pós Graduada em Obstetricia<br />
+                Enfermeira Pós Graduada em Neonatologista<br />
+                Especialista ACLS pelo American Heart Association (AHA)<br />
+                Criadora do Método Le Mater
               </div>
             </div>
             <div style={{ marginLeft: "auto", alignSelf: "flex-start", background: c.sageDark, color: "white", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 10px" }}>★ 5.0</div>
