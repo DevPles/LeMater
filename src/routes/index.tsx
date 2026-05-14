@@ -6,7 +6,7 @@ import RegistrationModal from "@/components/RegistrationModal";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "MãeDigital — Cartão Digital da Gestante" },
+      { title: "MãeDigital — Carteira Digital da Gestante" },
       { name: "description", content: "\n. Acompanhe sua gestação com suporte profissional." },
     ],
     links: [
@@ -101,7 +101,7 @@ function WelcomeScreen() {
           </h1>
 
           <p style={{ fontSize: 15, lineHeight: 1.6, color: c.muted, marginBottom: 48, fontWeight: 300 }}>
-            Seu cartão digital da gestante com <br />
+            Sua carteira digital da gestante com <br />
             apoio clínico especializado.
           </p>
 
@@ -168,4 +168,3 @@ function WelcomeScreen() {
     </div>
   );
 }
-

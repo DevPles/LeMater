@@ -278,7 +278,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           <p
             style={{ fontSize: isMobile ? 15 : 16, lineHeight: 1.6, color: c.muted, maxWidth: 640, marginBottom: 36, textAlign: "center", marginInline: "auto" }}
           >
-            Criada por Rayssa Leslie, Enfermeira Obstetra formada pela UNAERP, a Le Mater une orientação Pré-Concepcional, Educação Materna, Cartão Digital da Gestante e Inteligência Artificial para acompanhar mulheres da Tentativa Natural de Engravidar aos Primeiros Cuidados com o bebê.
+            Criada por Rayssa Leslie, Enfermeira Pós Graduada em Obstetricia formada pela UNAERP, a Le Mater une orientação Pré-Concepcional, Educação Materna, Carteira Digital da Gestante e Inteligência Artificial para Acompanhar mulheres da tentativa natural de Engravidar aos Primeiros Cuidados com o bebê.
           </p>
           <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
             <button style={btnPrimary} onClick={() => go("produtos")}>ACESSAR ATLAS MATERNO</button>
@@ -296,14 +296,14 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
         <div style={{ flex: "0 1 380px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: isMobile ? 20 : 32, minHeight: isMobile ? 360 : 440, alignSelf: "center", borderRadius: 16, width: isMobile ? "calc(100% - 40px)" : undefined, marginInline: isMobile ? 20 : undefined, marginBottom: isMobile ? 24 : undefined }}>
           <img
             src={rayssa}
-            alt="Rayssa Leslie, Enfermeira Obstetra"
+            alt="Rayssa Leslie, Enfermeira Pós Graduada em Obstetricia"
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
           />
           <LiquidCard bgOpacity={0} style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 16, position: "relative", zIndex: 2, background: "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))", backdropFilter: "blur(8px) saturate(180%) contrast(110%)", WebkitBackdropFilter: "blur(8px) saturate(180%) contrast(110%)", borderColor: "rgba(255,255,255,0.18)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.2), 0 8px 24px -14px rgba(0,0,0,0.18)" }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 500, color: c.ink }}>Rayssa Leslie</div>
-              <div style={{ fontSize: 11, color: c.muted, letterSpacing: "0.04em", marginTop: 2 }}>Enf. Obstetra · COREN</div>
+              <div style={{ fontSize: 11, color: c.muted, letterSpacing: "0.04em", marginTop: 2 }}>Enfermeira Pós Graduada em Obstetricia · COREN</div>
               <div style={{ fontSize: 11.5, color: c.muted, lineHeight: 1.55, marginTop: 8 }}>
                 Especialista em Obstetrícia, Suporte Avançado à Gestação e Autocuidado Gestacional.
               </div>
@@ -321,7 +321,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
 }
 
 function Ticker() {
-  const items = ["Pré-Natal", "Parto Humanizado", "Cuidados Neonatais", "Cartão Digital da Gestante", "Pós-Parto", "Amamentação", "UTI Neonatal", "UNAERP"];
+  const items = ["Pré-Natal", "Parto Humanizado", "Cuidados Neonatais", "Carteira Digital da Gestante", "Pós-Parto", "Amamentação", "UTI Neonatal", "UNAERP"];
   const all = [...items, ...items];
   return (
     <div style={{ background: c.sageDark, color: "white", padding: "12px 0", overflow: "hidden", whiteSpace: "nowrap" }}>
@@ -348,7 +348,7 @@ function Sobre() {
             Experiência clínica<br />que <em style={{ fontStyle: "italic", color: c.sage }}>transforma</em><br />o cuidado.
           </h2>
           <p style={sectionP}>
-            Enfermeira Obstetra e Neonatologista com sólida experiência em assistência ao parto seguro, saúde da mulher e cuidado neonatal. Atuação em ambientes hospitalares de média e alta complexidade, com foco em segurança do paciente, humanização do cuidado e protocolos baseados em evidências.
+            Enfermeira Pós Graduada em Obstetricia e Neonatologista com sólida experiência em assistência ao parto seguro, saúde da mulher e cuidado neonatal. Atuação em ambientes hospitalares de média e alta complexidade, com foco em segurança do paciente, humanização do cuidado e protocolos baseados em evidências.
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {[
@@ -530,10 +530,10 @@ function Produtos() {
             Plano Completo Le Mater
           </div>
           <p style={{ fontSize: 15, lineHeight: 1.7, color: c.muted, maxWidth: 620, marginBottom: 28, fontWeight: 300 }}>
-            Para quem deseja acesso aos principais conteúdos da jornada materna, organização digital, cartão da gestante e recomendações inteligentes por fase.
+            Para quem deseja acesso aos principais conteúdos da jornada materna, organização digital, carteira da gestante e recomendações inteligentes por fase.
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 0, marginBottom: 32, borderTop: `1px solid ${c.border}`, borderBottom: `1px solid ${c.border}` }}>
-            {["Conteúdos por fase", "Cartão digital da gestante", "Recomendações inteligentes"].map((b, i, arr) => (
+            {["Conteúdos por fase", "Carteira digital da gestante", "Recomendações inteligentes"].map((b, i, arr) => (
               <div key={b} style={{
                 flex: isMobile ? "1 1 100%" : "1 1 0",
                 padding: "20px 24px",
