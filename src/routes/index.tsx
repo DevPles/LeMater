@@ -150,17 +150,6 @@ function WelcomeScreen() {
             </motion.button>
           </div>
 
-          <div style={{ marginTop: 60, display: "flex", justifyContent: "center", gap: 24 }}>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontFamily: serif, fontSize: 24, color: c.sageDark }}>100%</div>
-              <div style={{ fontSize: 9, color: c.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>Seguro</div>
-            </div>
-            <div style={{ width: 1, height: 40, background: c.border }} />
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontFamily: serif, fontSize: 24, color: c.sageDark }}>PICC</div>
-              <div style={{ fontSize: 9, color: c.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>Certificado</div>
-            </div>
-          </div>
         </div>
       </motion.div>
 
