@@ -198,7 +198,7 @@ function SitePage() {
           </div>
         )}
       </div>
-    </LangContext.Provider>
+    </>
   );
 }
 
