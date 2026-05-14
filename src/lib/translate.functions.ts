@@ -1,16 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 
-type TranslateInput = { texts: string[]; target: "es" | "en" };
+type TranslateInput = { texts: string[]; target: "es" | "en" | "fr" };
 
 const LANG_NAME: Record<TranslateInput["target"], string> = {
   es: "Spanish (Spain)",
   en: "English (US)",
+  fr: "French (France)",
 };
 
 export const translateBatch = createServerFn({ method: "POST" })
   .inputValidator((input: TranslateInput) => {
     if (!input || !Array.isArray(input.texts)) throw new Error("Invalid input");
-    if (input.target !== "es" && input.target !== "en") throw new Error("Invalid target");
+    if (input.target !== "es" && input.target !== "en" && input.target !== "fr") throw new Error("Invalid target");
     if (input.texts.length === 0) return input;
     if (input.texts.length > 400) throw new Error("Too many strings");
     return input;
