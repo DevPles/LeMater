@@ -387,6 +387,19 @@ function Sobre() {
             alt="Rayssa Leslie, Enfermeira Pós Graduada em Obstetrícia"
             style={{ width: "100%", borderRadius: 4, display: "block", boxShadow: "0 20px 60px -20px rgba(0,0,0,0.25)" }}
           />
+          <div style={{ marginTop: 28, paddingTop: 24, borderTop: `1px solid ${c.border}` }}>
+            <div style={{ fontFamily: serif, fontStyle: "italic", fontSize: 20, color: c.ink, marginBottom: 16 }}>
+              Formação e Qualificações
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {formacoes.map((t) => (
+                <div key={t} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
+                  {t}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
         <div style={{ flex: "1 1 420px" }}>
           <SectionTag text="Sobre Rayssa Leslie" />
@@ -396,19 +409,6 @@ function Sobre() {
           {paragrafos.map((p, i) => (
             <p key={i} style={{ ...sectionP, fontSize: 15, maxWidth: "none", marginBottom: 18, textAlign: "justify", hyphens: "auto" }}>{p}</p>
           ))}
-          <div style={{ marginTop: 36, paddingTop: 28, borderTop: `1px solid ${c.border}` }}>
-            <div style={{ fontFamily: serif, fontStyle: "italic", fontSize: 22, color: c.ink, marginBottom: 18 }}>
-              Formação e Qualificações
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {formacoes.map((t) => (
-                <div key={t} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.sage, flexShrink: 0 }} />
-                  {t}
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </section>
