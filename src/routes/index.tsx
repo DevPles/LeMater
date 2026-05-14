@@ -49,46 +49,9 @@ function WelcomeScreen() {
 
   return (
     <div 
-      ref={containerRef}
       style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}
     >
-      {/* Translating Indicator Overlay */}
-      {translating && (
-        <div style={{
-          position: "fixed",
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: "rgba(255,255,255,0.7)",
-          zIndex: 1000,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backdropFilter: "blur(2px)"
-        }}>
-          <div style={{
-            background: "white",
-            padding: "16px 24px",
-            borderRadius: 8,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            fontSize: 14,
-            fontWeight: 500,
-            color: c.sageDark
-          }}>
-            <div style={{
-              width: 16,
-              height: 16,
-              border: `2px solid ${c.sageLight}`,
-              borderTopColor: "transparent",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite"
-            }} />
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-            Translating...
-          </div>
-        </div>
-      )}
+
       {/* Logo Section */}
       <div style={{ padding: "40px 24px", display: "flex", justifyContent: "center" }}>
         <img
