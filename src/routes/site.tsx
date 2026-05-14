@@ -286,13 +286,27 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           </div>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
             {[
-              ["+10", "Anos em obstetrícia"],
-              ["🇧🇷 🇪🇸 🇺🇸", "Atuação em 3 países"],
-              ["UNAERP · Leslie", "Parceria institucional"],
-            ].map(([num, lbl]) => (
-              <div key={lbl} style={{ textAlign: isMobile ? "center" : "left" }}>
-                <div style={{ fontFamily: serif, fontSize: 32, fontWeight: 300, color: c.sageDark }}>{num}</div>
-                <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 2 }}>{lbl}</div>
+              { num: "+10", lbl: "Anos em obstetrícia" },
+              { flags: ["br", "es", "us"], lbl: "Atuação em 3 países" },
+              { num: "UNAERP · Leslie", lbl: "Parceria institucional" },
+            ].map((stat) => (
+              <div key={stat.lbl} style={{ textAlign: isMobile ? "center" : "left" }}>
+                {stat.flags ? (
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", height: 38, justifyContent: isMobile ? "center" : "flex-start" }}>
+                    {stat.flags.map((code) => (
+                      <img
+                        key={code}
+                        src={`https://flagcdn.com/w40/${code}.png`}
+                        srcSet={`https://flagcdn.com/w80/${code}.png 2x`}
+                        alt={code.toUpperCase()}
+                        style={{ width: 32, height: 22, objectFit: "cover", borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ fontFamily: serif, fontSize: 32, fontWeight: 300, color: c.sageDark }}>{stat.num}</div>
+                )}
+                <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 2 }}>{stat.lbl}</div>
               </div>
             ))}
           </div>
