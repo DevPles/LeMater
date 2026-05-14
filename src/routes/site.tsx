@@ -20,7 +20,7 @@ const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({
 });
 const useLang = () => useContext(LangContext);
 
-const FLAG_TO_LANG: Record<string, Lang> = { br: "pt", es: "es", us: "en" };
+const FLAG_TO_LANG: Record<string, Lang> = { br: "pt", es: "es", us: "en", fr: "fr" };
 
 function isTranslatable(text: string) {
   const t = text.trim();
