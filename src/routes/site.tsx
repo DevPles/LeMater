@@ -272,12 +272,108 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
           Le<span style={{ color: c.sage }}>Mater</span>
         </div>
         {!isMobile && (
-          <ul style={{ display: "flex", gap: 32, listStyle: "none", margin: 0, padding: 0 }}>
+          <ul style={{ display: "flex", gap: 32, listStyle: "none", margin: 0, padding: 0, alignItems: "center" }}>
             {NAV_ITEMS.map(([id, label]) => (
               <li key={id}>
                 <button onClick={() => handleGo(id)} style={linkStyle(id)}>{label}</button>
               </li>
             ))}
+            <li data-no-translate style={{ position: "relative" }}>
+              <button
+                type="button"
+                onClick={() => setLangOpen((v) => !v)}
+                aria-label="Selecionar país e idioma"
+                aria-expanded={langOpen}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "none",
+                  border: `1px solid ${c.border}`,
+                  borderRadius: 4,
+                  padding: "4px 8px",
+                  cursor: "pointer",
+                  fontFamily: sans,
+                  fontSize: 11,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: c.ink,
+                }}
+              >
+                <img
+                  src={`https://flagcdn.com/w40/${currentFlag.code}.png`}
+                  srcSet={`https://flagcdn.com/w80/${currentFlag.code}.png 2x`}
+                  alt={currentFlag.code.toUpperCase()}
+                  style={{ width: 22, height: 16, objectFit: "cover", borderRadius: 2, display: "block" }}
+                />
+                <span>{currentFlag.target.toUpperCase()}</span>
+              </button>
+              {langOpen && (
+                <>
+                  <div
+                    onClick={() => setLangOpen(false)}
+                    style={{ position: "fixed", inset: 0, zIndex: 200 }}
+                  />
+                  <ul
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 8px)",
+                      right: 0,
+                      zIndex: 201,
+                      listStyle: "none",
+                      margin: 0,
+                      padding: 6,
+                      background: c.cream,
+                      border: `1px solid ${c.border}`,
+                      borderRadius: 6,
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                      minWidth: 200,
+                    }}
+                  >
+                    {LANG_OPTIONS.map((opt) => {
+                      const isActive = opt.target === lang;
+                      return (
+                        <li key={opt.code}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setLang(opt.target);
+                              setLangOpen(false);
+                            }}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              width: "100%",
+                              padding: "8px 10px",
+                              background: isActive ? c.warm : "transparent",
+                              border: "none",
+                              borderRadius: 4,
+                              cursor: "pointer",
+                              fontFamily: sans,
+                              fontSize: 13,
+                              color: c.ink,
+                              textAlign: "left",
+                            }}
+                          >
+                            <img
+                              src={`https://flagcdn.com/w40/${opt.code}.png`}
+                              srcSet={`https://flagcdn.com/w80/${opt.code}.png 2x`}
+                              alt={opt.code.toUpperCase()}
+                              style={{ width: 24, height: 18, objectFit: "cover", borderRadius: 2, display: "block" }}
+                            />
+                            <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
+                              <span style={{ fontWeight: 500 }}>{opt.country}</span>
+                              <span style={{ fontSize: 11, color: c.muted }}>{opt.label}</span>
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
+            </li>
           </ul>
         )}
         {!isMobile ? (
