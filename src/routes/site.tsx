@@ -130,7 +130,10 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
           padding: isMobile ? "16px 20px" : "20px 48px",
         }}
       >
-        <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 300, letterSpacing: "0.08em" }}>
+        <div 
+          onClick={() => handleGo("inicio")} 
+          style={{ fontFamily: serif, fontSize: 22, fontWeight: 300, letterSpacing: "0.08em", cursor: "pointer" }}
+        >
           Le<span style={{ color: c.sage }}>Mater</span>
         </div>
         {!isMobile && (
