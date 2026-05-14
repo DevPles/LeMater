@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import RegistrationModal from "@/components/RegistrationModal";
+import { useLang, FLAG_TO_LANG, isTranslatable, type Lang } from "@/lib/translate.context";
+import { translateBatch } from "@/lib/translate.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,6 +40,7 @@ const sans = "'DM Sans', sans-serif";
 function WelcomeScreen() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"login" | "register">("login");
+  const { lang, setLang } = useLang();
 
   const openModal = (mode: "login" | "register") => {
     setModalMode(mode);
@@ -44,7 +48,10 @@ function WelcomeScreen() {
   };
 
   return (
-    <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div 
+      style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}
+    >
+
       {/* Logo Section */}
       <div style={{ padding: "40px 24px", display: "flex", justifyContent: "center" }}>
         <img
@@ -150,6 +157,34 @@ function WelcomeScreen() {
             </motion.button>
           </div>
 
+          <div style={{ marginTop: "auto", paddingTop: 40, display: "flex", justifyContent: "center", gap: 16 }}>
+            {Object.entries(FLAG_TO_LANG).map(([code, targetLang]) => {
+              const isActive = lang === targetLang;
+              return (
+                <button
+                  key={code}
+                  onClick={() => setLang(targetLang)}
+                  style={{
+                    padding: 0,
+                    border: isActive ? `2px solid ${c.sageDark}` : "2px solid transparent",
+                    borderRadius: 4,
+                    background: "none",
+                    cursor: "pointer",
+                    lineHeight: 0,
+                    opacity: isActive ? 1 : 0.6,
+                    transition: "all 0.2s"
+                  }}
+                >
+                  <img
+                    src={`https://flagcdn.com/w40/${code}.png`}
+                    srcSet={`https://flagcdn.com/w80/${code}.png 2x`}
+                    alt={code}
+                    style={{ width: 28, height: 18, objectFit: "cover", borderRadius: 2 }}
+                  />
+                </button>
+              );
+            })}
+          </div>
         </div>
       </motion.div>
 

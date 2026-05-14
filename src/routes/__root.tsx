@@ -1,10 +1,13 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useAutoTranslate } from "@/hooks/useAutoTranslate";
+import { useLang } from "@/lib/translate.context";
 import { BottomNav } from "@/components/BottomNav";
 import { ProfissionalNav } from "@/components/ProfissionalNav";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import { useUserRole } from "@/hooks/useUserRole";
 import appCss from "../styles.css?url";
+import { LangProvider } from "@/lib/translate.context";
 
 // Rotas que profissionais NÃO podem acessar (são exclusivas da gestante)
 const PROFISSIONAL_BLOCKED = [
@@ -60,7 +63,11 @@ export const Route = createRootRoute({
     ],
   }),
   shellComponent: RootShell,
-  component: RootComponent,
+  component: () => (
+    <LangProvider>
+      <RootComponent />
+    </LangProvider>
+  ),
   notFoundComponent: NotFoundComponent,
 });
 
@@ -83,6 +90,7 @@ function RootComponent() {
   const navigate = useNavigate();
   const { profile } = useGestanteProfile();
   const { isProfissional, isAdmin, loading: roleLoading } = useUserRole();
+  const { translating } = useAutoTranslate();
 
   const hideAllNav =
     location.pathname === "/" ||
@@ -90,13 +98,10 @@ function RootComponent() {
     location.pathname.startsWith("/admin") ||
     location.pathname.startsWith("/sala");
 
-  // Profissional vê apenas a nav restrita (Agenda + Vídeos)
   const showProfissionalNav =
     !hideAllNav && isProfissional && !isAdmin;
-  // Gestante vê a BottomNav padrão
   const showGestanteNav = !hideAllNav && !isProfissional;
 
-  // Redireciona profissionais que tentam acessar telas de gestante
   useEffect(() => {
     if (roleLoading || !isProfissional || isAdmin) return;
     if (PROFISSIONAL_BLOCKED.includes(location.pathname)) {
@@ -117,6 +122,37 @@ function RootComponent() {
       <Outlet />
       {showGestanteNav && <BottomNav />}
       {showProfissionalNav && <ProfissionalNav />}
+
+      
+      {translating && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(255,255,255,0.4)",
+          zIndex: 10000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backdropFilter: "blur(1px)",
+          pointerEvents: "none"
+        }}>
+          <div style={{
+            background: "white",
+            padding: "8px 16px",
+            borderRadius: 20,
+            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#5C8A6E"
+          }}>
+            <div className="animate-spin w-3 h-3 border-2 border-sage-500 border-t-transparent rounded-full" />
+            Translating...
+          </div>
+        </div>
+      )}
     </>
   );
 }
