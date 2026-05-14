@@ -163,7 +163,7 @@ function SitePage() {
   }, [lang, active, translateFn]);
 
   return (
-    <LangContext.Provider value={{ lang, setLang }}>
+    <>
       <div
         ref={containerRef}
         style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh", overflowX: "hidden" }}
