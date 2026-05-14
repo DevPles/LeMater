@@ -223,6 +223,14 @@ function SitePage() {
 function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void }) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const { lang, setLang } = useLang();
+  const LANG_OPTIONS: { code: string; target: Lang; country: string; label: string }[] = [
+    { code: "br", target: "pt", country: "Brasil", label: "Português" },
+    { code: "es", target: "es", country: "España", label: "Español" },
+    { code: "us", target: "en", country: "United States", label: "English" },
+  ];
+  const currentFlag = LANG_OPTIONS.find((o) => o.target === lang) ?? LANG_OPTIONS[0];
   const linkStyle = (id: SectionId): CSSProperties => ({
     fontSize: isMobile ? 15 : 13,
     fontWeight: 400,
