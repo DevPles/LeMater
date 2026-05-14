@@ -13,7 +13,7 @@ import { LiquidCard } from "@/components/LiquidCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { translateBatch } from "@/lib/translate.functions";
 
-type Lang = "pt" | "es" | "en";
+type Lang = "pt" | "es" | "en" | "fr";
 const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({
   lang: "pt",
   setLang: () => {},
