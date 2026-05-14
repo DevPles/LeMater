@@ -288,7 +288,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             {[
               { num: "+10", lbl: "Anos em obstetrícia" },
               { flags: ["br", "es", "us"] as string[], lbl: "Atuação em 3 países" },
-              { num: "UNAERP · Clínica Estética Leslie", lbl: "Parceria institucional", small: true },
+              { num: "UNAERP\nClínica Estética Leslie", lbl: "Parceria institucional", small: true },
             ].map((stat) => (
               <div key={stat.lbl} style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
                 <div style={{ height: 38, display: "flex", alignItems: "center", justifyContent: isMobile ? "center" : "flex-start" }}>
@@ -305,7 +305,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                       ))}
                     </div>
                   ) : (
-                    <div style={{ fontFamily: serif, fontSize: stat.small ? 18 : 32, fontWeight: 300, color: c.sageDark, lineHeight: 1.1, maxWidth: stat.small ? 220 : undefined }}>{stat.num}</div>
+                    <div style={{ fontFamily: serif, fontSize: stat.small ? 14 : 32, fontWeight: 400, color: c.sageDark, lineHeight: 1.25, maxWidth: stat.small ? 220 : undefined, whiteSpace: "pre-line" }}>{stat.num}</div>
                   )}
                 </div>
                 <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 6 }}>{stat.lbl}</div>
