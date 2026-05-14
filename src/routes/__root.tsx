@@ -114,10 +114,10 @@ function RootComponent() {
   }, [profile?.bebe_sexo]);
 
   return (
-    <>
+    <LangProvider>
       <Outlet />
       {showGestanteNav && <BottomNav />}
       {showProfissionalNav && <ProfissionalNav />}
-    </>
+    </LangProvider>
   );
 }
