@@ -544,7 +544,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
             {[
               { num: "+10", lbl: "Anos em obstetrícia" },
-              { flags: ["br", "es", "us"] as string[], lbl: "Atuação em 3 países" },
+              { flags: ["br", "es", "us", "fr"] as string[], lbl: "Atuação em 4 países" },
               { num: "UNAERP\nClínica Estética Leslie", lbl: "Parceria institucional", small: true },
             ].map((stat) => (
               <div key={stat.lbl} style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
