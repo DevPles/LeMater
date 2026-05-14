@@ -1,8 +1,34 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, type CSSProperties } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import rayssa from "@/assets/rayssa-portrait.jpg";
 import { LiquidCard } from "@/components/LiquidCard";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { translateBatch } from "@/lib/translate.functions";
+
+type Lang = "pt" | "es" | "en";
+const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({
+  lang: "pt",
+  setLang: () => {},
+});
+const useLang = () => useContext(LangContext);
+
+const FLAG_TO_LANG: Record<string, Lang> = { br: "pt", es: "es", us: "en" };
+
+function isTranslatable(text: string) {
+  const t = text.trim();
+  if (t.length < 2) return false;
+  // skip pure numbers / symbols
+  if (!/[A-Za-zÀ-ÿ]/.test(t)) return false;
+  return true;
+}
 
 export const Route = createFileRoute("/site")({
   head: () => ({
@@ -50,22 +76,147 @@ const NAV_ITEMS: ReadonlyArray<readonly [SectionId, string]> = [
 
 function SitePage() {
   const [active, setActive] = useState<SectionId>("inicio");
+  const [lang, setLang] = useState<Lang>("pt");
+  const [translating, setTranslating] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  // Map<TextNode, originalString>
+  const originalsRef = useRef<WeakMap<Text, string>>(new WeakMap());
+  // Cache: lang -> Map<original, translated>
+  const cacheRef = useRef<Map<Lang, Map<string, string>>>(new Map());
+  const translateFn = useServerFn(translateBatch);
+
   const go = (id: SectionId) => {
     setActive(id);
     if (typeof window !== "undefined") window.scrollTo(0, 0);
   };
 
+  // Apply translation whenever lang or active section changes.
+  useEffect(() => {
+    const root = containerRef.current;
+    if (!root) return;
+
+    // Collect text nodes
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: (node) => {
+        const parent = (node as Text).parentElement;
+        if (!parent) return NodeFilter.FILTER_REJECT;
+        const tag = parent.tagName;
+        if (tag === "SCRIPT" || tag === "STYLE") return NodeFilter.FILTER_REJECT;
+        if (parent.closest("[data-no-translate]")) return NodeFilter.FILTER_REJECT;
+        if (!isTranslatable((node as Text).nodeValue ?? "")) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+
+    const nodes: Text[] = [];
+    let n: Node | null;
+    while ((n = walker.nextNode())) nodes.push(n as Text);
+
+    // Save originals on first encounter
+    for (const node of nodes) {
+      if (!originalsRef.current.has(node)) {
+        originalsRef.current.set(node, node.nodeValue ?? "");
+      }
+    }
+
+    // Restore Portuguese instantly
+    if (lang === "pt") {
+      for (const node of nodes) {
+        const orig = originalsRef.current.get(node);
+        if (orig != null && node.nodeValue !== orig) node.nodeValue = orig;
+      }
+      return;
+    }
+
+    // Build cache for this lang
+    if (!cacheRef.current.has(lang)) cacheRef.current.set(lang, new Map());
+    const cache = cacheRef.current.get(lang)!;
+
+    // Apply cached, collect missing
+    const missing = new Set<string>();
+    for (const node of nodes) {
+      const orig = originalsRef.current.get(node) ?? "";
+      const key = orig.trim();
+      if (!key) continue;
+      const cached = cache.get(key);
+      if (cached) {
+        // preserve leading/trailing whitespace from original
+        const leading = orig.match(/^\s*/)?.[0] ?? "";
+        const trailing = orig.match(/\s*$/)?.[0] ?? "";
+        node.nodeValue = leading + cached + trailing;
+      } else {
+        missing.add(key);
+      }
+    }
+
+    if (missing.size === 0) return;
+
+    let cancelled = false;
+    setTranslating(true);
+    const texts = Array.from(missing);
+    translateFn({ data: { texts, target: lang } })
+      .then((res) => {
+        if (cancelled) return;
+        res.translations.forEach((t, i) => cache.set(texts[i], t));
+        // Apply to current nodes
+        for (const node of nodes) {
+          const orig = originalsRef.current.get(node) ?? "";
+          const key = orig.trim();
+          const translated = cache.get(key);
+          if (translated) {
+            const leading = orig.match(/^\s*/)?.[0] ?? "";
+            const trailing = orig.match(/\s*$/)?.[0] ?? "";
+            node.nodeValue = leading + translated + trailing;
+          }
+        }
+      })
+      .catch((err) => console.error("Translation error:", err))
+      .finally(() => {
+        if (!cancelled) setTranslating(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lang, active, translateFn]);
+
   return (
-    <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh", overflowX: "hidden" }}>
-      <Nav active={active} go={go} />
-      <main>
-        {active === "inicio" && <Inicio go={go} />}
-        {active === "sobre" && <Sobre />}
-        {active === "produtos" && <Produtos />}
-        {active === "contato" && <Contato />}
-      </main>
-      <Footer />
-    </div>
+    <LangContext.Provider value={{ lang, setLang }}>
+      <div
+        ref={containerRef}
+        style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh", overflowX: "hidden" }}
+      >
+        <Nav active={active} go={go} />
+        <main>
+          {active === "inicio" && <Inicio go={go} />}
+          {active === "sobre" && <Sobre />}
+          {active === "produtos" && <Produtos />}
+          {active === "contato" && <Contato />}
+        </main>
+        <Footer />
+        {translating && (
+          <div
+            data-no-translate
+            style={{
+              position: "fixed",
+              bottom: 20,
+              right: 20,
+              background: c.sageDark,
+              color: c.cream,
+              padding: "10px 16px",
+              borderRadius: 999,
+              fontSize: 12,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+              zIndex: 9999,
+            }}
+          >
+            {lang === "es" ? "Traduciendo…" : "Translating…"}
+          </div>
+        )}
+      </div>
+    </LangContext.Provider>
   );
 }
 
@@ -257,6 +408,7 @@ const btnSecondary: CSSProperties = {
 
 function Inicio({ go }: { go: (id: SectionId) => void }) {
   const isMobile = useIsMobile();
+  const { lang, setLang } = useLang();
   return (
     <section style={{ paddingTop: isMobile ? 80 : 40, minHeight: "75vh", display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", flex: 1, flexWrap: "wrap", alignItems: "flex-start" }}>
@@ -293,16 +445,45 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               <div key={stat.lbl} style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
                 <div style={{ height: 38, display: "flex", alignItems: "center", justifyContent: isMobile ? "center" : "flex-start" }}>
                   {stat.flags ? (
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      {stat.flags.map((code) => (
-                        <img
-                          key={code}
-                          src={`https://flagcdn.com/w40/${code}.png`}
-                          srcSet={`https://flagcdn.com/w80/${code}.png 2x`}
-                          alt={code.toUpperCase()}
-                          style={{ width: 32, height: 22, objectFit: "cover", borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.15)" }}
-                        />
-                      ))}
+                    <div data-no-translate style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      {stat.flags.map((code) => {
+                        const targetLang = FLAG_TO_LANG[code];
+                        const isActive = lang === targetLang;
+                        return (
+                          <button
+                            key={code}
+                            type="button"
+                            onClick={() => setLang(targetLang)}
+                            title={
+                              targetLang === "pt"
+                                ? "Português"
+                                : targetLang === "es"
+                                ? "Español"
+                                : "English"
+                            }
+                            aria-label={`Mudar idioma para ${code.toUpperCase()}`}
+                            style={{
+                              padding: 0,
+                              border: isActive ? `2px solid ${c.sageDark}` : "2px solid transparent",
+                              borderRadius: 4,
+                              background: "none",
+                              cursor: "pointer",
+                              lineHeight: 0,
+                              opacity: isActive ? 1 : 0.7,
+                              transition: "opacity 150ms, border-color 150ms",
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+                            onMouseLeave={(e) => (e.currentTarget.style.opacity = isActive ? "1" : "0.7")}
+                          >
+                            <img
+                              src={`https://flagcdn.com/w40/${code}.png`}
+                              srcSet={`https://flagcdn.com/w80/${code}.png 2x`}
+                              alt={code.toUpperCase()}
+                              style={{ width: 32, height: 22, objectFit: "cover", borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.15)", display: "block" }}
+                            />
+                          </button>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div style={{ fontFamily: serif, fontSize: stat.small ? 14 : 32, fontWeight: 400, color: c.sageDark, lineHeight: 1.25, maxWidth: stat.small ? 220 : undefined, whiteSpace: "pre-line" }}>{stat.num}</div>
