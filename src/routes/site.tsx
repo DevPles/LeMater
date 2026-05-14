@@ -374,7 +374,7 @@ function Sobre() {
             Experiência clínica<br />que <em style={{ fontStyle: "italic", color: c.sage }}>transforma</em><br />o cuidado materno.
           </h2>
           {paragrafos.map((p, i) => (
-            <p key={i} style={{ ...sectionP, marginBottom: 18 }}>{p}</p>
+            <p key={i} style={{ ...sectionP, marginBottom: 18, textAlign: "justify", hyphens: "auto" }}>{p}</p>
           ))}
           <div style={{ marginTop: 36, paddingTop: 28, borderTop: `1px solid ${c.border}` }}>
             <div style={{ fontFamily: serif, fontStyle: "italic", fontSize: 22, color: c.ink, marginBottom: 18 }}>
