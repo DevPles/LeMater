@@ -66,42 +66,18 @@ function SitePage() {
   };
 
   return (
-    <>
-      <div
-        ref={containerRef}
-        style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh", overflowX: "hidden" }}
-      >
-        <Nav active={active} go={go} />
-        <main>
-          {active === "inicio" && <Inicio go={go} />}
-          {active === "sobre" && <Sobre />}
-          {active === "produtos" && <Produtos />}
-          {active === "contato" && <Contato />}
-        </main>
-        <Footer />
-        {translating && (
-          <div
-            data-no-translate
-            style={{
-              position: "fixed",
-              bottom: 20,
-              right: 20,
-              background: c.sageDark,
-              color: c.cream,
-              padding: "10px 16px",
-              borderRadius: 999,
-              fontSize: 12,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
-              zIndex: 9999,
-            }}
-          >
-            {lang === "es" ? "Traduciendo…" : "Translating…"}
-          </div>
-        )}
-      </div>
-    </>
+    <div 
+      style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh", overflowX: "hidden" }}
+    >
+      <Nav active={active} go={go} />
+      <main>
+        {active === "inicio" && <Inicio go={go} />}
+        {active === "sobre" && <Sobre />}
+        {active === "produtos" && <Produtos />}
+        {active === "contato" && <Contato />}
+      </main>
+      <Footer />
+    </div>
   );
 }
 
