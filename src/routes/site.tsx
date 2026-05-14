@@ -623,7 +623,7 @@ function Footer() {
       <div style={{ fontFamily: serif, fontSize: 18, fontWeight: 300, color: c.ink, letterSpacing: "0.06em" }}>
         Le<span style={{ color: c.sage }}>Mater</span>
       </div>
-      <div>© 2026 · Rayssa Leslie · Todos os direitos reservados</div>
+      <div>© 2024 · Rayssa Leslie · Todos os direitos reservados</div>
       <div>UNAERP · COREN · ACLS</div>
     </footer>
   );
