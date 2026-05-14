@@ -624,7 +624,7 @@ function Footer() {
         Le<span style={{ color: c.sage }}>Mater</span>
       </div>
       <div>© 2024 · Rayssa Leslie · Todos os direitos reservados</div>
-      <div>UNAERP · COREN · ACLS</div>
+      <div>A gestação que você merece viver.</div>
     </footer>
   );
 }
