@@ -305,7 +305,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                       ))}
                     </div>
                   ) : (
-                    <div style={{ fontFamily: serif, fontSize: stat.small ? 18 : 32, fontWeight: 300, color: c.sageDark, lineHeight: 1.1, maxWidth: stat.small ? 220 : undefined }}>{stat.num}</div>
+                    <div style={{ fontFamily: serif, fontSize: stat.small ? 14 : 32, fontWeight: 400, color: c.sageDark, lineHeight: 1.25, maxWidth: stat.small ? 220 : undefined, whiteSpace: "pre-line" }}>{stat.num}</div>
                   )}
                 </div>
                 <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 6 }}>{stat.lbl}</div>
