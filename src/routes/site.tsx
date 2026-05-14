@@ -302,10 +302,10 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           <LiquidCard bgOpacity={0} style={{ padding: "18px 20px", display: "flex", alignItems: "flex-start", gap: 12, position: "relative", zIndex: 2, background: "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))", backdropFilter: "blur(8px) saturate(180%) contrast(110%)", WebkitBackdropFilter: "blur(8px) saturate(180%) contrast(110%)", borderColor: "rgba(255,255,255,0.18)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.2), 0 8px 24px -14px rgba(0,0,0,0.18)" }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.55), 0 0 12px rgba(0,0,0,0.35)" }}>Rayssa Leslie</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: c.sageDark, textShadow: "0 1px 2px rgba(255,255,255,0.55)" }}>Rayssa Leslie</div>
                 <div style={{ background: c.sageDark, color: "white", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 10px", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.25)" }}>★ 5.0</div>
               </div>
-              <div style={{ fontSize: 11.5, color: "#fff", lineHeight: 1.55, fontWeight: 500, textShadow: "0 1px 2px rgba(0,0,0,0.6), 0 0 10px rgba(0,0,0,0.35)" }}>
+              <div style={{ fontSize: 11.5, color: c.sageDark, lineHeight: 1.55, fontWeight: 600, textShadow: "0 1px 2px rgba(255,255,255,0.5)" }}>
                 Enfermeira Pós Graduada em Obstetricia<br />
                 Enfermeira Pós Graduada em Neonatologista<br />
                 Especialista ACLS pelo American Heart Association (AHA)<br />
