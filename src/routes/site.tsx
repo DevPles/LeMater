@@ -229,6 +229,7 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
     { code: "br", target: "pt", country: "Brasil", label: "Português" },
     { code: "es", target: "es", country: "España", label: "Español" },
     { code: "us", target: "en", country: "United States", label: "English" },
+    { code: "fr", target: "fr", country: "France", label: "Français" },
   ];
   const currentFlag = LANG_OPTIONS.find((o) => o.target === lang) ?? LANG_OPTIONS[0];
   const linkStyle = (id: SectionId): CSSProperties => ({
