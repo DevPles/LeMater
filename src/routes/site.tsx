@@ -564,6 +564,8 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                                 ? "Português"
                                 : targetLang === "es"
                                 ? "Español"
+                                : targetLang === "fr"
+                                ? "Français"
                                 : "English"
                             }
                             aria-label={`Mudar idioma para ${code.toUpperCase()}`}
