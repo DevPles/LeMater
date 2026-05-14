@@ -527,10 +527,11 @@ function Sobre() {
     "Criadora do Método Le Mater",
     "Fundadora da Clínica de Estética Leslie",
   ];
+  const isMobile = useIsMobile();
   return (
     <section style={{ paddingTop: 70, minHeight: "100vh" }}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 60, padding: "80px 48px", flexWrap: "wrap" }}>
-        <div style={{ flex: "0 1 380px", position: "sticky", top: 100, alignSelf: "flex-start" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: isMobile ? 32 : 60, padding: isMobile ? "40px 20px" : "80px 48px", flexWrap: "wrap" }}>
+        <div style={{ flex: "0 1 380px", position: isMobile ? "static" : "sticky", top: 100, alignSelf: "flex-start", width: isMobile ? "100%" : undefined }}>
           <img
             src={rayssa}
             alt="Rayssa Leslie, Enfermeira Pós Graduada em Obstetrícia"
@@ -550,13 +551,13 @@ function Sobre() {
             </div>
           </div>
         </div>
-        <div style={{ flex: "1 1 420px" }}>
+        <div style={{ flex: "1 1 420px", minWidth: 0, width: isMobile ? "100%" : undefined }}>
           <SectionTag text="Sobre Rayssa Leslie" />
-          <h2 className="text-2xl" style={{ ...h2, fontSize: undefined, whiteSpace: "nowrap" }}>
+          <h2 style={{ ...h2, fontSize: isMobile ? 26 : undefined }}>
             Experiência clínica que <em style={{ fontStyle: "italic", color: c.sage }}>transforma</em> o cuidado materno.
           </h2>
           {paragrafos.map((p, i) => (
-            <p key={i} style={{ ...sectionP, fontSize: 15, maxWidth: "none", marginBottom: 18, textAlign: "justify", hyphens: "auto" }}>{p}</p>
+            <p key={i} style={{ ...sectionP, fontSize: 15, maxWidth: "none", marginBottom: 18, textAlign: "justify", hyphens: "auto", overflowWrap: "break-word" }}>{p}</p>
           ))}
         </div>
       </div>
