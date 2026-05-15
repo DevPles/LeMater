@@ -105,12 +105,12 @@ export function AtlasGratuitoPage({ categoria, titulo, intro, aprendizados, slug
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
       {/* Header simples */}
       <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(250,245,238,0.92)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: isMobile ? "16px 20px" : "20px 48px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link to="/site" style={{ textDecoration: "none", color: c.ink }}>
+        <Link to="/" style={{ textDecoration: "none", color: c.ink }}>
           <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 300, letterSpacing: "0.08em" }}>
             Le<span style={{ color: c.sage }}>Mater</span>
           </div>
         </Link>
-        <Link to="/site" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.muted, textDecoration: "none" }}>
+        <Link to="/" style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.muted, textDecoration: "none" }}>
           Voltar ao Atlas Materno
         </Link>
       </nav>

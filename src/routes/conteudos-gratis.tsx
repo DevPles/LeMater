@@ -125,7 +125,7 @@ function ConteudoNav({ isMobile }: { isMobile: boolean }) {
           padding: isMobile ? "16px 20px" : "20px 48px",
         }}
       >
-        <Link to="/site" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+        <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
           <img
             src={lemateLogo}
             alt="Le Mater"
@@ -136,13 +136,13 @@ function ConteudoNav({ isMobile }: { isMobile: boolean }) {
           <ul style={{ display: "flex", gap: 32, listStyle: "none", margin: 0, padding: 0, alignItems: "center" }}>
             {NAV_ITEMS.map(([id, label]) => (
               <li key={id}>
-                <Link to="/site" search={{ s: id } as any} style={linkStyle}>{label}</Link>
+                <Link to="/" search={{ s: id } as any} style={linkStyle}>{label}</Link>
               </li>
             ))}
           </ul>
         )}
         {!isMobile ? (
-          <Link to="/site" search={{ s: "contato" } as any} style={{ textDecoration: "none" }}>
+          <Link to="/" search={{ s: "contato" } as any} style={{ textDecoration: "none" }}>
             <button
               style={{
                 background: c.sageDark,
@@ -186,14 +186,14 @@ function ConteudoNav({ isMobile }: { isMobile: boolean }) {
           {NAV_ITEMS.map(([id, label]) => (
             <Link
               key={id}
-              to="/site"
+              to="/"
               search={{ s: id } as any}
               style={{ ...linkStyle, textAlign: "left", borderBottom: `1px solid ${c.border}` }}
             >
               {label}
             </Link>
           ))}
-          <Link to="/site" search={{ s: "contato" } as any} style={{ textDecoration: "none", marginTop: 16 }}>
+          <Link to="/" search={{ s: "contato" } as any} style={{ textDecoration: "none", marginTop: 16 }}>
             <button
               style={{
                 background: c.sageDark,
@@ -451,7 +451,7 @@ function ConteudosGratisPage() {
           Programas pagos com acompanhamento, cartão digital da gestante, recomendações inteligentes por
           fase e teleconsulta com a Rayssa.
         </p>
-        <Link to="/site" style={{ textDecoration: "none" }}>
+        <Link to="/" style={{ textDecoration: "none" }}>
           <button
             style={{
               background: "transparent",
