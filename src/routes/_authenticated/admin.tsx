@@ -144,7 +144,7 @@ function MateriaisTab() {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
           <thead>
             <tr style={{ background: c.warm }}>
-              <Th>Título</Th><Th>Área</Th><Th>Tipo</Th><Th>Categoria</Th><Th>Pub.</Th><Th></Th>
+              <Th>Título</Th><Th>Área</Th><Th>Tipo</Th><Th>Categoria</Th><Th>Pub.</Th><Th> </Th>
             </tr>
           </thead>
           <tbody>
