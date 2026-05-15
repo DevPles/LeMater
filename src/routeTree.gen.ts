@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SiteRouteImport } from './routes/site'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConteudosGratisRouteImport } from './routes/conteudos-gratis'
 
 const SiteRoute = SiteRouteImport.update({
   id: '/site',
   path: '/site',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConteudosGratisRoute = ConteudosGratisRouteImport.update({
@@ -25,27 +31,31 @@ const ConteudosGratisRoute = ConteudosGratisRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/conteudos-gratis': typeof ConteudosGratisRoute
+  '/login': typeof LoginRoute
   '/site': typeof SiteRoute
 }
 export interface FileRoutesByTo {
   '/conteudos-gratis': typeof ConteudosGratisRoute
+  '/login': typeof LoginRoute
   '/site': typeof SiteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/conteudos-gratis': typeof ConteudosGratisRoute
+  '/login': typeof LoginRoute
   '/site': typeof SiteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/conteudos-gratis' | '/site'
+  fullPaths: '/conteudos-gratis' | '/login' | '/site'
   fileRoutesByTo: FileRoutesByTo
-  to: '/conteudos-gratis' | '/site'
-  id: '__root__' | '/conteudos-gratis' | '/site'
+  to: '/conteudos-gratis' | '/login' | '/site'
+  id: '__root__' | '/conteudos-gratis' | '/login' | '/site'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   ConteudosGratisRoute: typeof ConteudosGratisRoute
+  LoginRoute: typeof LoginRoute
   SiteRoute: typeof SiteRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/site'
       fullPath: '/site'
       preLoaderRoute: typeof SiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/conteudos-gratis': {
@@ -70,8 +87,18 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   ConteudosGratisRoute: ConteudosGratisRoute,
+  LoginRoute: LoginRoute,
   SiteRoute: SiteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
