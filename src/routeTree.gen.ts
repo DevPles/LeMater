@@ -13,6 +13,9 @@ import { Route as SiteRouteImport } from './routes/site'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConteudosGratisRouteImport } from './routes/conteudos-gratis'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthenticatedAtlasRouteImport } from './routes/_authenticated/atlas'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
 
 const SiteRoute = SiteRouteImport.update({
   id: '/site',
@@ -33,39 +36,86 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAtlasRoute = AuthenticatedAtlasRouteImport.update({
+  id: '/atlas',
+  path: '/atlas',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const ApiPublicHotmartWebhookRoute = ApiPublicHotmartWebhookRouteImport.update({
+  id: '/api/public/hotmart-webhook',
+  path: '/api/public/hotmart-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedRoute
+  '/': typeof AuthenticatedRouteWithChildren
   '/conteudos-gratis': typeof ConteudosGratisRoute
   '/login': typeof LoginRoute
   '/site': typeof SiteRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/atlas': typeof AuthenticatedAtlasRoute
+  '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AuthenticatedRoute
+  '/': typeof AuthenticatedRouteWithChildren
   '/conteudos-gratis': typeof ConteudosGratisRoute
   '/login': typeof LoginRoute
   '/site': typeof SiteRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/atlas': typeof AuthenticatedAtlasRoute
+  '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_authenticated': typeof AuthenticatedRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/conteudos-gratis': typeof ConteudosGratisRoute
   '/login': typeof LoginRoute
   '/site': typeof SiteRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/atlas': typeof AuthenticatedAtlasRoute
+  '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/conteudos-gratis' | '/login' | '/site'
+  fullPaths:
+    | '/'
+    | '/conteudos-gratis'
+    | '/login'
+    | '/site'
+    | '/admin'
+    | '/atlas'
+    | '/api/public/hotmart-webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/conteudos-gratis' | '/login' | '/site'
-  id: '__root__' | '/_authenticated' | '/conteudos-gratis' | '/login' | '/site'
+  to:
+    | '/'
+    | '/conteudos-gratis'
+    | '/login'
+    | '/site'
+    | '/admin'
+    | '/atlas'
+    | '/api/public/hotmart-webhook'
+  id:
+    | '__root__'
+    | '/_authenticated'
+    | '/conteudos-gratis'
+    | '/login'
+    | '/site'
+    | '/_authenticated/admin'
+    | '/_authenticated/atlas'
+    | '/api/public/hotmart-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AuthenticatedRoute: typeof AuthenticatedRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ConteudosGratisRoute: typeof ConteudosGratisRoute
   LoginRoute: typeof LoginRoute
   SiteRoute: typeof SiteRoute
+  ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -98,15 +148,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/atlas': {
+      id: '/_authenticated/atlas'
+      path: '/atlas'
+      fullPath: '/atlas'
+      preLoaderRoute: typeof AuthenticatedAtlasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/public/hotmart-webhook': {
+      id: '/api/public/hotmart-webhook'
+      path: '/api/public/hotmart-webhook'
+      fullPath: '/api/public/hotmart-webhook'
+      preLoaderRoute: typeof ApiPublicHotmartWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAtlasRoute: typeof AuthenticatedAtlasRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAtlasRoute: AuthenticatedAtlasRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  AuthenticatedRoute: AuthenticatedRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ConteudosGratisRoute: ConteudosGratisRoute,
   LoginRoute: LoginRoute,
   SiteRoute: SiteRoute,
+  ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
