@@ -6,11 +6,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 export const Route = createFileRoute("/conteudos-gratis")({
   head: () => ({
     meta: [
-      { title: "Conteúdos Gratuitos · Le Mater" },
+      { title: "Conteúdo · Le Mater" },
       {
         name: "description",
         content:
-          "Materiais gratuitos para mulheres em todas as fases da jornada materna — concepção, gestação, pós-parto e primeiros cuidados com o bebê.",
+          "Materiais para mulheres em todas as fases da jornada materna — concepção, gestação, pós-parto e primeiros cuidados com o bebê.",
       },
     ],
     links: [
@@ -22,6 +22,13 @@ export const Route = createFileRoute("/conteudos-gratis")({
   }),
   component: ConteudosGratisPage,
 });
+
+const NAV_ITEMS: ReadonlyArray<readonly [string, string]> = [
+  ["inicio", "Início"],
+  ["sobre", "Sobre"],
+  ["produtos", "ATLAS MATERNO"],
+  ["contato", "Contato"],
+];
 
 const c = {
   cream: "#FAF5EE",
