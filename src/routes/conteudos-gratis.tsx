@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState, type CSSProperties } from "react";
 import lemateLogo from "@/assets/lemater-logo.png";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { registrarLead } from "@/lib/leads.functions";
 
 export const Route = createFileRoute("/conteudos-gratis")({
   head: () => ({
@@ -219,21 +221,36 @@ function ConteudoNav({ isMobile }: { isMobile: boolean }) {
 function ConteudosGratisPage() {
   const isMobile = useIsMobile();
   const [selecionado, setSelecionado] = useState<Conteudo | null>(null);
-  const [form, setForm] = useState({ nome: "", email: "" });
+  const [form, setForm] = useState({ nome: "", email: "", telefone: "" });
   const [enviado, setEnviado] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const enviarLead = useServerFn(registrarLead);
 
   const abrir = (item: Conteudo) => {
     setSelecionado(item);
     setEnviado(false);
-    setForm({ nome: "", email: "" });
+    setErro(null);
+    setForm({ nome: "", email: "", telefone: "" });
   };
 
   const fechar = () => setSelecionado(null);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.nome.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) return;
-    setEnviado(true);
+    setErro(null);
+    if (!form.nome.trim() || !/^\S+@\S+\.\S+$/.test(form.email) || form.telefone.replace(/\D/g, "").length < 8) {
+      setErro("Preencha nome, e-mail válido e telefone (mín. 8 dígitos).");
+      return;
+    }
+    setEnviando(true);
+    try {
+      await enviarLead({ data: { nome: form.nome.trim(), email: form.email.trim(), telefone: form.telefone.trim() } });
+      setEnviado(true);
+    } catch (err: any) {
+      setErro(err?.message ?? "Erro ao enviar.");
+    }
+    setEnviando(false);
   };
 
   return (
@@ -573,9 +590,18 @@ function ConteudosGratisPage() {
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     style={inputStyle}
                   />
+                  <input
+                    type="tel"
+                    placeholder="WhatsApp / Telefone"
+                    value={form.telefone}
+                    onChange={(e) => setForm({ ...form, telefone: e.target.value })}
+                    style={inputStyle}
+                  />
                 </div>
+                {erro && <div style={{ fontSize: 13, color: "#B23A48", marginBottom: 12 }}>{erro}</div>}
                 <button
                   type="submit"
+                  disabled={enviando}
                   style={{
                     background: c.sageDark,
                     color: "white",
@@ -585,12 +611,13 @@ function ConteudosGratisPage() {
                     textTransform: "uppercase",
                     padding: "16px 28px",
                     border: "none",
-                    cursor: "pointer",
+                    cursor: enviando ? "wait" : "pointer",
                     fontFamily: sans,
                     width: "100%",
+                    opacity: enviando ? 0.7 : 1,
                   }}
                 >
-                  Liberar conteúdo gratuito
+                  {enviando ? "Enviando…" : "Liberar conteúdo gratuito"}
                 </button>
               </form>
             )}
