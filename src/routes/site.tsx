@@ -407,7 +407,9 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           </p>
           <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
             <button style={btnPrimary} onClick={() => go("produtos")}>ACESSAR ATLAS MATERNO</button>
-            <button style={btnSecondary} onClick={() => go("sobre")}>Conhecer a Rayssa</button>
+            <Link to="/conteudos-gratis" style={{ textDecoration: "none" }}>
+              <button style={btnSecondary}>Conhecer a Rayssa</button>
+            </Link>
           </div>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
             {[
