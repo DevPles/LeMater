@@ -7,6 +7,7 @@ import {
   type CSSProperties,
 } from "react";
 import rayssa from "@/assets/rayssa-portrait.jpg";
+import lemateLogo from "@/assets/lemater-logo.png";
 import { LiquidCard } from "@/components/LiquidCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { translateBatch } from "@/lib/translate.functions";
@@ -129,11 +130,15 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
           padding: isMobile ? "16px 20px" : "20px 48px",
         }}
       >
-        <div 
-          onClick={() => handleGo("inicio")} 
-          style={{ fontFamily: serif, fontSize: 22, fontWeight: 300, letterSpacing: "0.08em", cursor: "pointer" }}
+        <div
+          onClick={() => handleGo("inicio")}
+          style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
         >
-          Le<span style={{ color: c.sage }}>Mater</span>
+          <img
+            src={lemateLogo}
+            alt="Le Mater"
+            style={{ height: isMobile ? 40 : 52, width: "auto", display: "block" }}
+          />
         </div>
         {!isMobile && (
           <ul style={{ display: "flex", gap: 32, listStyle: "none", margin: 0, padding: 0, alignItems: "center" }}>
@@ -789,9 +794,7 @@ function Contato() {
 function Footer() {
   return (
     <footer style={{ padding: "24px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: `1px solid ${c.border}`, fontSize: 11, color: c.muted, letterSpacing: "0.06em", flexWrap: "wrap", gap: 16 }}>
-      <div style={{ fontFamily: serif, fontSize: 18, fontWeight: 300, color: c.ink, letterSpacing: "0.06em" }}>
-        Le<span style={{ color: c.sage }}>Mater</span>
-      </div>
+      <img src={lemateLogo} alt="Le Mater" style={{ height: 40, width: "auto", display: "block" }} />
       <div>© 2024 · Rayssa Leslie · Todos os direitos reservados</div>
       <div>A gestação que você merece viver.</div>
     </footer>
