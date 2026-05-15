@@ -266,6 +266,7 @@ function ConteudosGratisPage() {
           textAlign: "center",
         }}
       >
+        <h1
           style={{
             fontFamily: serif,
             fontSize: "clamp(34px,5vw,64px)",
