@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SiteRouteImport } from './routes/site'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConteudosGratisRouteImport } from './routes/conteudos-gratis'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 
 const SiteRoute = SiteRouteImport.update({
   id: '/site',
@@ -28,32 +29,40 @@ const ConteudosGratisRoute = ConteudosGratisRouteImport.update({
   path: '/conteudos-gratis',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof AuthenticatedRoute
   '/conteudos-gratis': typeof ConteudosGratisRoute
   '/login': typeof LoginRoute
   '/site': typeof SiteRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof AuthenticatedRoute
   '/conteudos-gratis': typeof ConteudosGratisRoute
   '/login': typeof LoginRoute
   '/site': typeof SiteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_authenticated': typeof AuthenticatedRoute
   '/conteudos-gratis': typeof ConteudosGratisRoute
   '/login': typeof LoginRoute
   '/site': typeof SiteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/conteudos-gratis' | '/login' | '/site'
+  fullPaths: '/' | '/conteudos-gratis' | '/login' | '/site'
   fileRoutesByTo: FileRoutesByTo
-  to: '/conteudos-gratis' | '/login' | '/site'
-  id: '__root__' | '/conteudos-gratis' | '/login' | '/site'
+  to: '/' | '/conteudos-gratis' | '/login' | '/site'
+  id: '__root__' | '/_authenticated' | '/conteudos-gratis' | '/login' | '/site'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AuthenticatedRoute: typeof AuthenticatedRoute
   ConteudosGratisRoute: typeof ConteudosGratisRoute
   LoginRoute: typeof LoginRoute
   SiteRoute: typeof SiteRoute
@@ -82,10 +91,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConteudosGratisRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  AuthenticatedRoute: AuthenticatedRoute,
   ConteudosGratisRoute: ConteudosGratisRoute,
   LoginRoute: LoginRoute,
   SiteRoute: SiteRoute,
