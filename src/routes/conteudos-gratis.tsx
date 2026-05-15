@@ -259,7 +259,7 @@ function ConteudosGratisPage() {
             fontWeight: 500,
           }}
         >
-          Biblioteca aberta · Le Mater
+          Biblioteca aberta
         </div>
         <h1
           style={{
