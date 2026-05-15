@@ -255,23 +255,24 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
           </ul>
         )}
         {!isMobile ? (
-          <button
-            onClick={() => handleGo("contato")}
-            style={{
-              background: c.sageDark,
-              color: "white",
-              fontSize: 12,
-              fontWeight: 500,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              padding: "10px 24px",
-              border: "none",
-              cursor: "pointer",
-              fontFamily: sans,
-            }}
-          >
-            ACESSE APP
-          </button>
+          <Link to="/login" style={{ textDecoration: "none" }}>
+            <button
+              style={{
+                background: c.sageDark,
+                color: "white",
+                fontSize: 12,
+                fontWeight: 500,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                padding: "10px 24px",
+                border: "none",
+                cursor: "pointer",
+                fontFamily: sans,
+              }}
+            >
+              ENTRAR
+            </button>
+          </Link>
         ) : (
           <button
             onClick={() => setOpen((v) => !v)}
@@ -300,24 +301,25 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
               {label}
             </button>
           ))}
-          <button
-            onClick={() => handleGo("contato")}
-            style={{
-              background: c.sageDark,
-              color: "white",
-              fontSize: 12,
-              fontWeight: 500,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              padding: "14px 24px",
-              border: "none",
-              cursor: "pointer",
-              fontFamily: sans,
-              marginTop: 16,
-            }}
-          >
-            ACESSE APP
-          </button>
+          <Link to="/login" style={{ textDecoration: "none", marginTop: 16 }}>
+            <button
+              style={{
+                background: c.sageDark,
+                color: "white",
+                fontSize: 12,
+                fontWeight: 500,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                padding: "14px 24px",
+                border: "none",
+                cursor: "pointer",
+                fontFamily: sans,
+                width: "100%",
+              }}
+            >
+              ENTRAR
+            </button>
+          </Link>
         </div>
       )}
     </nav>
@@ -415,9 +417,11 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             Criada pela Enfermeira Brasileira, Rayssa Leslie, Enfermeira Pós Graduada em Obstetricia formada pela UNAERP, a Le Mater une orientação Pré-Concepcional, Educação Materna, Carteira Digital da Gestante e Inteligência Artificial para Acompanhar mulheres da tentativa natural de Engravidar aos Primeiros Cuidados com o bebê.
           </p>
           <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
-            <button style={btnPrimary} onClick={() => go("produtos")}>ACESSAR ATLAS MATERNO</button>
+            <Link to="/atlas" style={{ textDecoration: "none" }}>
+              <button style={btnPrimary}>ACESSAR ATLAS MATERNO</button>
+            </Link>
             <Link to="/conteudos-gratis" style={{ textDecoration: "none" }}>
-              <button style={btnSecondary}>Conhecer a Rayssa</button>
+              <button style={btnSecondary}>Conteúdos</button>
             </Link>
           </div>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
