@@ -316,7 +316,7 @@ function ComprasTab() {
               <tr key={h.id} style={{ borderTop: `1px solid ${c.border}` }}>
                 <Td>{new Date(h.processado_em).toLocaleString("pt-BR")}</Td>
                 <Td>{h.nome_comprador ?? "—"}</Td><Td>{h.email_comprador}</Td>
-                <Td>{h.produto ?? "—"}</Td><Td>{h.evento}</Td><Td>{h.status}</Td><Td style={{ fontSize: 11 }}>{h.transaction_id ?? "—"}</Td>
+                <Td>{h.produto ?? "—"}</Td><Td>{h.evento}</Td><Td>{h.status}</Td><Td>{h.transaction_id ?? "—"}</Td>
               </tr>
             ))}
             {items.length === 0 && <tr><Td colSpan={7}>Sem registros.</Td></tr>}
