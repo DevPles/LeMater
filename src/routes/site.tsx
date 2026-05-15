@@ -12,7 +12,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { translateBatch } from "@/lib/translate.functions";
 import { useLang, FLAG_TO_LANG, isTranslatable, type Lang } from "@/lib/translate.context";
 
-export const Route = createFileRoute("/site")({
+export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "LeMater · Saúde materna com credencial clínica" },
