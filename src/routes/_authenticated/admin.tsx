@@ -29,14 +29,14 @@ function AdminPage() {
   if (!isAdmin) return (
     <div style={{ fontFamily: sans, background: c.cream, minHeight: "100vh", padding: 40, textAlign: "center" }}>
       <h1 style={{ fontFamily: serif }}>Acesso negado</h1>
-      <Link to="/site">Voltar</Link>
+      <Link to="/">Voltar</Link>
     </div>
   );
 
   return (
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
       <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link to="/site"><img src={lemateLogo} alt="Le Mater" style={{ height: 40 }} /></Link>
+        <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 40 }} /></Link>
         <div style={{ display: "flex", gap: 4 }}>
           {(["dash","materiais","leads","alunos","compras"] as Tab[]).map((t) => (
             <button key={t} onClick={() => setTab(t)} style={tabBtn(tab === t)}>{tabLabel(t)}</button>

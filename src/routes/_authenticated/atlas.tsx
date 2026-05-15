@@ -68,7 +68,7 @@ function AtlasPage() {
           <p style={{ fontSize: 15, color: c.muted, margin: "0 0 24px", lineHeight: 1.6 }}>
             Sua conta ainda não tem acesso ao Atlas Materno. Adquira pela Hotmart ou aguarde a liberação manual.
           </p>
-          <Link to="/site" style={{ textDecoration: "none" }}>
+          <Link to="/" style={{ textDecoration: "none" }}>
             <button style={btn(c.sageDark)}>Voltar ao site</button>
           </Link>
         </div>
@@ -78,7 +78,7 @@ function AtlasPage() {
 
   return (
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
-      <TopBar onSair={async () => { await supabase.auth.signOut(); navigate({ to: "/site" }); }} isAdmin={isAdmin} />
+      <TopBar onSair={async () => { await supabase.auth.signOut(); navigate({ to: "/" }); }} isAdmin={isAdmin} />
       <main style={{ maxWidth: 1180, margin: "0 auto", padding: "120px 32px 80px" }}>
         <div style={{ marginBottom: 40 }}>
           <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, marginBottom: 12 }}>Área de membros</div>
@@ -128,7 +128,7 @@ function AtlasPage() {
 function TopBar({ onSair, isAdmin }: { onSair: () => void; isAdmin: boolean }) {
   return (
     <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(250,245,238,0.92)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-      <Link to="/site"><img src={lemateLogo} alt="Le Mater" style={{ height: 44 }} /></Link>
+      <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 44 }} /></Link>
       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
         {isAdmin && <Link to="/admin" style={navLink}>Admin</Link>}
         <button onClick={onSair} style={{ ...btn(c.sage), padding: "10px 20px" }}>Sair</button>

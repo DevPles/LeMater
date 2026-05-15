@@ -47,7 +47,7 @@ function LoginPage() {
   return (
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
       <div style={{ width: "100%", maxWidth: 420 }}>
-        <Link to="/site" style={{ display: "block", textAlign: "center", marginBottom: 32 }}>
+        <Link to="/" style={{ display: "block", textAlign: "center", marginBottom: 32 }}>
           <img src={lemateLogo} alt="Le Mater" style={{ height: 64, width: "auto" }} />
         </Link>
         <div style={{ background: "white", border: `1px solid ${c.border}`, padding: 40 }}>
@@ -65,7 +65,7 @@ function LoginPage() {
           </form>
         </div>
         <div style={{ textAlign: "center", marginTop: 18 }}>
-          <Link to="/site" style={{ fontSize: 12, color: c.muted, letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none" }}>← Voltar ao site</Link>
+          <Link to="/" style={{ fontSize: 12, color: c.muted, letterSpacing: "0.08em", textTransform: "uppercase", textDecoration: "none" }}>← Voltar ao site</Link>
         </div>
       </div>
     </div>
