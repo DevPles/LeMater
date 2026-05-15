@@ -34,6 +34,7 @@ const c = {
   cream: "#FAF5EE",
   warm: "#F5EDE0",
   sage: "#5C8A6E",
+  sageLight: "#8AB89A",
   sageDark: "#2D5A42",
   ink: "#1C1C1A",
   muted: "#6B6560",
