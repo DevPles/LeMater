@@ -298,10 +298,12 @@ function ConteudosGratisPage() {
             fontWeight: 300,
             maxWidth: 680,
             margin: "0 auto",
+            whiteSpace: "pre-line",
           }}
         >
-          Materiais educativos liberados pela Enfermeira Obstetra Rayssa Leslie para mulheres que ainda
-          não fazem parte dos programas pagos. Escolha o seu momento e receba o material direto no e-mail.
+          Materiais educativos sobre concepção, gestação, parto, pós-parto e cuidados maternos.
+          {"\n\n"}
+          Escolha o seu momento e faça o download gratuito.
         </p>
       </header>
 
