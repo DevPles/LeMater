@@ -35,6 +35,36 @@ export type Database = {
         }
         Relationships: []
       }
+      app_acesso_pago: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          expira_em: string | null
+          id: string
+          origem: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          expira_em?: string | null
+          id?: string
+          origem?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          expira_em?: string | null
+          id?: string
+          origem?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_content: {
         Row: {
           content: Json
@@ -409,6 +439,42 @@ export type Database = {
           },
         ]
       }
+      hotmart_compras: {
+        Row: {
+          email_comprador: string
+          evento: string
+          id: string
+          nome_comprador: string | null
+          processado_em: string
+          produto: string | null
+          raw_payload: Json
+          status: string
+          transaction_id: string | null
+        }
+        Insert: {
+          email_comprador: string
+          evento: string
+          id?: string
+          nome_comprador?: string | null
+          processado_em?: string
+          produto?: string | null
+          raw_payload: Json
+          status: string
+          transaction_id?: string | null
+        }
+        Update: {
+          email_comprador?: string
+          evento?: string
+          id?: string
+          nome_comprador?: string | null
+          processado_em?: string
+          produto?: string | null
+          raw_payload?: Json
+          status?: string
+          transaction_id?: string | null
+        }
+        Relationships: []
+      }
       image_exam_results: {
         Row: {
           appointment_id: string | null
@@ -486,6 +552,89 @@ export type Database = {
           semana_max?: number
           semana_min?: number
           tipo_exame?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      leads_gratis: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          material_id: string | null
+          nome: string
+          telefone: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          material_id?: string | null
+          nome: string
+          telefone: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          material_id?: string | null
+          nome?: string
+          telefone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_gratis_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materiais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materiais: {
+        Row: {
+          area: string
+          capa_url: string | null
+          categoria: string
+          conteudo_html: string | null
+          conteudo_url: string | null
+          created_at: string
+          descricao: string | null
+          id: string
+          ordem: number
+          publicado: boolean
+          tipo: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          area: string
+          capa_url?: string | null
+          categoria?: string
+          conteudo_html?: string | null
+          conteudo_url?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          ordem?: number
+          publicado?: boolean
+          tipo: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          capa_url?: string | null
+          categoria?: string
+          conteudo_html?: string | null
+          conteudo_url?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          ordem?: number
+          publicado?: boolean
+          tipo?: string
+          titulo?: string
           updated_at?: string
         }
         Relationships: []
