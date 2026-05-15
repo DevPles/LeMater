@@ -141,7 +141,7 @@ function ConteudosGratisPage() {
             letterSpacing: "-0.01em",
           }}
         >
-          Conteúdos gratuitos para cada fase da sua jornada
+          Conteúdo
         </h1>
         <p
           style={{
