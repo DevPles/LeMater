@@ -1,105 +1,108 @@
-## Reestruturação da página /site → seção "Atlas Materno"
+## Visão geral
 
-Transformar a vitrine atual de produtos com preço em uma experiência consultiva: cards por momento da usuária, conteúdo gratuito como porta de entrada e recomendação sutil do programa pago.
+Dois caminhos no site:
 
-### 1. Refatorar a seção `Produtos` em `src/routes/site.tsx`
+- **Acessar Atlas Materno** → área paga (cliente Hotmart). Login obrigatório. Acesso liberado automaticamente por webhook da Hotmart na compra aprovada / removido em reembolso/cancelamento.
+- **Conteúdos** → área aberta de leads. Sem login. Para baixar/assistir cada material, o visitante informa **nome + e-mail + telefone**; o lead é salvo no banco e o material é liberado na hora.
 
-Manter título superior:
-- "Quatro fases. Uma jornada completa."
+Painel `/admin` para você gerenciar tudo, com login restrito (`contato@lemater.com`).
 
-Adicionar subtítulo discreto logo abaixo:
-- "Escolha seu momento, acesse um conteúdo gratuito e descubra o caminho Le Mater recomendado para você."
+---
 
-Substituir os 4 `ProdutoCard` (com preço R$ 297) por 4 novos cards `MomentoCard` no mesmo grid 2x2, mantendo:
-- fundo off-white / verde escuro alternado no hover
-- numeração suave em serifa
-- estética editorial premium
-- sem ícones, sem emojis, sem preço
+## 1. Banco de dados (Lovable Cloud)
 
-Estrutura de cada card:
-- Número (01–04)
-- Categoria pequena (uppercase, letterspacing) — ex: "Concepção"
-- Título em serifa — ex: "Estou tentando engravidar"
-- Texto principal (descritivo)
-- Linha "Conteúdo gratuito:" + nome do material
-- Botão primário (sage dark): `ACESSAR CONTEÚDO GRATUITO` → navega para rota interna
-- Linha discreta: "Caminho recomendado: …"
-- Botão secundário discreto (link sublinhado, sem fundo): `VER CAMINHO COMPLETO` → rota do programa
+Tabelas novas:
 
-Conteúdo dos 4 cards conforme briefing:
+- `app_role` enum: `admin`, `aluno`
+- `user_roles` (user_id, role) — segue o padrão seguro já usado no projeto, com função `has_role()`
+- `materiais`
+  - `titulo`, `descricao`, `categoria` (concepção/gestação/pós-parto/bebê/outro)
+  - `tipo` (`pdf`, `video_externo`, `video_upload`, `artigo`)
+  - `area` (`gratis` | `pago`) — define onde aparece
+  - `conteudo_url` (PDFs e vídeos com upload usam Storage; vídeos externos guardam o link YouTube/Vimeo; artigos guardam HTML)
+  - `conteudo_html` (para artigos)
+  - `capa_url`, `ordem`, `publicado` (bool)
+- `leads_gratis` — nome, email, telefone, material_id, criado_em (cada download capturado vira um registro)
+- `hotmart_compras` — email_comprador, transaction_id, status (`ativo`/`cancelado`/`reembolsado`), produto, raw_payload, processado_em
+- `app_acesso_pago` — user_id, ativo, origem (`hotmart`/`manual`), expira_em (opcional)
 
-| # | Título | Categoria | Conteúdo gratuito | Rota gratuita | Caminho recomendado | Rota programa |
-|---|---|---|---|---|---|---|
-| 01 | Estou tentando engravidar | Concepção | Guia gratuito: 7 sinais de que você pode estar errando sua janela fértil | /atlas-materno/concepcao | Ajuda na Concepção Le Mater | /programas/concepcao |
-| 02 | Estou grávida | Gestação | Mapa gratuito: primeiros passos depois do positivo | /atlas-materno/gestacao | Programa Gestação Le Mater | /programas/gestacao |
-| 03 | Estou no pós-parto | Puerpério | Checklist gratuito: cuidados essenciais no puerpério | /atlas-materno/pos-parto | Pós-Parto Le Mater | /programas/pos-parto |
-| 04 | Quero cuidar melhor do bebê | Bebê e primeiros cuidados | Guia gratuito: primeiros cuidados com o recém-nascido | /atlas-materno/bebe | Bebê e Primeiros Cuidados Le Mater | /programas/bebe-primeiros-cuidados |
+Storage buckets:
+- `materiais-pdf` (privado — servido por URL assinada para pagantes; público para os de área grátis)
+- `materiais-video` (privado para área paga)
+- `materiais-capas` (público)
 
-### 2. Substituir bloco inferior "Combo Completo"
+RLS:
+- `materiais`: leitura pública apenas dos `area='gratis' AND publicado=true`. Pagos só com `has_role('admin')` ou `app_acesso_pago.ativo=true` para o usuário logado. Admin escreve tudo.
+- `leads_gratis`: insert público (com validação no servidor); leitura só admin.
+- `hotmart_compras`, `app_acesso_pago`, `user_roles`: só admin lê/escreve.
 
-Remover preço riscado (R$ 1.188) e preço grande (R$ 797). Novo bloco:
-- Título: "Plano Completo Le Mater"
-- Descrição: "Para quem deseja acesso aos principais conteúdos da jornada materna, organização digital, cartão da gestante e recomendações inteligentes por fase."
-- Três microbenefícios em texto simples (linha horizontal, separados por divisores sutis, sem ícones):
-  - Conteúdos por fase
-  - Cartão digital da gestante
-  - Recomendações inteligentes
-- Botão: `CONHECER PLANO COMPLETO` → /planos/completo
-- Texto discreto abaixo: "Ideal para quem quer uma experiência materna mais organizada, do início da jornada aos primeiros cuidados com o bebê."
+---
 
-### 3. Criar 4 páginas internas gratuitas
+## 2. Autenticação
 
-Novos arquivos de rota TanStack Start (file-based):
-- `src/routes/atlas-materno.concepcao.tsx`
-- `src/routes/atlas-materno.gestacao.tsx`
-- `src/routes/atlas-materno.pos-parto.tsx`
-- `src/routes/atlas-materno.bebe.tsx`
+- Email + senha apenas (sem Google, sem cadastro aberto).
+- **Cadastro público desativado** (`disable_signup: true`). Contas só nascem por:
+  - webhook Hotmart (cria conta + role `aluno` + `app_acesso_pago.ativo=true` e dispara reset de senha por e-mail), ou
+  - admin criando manualmente.
+- Conta admin `contato@lemater.com` será criada via migration (insert direto em `auth.users` com a senha `rape1226` hasheada) e adicionada em `user_roles` com role `admin`.
+- `auto_confirm_email: true` para o admin e para contas geradas pelo webhook (assim o aluno entra direto sem precisar confirmar).
 
-Para evitar duplicação, criar componente compartilhado `src/components/AtlasGratuitoPage.tsx` que recebe props e cada rota apenas instancia com seu conteúdo.
+---
 
-Estrutura visual de cada página (mesma identidade — Cormorant Garamond + DM Sans, off-white #FAF5EE, sage dark #2D5A42):
-- Nav superior reutilizando o estilo (link "voltar ao Atlas Materno")
-- Tag de categoria + título grande em serifa
-- Texto breve educativo (2–3 parágrafos consultivos, sem promessas)
-- Bloco "O que você vai aprender" com 4–6 itens em lista discreta (bullets sage)
-- Formulário (card warm) com campos:
-  - Nome (text)
-  - Email (email)
-  - WhatsApp (tel, máscara simples)
-  - Momento atual (select — Tentando engravidar / Grávida / Pós-parto / Com bebê)
-- Botão: `LIBERAR CONTEÚDO GRATUITO`
-- Validação client-side com zod (nome, email válido, whatsapp não-vazio, momento)
-- Persistir lead na tabela `atlas_leads` (Lovable Cloud)
-- Após submit: estado de sucesso ("Conteúdo enviado para seu email")
-- Bloco final "Próximo passo recomendado":
-  - Card discreto (warm bg) com nome do programa relacionado, descrição curta, botão `CONHECER PROGRAMA COMPLETO` → rota /programas/...
+## 3. Rotas novas
 
-### 4. Banco de dados (Lovable Cloud)
+Públicas:
+- `/login` — formulário e-mail/senha. Após login: admin → `/admin`; aluno → `/atlas` (área paga).
+- `/conteudos` — já existe (será adaptada para listar `materiais` com `area='gratis'`).
+- `/conteudos/$id` — página do material grátis com formulário (nome/email/telefone) que libera o conteúdo na mesma página depois do envio.
 
-Criar tabela `atlas_leads` para captura dos leads:
-- nome, email, whatsapp, momento, origem (slug do guia)
-- RLS: insert público (qualquer visitante pode submeter), select restrito a admin
+Layout protegido `_authenticated` (gate por `beforeLoad`):
+- `/atlas` — área paga: lista materiais `area='pago'` para usuários com `app_acesso_pago.ativo=true`.
+- `/atlas/$id` — visualizador (PDF embed / player de vídeo / artigo).
 
-### 5. Rotas dos programas pagos e plano completo
+Layout `_authenticated/_admin` (gate adicional `has_role('admin')`):
+- `/admin` — dashboard (contadores: leads, alunos ativos, materiais publicados).
+- `/admin/materiais` — CRUD de materiais (upload PDF/vídeo, link externo, editor de artigo, marcar grátis/pago, publicar).
+- `/admin/leads` — lista/exporta leads da área grátis.
+- `/admin/alunos` — lista compradores Hotmart, status, botão liberar/revogar acesso manualmente, botão reenviar e-mail de definição de senha.
+- `/admin/compras` — log do webhook Hotmart.
 
-As rotas `/programas/*` e `/planos/completo` referenciadas pelos botões "VER CAMINHO COMPLETO" / "CONHECER PLANO COMPLETO" não existem ainda. Como o briefing foca em transformar /site (Atlas Materno) e nas páginas de conteúdo gratuito, **esta entrega não cria as páginas de programa pago nem o plano completo** — os botões apontarão para essas rotas, mas elas precisarão ser construídas em uma próxima etapa.
+Header (`ConteudoNav` + `site.tsx`):
+- Botão "Acessar Atlas Materno" → se logado com acesso pago vai para `/atlas`; senão `/login`.
+- Botão "Conteúdos" → `/conteudos`.
+- Botão "ACESSE APP" passa a ser "ENTRAR" → `/login`.
 
-### Restrições respeitadas
+---
 
-- Sem ícones, sem emojis
-- Sem preço nos cards do Atlas Materno
-- Sem "Comprar agora" / linguagem agressiva
-- Sem promessas de gravidez ou cura
-- Identidade visual atual preservada (off-white, verde escuro, serifa, cards grandes, numeração suave, header e footer atuais)
+## 4. Server-side (TanStack server functions + 1 webhook)
 
-### Detalhes técnicos
+`createServerFn` em `src/lib/`:
+- `materiais.functions.ts`: `listGratis`, `getGratis`, `listPago` (auth), `getPago` (auth + acesso), `getSignedUrl` (auth + acesso para PDFs/vídeos privados); admin: `upsertMaterial`, `deleteMaterial`, `togglePublicado`.
+- `leads.functions.ts`: `registrarLead` (público, validado com Zod: nome 2–100, e-mail válido, telefone 10–15 dígitos) — retorna URL do material liberado.
+- `admin.functions.ts`: `listLeads`, `listAlunos`, `liberarAcessoManual`, `revogarAcesso`, `reenviarSenha` (usa `supabaseAdmin`).
 
-- `src/routes/site.tsx`: editar componente `Produtos()` e bloco do combo
-- Navegação interna do menu permanece em estado (`go("produtos")`); os botões dos cards usam `<Link to="/atlas-materno/...">` do `@tanstack/react-router` (rotas reais, fora do switch interno)
-- Componente compartilhado `AtlasGratuitoPage` recebe: `categoria`, `titulo`, `intro`, `aprendizados[]`, `slug`, `programa: { titulo, descricao, rota }`
-- Validação com `zod`, submit via `supabase.from('atlas_leads').insert(...)`
-- Cada nova rota define `head()` com title e description próprios (SEO)
+Webhook Hotmart — server route pública:
+- `src/routes/api/public/hotmart-webhook.ts`
+- Verifica HOTTOK (header `X-Hotmart-Hottok`) contra secret `HOTMART_WEBHOOK_SECRET`.
+- Eventos tratados: `PURCHASE_APPROVED` / `PURCHASE_COMPLETE` → cria/atualiza usuário + role `aluno` + `app_acesso_pago.ativo=true` + envia e-mail de definição de senha. `PURCHASE_REFUNDED` / `PURCHASE_CANCELED` / `PURCHASE_CHARGEBACK` → `app_acesso_pago.ativo=false`.
+- URL estável fornecida ao usuário para colar na Hotmart: `https://project--f70afa81-002d-4470-8211-2a90bfccffdd.lovable.app/api/public/hotmart-webhook`.
 
-### Pergunta antes de implementar
+Secret necessária: `HOTMART_WEBHOOK_SECRET` (eu pedirei via `add_secret` antes de finalizar o webhook).
 
-Confirmar: prossigo criando a tabela `atlas_leads` no banco para capturar os leads dos formulários, ou os formulários devem por enquanto apenas exibir mensagem de sucesso sem persistir nada?
+---
+
+## 5. Design e UI
+
+Reaproveita 100% o sistema atual (paleta navy/gold, Playfair + DM Sans, sem ícones — respeitando a memória do projeto). Painel admin usa o mesmo design, com cards e tabelas em tom sóbrio (sem ícones), botões dourados, header `ConteudoNav` reutilizado nas áreas logadas.
+
+---
+
+## 6. Ordem de execução
+
+1. Migration: enums, tabelas, RLS, buckets, função `has_role`, criação do admin `contato@lemater.com`.
+2. Rotas `/login`, `_authenticated`, `_authenticated/_admin`.
+3. Painel `/admin/materiais` + server fns + uploads.
+4. Reescrever `/conteudos` lendo do banco + `registrarLead`.
+5. `/atlas` listando materiais pagos.
+6. Webhook Hotmart + tela `/admin/alunos` e `/admin/compras`.
+7. Pedir o secret `HOTMART_WEBHOOK_SECRET` e entregar a URL para colar na Hotmart.
