@@ -298,6 +298,7 @@ function ConteudosGratisPage() {
             fontWeight: 300,
             maxWidth: 680,
             margin: "0 auto",
+            whiteSpace: "pre-line",
           }}
         >
           Materiais educativos sobre concepção, gestação, parto, pós-parto e cuidados maternos.
