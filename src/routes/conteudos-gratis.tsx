@@ -266,18 +266,6 @@ function ConteudosGratisPage() {
           textAlign: "center",
         }}
       >
-        <div
-          style={{
-            fontSize: 11,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: c.sage,
-            marginBottom: 24,
-            fontWeight: 500,
-          }}
-        >
-          Biblioteca aberta
-        </div>
         <h1
           style={{
             fontFamily: serif,
