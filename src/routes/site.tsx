@@ -61,6 +61,15 @@ function SitePage() {
   const [active, setActive] = useState<SectionId>("inicio");
   const { lang, setLang } = useLang();
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const s = new URLSearchParams(window.location.search).get("s");
+    if (s === "inicio" || s === "sobre" || s === "produtos" || s === "contato") {
+      setActive(s);
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
   const go = (id: SectionId) => {
     setActive(id);
     if (typeof window !== "undefined") window.scrollTo(0, 0);
