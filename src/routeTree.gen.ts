@@ -9,264 +9,38 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VideosRouteImport } from './routes/videos'
-import { Route as VideochamadaRouteImport } from './routes/videochamada'
 import { Route as SiteRouteImport } from './routes/site'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as ProfissionalRouteImport } from './routes/profissional'
-import { Route as PerfilRouteImport } from './routes/perfil'
-import { Route as HomeRouteImport } from './routes/home'
-import { Route as GestacaoRouteImport } from './routes/gestacao'
-import { Route as CartaoRouteImport } from './routes/cartao'
-import { Route as AlertasRouteImport } from './routes/alertas'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as SalaRoomIdRouteImport } from './routes/sala.$roomId'
-import { Route as AtlasMaternoPosPartoRouteImport } from './routes/atlas-materno.pos-parto'
-import { Route as AtlasMaternoGestacaoRouteImport } from './routes/atlas-materno.gestacao'
-import { Route as AtlasMaternoConcepcaoRouteImport } from './routes/atlas-materno.concepcao'
-import { Route as AtlasMaternoBebeRouteImport } from './routes/atlas-materno.bebe'
 
-const VideosRoute = VideosRouteImport.update({
-  id: '/videos',
-  path: '/videos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const VideochamadaRoute = VideochamadaRouteImport.update({
-  id: '/videochamada',
-  path: '/videochamada',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SiteRoute = SiteRouteImport.update({
   id: '/site',
   path: '/site',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfissionalRoute = ProfissionalRouteImport.update({
-  id: '/profissional',
-  path: '/profissional',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PerfilRoute = PerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HomeRoute = HomeRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GestacaoRoute = GestacaoRouteImport.update({
-  id: '/gestacao',
-  path: '/gestacao',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CartaoRoute = CartaoRouteImport.update({
-  id: '/cartao',
-  path: '/cartao',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AlertasRoute = AlertasRouteImport.update({
-  id: '/alertas',
-  path: '/alertas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SalaRoomIdRoute = SalaRoomIdRouteImport.update({
-  id: '/sala/$roomId',
-  path: '/sala/$roomId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AtlasMaternoPosPartoRoute = AtlasMaternoPosPartoRouteImport.update({
-  id: '/atlas-materno/pos-parto',
-  path: '/atlas-materno/pos-parto',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AtlasMaternoGestacaoRoute = AtlasMaternoGestacaoRouteImport.update({
-  id: '/atlas-materno/gestacao',
-  path: '/atlas-materno/gestacao',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AtlasMaternoConcepcaoRoute = AtlasMaternoConcepcaoRouteImport.update({
-  id: '/atlas-materno/concepcao',
-  path: '/atlas-materno/concepcao',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AtlasMaternoBebeRoute = AtlasMaternoBebeRouteImport.update({
-  id: '/atlas-materno/bebe',
-  path: '/atlas-materno/bebe',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
-  '/alertas': typeof AlertasRoute
-  '/cartao': typeof CartaoRoute
-  '/gestacao': typeof GestacaoRoute
-  '/home': typeof HomeRoute
-  '/perfil': typeof PerfilRoute
-  '/profissional': typeof ProfissionalRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/site': typeof SiteRoute
-  '/videochamada': typeof VideochamadaRoute
-  '/videos': typeof VideosRoute
-  '/atlas-materno/bebe': typeof AtlasMaternoBebeRoute
-  '/atlas-materno/concepcao': typeof AtlasMaternoConcepcaoRoute
-  '/atlas-materno/gestacao': typeof AtlasMaternoGestacaoRoute
-  '/atlas-materno/pos-parto': typeof AtlasMaternoPosPartoRoute
-  '/sala/$roomId': typeof SalaRoomIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
-  '/alertas': typeof AlertasRoute
-  '/cartao': typeof CartaoRoute
-  '/gestacao': typeof GestacaoRoute
-  '/home': typeof HomeRoute
-  '/perfil': typeof PerfilRoute
-  '/profissional': typeof ProfissionalRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/site': typeof SiteRoute
-  '/videochamada': typeof VideochamadaRoute
-  '/videos': typeof VideosRoute
-  '/atlas-materno/bebe': typeof AtlasMaternoBebeRoute
-  '/atlas-materno/concepcao': typeof AtlasMaternoConcepcaoRoute
-  '/atlas-materno/gestacao': typeof AtlasMaternoGestacaoRoute
-  '/atlas-materno/pos-parto': typeof AtlasMaternoPosPartoRoute
-  '/sala/$roomId': typeof SalaRoomIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
-  '/alertas': typeof AlertasRoute
-  '/cartao': typeof CartaoRoute
-  '/gestacao': typeof GestacaoRoute
-  '/home': typeof HomeRoute
-  '/perfil': typeof PerfilRoute
-  '/profissional': typeof ProfissionalRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/site': typeof SiteRoute
-  '/videochamada': typeof VideochamadaRoute
-  '/videos': typeof VideosRoute
-  '/atlas-materno/bebe': typeof AtlasMaternoBebeRoute
-  '/atlas-materno/concepcao': typeof AtlasMaternoConcepcaoRoute
-  '/atlas-materno/gestacao': typeof AtlasMaternoGestacaoRoute
-  '/atlas-materno/pos-parto': typeof AtlasMaternoPosPartoRoute
-  '/sala/$roomId': typeof SalaRoomIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/admin'
-    | '/alertas'
-    | '/cartao'
-    | '/gestacao'
-    | '/home'
-    | '/perfil'
-    | '/profissional'
-    | '/reset-password'
-    | '/site'
-    | '/videochamada'
-    | '/videos'
-    | '/atlas-materno/bebe'
-    | '/atlas-materno/concepcao'
-    | '/atlas-materno/gestacao'
-    | '/atlas-materno/pos-parto'
-    | '/sala/$roomId'
+  fullPaths: '/site'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/admin'
-    | '/alertas'
-    | '/cartao'
-    | '/gestacao'
-    | '/home'
-    | '/perfil'
-    | '/profissional'
-    | '/reset-password'
-    | '/site'
-    | '/videochamada'
-    | '/videos'
-    | '/atlas-materno/bebe'
-    | '/atlas-materno/concepcao'
-    | '/atlas-materno/gestacao'
-    | '/atlas-materno/pos-parto'
-    | '/sala/$roomId'
-  id:
-    | '__root__'
-    | '/'
-    | '/admin'
-    | '/alertas'
-    | '/cartao'
-    | '/gestacao'
-    | '/home'
-    | '/perfil'
-    | '/profissional'
-    | '/reset-password'
-    | '/site'
-    | '/videochamada'
-    | '/videos'
-    | '/atlas-materno/bebe'
-    | '/atlas-materno/concepcao'
-    | '/atlas-materno/gestacao'
-    | '/atlas-materno/pos-parto'
-    | '/sala/$roomId'
+  to: '/site'
+  id: '__root__' | '/site'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
-  AlertasRoute: typeof AlertasRoute
-  CartaoRoute: typeof CartaoRoute
-  GestacaoRoute: typeof GestacaoRoute
-  HomeRoute: typeof HomeRoute
-  PerfilRoute: typeof PerfilRoute
-  ProfissionalRoute: typeof ProfissionalRoute
-  ResetPasswordRoute: typeof ResetPasswordRoute
   SiteRoute: typeof SiteRoute
-  VideochamadaRoute: typeof VideochamadaRoute
-  VideosRoute: typeof VideosRoute
-  AtlasMaternoBebeRoute: typeof AtlasMaternoBebeRoute
-  AtlasMaternoConcepcaoRoute: typeof AtlasMaternoConcepcaoRoute
-  AtlasMaternoGestacaoRoute: typeof AtlasMaternoGestacaoRoute
-  AtlasMaternoPosPartoRoute: typeof AtlasMaternoPosPartoRoute
-  SalaRoomIdRoute: typeof SalaRoomIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/videos': {
-      id: '/videos'
-      path: '/videos'
-      fullPath: '/videos'
-      preLoaderRoute: typeof VideosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/videochamada': {
-      id: '/videochamada'
-      path: '/videochamada'
-      fullPath: '/videochamada'
-      preLoaderRoute: typeof VideochamadaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/site': {
       id: '/site'
       path: '/site'
@@ -274,125 +48,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profissional': {
-      id: '/profissional'
-      path: '/profissional'
-      fullPath: '/profissional'
-      preLoaderRoute: typeof ProfissionalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/perfil': {
-      id: '/perfil'
-      path: '/perfil'
-      fullPath: '/perfil'
-      preLoaderRoute: typeof PerfilRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gestacao': {
-      id: '/gestacao'
-      path: '/gestacao'
-      fullPath: '/gestacao'
-      preLoaderRoute: typeof GestacaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cartao': {
-      id: '/cartao'
-      path: '/cartao'
-      fullPath: '/cartao'
-      preLoaderRoute: typeof CartaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/alertas': {
-      id: '/alertas'
-      path: '/alertas'
-      fullPath: '/alertas'
-      preLoaderRoute: typeof AlertasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sala/$roomId': {
-      id: '/sala/$roomId'
-      path: '/sala/$roomId'
-      fullPath: '/sala/$roomId'
-      preLoaderRoute: typeof SalaRoomIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/atlas-materno/pos-parto': {
-      id: '/atlas-materno/pos-parto'
-      path: '/atlas-materno/pos-parto'
-      fullPath: '/atlas-materno/pos-parto'
-      preLoaderRoute: typeof AtlasMaternoPosPartoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/atlas-materno/gestacao': {
-      id: '/atlas-materno/gestacao'
-      path: '/atlas-materno/gestacao'
-      fullPath: '/atlas-materno/gestacao'
-      preLoaderRoute: typeof AtlasMaternoGestacaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/atlas-materno/concepcao': {
-      id: '/atlas-materno/concepcao'
-      path: '/atlas-materno/concepcao'
-      fullPath: '/atlas-materno/concepcao'
-      preLoaderRoute: typeof AtlasMaternoConcepcaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/atlas-materno/bebe': {
-      id: '/atlas-materno/bebe'
-      path: '/atlas-materno/bebe'
-      fullPath: '/atlas-materno/bebe'
-      preLoaderRoute: typeof AtlasMaternoBebeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
-  AlertasRoute: AlertasRoute,
-  CartaoRoute: CartaoRoute,
-  GestacaoRoute: GestacaoRoute,
-  HomeRoute: HomeRoute,
-  PerfilRoute: PerfilRoute,
-  ProfissionalRoute: ProfissionalRoute,
-  ResetPasswordRoute: ResetPasswordRoute,
   SiteRoute: SiteRoute,
-  VideochamadaRoute: VideochamadaRoute,
-  VideosRoute: VideosRoute,
-  AtlasMaternoBebeRoute: AtlasMaternoBebeRoute,
-  AtlasMaternoConcepcaoRoute: AtlasMaternoConcepcaoRoute,
-  AtlasMaternoGestacaoRoute: AtlasMaternoGestacaoRoute,
-  AtlasMaternoPosPartoRoute: AtlasMaternoPosPartoRoute,
-  SalaRoomIdRoute: SalaRoomIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
