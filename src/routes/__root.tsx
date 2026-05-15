@@ -1,23 +1,7 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts, useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { useAutoTranslate } from "@/hooks/useAutoTranslate";
-import { useLang } from "@/lib/translate.context";
-import { BottomNav } from "@/components/BottomNav";
-import { ProfissionalNav } from "@/components/ProfissionalNav";
-import { useGestanteProfile } from "@/hooks/useGestanteProfile";
-import { useUserRole } from "@/hooks/useUserRole";
 import appCss from "../styles.css?url";
 import { LangProvider } from "@/lib/translate.context";
-
-// Rotas que profissionais NÃO podem acessar (são exclusivas da gestante)
-const PROFISSIONAL_BLOCKED = [
-  "/home",
-  "/cartao",
-  "/alertas",
-  "/videochamada",
-  "/gestacao",
-  "/perfil",
-];
 
 function NotFoundComponent() {
   return (
@@ -46,16 +30,13 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MãeDigital — Carteira Digital da Gestante" },
-      { name: "description", content: "\n. Acompanhe sua gestação." },
-      { name: "author", content: "\n" },
+      { title: "LeMater · Saúde materna com credencial clínica" },
+      { name: "description", content: "Programas, app e teleconsulta materna por Rayssa Leslie." },
       { property: "og:type", content: "website" },
-      { property: "og:title", content: "MãeDigital — Carteira Digital da Gestante" },
-      { name: "twitter:title", content: "MãeDigital — Carteira Digital da Gestante" },
-      { property: "og:description", content: "\n. Acompanhe sua gestação." },
-      { name: "twitter:description", content: "\n. Acompanhe sua gestação." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/hsIaJ1cV77Y8R02Q0Rs8lMxhMw62/social-images/social-1776691083042-WhatsApp_Image_2026-04-19_at_08.00.51.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/hsIaJ1cV77Y8R02Q0Rs8lMxhMw62/social-images/social-1776691083042-WhatsApp_Image_2026-04-19_at_08.00.51.webp" },
+      { property: "og:title", content: "LeMater · Saúde materna com credencial clínica" },
+      { name: "twitter:title", content: "LeMater · Saúde materna com credencial clínica" },
+      { property: "og:description", content: "Programas, app e teleconsulta materna por Rayssa Leslie." },
+      { name: "twitter:description", content: "Programas, app e teleconsulta materna por Rayssa Leslie." },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
@@ -86,44 +67,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { profile } = useGestanteProfile();
-  const { isProfissional, isAdmin, loading: roleLoading } = useUserRole();
   const { translating } = useAutoTranslate();
-
-  const hideAllNav =
-    location.pathname === "/" ||
-    location.pathname === "/site" ||
-    location.pathname.startsWith("/admin") ||
-    location.pathname.startsWith("/sala");
-
-  const showProfissionalNav =
-    !hideAllNav && isProfissional && !isAdmin;
-  const showGestanteNav = !hideAllNav && !isProfissional;
-
-  useEffect(() => {
-    if (roleLoading || !isProfissional || isAdmin) return;
-    if (PROFISSIONAL_BLOCKED.includes(location.pathname)) {
-      navigate({ to: "/profissional" });
-    }
-  }, [roleLoading, isProfissional, isAdmin, location.pathname, navigate]);
-
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    const root = document.documentElement;
-    root.classList.remove("theme-boy", "theme-girl");
-    if (profile?.bebe_sexo === "masculino") root.classList.add("theme-boy");
-    else if (profile?.bebe_sexo === "feminino") root.classList.add("theme-girl");
-  }, [profile?.bebe_sexo]);
 
   return (
     <>
       <Outlet />
-      {showGestanteNav && <BottomNav />}
-      {showProfissionalNav && <ProfissionalNav />}
-
-      
       {translating && (
         <div style={{
           position: "fixed",
