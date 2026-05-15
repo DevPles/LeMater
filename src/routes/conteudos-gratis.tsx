@@ -108,37 +108,7 @@ function ConteudosGratisPage() {
 
   return (
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
-      {/* Header */}
-      <nav
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
-          background: "rgba(250,245,238,0.92)",
-          backdropFilter: "blur(12px)",
-          borderBottom: `1px solid ${c.border}`,
-          padding: isMobile ? "14px 20px" : "18px 48px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Link to="/site" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <img src={lemateLogo} alt="Le Mater" style={{ height: isMobile ? 36 : 44 }} />
-        </Link>
-        <Link
-          to="/site"
-          style={{
-            fontSize: 11,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-            color: c.muted,
-            textDecoration: "none",
-          }}
-        >
-          Voltar ao site
-        </Link>
-      </nav>
+      <ConteudoNav isMobile={isMobile} />
 
       {/* Hero */}
       <header
