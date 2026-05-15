@@ -245,7 +245,7 @@ function ConteudosGratisPage() {
         style={{
           maxWidth: 980,
           margin: "0 auto",
-          padding: isMobile ? "56px 24px 32px" : "96px 48px 48px",
+          padding: isMobile ? "120px 24px 32px" : "160px 48px 48px",
           textAlign: "center",
         }}
       >
