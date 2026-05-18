@@ -355,6 +355,7 @@ function ConteudosGratisPage() {
                 fontWeight: 400,
                 margin: 0,
                 color: c.ink,
+                whiteSpace: "pre-line",
               }}
             >
               {item.titulo}
