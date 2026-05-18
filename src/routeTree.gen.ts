@@ -11,13 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as CursosRouteImport } from './routes/cursos'
 import { Route as ConteudosGratisRouteImport } from './routes/conteudos-gratis'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CursosSlugRouteImport } from './routes/cursos.$slug'
 import { Route as AuthenticatedMembroRouteImport } from './routes/_authenticated/membro'
 import { Route as AuthenticatedAtlasRouteImport } from './routes/_authenticated/atlas'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
+import { Route as AuthenticatedCursosSlugAprenderRouteImport } from './routes/_authenticated/cursos.$slug.aprender'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -27,6 +30,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CursosRoute = CursosRouteImport.update({
+  id: '/cursos',
+  path: '/cursos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConteudosGratisRoute = ConteudosGratisRouteImport.update({
@@ -42,6 +50,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CursosSlugRoute = CursosSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => CursosRoute,
 } as any)
 const AuthenticatedMembroRoute = AuthenticatedMembroRouteImport.update({
   id: '/membro',
@@ -63,77 +76,102 @@ const ApiPublicHotmartWebhookRoute = ApiPublicHotmartWebhookRouteImport.update({
   path: '/api/public/hotmart-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCursosSlugAprenderRoute =
+  AuthenticatedCursosSlugAprenderRouteImport.update({
+    id: '/cursos/$slug/aprender',
+    path: '/cursos/$slug/aprender',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/conteudos-gratis': typeof ConteudosGratisRoute
+  '/cursos': typeof CursosRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/atlas': typeof AuthenticatedAtlasRoute
   '/membro': typeof AuthenticatedMembroRoute
+  '/cursos/$slug': typeof CursosSlugRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
+  '/cursos/$slug/aprender': typeof AuthenticatedCursosSlugAprenderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/conteudos-gratis': typeof ConteudosGratisRoute
+  '/cursos': typeof CursosRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/atlas': typeof AuthenticatedAtlasRoute
   '/membro': typeof AuthenticatedMembroRoute
+  '/cursos/$slug': typeof CursosSlugRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
+  '/cursos/$slug/aprender': typeof AuthenticatedCursosSlugAprenderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/conteudos-gratis': typeof ConteudosGratisRoute
+  '/cursos': typeof CursosRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/atlas': typeof AuthenticatedAtlasRoute
   '/_authenticated/membro': typeof AuthenticatedMembroRoute
+  '/cursos/$slug': typeof CursosSlugRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
+  '/_authenticated/cursos/$slug/aprender': typeof AuthenticatedCursosSlugAprenderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/conteudos-gratis'
+    | '/cursos'
     | '/login'
     | '/reset-password'
     | '/admin'
     | '/atlas'
     | '/membro'
+    | '/cursos/$slug'
     | '/api/public/hotmart-webhook'
+    | '/cursos/$slug/aprender'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/conteudos-gratis'
+    | '/cursos'
     | '/login'
     | '/reset-password'
     | '/admin'
     | '/atlas'
     | '/membro'
+    | '/cursos/$slug'
     | '/api/public/hotmart-webhook'
+    | '/cursos/$slug/aprender'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/conteudos-gratis'
+    | '/cursos'
     | '/login'
     | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/atlas'
     | '/_authenticated/membro'
+    | '/cursos/$slug'
     | '/api/public/hotmart-webhook'
+    | '/_authenticated/cursos/$slug/aprender'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ConteudosGratisRoute: typeof ConteudosGratisRoute
+  CursosRoute: typeof CursosRouteWithChildren
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
@@ -153,6 +191,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cursos': {
+      id: '/cursos'
+      path: '/cursos'
+      fullPath: '/cursos'
+      preLoaderRoute: typeof CursosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/conteudos-gratis': {
@@ -175,6 +220,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/cursos/$slug': {
+      id: '/cursos/$slug'
+      path: '/$slug'
+      fullPath: '/cursos/$slug'
+      preLoaderRoute: typeof CursosSlugRouteImport
+      parentRoute: typeof CursosRoute
     }
     '/_authenticated/membro': {
       id: '/_authenticated/membro'
@@ -204,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHotmartWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/cursos/$slug/aprender': {
+      id: '/_authenticated/cursos/$slug/aprender'
+      path: '/cursos/$slug/aprender'
+      fullPath: '/cursos/$slug/aprender'
+      preLoaderRoute: typeof AuthenticatedCursosSlugAprenderRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -211,22 +270,36 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAtlasRoute: typeof AuthenticatedAtlasRoute
   AuthenticatedMembroRoute: typeof AuthenticatedMembroRoute
+  AuthenticatedCursosSlugAprenderRoute: typeof AuthenticatedCursosSlugAprenderRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAtlasRoute: AuthenticatedAtlasRoute,
   AuthenticatedMembroRoute: AuthenticatedMembroRoute,
+  AuthenticatedCursosSlugAprenderRoute: AuthenticatedCursosSlugAprenderRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface CursosRouteChildren {
+  CursosSlugRoute: typeof CursosSlugRoute
+}
+
+const CursosRouteChildren: CursosRouteChildren = {
+  CursosSlugRoute: CursosSlugRoute,
+}
+
+const CursosRouteWithChildren =
+  CursosRoute._addFileChildren(CursosRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ConteudosGratisRoute: ConteudosGratisRoute,
+  CursosRoute: CursosRouteWithChildren,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
