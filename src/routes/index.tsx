@@ -830,7 +830,7 @@ function Produtos() {
             Quatro fases. <em style={{ fontStyle: "italic", color: c.sage }}>Uma jornada completa.</em>
           </h2>
           <p style={{ fontSize: 15, lineHeight: 1.6, color: c.muted, fontWeight: 300, marginTop: 8, whiteSpace: "nowrap" }}>
-            Escolha seu momento, acesse um conteúdo gratuito e descubra o caminho Le Mater recomendado para você.
+            Escolha seu momento, acesse um conteúdo.
           </p>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2,1fr)", gap: 2 }}>
