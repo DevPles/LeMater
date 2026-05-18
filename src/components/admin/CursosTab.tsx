@@ -253,7 +253,7 @@ function EstruturaTab({ cursoId, modulos, aulas, onChanged }: { cursoId: string;
   const novaAula = (modulo_id: string, ordem: number) => setEditAula({
     modulo_id, titulo: "", descricao: "", tipo: "video",
     video_url: "", pdf_url: "", conteudo_html: "",
-    duracao_min: 0, ordem, previa_gratis: false,
+    duracao_min: 0, ordem, previa_gratis: false, materiais_extras: [],
   });
 
   const salvarAula = async () => {
@@ -276,6 +276,17 @@ function EstruturaTab({ cursoId, modulos, aulas, onChanged }: { cursoId: string;
       if (error) { alert("Erro upload PDF: " + error.message); return; }
       pdf_url = path;
     }
+    // Upload de anexos (download)
+    let materiais_extras = Array.isArray(editAula.materiais_extras) ? [...editAula.materiais_extras] : [];
+    const afile = document.getElementById("aulaAnexosFile") as HTMLInputElement | null;
+    if (afile?.files?.length) {
+      for (const f of Array.from(afile.files)) {
+        const path = `anexos/${Date.now()}-${f.name.replace(/[^\w.-]/g, "_")}`;
+        const { error } = await supabase.storage.from("materiais-pdf").upload(path, f);
+        if (error) { alert("Erro upload anexo: " + error.message); return; }
+        materiais_extras.push({ nome: f.name, path });
+      }
+    }
     await upAula({ data: {
       id: editAula.id, modulo_id: editAula.modulo_id,
       titulo: editAula.titulo, descricao: editAula.descricao || null,
@@ -284,6 +295,7 @@ function EstruturaTab({ cursoId, modulos, aulas, onChanged }: { cursoId: string;
       duracao_min: Number(editAula.duracao_min) || 0,
       ordem: Number(editAula.ordem) || 0,
       previa_gratis: !!editAula.previa_gratis,
+      materiais_extras,
     } });
     setEditAula(null); onChanged();
   };
