@@ -186,19 +186,7 @@ function Wrapper({ children }: { children: any }) {
   );
 }
 
-function TopBar() {
-  return (
-    <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(250,245,238,0.92)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-      <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 44 }} /></Link>
-      <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-        <Link to="/" style={navLink}>Início</Link>
-        <Link to="/cursos" style={navLink}>Cursos</Link>
-        <Link to="/conteudos-gratis" style={navLink}>Grátis</Link>
-        <Link to="/login" style={{ ...btn(c.sageDark), textDecoration: "none" }}>Entrar</Link>
-      </div>
-    </nav>
-  );
-}
+const TopBar = SiteNav;
 
 const h2: CSSProperties = { fontFamily: serif, fontSize: 36, fontWeight: 300, margin: "0 0 16px" };
 const navLink: CSSProperties = { fontFamily: sans, fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", color: c.muted, textDecoration: "none" };
