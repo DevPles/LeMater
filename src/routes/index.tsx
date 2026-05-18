@@ -839,7 +839,7 @@ function Footer() {
           <span>contato@lemater.com</span>
           <span>Brasil, o país do parto saudável</span>
           <span>Privacidade</span>
-          <span>Termos</span>
+          <span>​</span>
         </div>
       </div>
     </footer>
