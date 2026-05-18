@@ -119,6 +119,7 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
     go(id);
   };
   return (
+    <>
     <nav
       style={{
         position: "fixed",
