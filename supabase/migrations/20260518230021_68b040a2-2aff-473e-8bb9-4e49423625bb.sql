@@ -1,0 +1,1 @@
+ALTER TABLE public.curso_aulas ADD COLUMN IF NOT EXISTS materiais_extras jsonb NOT NULL DEFAULT '[]'::jsonb;
