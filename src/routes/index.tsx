@@ -534,8 +534,8 @@ function Sobre() {
     "Sua trajetória profissional inclui atuação em ambientes hospitalares de média e alta complexidade, com foco em segurança do paciente, humanização da assistência, parto seguro, cuidado neonatal e protocolos baseados em evidências.",
     "Como Enfermeira Obstetra Senior III no Hospital Regional da Baixada Santista, participou de ações estratégicas voltadas à qualificação da assistência obstétrica, fortalecimento do parto seguro, promoção do parto normal e melhoria de indicadores materno-infantis.",
     "Também atuou no Centro de Estudos e Pesquisas Dr. João Amorim — CEJAM, com participação ativa na assistência direta e na construção de protocolos relacionados ao Programa Parto Seguro Paulista, na capital paulista.",
-    "Além da atuação em saúde materna, Rayssa Leslie é fundadora da Clínica de Estética Leslie, Pós-Graduada em Estética Avançada pelo Centro de Referência Estético NEPUGA, ampliando sua atuação para o autocuidado feminino, estética avançada e recuperação no pós-parto.",
-    "A Clínica de Estética Leslie nasce com uma linha de cuidados voltada especialmente para gestantes e mulheres no pós-parto, integrando estética, bem-estar, acolhimento, recuperação corporal e respeito às necessidades de cada fase da maternidade.",
+    "Além da atuação em saúde materna, Rayssa Leslie é fundadora da Le Mater Estética, Pós-Graduada em Estética Avançada pelo Centro de Referência Estético NEPUGA, ampliando sua atuação para o autocuidado feminino, estética avançada e recuperação no pós-parto.",
+    "A Le Mater Estética nasce com uma linha de cuidados voltada especialmente para gestantes e mulheres no pós-parto, integrando estética, bem-estar, acolhimento, recuperação corporal e respeito às necessidades de cada fase da maternidade.",
     "A partir dessa vivência prática, Rayssa criou o Método Le Mater, transformando sua experiência clínica em uma jornada de inovação no cuidado materno, com orientação profissional, educação, tecnologia e acolhimento.",
   ];
   const formacoes = [
