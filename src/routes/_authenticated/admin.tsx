@@ -194,7 +194,12 @@ function MateriaisTab() {
                 <Field label="Tipo"><select value={edit.tipo} onChange={(e) => setEdit({ ...edit, tipo: e.target.value as any })} style={inp}>
                   <option value="pdf">PDF</option><option value="video_externo">Vídeo externo</option><option value="video_upload">Vídeo upload</option><option value="artigo">Artigo</option>
                 </select></Field>
-                <Field label="Categoria"><input value={edit.categoria ?? "geral"} onChange={(e) => setEdit({ ...edit, categoria: e.target.value })} style={inp} /></Field>
+                <Field label="Categoria">
+                  <input list="cat-list" value={edit.categoria ?? ""} onChange={(e) => setEdit({ ...edit, categoria: e.target.value })} style={inp} />
+                  <datalist id="cat-list">
+                    <option value="Concepção" /><option value="Gestação" /><option value="Puerpério" /><option value="Bebê" /><option value="Cursos" />
+                  </datalist>
+                </Field>
               </div>
               {(edit.tipo === "pdf" || edit.tipo === "video_upload") && (
                 <Field label={`Arquivo ${edit.conteudo_url ? "(atual: " + edit.conteudo_url + ")" : ""}`}>
@@ -207,10 +212,40 @@ function MateriaisTab() {
               {edit.tipo === "artigo" && (
                 <Field label="Conteúdo HTML"><textarea value={edit.conteudo_html ?? ""} onChange={(e) => setEdit({ ...edit, conteudo_html: e.target.value })} style={{ ...inp, minHeight: 200, fontFamily: "monospace", fontSize: 13 }} /></Field>
               )}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <Field label="Ordem"><input type="number" value={edit.ordem ?? 0} onChange={(e) => setEdit({ ...edit, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
-                <Field label="Publicado"><label style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0" }}><input type="checkbox" checked={!!edit.publicado} onChange={(e) => setEdit({ ...edit, publicado: e.target.checked })} /> Visível ao público</label></Field>
+              <Field label={`Capa (imagem) ${edit.capa_url ? "— já cadastrada" : ""}`}>
+                <input id="matCapa" type="file" accept="image/*" style={inp} />
+                {edit.capa_url && <img src={edit.capa_url} alt="capa" style={{ marginTop: 8, maxHeight: 120, border: `1px solid ${c.border}` }} />}
+              </Field>
+
+              <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 14, marginTop: 6 }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>Venda externa (opcional)</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+                  <Field label="Plataforma">
+                    <select value={edit.plataforma_venda ?? ""} onChange={(e) => setEdit({ ...edit, plataforma_venda: e.target.value })} style={inp}>
+                      <option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option>
+                      <option value="teachable">Teachable</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option>
+                    </select>
+                  </Field>
+                  <Field label="Preço (texto)"><input value={edit.preco_label ?? ""} onChange={(e) => setEdit({ ...edit, preco_label: e.target.value })} style={inp} placeholder="R$ 197" /></Field>
+                  <Field label="Texto do botão"><input value={edit.cta_label ?? ""} onChange={(e) => setEdit({ ...edit, cta_label: e.target.value })} style={inp} placeholder="Comprar agora" /></Field>
+                </div>
+                <Field label="Link de compra (URL)"><input value={edit.link_compra ?? ""} onChange={(e) => setEdit({ ...edit, link_compra: e.target.value })} style={inp} placeholder="https://..." /></Field>
               </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+                <Field label="Acesso">
+                  <select value={edit.acesso ?? "publico"} onChange={(e) => setEdit({ ...edit, acesso: e.target.value as any })} style={inp}>
+                    <option value="publico">Público</option>
+                    <option value="restrito">Restrito (somente liberados)</option>
+                  </select>
+                </Field>
+                <Field label="Ordem"><input type="number" value={edit.ordem ?? 0} onChange={(e) => setEdit({ ...edit, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+                <Field label="Publicado"><label style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0" }}><input type="checkbox" checked={!!edit.publicado} onChange={(e) => setEdit({ ...edit, publicado: e.target.checked })} /> Visível</label></Field>
+              </div>
+
+              {edit.id && edit.acesso === "restrito" && (
+                <AcessosSection materialId={edit.id} />
+              )}
             </div>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 24 }}>
               <button onClick={() => setEdit(null)} style={btn(c.muted)}>Cancelar</button>
