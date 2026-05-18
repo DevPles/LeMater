@@ -382,12 +382,14 @@ const btnPrimary: CSSProperties = {
 const btnSecondary: CSSProperties = {
   background: "transparent",
   color: c.ink,
-  fontSize: 12,
-  fontWeight: 500,
-  letterSpacing: "0.1em",
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: "0.16em",
   textTransform: "uppercase",
-  padding: "14px 32px",
+  padding: "12px 24px",
   border: `1.5px solid ${c.border}`,
+  borderRadius: 8,
+  boxShadow: "4px 4px 10px rgba(120, 100, 70, 0.25), -4px -4px 10px rgba(255, 250, 240, 0.95)",
   cursor: "pointer",
   fontFamily: sans,
 };
