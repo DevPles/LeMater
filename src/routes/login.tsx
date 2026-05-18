@@ -334,35 +334,36 @@ function LoginPage() {
             alt="Le Mater"
             style={{ height: 56, width: "auto", marginBottom: 18 }}
           />
-          <h2 style={{ fontFamily: serif, fontSize: 24, fontWeight: 600, margin: "0 0 8px", color: WARM }}>
-            {isSignup ? "Bem-vinda de volta" : "Olá!"}
-          </h2>
-          <p style={{ fontSize: 12, lineHeight: 1.6, color: "rgba(255,255,255,0.85)", maxWidth: 220, margin: "0 0 22px" }}>
-            {isSignup
-              ? "Já tem conta? Entre e continue."
-              : "Sem acesso ainda? Solicite seu cadastro."}
-          </p>
-          <button
-            type="button"
-            onClick={() => setMode(isSignup ? "login" : "signup")}
-            style={{
-              background: "transparent",
-              color: "white",
-              border: `1.5px solid ${TERRACOTTA}`,
-              padding: "10px 28px",
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.16em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              fontFamily: sans,
-              borderRadius: 999,
-              transition: "background 200ms",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = `${TERRACOTTA}33`)}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            {isSignup ? "Entrar" : "Cadastrar"}
+          <div className="brand-text" style={{ display: "contents" }}>
+            <h2 style={{ fontFamily: serif, fontSize: 24, fontWeight: 600, margin: "0 0 8px", color: WARM }}>
+              {isSignup ? "Bem-vinda de volta" : "Olá!"}
+            </h2>
+            <p style={{ fontSize: 12, lineHeight: 1.6, color: "rgba(255,255,255,0.85)", maxWidth: 220, margin: "0 0 22px" }}>
+              {isSignup
+                ? "Já tem conta? Entre e continue."
+                : "Sem acesso ainda? Solicite seu cadastro."}
+            </p>
+            <button
+              type="button"
+              onClick={() => setMode(isSignup ? "login" : "signup")}
+              style={{
+                background: "transparent",
+                color: "white",
+                border: `1.5px solid ${TERRACOTTA}`,
+                padding: "10px 28px",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                fontFamily: sans,
+                borderRadius: 999,
+                transition: "background 200ms",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = `${TERRACOTTA}33`)}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              {isSignup ? "Entrar" : "Cadastrar"}
           </button>
         </div>
       </div>
