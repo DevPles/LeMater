@@ -813,7 +813,7 @@ function Footer() {
     <footer
       style={{
         padding: isMobile ? "28px 24px" : "32px 48px",
-        marginTop: isMobile ? 60 : 100,
+        marginTop: 0,
         background: c.cream,
         borderTop: `1px solid ${c.border}`,
       }}
