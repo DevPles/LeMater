@@ -45,6 +45,7 @@ export default function CursosTab() {
     carga_horaria_min: 0, preco_centavos: 0, preco_label: "",
     link_compra_externo: "", plataforma_venda: "", publicado: false, ordem: 0,
     instrutor_nome: "", instrutor_bio: "", instrutor_foto: "",
+    materiais_gratis: [],
   });
 
   const salvar = async () => {
@@ -61,6 +62,16 @@ export default function CursosTab() {
         const { data: pub } = supabase.storage.from("materiais-capas").getPublicUrl(up.path);
         capa_url = pub.publicUrl;
       }
+      // Upload materiais grátis (PDFs no nível do curso)
+      let materiais_gratis: { nome: string; path: string }[] = Array.isArray((edit as any).materiais_gratis) ? [...(edit as any).materiais_gratis] : [];
+      const matInput = document.getElementById("cursoMateriais") as HTMLInputElement | null;
+      const matFiles = matInput?.files ? Array.from(matInput.files) : [];
+      for (const f of matFiles) {
+        const path = `cursos/materiais/${Date.now()}-${f.name.replace(/[^\w.-]/g, "_")}`;
+        const { error: upErr } = await supabase.storage.from("materiais-pdf").upload(path, f);
+        if (upErr) { alert("Falha upload material: " + upErr.message); setBusy(false); return; }
+        materiais_gratis.push({ nome: f.name, path });
+      }
       const payload: any = {
         id: edit.id, titulo: edit.titulo!, slug: edit.slug!,
         descricao_curta: edit.descricao_curta || null,
@@ -76,6 +87,7 @@ export default function CursosTab() {
         instrutor_nome: edit.instrutor_nome || null,
         instrutor_bio: edit.instrutor_bio || null,
         instrutor_foto: edit.instrutor_foto || null,
+        materiais_gratis,
       };
       const row = await upsertFn({ data: payload });
       setEdit(null);
@@ -167,6 +179,30 @@ export default function CursosTab() {
                   <Field label="Foto (URL)"><input value={edit.instrutor_foto ?? ""} onChange={(e) => setEdit({ ...edit, instrutor_foto: e.target.value })} style={inp} /></Field>
                 </div>
                 <Field label="Bio"><textarea value={edit.instrutor_bio ?? ""} onChange={(e) => setEdit({ ...edit, instrutor_bio: e.target.value })} style={{ ...inp, minHeight: 60 }} /></Field>
+              </div>
+
+              <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 14 }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>
+                  Materiais grátis para download (PDFs visíveis na página do curso)
+                </div>
+                <Field label="Adicionar novos PDFs">
+                  <input id="cursoMateriais" type="file" accept="application/pdf,.pdf" multiple style={inp} />
+                </Field>
+                {Array.isArray((edit as any).materiais_gratis) && (edit as any).materiais_gratis.length > 0 && (
+                  <ul style={{ listStyle: "none", padding: 0, margin: "8px 0 0", display: "grid", gap: 6 }}>
+                    {(edit as any).materiais_gratis.map((m: { nome: string; path: string }, i: number) => (
+                      <li key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", background: c.warm, border: `1px solid ${c.border}`, fontSize: 13 }}>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.nome}</span>
+                        <button
+                          onClick={() => setEdit({ ...edit, materiais_gratis: (edit as any).materiais_gratis.filter((_: any, j: number) => j !== i) } as any)}
+                          style={{ background: "transparent", border: "none", color: "#B23A48", cursor: "pointer", fontSize: 12, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}
+                        >
+                          Remover
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
