@@ -190,6 +190,17 @@ export const getCursoBySlug = createServerFn({ method: "GET" })
       })),
     }));
 
+    // Materiais grátis (PDFs no nível do curso)
+    const rawMat = Array.isArray((c as any).materiais_gratis) ? (c as any).materiais_gratis : [];
+    const materiais_gratis: { nome: string; url: string }[] = [];
+    for (const m of rawMat) {
+      const path = m?.path as string | undefined;
+      const nome = (m?.nome as string | undefined) ?? "material.pdf";
+      if (!path) continue;
+      const { data: signed } = await supabaseAdmin.storage.from("materiais-pdf").createSignedUrl(path, 60 * 60, { download: nome });
+      if (signed) materiais_gratis.push({ nome, url: signed.signedUrl });
+    }
+
     return {
       id: c.id, slug: c.slug, titulo: c.titulo,
       descricao_curta: c.descricao_curta, descricao_longa: c.descricao_longa,
@@ -200,7 +211,7 @@ export const getCursoBySlug = createServerFn({ method: "GET" })
       link_compra_externo: c.link_compra_externo,
       plataforma_venda: c.plataforma_venda,
       instrutor_nome: c.instrutor_nome, instrutor_bio: c.instrutor_bio, instrutor_foto: c.instrutor_foto,
-      publicado: c.publicado, modulos, matriculado, admin,
+      publicado: c.publicado, modulos, materiais_gratis, matriculado, admin,
     };
   });
 
