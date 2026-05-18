@@ -498,7 +498,8 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                 Enfermeira Pós Graduada em Obstetricia<br />
                 Enfermeira Pós Graduada em Neonatologista<br />
                 Especialista ACLS pelo American Heart Association (AHA)<br />
-                Criadora do Método Le Mater
+                Criadora do Método Le Mater<br />
+                Fundadora da Le Mater Estética
               </div>
             </div>
           </LiquidCard>
