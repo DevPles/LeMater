@@ -35,7 +35,7 @@ export function ContentCard(p: ContentCardProps) {
       onMouseLeave={() => setHover(false)}
       style={{
         background: isDark ? c.sageDark : c.warm,
-        padding: 40, transition: "background .3s",
+        padding: 24, transition: "background .3s",
         position: "relative", overflow: "hidden",
         display: "flex", flexDirection: "column",
         cursor: "pointer",
