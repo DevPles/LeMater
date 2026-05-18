@@ -838,7 +838,7 @@ function Footer() {
         <div style={{ display: "flex", gap: 20, fontSize: 12, color: c.muted, flexWrap: "wrap" }}>
           <span>contato@lemater.com</span>
           <span>Brasil, o país do parto saudável</span>
-          <span>Privacidade</span>
+          <span>​</span>
           <span>​</span>
         </div>
       </div>
