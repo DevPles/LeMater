@@ -546,7 +546,7 @@ function Sobre() {
     "ALSO — Advanced Life Support in Obstetrics",
     "Especialização em PICC",
     "Criadora do Método Le Mater",
-    "Fundadora da Clínica de Estética Leslie",
+    "Fundadora da Le Mater Estética",
   ];
   const isMobile = useIsMobile();
   return (
