@@ -15,7 +15,8 @@ export interface AuthState {
 
 export function useAuth(): AuthState {
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
+  const [rolesLoaded, setRolesLoaded] = useState(false);
   const [roles, setRoles] = useState<Role[]>([]);
   const [hasPaidAccess, setHasPaidAccess] = useState(false);
 
@@ -25,12 +26,13 @@ export function useAuth(): AuthState {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       if (!mounted) return;
       setSession(s);
+      setSessionLoaded(true);
     });
 
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
       setSession(data.session);
-      setLoading(false);
+      setSessionLoaded(true);
     });
 
     return () => {
@@ -44,8 +46,11 @@ export function useAuth(): AuthState {
     if (!session?.user) {
       setRoles([]);
       setHasPaidAccess(false);
+      // If session resolved as null, roles are "loaded" (none).
+      if (sessionLoaded) setRolesLoaded(true);
       return;
     }
+    setRolesLoaded(false);
     const uid = session.user.id;
 
     Promise.all([
@@ -59,17 +64,18 @@ export function useAuth(): AuthState {
       if (!mounted) return;
       setRoles(((rolesRes.data ?? []) as { role: Role }[]).map((r) => r.role));
       setHasPaidAccess(!!accessRes.data?.ativo);
+      setRolesLoaded(true);
     });
 
     return () => {
       mounted = false;
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, sessionLoaded]);
 
   return {
     session,
     user: session?.user ?? null,
-    loading,
+    loading: !sessionLoaded || !rolesLoaded,
     roles,
     isAdmin: roles.includes("admin"),
     hasPaidAccess,
