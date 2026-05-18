@@ -798,22 +798,9 @@ function MomentoCard({ m }: { m: Momento }) {
         </button>
       </a>
       <div style={{ marginTop: "auto", paddingTop: 8 }}>
-        <div style={{ fontSize: 12, color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 8, fontStyle: "italic", fontFamily: serif }}>
+        <div style={{ fontSize: 12, color: isDark ? "rgba(255,255,255,0.6)" : c.muted, fontStyle: "italic", fontFamily: serif }}>
           Caminho recomendado: {m.caminhoRecomendado}
         </div>
-        <a href={m.rotaPrograma} style={{
-          fontSize: 10,
-          letterSpacing: "0.14em",
-          textTransform: "uppercase",
-          color: isDark ? "white" : c.sageDark,
-          textDecoration: "none",
-          borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.5)" : c.sageDark}`,
-          paddingBottom: 2,
-          display: "inline-block",
-          fontWeight: 500,
-        }}>
-          Ver caminho completo
-        </a>
       </div>
     </div>
   );
