@@ -91,14 +91,16 @@ export const listMateriaisVitrine = createServerFn({ method: "GET" }).handler(as
   const paid = await hasPaidAccess(userId);
   const liberados = await liberadoIds(userId);
 
-  const { data, error } = await supabaseAdmin
+  let query = supabaseAdmin
     .from("materiais")
     .select(
       "id, titulo, descricao, categoria, tipo, area, acesso, capa_url, link_compra, plataforma_venda, preco_label, cta_label, ordem, created_at, publicado",
     )
-    .eq("publicado", true)
     .order("ordem", { ascending: true })
     .order("created_at", { ascending: false });
+  // Admin vê tudo (inclusive rascunhos); demais só publicados
+  if (!admin) query = query.eq("publicado", true);
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
 
   const items: VitrineMaterial[] = [];
@@ -262,3 +264,27 @@ async function buildAccess(m: {
   if (m.tipo === "pdf") return { kind: "pdf", url: signed.signedUrl };
   return { kind: "video_upload", url: signed.signedUrl };
 }
+
+/**
+ * Retorna o status de membro (se tem acesso pago ativo, é admin, etc.).
+ */
+export const getMembroStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const [admin, paid] = await Promise.all([
+      isAdmin(context.userId),
+      hasPaidAccess(context.userId),
+    ]);
+    const { data: prof } = await supabaseAdmin
+      .from("profiles")
+      .select("nome, email")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    return {
+      user_id: context.userId,
+      nome: prof?.nome ?? null,
+      email: prof?.email ?? null,
+      admin,
+      pago: paid,
+    };
+  });
