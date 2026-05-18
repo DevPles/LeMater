@@ -189,7 +189,7 @@ function Wrapper({ children }: { children: any }) {
 const TopBar = SiteNav;
 
 const h2: CSSProperties = { fontFamily: serif, fontSize: 36, fontWeight: 300, margin: "0 0 16px" };
-const navLink: CSSProperties = { fontFamily: sans, fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", color: c.muted, textDecoration: "none" };
+
 function btn(bg: string): CSSProperties {
   return { background: bg, color: "white", fontSize: 13, fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase", padding: "14px 28px", border: "none", cursor: "pointer", fontFamily: sans };
 }
