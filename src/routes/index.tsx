@@ -587,7 +587,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                   </a>
                 ))}
               </div>
-              <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 6 }}>Redes Sociais & Plataformas de Vendas</div>
+              <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 6 }}>Redes Sociais & Plataformas</div>
             </div>
 
           </div>
