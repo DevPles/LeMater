@@ -308,6 +308,7 @@ function LoginPage() {
 
         {/* SLIDING OVERLAY — sage brand panel */}
         <div
+          className="brand-pane"
           style={{
             position: "absolute",
             top: 0,
