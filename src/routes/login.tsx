@@ -477,11 +477,11 @@ function primaryButton(loading: boolean): CSSProperties {
     letterSpacing: "0.16em",
     textTransform: "uppercase",
     padding: "12px 24px",
-    border: "none",
+    border: "1.5px solid transparent",
     cursor: loading ? "wait" : "pointer",
     fontFamily: sans,
     opacity: loading ? 0.7 : 1,
     borderRadius: 8,
-    boxShadow: `4px 4px 10px ${SHADOW_DARK}, -4px -4px 10px ${SHADOW_LIGHT}`,
+    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -2px 0 rgba(0,0,0,0.15), 4px 4px 10px ${SHADOW_DARK}, -4px -4px 10px ${SHADOW_LIGHT}`,
   };
 }
