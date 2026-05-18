@@ -401,10 +401,29 @@ function ConteudosGratisPage() {
                 fontFamily: sans,
                 marginTop: 8,
                 alignSelf: "flex-start",
+                width: isMobile ? "100%" : "auto",
               }}
             >
               Acessar gratuitamente
             </button>
+            <div style={{ marginTop: 12, paddingTop: 16, borderTop: `1px solid ${c.border}` }}>
+              <div style={{ fontSize: 12, color: c.muted, marginBottom: 6, fontStyle: "italic", fontFamily: serif }}>
+                Caminho recomendado: {item.caminhoRecomendado}
+              </div>
+              <Link to="/" search={{ s: "produtos" } as any} style={{
+                fontSize: 10,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: c.sageDark,
+                textDecoration: "none",
+                borderBottom: `1px solid ${c.sageDark}`,
+                paddingBottom: 2,
+                display: "inline-block",
+                fontWeight: 500,
+              }}>
+                Ver programa completo
+              </Link>
+            </div>
           </article>
         ))}
       </section>
