@@ -20,9 +20,14 @@ const MaterialSchema = z.object({
   categoria: z.string().min(1).max(60),
   tipo: z.enum(["pdf", "video_externo", "video_upload", "artigo"]),
   area: z.enum(["gratis", "pago"]),
+  acesso: z.enum(["publico", "restrito"]).default("publico"),
   conteudo_url: z.string().max(2000).nullable().optional(),
   conteudo_html: z.string().max(200000).nullable().optional(),
   capa_url: z.string().max(2000).nullable().optional(),
+  link_compra: z.string().max(2000).nullable().optional(),
+  plataforma_venda: z.string().max(60).nullable().optional(),
+  preco_label: z.string().max(80).nullable().optional(),
+  cta_label: z.string().max(60).nullable().optional(),
   ordem: z.number().int().min(0).max(10000).default(0),
   publicado: z.boolean().default(false),
 });
@@ -39,6 +44,10 @@ export const upsertMaterial = createServerFn({ method: "POST" })
       conteudo_url: rest.conteudo_url ?? null,
       conteudo_html: rest.conteudo_html ?? null,
       capa_url: rest.capa_url ?? null,
+      link_compra: rest.link_compra?.trim() ? rest.link_compra.trim() : null,
+      plataforma_venda: rest.plataforma_venda?.trim() ? rest.plataforma_venda.trim() : null,
+      preco_label: rest.preco_label?.trim() ? rest.preco_label.trim() : null,
+      cta_label: rest.cta_label?.trim() ? rest.cta_label.trim() : null,
     };
     if (id) {
       const { error } = await supabaseAdmin.from("materiais").update(payload).eq("id", id);
@@ -52,6 +61,91 @@ export const upsertMaterial = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
     return { id: inserted.id };
+  });
+
+// ===== Acessos por material =====
+
+export const buscarUsuarios = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ termo: z.string().trim().min(2).max(120) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const t = `%${data.termo}%`;
+    const { data: rows, error } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, nome, email")
+      .or(`nome.ilike.${t},email.ilike.${t}`)
+      .limit(20);
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const listMaterialAcessos = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ material_id: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { data: rows, error } = await supabaseAdmin
+      .from("material_acessos")
+      .select("user_id, created_at")
+      .eq("material_id", data.material_id);
+    if (error) throw new Error(error.message);
+    const ids = (rows ?? []).map((r) => r.user_id);
+    if (ids.length === 0) return [];
+    const { data: profs } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, nome, email")
+      .in("user_id", ids);
+    const map = new Map((profs ?? []).map((p) => [p.user_id, p]));
+    return (rows ?? []).map((r) => ({
+      user_id: r.user_id,
+      created_at: r.created_at,
+      nome: map.get(r.user_id)?.nome ?? null,
+      email: map.get(r.user_id)?.email ?? null,
+    }));
+  });
+
+export const liberarAcessoMaterial = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({
+      material_id: z.string().uuid(),
+      user_id: z.string().uuid(),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin
+      .from("material_acessos")
+      .upsert(
+        { material_id: data.material_id, user_id: data.user_id, liberado_por: context.userId },
+        { onConflict: "material_id,user_id" },
+      );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const revogarAcessoMaterial = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({
+      material_id: z.string().uuid(),
+      user_id: z.string().uuid(),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin
+      .from("material_acessos")
+      .delete()
+      .eq("material_id", data.material_id)
+      .eq("user_id", data.user_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 export const deleteMaterial = createServerFn({ method: "POST" })

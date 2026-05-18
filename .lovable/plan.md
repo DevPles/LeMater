@@ -1,108 +1,139 @@
-## Visão geral
+## Objetivo
 
-Dois caminhos no site:
+Unificar `/conteudos-gratis` em uma **vitrine única** de Conteúdos & Cursos Le Mater, alimentada 100% pelo `/admin → Materiais`, com:
 
-- **Acessar Atlas Materno** → área paga (cliente Hotmart). Login obrigatório. Acesso liberado automaticamente por webhook da Hotmart na compra aprovada / removido em reembolso/cancelamento.
-- **Conteúdos** → área aberta de leads. Sem login. Para baixar/assistir cada material, o visitante informa **nome + e-mail + telefone**; o lead é salvo no banco e o material é liberado na hora.
+- Materiais grátis (públicos ou restritos a usuários liberados)
+- Cursos/produtos pagos vendidos por **link externo** (Hotmart, Kiwify, Teachable, Eduzz, etc.)
+- Cursos pagos consumidos **dentro do app** (PDF, vídeo nativo, YouTube/Vimeo, artigo)
+- `/atlas` vira a **biblioteca pessoal** (somente itens já liberados para o usuário)
 
-Painel `/admin` para você gerenciar tudo, com login restrito (`contato@lemater.com`).
-
----
-
-## 1. Banco de dados (Lovable Cloud)
-
-Tabelas novas:
-
-- `app_role` enum: `admin`, `aluno`
-- `user_roles` (user_id, role) — segue o padrão seguro já usado no projeto, com função `has_role()`
-- `materiais`
-  - `titulo`, `descricao`, `categoria` (concepção/gestação/pós-parto/bebê/outro)
-  - `tipo` (`pdf`, `video_externo`, `video_upload`, `artigo`)
-  - `area` (`gratis` | `pago`) — define onde aparece
-  - `conteudo_url` (PDFs e vídeos com upload usam Storage; vídeos externos guardam o link YouTube/Vimeo; artigos guardam HTML)
-  - `conteudo_html` (para artigos)
-  - `capa_url`, `ordem`, `publicado` (bool)
-- `leads_gratis` — nome, email, telefone, material_id, criado_em (cada download capturado vira um registro)
-- `hotmart_compras` — email_comprador, transaction_id, status (`ativo`/`cancelado`/`reembolsado`), produto, raw_payload, processado_em
-- `app_acesso_pago` — user_id, ativo, origem (`hotmart`/`manual`), expira_em (opcional)
-
-Storage buckets:
-- `materiais-pdf` (privado — servido por URL assinada para pagantes; público para os de área grátis)
-- `materiais-video` (privado para área paga)
-- `materiais-capas` (público)
-
-RLS:
-- `materiais`: leitura pública apenas dos `area='gratis' AND publicado=true`. Pagos só com `has_role('admin')` ou `app_acesso_pago.ativo=true` para o usuário logado. Admin escreve tudo.
-- `leads_gratis`: insert público (com validação no servidor); leitura só admin.
-- `hotmart_compras`, `app_acesso_pago`, `user_roles`: só admin lê/escreve.
+Visitante anônimo vê grátis + vitrine de venda. Usuário logado vê os mesmos cards já desbloqueados conforme permissão.
 
 ---
 
-## 2. Autenticação
+## 1. Banco (migration única)
 
-- Email + senha apenas (sem Google, sem cadastro aberto).
-- **Cadastro público desativado** (`disable_signup: true`). Contas só nascem por:
-  - webhook Hotmart (cria conta + role `aluno` + `app_acesso_pago.ativo=true` e dispara reset de senha por e-mail), ou
-  - admin criando manualmente.
-- Conta admin `contato@lemater.com` será criada via migration (insert direto em `auth.users` com a senha `rape1226` hasheada) e adicionada em `user_roles` com role `admin`.
-- `auto_confirm_email: true` para o admin e para contas geradas pelo webhook (assim o aluno entra direto sem precisar confirmar).
+**Em `materiais`** — novas colunas:
+- `acesso text not null default 'publico'` — `publico` | `restrito`
+- `link_compra text` — URL da plataforma de venda
+- `plataforma_venda text` — `hotmart` | `kiwify` | `teachable` | `eduzz` | `outro`
+- `preco_label text` — texto livre, ex. “R$ 197” ou “12x R$ 19,70”
+- `cta_label text` — texto customizado do botão (opcional)
 
----
+**Tabela nova `material_acessos`**:
+- `material_id uuid not null`, `user_id uuid not null`, `liberado_por uuid`, `created_at timestamptz default now()`
+- PK composta `(material_id, user_id)`
+- RLS: admin gerencia tudo; usuário lê apenas suas próprias linhas
 
-## 3. Rotas novas
+**Função `public.pode_ver_material(_user uuid, _mat uuid) returns boolean security definer`**:
+Retorna `true` se `materiais.publicado = true` E uma das condições:
+- `area='gratis' AND acesso='publico'`
+- `area='pago' AND acesso='publico' AND link_compra IS NOT NULL` (vitrine de venda externa, qualquer um vê)
+- `area='pago' AND acesso='publico' AND EXISTS app_acesso_pago(_user, ativo)`
+- existe linha em `material_acessos(_mat,_user)`
+- `_user` é admin
 
-Públicas:
-- `/login` — formulário e-mail/senha. Após login: admin → `/admin`; aluno → `/atlas` (área paga).
-- `/conteudos` — já existe (será adaptada para listar `materiais` com `area='gratis'`).
-- `/conteudos/$id` — página do material grátis com formulário (nome/email/telefone) que libera o conteúdo na mesma página depois do envio.
-
-Layout protegido `_authenticated` (gate por `beforeLoad`):
-- `/atlas` — área paga: lista materiais `area='pago'` para usuários com `app_acesso_pago.ativo=true`.
-- `/atlas/$id` — visualizador (PDF embed / player de vídeo / artigo).
-
-Layout `_authenticated/_admin` (gate adicional `has_role('admin')`):
-- `/admin` — dashboard (contadores: leads, alunos ativos, materiais publicados).
-- `/admin/materiais` — CRUD de materiais (upload PDF/vídeo, link externo, editor de artigo, marcar grátis/pago, publicar).
-- `/admin/leads` — lista/exporta leads da área grátis.
-- `/admin/alunos` — lista compradores Hotmart, status, botão liberar/revogar acesso manualmente, botão reenviar e-mail de definição de senha.
-- `/admin/compras` — log do webhook Hotmart.
-
-Header (`ConteudoNav` + `site.tsx`):
-- Botão "Acessar Atlas Materno" → se logado com acesso pago vai para `/atlas`; senão `/login`.
-- Botão "Conteúdos" → `/conteudos`.
-- Botão "ACESSE APP" passa a ser "ENTRAR" → `/login`.
+**Atualizar policies de SELECT em `materiais`** (drop + recreate):
+- Para `anon` + `authenticated`: `publicado=true AND (acesso='publico' AND (area='gratis' OR link_compra IS NOT NULL))`
+- Para `authenticated` (acesso completo): `pode_ver_material(auth.uid(), id) = true`
+- Admin: mantém policy existente
 
 ---
 
-## 4. Server-side (TanStack server functions + 1 webhook)
+## 2. Admin (`/admin → Materiais`)
 
-`createServerFn` em `src/lib/`:
-- `materiais.functions.ts`: `listGratis`, `getGratis`, `listPago` (auth), `getPago` (auth + acesso), `getSignedUrl` (auth + acesso para PDFs/vídeos privados); admin: `upsertMaterial`, `deleteMaterial`, `togglePublicado`.
-- `leads.functions.ts`: `registrarLead` (público, validado com Zod: nome 2–100, e-mail válido, telefone 10–15 dígitos) — retorna URL do material liberado.
-- `admin.functions.ts`: `listLeads`, `listAlunos`, `liberarAcessoManual`, `revogarAcesso`, `reenviarSenha` (usa `supabaseAdmin`).
+No modal de criar/editar material, adicionar:
 
-Webhook Hotmart — server route pública:
-- `src/routes/api/public/hotmart-webhook.ts`
-- Verifica HOTTOK (header `X-Hotmart-Hottok`) contra secret `HOTMART_WEBHOOK_SECRET`.
-- Eventos tratados: `PURCHASE_APPROVED` / `PURCHASE_COMPLETE` → cria/atualiza usuário + role `aluno` + `app_acesso_pago.ativo=true` + envia e-mail de definição de senha. `PURCHASE_REFUNDED` / `PURCHASE_CANCELED` / `PURCHASE_CHARGEBACK` → `app_acesso_pago.ativo=false`.
-- URL estável fornecida ao usuário para colar na Hotmart: `https://project--f70afa81-002d-4470-8211-2a90bfccffdd.lovable.app/api/public/hotmart-webhook`.
+- **Capa** — upload para bucket público `materiais-capas` (já existe), opcional
+- **Acesso** — select `publico` | `restrito`
+- **Plataforma de venda** — select `hotmart`/`kiwify`/`teachable`/`eduzz`/`outro`/vazio
+- **Link de compra** — URL (opcional)
+- **Preço (texto livre)** — texto
+- **Texto do botão (CTA)** — texto opcional
+- Quando `Acesso = restrito`: seção **Usuários liberados** com busca em `profiles` (nome/email), botões Liberar / Revogar
+- Categorias sugeridas via `datalist`: Concepção, Gestação, Puerpério, Bebê, Cursos
 
-Secret necessária: `HOTMART_WEBHOOK_SECRET` (eu pedirei via `add_secret` antes de finalizar o webhook).
+**Novas server functions em `src/lib/admin.functions.ts`**:
+- `buscarUsuarios({ termo })` — busca em `profiles` por nome/email (admin only)
+- `listMaterialAcessos({ material_id })`
+- `liberarAcessoMaterial({ material_id, user_id })`
+- `revogarAcessoMaterial({ material_id, user_id })`
+- `upsertMaterial` atualizado com os novos campos
 
 ---
 
-## 5. Design e UI
+## 3. Vitrine `/conteudos-gratis` (página única)
 
-Reaproveita 100% o sistema atual (paleta navy/gold, Playfair + DM Sans, sem ícones — respeitando a memória do projeto). Painel admin usa o mesmo design, com cards e tabelas em tom sóbrio (sem ícones), botões dourados, header `ConteudoNav` reutilizado nas áreas logadas.
+Layout no mesmo padrão Atlas Materno. Header + filtros no topo: **Tudo · Grátis · Cursos · Concepção · Gestação · Puerpério · Bebê**.
+
+Lista carregada por `listMateriaisVitrine` (server fn pública, usa `supabaseAdmin` + sessão opcional para incluir restritos liberados). Retorna por material:
+- dados básicos + `capa_url`, `preco_label`, `plataforma_venda`, `link_compra`
+- flags derivadas: `pode_consumir`, `precisa_lead`, `vende_externo`
+
+**Quatro variações de card** (mesmo visual, CTA muda):
+1. **Grátis público** — badge “Grátis” → modal de lead → entrega no modal
+2. **Grátis restrito (liberado)** — badge “Liberado” → abre direto
+3. **Pago interno (com acesso)** — badge “Seu curso” → abre direto
+4. **Pago com link de compra** — badge da plataforma + `preco_label` + botão **Comprar agora** → `window.open(link_compra, '_blank', 'noopener,noreferrer')`
+5. **Pago interno sem acesso e sem link** — botão **Entrar / Adquirir** → `/login` ou `/atlas`
+
+Estados: carregando, vazio, erro.
 
 ---
 
-## 6. Ordem de execução
+## 4. `/atlas` — biblioteca pessoal
 
-1. Migration: enums, tabelas, RLS, buckets, função `has_role`, criação do admin `contato@lemater.com`.
-2. Rotas `/login`, `_authenticated`, `_authenticated/_admin`.
-3. Painel `/admin/materiais` + server fns + uploads.
-4. Reescrever `/conteudos` lendo do banco + `registrarLead`.
-5. `/atlas` listando materiais pagos.
-6. Webhook Hotmart + tela `/admin/alunos` e `/admin/compras`.
-7. Pedir o secret `HOTMART_WEBHOOK_SECRET` e entregar a URL para colar na Hotmart.
+Lista somente o que o usuário logado pode consumir (`pode_ver_material` true E não é apenas vitrine de venda). Usa `getMaterialAccess` para entrega. Cards no mesmo layout, sem CTAs de compra.
+
+---
+
+## 5. Entrega do conteúdo
+
+Novo arquivo `src/lib/materiais.functions.ts`:
+
+```
+type MaterialAccess =
+  | { kind: 'pdf'; url: string }
+  | { kind: 'video_upload'; url: string }
+  | { kind: 'video_externo'; embedUrl: string; rawUrl: string }
+  | { kind: 'artigo'; html: string }       // sanitizado server-side
+  | { kind: 'externo'; url: string }       // link de compra
+```
+
+- `listMateriaisVitrine` — pública, retorna cards visíveis para anônimo + (se logado) restritos liberados
+- `getMaterialGratisAccess({ material_id, lead })` — pública; grava lead em `leads_gratis`; libera apenas `area='gratis' AND acesso='publico' AND publicado=true`; assina URL do bucket privado conforme tipo
+- `getMaterialAccess({ material_id })` — autenticada (`requireSupabaseAuth`); valida via `pode_ver_material`; assina URL ou retorna HTML
+
+Sanitização de artigo com `isomorphic-dompurify` (`bun add isomorphic-dompurify`).
+
+Modal de player no front renderiza por `kind`:
+- `pdf` → iframe + botão **Baixar PDF**
+- `video_upload` → `<video controls>` + botão **Baixar**
+- `video_externo` → iframe embed YouTube/Vimeo
+- `artigo` → HTML formatado
+- `externo` → redireciona imediatamente
+
+---
+
+## 6. Arquivos a criar/editar
+
+- **Migration**: colunas novas + `material_acessos` + RLS + `pode_ver_material` + recriar policies SELECT de `materiais`
+- `src/lib/materiais.functions.ts` *(novo)* — listagem vitrine + entrega
+- `src/lib/admin.functions.ts` — novas fns admin + `upsertMaterial` ampliado
+- `src/routes/conteudos-gratis.tsx` — vitrine única dinâmica + filtros + modais (lead + player)
+- `src/routes/_authenticated/atlas.tsx` — biblioteca pessoal usando as novas fns
+- `src/routes/_authenticated/admin.tsx` — novos campos no formulário de Material + UI de “Usuários liberados”
+- `package.json` — adicionar `isomorphic-dompurify`
+
+---
+
+## 7. Critérios de aceitação
+
+1. Cadastrar grátis público (PDF, vídeo YouTube, vídeo nativo, artigo) → aparece, lead funciona, entrega correta
+2. Cadastrar curso pago externo (Hotmart/Kiwify/Teachable) com `link_compra` + preço → card mostra preço e selo, botão Comprar abre link em nova aba
+3. Cadastrar pago interno → aparece somente para usuários com `app_acesso_pago.ativo=true` e consome dentro do app
+4. Marcar material como `restrito` e liberar manualmente um usuário → só esse usuário e admins veem o card
+5. `publicado=false` nunca aparece publicamente
+6. `/atlas` mostra somente itens consumíveis pelo usuário logado
+7. Tentativa direta de `getMaterialAccess` para material não permitido retorna erro de permissão
+8. RLS verificada: anônimo via SDK só lê grátis públicos e pagos com `link_compra`

@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   dashboardStats, listAllMateriais, listLeads, listAlunos, listCompras,
   upsertMaterial, deleteMaterial, liberarAcessoManual, revogarAcesso, reativarAcesso, enviarResetSenha,
+  buscarUsuarios, listMaterialAcessos, liberarAcessoMaterial, revogarAcessoMaterial,
 } from "@/lib/admin.functions";
 import lemateLogo from "@/assets/logo_monograma.png";
 
@@ -84,8 +85,11 @@ function Stat({ label, value }: { label: string; value: number | string }) {
 type MaterialRow = {
   id: string; titulo: string; descricao: string | null; categoria: string;
   tipo: "pdf" | "video_externo" | "video_upload" | "artigo";
-  area: "gratis" | "pago"; conteudo_url: string | null; conteudo_html: string | null;
+  area: "gratis" | "pago"; acesso: "publico" | "restrito";
+  conteudo_url: string | null; conteudo_html: string | null;
   capa_url: string | null; ordem: number; publicado: boolean;
+  link_compra: string | null; plataforma_venda: string | null;
+  preco_label: string | null; cta_label: string | null;
 };
 
 function MateriaisTab() {
@@ -99,14 +103,14 @@ function MateriaisTab() {
   const reload = () => list().then((d) => setItems(d as MaterialRow[]));
   useEffect(() => { reload(); }, []);
 
-  const novo = () => setEdit({ titulo: "", descricao: "", categoria: "geral", tipo: "pdf", area: "gratis", conteudo_url: "", conteudo_html: "", capa_url: "", ordem: 0, publicado: false });
+  const novo = () => setEdit({ titulo: "", descricao: "", categoria: "Concepção", tipo: "pdf", area: "gratis", acesso: "publico", conteudo_url: "", conteudo_html: "", capa_url: "", link_compra: "", plataforma_venda: "", preco_label: "", cta_label: "", ordem: 0, publicado: false });
 
   const salvar = async () => {
     if (!edit?.titulo || !edit.tipo || !edit.area) return;
     setBusy(true);
     try {
       let conteudo_url = edit.conteudo_url ?? null;
-      // Upload se houver arquivo
+      let capa_url = edit.capa_url ?? null;
       const fileInput = document.getElementById("matFile") as HTMLInputElement | null;
       if (fileInput?.files?.[0] && (edit.tipo === "pdf" || edit.tipo === "video_upload")) {
         const f = fileInput.files[0];
@@ -116,10 +120,24 @@ function MateriaisTab() {
         if (upErr) { alert("Falha no upload: " + upErr.message); setBusy(false); return; }
         conteudo_url = path;
       }
+      const capaInput = document.getElementById("matCapa") as HTMLInputElement | null;
+      if (capaInput?.files?.[0]) {
+        const f = capaInput.files[0];
+        const path = `${Date.now()}-${f.name.replace(/[^\w.-]/g, "_")}`;
+        const { data: up, error: upErr } = await supabase.storage.from("materiais-capas").upload(path, f, { upsert: false });
+        if (upErr) { alert("Falha no upload da capa: " + upErr.message); setBusy(false); return; }
+        const { data: pub } = supabase.storage.from("materiais-capas").getPublicUrl(up.path);
+        capa_url = pub.publicUrl;
+      }
       await upsert({ data: {
         id: edit.id, titulo: edit.titulo!, descricao: edit.descricao ?? null,
         categoria: edit.categoria || "geral", tipo: edit.tipo!, area: edit.area!,
-        conteudo_url, conteudo_html: edit.conteudo_html ?? null, capa_url: edit.capa_url ?? null,
+        acesso: edit.acesso ?? "publico",
+        conteudo_url, conteudo_html: edit.conteudo_html ?? null, capa_url,
+        link_compra: edit.link_compra ?? null,
+        plataforma_venda: edit.plataforma_venda ?? null,
+        preco_label: edit.preco_label ?? null,
+        cta_label: edit.cta_label ?? null,
         ordem: edit.ordem ?? 0, publicado: !!edit.publicado,
       } });
       setEdit(null);
@@ -176,7 +194,12 @@ function MateriaisTab() {
                 <Field label="Tipo"><select value={edit.tipo} onChange={(e) => setEdit({ ...edit, tipo: e.target.value as any })} style={inp}>
                   <option value="pdf">PDF</option><option value="video_externo">Vídeo externo</option><option value="video_upload">Vídeo upload</option><option value="artigo">Artigo</option>
                 </select></Field>
-                <Field label="Categoria"><input value={edit.categoria ?? "geral"} onChange={(e) => setEdit({ ...edit, categoria: e.target.value })} style={inp} /></Field>
+                <Field label="Categoria">
+                  <input list="cat-list" value={edit.categoria ?? ""} onChange={(e) => setEdit({ ...edit, categoria: e.target.value })} style={inp} />
+                  <datalist id="cat-list">
+                    <option value="Concepção" /><option value="Gestação" /><option value="Puerpério" /><option value="Bebê" /><option value="Cursos" />
+                  </datalist>
+                </Field>
               </div>
               {(edit.tipo === "pdf" || edit.tipo === "video_upload") && (
                 <Field label={`Arquivo ${edit.conteudo_url ? "(atual: " + edit.conteudo_url + ")" : ""}`}>
@@ -189,10 +212,40 @@ function MateriaisTab() {
               {edit.tipo === "artigo" && (
                 <Field label="Conteúdo HTML"><textarea value={edit.conteudo_html ?? ""} onChange={(e) => setEdit({ ...edit, conteudo_html: e.target.value })} style={{ ...inp, minHeight: 200, fontFamily: "monospace", fontSize: 13 }} /></Field>
               )}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <Field label="Ordem"><input type="number" value={edit.ordem ?? 0} onChange={(e) => setEdit({ ...edit, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
-                <Field label="Publicado"><label style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0" }}><input type="checkbox" checked={!!edit.publicado} onChange={(e) => setEdit({ ...edit, publicado: e.target.checked })} /> Visível ao público</label></Field>
+              <Field label={`Capa (imagem) ${edit.capa_url ? "— já cadastrada" : ""}`}>
+                <input id="matCapa" type="file" accept="image/*" style={inp} />
+                {edit.capa_url && <img src={edit.capa_url} alt="capa" style={{ marginTop: 8, maxHeight: 120, border: `1px solid ${c.border}` }} />}
+              </Field>
+
+              <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 14, marginTop: 6 }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>Venda externa (opcional)</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+                  <Field label="Plataforma">
+                    <select value={edit.plataforma_venda ?? ""} onChange={(e) => setEdit({ ...edit, plataforma_venda: e.target.value })} style={inp}>
+                      <option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option>
+                      <option value="teachable">Teachable</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option>
+                    </select>
+                  </Field>
+                  <Field label="Preço (texto)"><input value={edit.preco_label ?? ""} onChange={(e) => setEdit({ ...edit, preco_label: e.target.value })} style={inp} placeholder="R$ 197" /></Field>
+                  <Field label="Texto do botão"><input value={edit.cta_label ?? ""} onChange={(e) => setEdit({ ...edit, cta_label: e.target.value })} style={inp} placeholder="Comprar agora" /></Field>
+                </div>
+                <Field label="Link de compra (URL)"><input value={edit.link_compra ?? ""} onChange={(e) => setEdit({ ...edit, link_compra: e.target.value })} style={inp} placeholder="https://..." /></Field>
               </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+                <Field label="Acesso">
+                  <select value={edit.acesso ?? "publico"} onChange={(e) => setEdit({ ...edit, acesso: e.target.value as any })} style={inp}>
+                    <option value="publico">Público</option>
+                    <option value="restrito">Restrito (somente liberados)</option>
+                  </select>
+                </Field>
+                <Field label="Ordem"><input type="number" value={edit.ordem ?? 0} onChange={(e) => setEdit({ ...edit, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+                <Field label="Publicado"><label style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0" }}><input type="checkbox" checked={!!edit.publicado} onChange={(e) => setEdit({ ...edit, publicado: e.target.checked })} /> Visível</label></Field>
+              </div>
+
+              {edit.id && edit.acesso === "restrito" && (
+                <AcessosSection materialId={edit.id} />
+              )}
             </div>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 24 }}>
               <button onClick={() => setEdit(null)} style={btn(c.muted)}>Cancelar</button>

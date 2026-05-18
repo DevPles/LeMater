@@ -635,49 +635,85 @@ export type Database = {
       }
       materiais: {
         Row: {
+          acesso: string
           area: string
           capa_url: string | null
           categoria: string
           conteudo_html: string | null
           conteudo_url: string | null
           created_at: string
+          cta_label: string | null
           descricao: string | null
           id: string
+          link_compra: string | null
           ordem: number
+          plataforma_venda: string | null
+          preco_label: string | null
           publicado: boolean
           tipo: string
           titulo: string
           updated_at: string
         }
         Insert: {
+          acesso?: string
           area: string
           capa_url?: string | null
           categoria?: string
           conteudo_html?: string | null
           conteudo_url?: string | null
           created_at?: string
+          cta_label?: string | null
           descricao?: string | null
           id?: string
+          link_compra?: string | null
           ordem?: number
+          plataforma_venda?: string | null
+          preco_label?: string | null
           publicado?: boolean
           tipo: string
           titulo: string
           updated_at?: string
         }
         Update: {
+          acesso?: string
           area?: string
           capa_url?: string | null
           categoria?: string
           conteudo_html?: string | null
           conteudo_url?: string | null
           created_at?: string
+          cta_label?: string | null
           descricao?: string | null
           id?: string
+          link_compra?: string | null
           ordem?: number
+          plataforma_venda?: string | null
+          preco_label?: string | null
           publicado?: boolean
           tipo?: string
           titulo?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      material_acessos: {
+        Row: {
+          created_at: string
+          liberado_por: string | null
+          material_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          liberado_por?: string | null
+          material_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          liberado_por?: string | null
+          material_id?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1420,6 +1456,10 @@ export type Database = {
           total_obs: number
           total_vac: number
         }[]
+      }
+      pode_ver_material: {
+        Args: { _mat: string; _user: string }
+        Returns: boolean
       }
       promote_to_professional: {
         Args: { _user_id: string }
