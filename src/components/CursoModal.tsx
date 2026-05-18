@@ -32,15 +32,12 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const [player, setPlayer] = useState<AulaPlayer | null>(null);
   const [playerErr, setPlayerErr] = useState<string | null>(null);
   const [bloqueioInfo, setBloqueioInfo] = useState<{ titulo: string } | null>(null);
-  // Em mobile: 'list' (sidebar) ou 'player'
-  const [mobileView, setMobileView] = useState<"list" | "player">("list");
 
   useEffect(() => {
     fn({ data: { slug } })
       .then((d) => {
         const det = d as CursoDetalhe | null;
         setData(det);
-        // Auto-seleciona primeira aula liberada (prévia ou matriculado)
         if (det) {
           const first = det.modulos.flatMap((m) => m.aulas).find((a) => !a.bloqueada);
           if (first) {
@@ -60,7 +57,6 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       .catch((e) => setPlayerErr(e?.message ?? "Erro"));
   }, [aulaSel]);
 
-  // Bloqueia scroll do body enquanto modal aberto
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -68,9 +64,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   }, []);
 
   const fechar = () => onClose();
-  const irParaCadastro = () => {
-    navigate({ to: "/login" });
-  };
+  const irParaCadastro = () => navigate({ to: "/login" });
   const comprar = () => {
     if (!data) return;
     if (data.link_compra_externo) window.open(data.link_compra_externo, "_blank", "noopener,noreferrer");
@@ -82,16 +76,179 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       setBloqueioInfo({ titulo });
       setAulaSel(null);
       setPlayer(null);
-      if (isMobile) setMobileView("player");
+      if (isMobile) {
+        // Rola pro topo onde o card de bloqueio aparece
+        requestAnimationFrame(() => document.getElementById("curso-modal-top")?.scrollIntoView({ behavior: "smooth" }));
+      }
       return;
     }
     setBloqueioInfo(null);
     setAulaSel(id);
-    if (isMobile) setMobileView("player");
+    if (isMobile) {
+      requestAnimationFrame(() => document.getElementById("curso-modal-top")?.scrollIntoView({ behavior: "smooth" }));
+    }
   };
 
-  const showSidebar = !isMobile || mobileView === "list";
-  const showPlayer = !isMobile || mobileView === "player";
+  // Player block (vídeo + título + anexos) — usado tanto desktop quanto mobile
+  const renderPlayer = () => (
+    <div>
+      {bloqueioInfo && (
+        <div style={{ padding: isMobile ? 20 : 40, textAlign: "center", background: c.warm, border: `1px solid ${c.border}` }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.gold, marginBottom: 10 }}>CONTEÚDO EXCLUSIVO</div>
+          <h3 style={{ fontFamily: serif, fontSize: isMobile ? 22 : 30, fontWeight: 400, margin: "0 0 10px" }}>{bloqueioInfo.titulo}</h3>
+          <p style={{ color: c.muted, fontSize: 14, lineHeight: 1.6, margin: "0 auto 20px", maxWidth: 460 }}>
+            Esta aula faz parte do conteúdo pago. Crie sua conta gratuita para acessar a área de aluna e desbloquear todos os cursos.
+          </p>
+          <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 10, justifyContent: "center" }}>
+            <button onClick={irParaCadastro} style={btnPrimary(c.sageDark)}>
+              {user ? "Ir para minha área" : "Criar conta grátis"}
+            </button>
+            {data?.link_compra_externo && (
+              <button onClick={comprar} style={btnPrimary(c.gold)}>
+                Comprar agora{data.plataforma_venda ? ` · ${data.plataforma_venda}` : ""}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!aulaSel && !bloqueioInfo && (
+        <div style={{ color: c.muted, padding: 30, textAlign: "center", background: c.warm, border: `1px solid ${c.border}` }}>
+          Selecione uma aula para começar.
+        </div>
+      )}
+
+      {aulaSel && (
+        <>
+          {playerErr && <p style={{ color: "#B23A48" }}>{playerErr}</p>}
+          {!player && !playerErr && (
+            <div style={{ aspectRatio: "16/9", background: "#000", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>
+              Carregando aula…
+            </div>
+          )}
+          {player && (
+            <>
+              {player.conteudo.kind === "video_externo" && (
+                <div style={{ aspectRatio: "16/9", background: "black" }}>
+                  <iframe src={player.conteudo.embedUrl} style={{ width: "100%", height: "100%", border: "none" }} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+                </div>
+              )}
+              {player.conteudo.kind === "video_upload" && (
+                <video src={player.conteudo.url} controls style={{ width: "100%", aspectRatio: "16/9", background: "black", display: "block" }} />
+              )}
+              {player.conteudo.kind === "pdf" && (
+                <iframe src={player.conteudo.url} style={{ width: "100%", height: isMobile ? "60vh" : "560px", border: `1px solid ${c.border}` }} />
+              )}
+              {player.conteudo.kind === "texto" && (
+                <div style={{ lineHeight: 1.7, fontSize: 15, padding: 16, background: "white", border: `1px solid ${c.border}` }} dangerouslySetInnerHTML={{ __html: player.conteudo.html }} />
+              )}
+              {player.conteudo.kind === "vazio" && (
+                <div style={{ padding: 24, background: c.warm, border: `1px solid ${c.border}`, textAlign: "center" }}>
+                  <p style={{ color: c.muted, margin: 0 }}>Esta aula ainda não tem vídeo cadastrado.</p>
+                </div>
+              )}
+
+              <div style={{ marginTop: 16 }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.muted, marginBottom: 6 }}>AULA</div>
+                <h3 style={{ fontFamily: serif, fontSize: isMobile ? 22 : 26, fontWeight: 400, margin: "0 0 10px" }}>{player.aula.titulo}</h3>
+                {player.aula.descricao && (
+                  <p style={{ color: c.muted, lineHeight: 1.6, margin: "0 0 16px", fontSize: 14 }}>{player.aula.descricao}</p>
+                )}
+
+                {player.anexos.length > 0 && (
+                  <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: 14, marginTop: 12 }}>
+                    <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.sageDark, marginBottom: 10 }}>MATERIAIS PARA DOWNLOAD</div>
+                    <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
+                      {player.anexos.map((a, i) => (
+                        <li key={i}>
+                          <a
+                            href={a.url}
+                            download={a.nome}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: "flex", justifyContent: "space-between", alignItems: "center",
+                              padding: "10px 12px", background: "white", border: `1px solid ${c.border}`,
+                              textDecoration: "none", color: c.ink, fontSize: 14, fontFamily: sans,
+                            }}
+                          >
+                            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.nome}</span>
+                            <span style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.sageDark, marginLeft: 12 }}>Baixar ↓</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  const renderLista = () => (
+    <div>
+      <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, marginBottom: 8 }}>
+        {data!.categoria} · {data!.nivel}
+      </div>
+      <h2 style={{ fontFamily: serif, fontSize: isMobile ? 24 : 26, fontWeight: 400, margin: "0 0 8px", lineHeight: 1.2 }}>{data!.titulo}</h2>
+      {data!.descricao_curta && <p style={{ fontSize: 13, color: c.muted, margin: "0 0 20px", lineHeight: 1.5 }}>{data!.descricao_curta}</p>}
+
+      {!data!.matriculado && (
+        <div style={{ background: "white", padding: 16, border: `1px solid ${c.border}`, marginBottom: 20 }}>
+          {data!.preco_label && (
+            <div style={{ fontFamily: serif, fontSize: 26, color: c.sageDark, marginBottom: 8 }}>{data!.preco_label}</div>
+          )}
+          <button onClick={comprar} style={btnPrimary(c.gold)}>
+            {data!.link_compra_externo ? `Comprar${data!.plataforma_venda ? ` · ${data!.plataforma_venda}` : ""}` : "Quero me inscrever"}
+          </button>
+          <p style={{ fontSize: 11, color: c.muted, margin: "10px 0 0", lineHeight: 1.5 }}>
+            Aulas marcadas com PRÉVIA estão liberadas para você assistir agora.
+          </p>
+        </div>
+      )}
+
+      <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12 }}>
+        Conteúdo programático
+      </div>
+      {data!.modulos.length === 0 && <p style={{ color: c.muted, fontStyle: "italic", fontSize: 13 }}>Em breve.</p>}
+      {data!.modulos.map((m, idx) => (
+        <div key={m.id} style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: c.muted, marginBottom: 6 }}>MÓDULO {String(idx + 1).padStart(2, "0")}</div>
+          <div style={{ fontFamily: serif, fontSize: 17, marginBottom: 8 }}>{m.titulo}</div>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {m.aulas.map((a) => {
+              const ativo = aulaSel === a.id;
+              return (
+                <li key={a.id}>
+                  <button
+                    onClick={() => abrirAula(a.id, a.bloqueada, a.titulo)}
+                    style={{
+                      width: "100%", textAlign: "left", padding: "10px 12px",
+                      background: ativo ? c.sageDark : "transparent",
+                      color: ativo ? "white" : (a.bloqueada ? c.muted : c.ink),
+                      border: "none", borderLeft: `2px solid ${ativo ? c.gold : "transparent"}`,
+                      cursor: "pointer",
+                      fontFamily: sans, fontSize: 13, display: "flex", justifyContent: "space-between", gap: 8,
+                    }}
+                  >
+                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {a.titulo}
+                    </span>
+                    <span style={{ fontSize: 10, opacity: 0.7 }}>
+                      {a.bloqueada ? "BLOQ" : a.previa_gratis ? "PRÉVIA" : `${a.duracao_min}min`}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div onClick={fechar} style={overlay}>
@@ -107,146 +264,28 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
         )}
 
         {data && (
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "320px 1fr",
-            height: isMobile ? "100dvh" : "min(92vh, 760px)",
-          }}>
-            {/* Sidebar */}
-            {showSidebar && (
-              <aside style={{ background: c.warm, borderRight: isMobile ? "none" : `1px solid ${c.border}`, overflow: "auto", padding: isMobile ? "44px 20px 24px" : 24 }}>
-                <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, marginBottom: 8 }}>
-                  {data.categoria} · {data.nivel}
-                </div>
-                <h2 style={{ fontFamily: serif, fontSize: isMobile ? 24 : 26, fontWeight: 400, margin: "0 0 8px", lineHeight: 1.2 }}>{data.titulo}</h2>
-                {data.descricao_curta && <p style={{ fontSize: 13, color: c.muted, margin: "0 0 20px", lineHeight: 1.5 }}>{data.descricao_curta}</p>}
-
-                {!data.matriculado && (
-                  <div style={{ background: "white", padding: 16, border: `1px solid ${c.border}`, marginBottom: 20 }}>
-                    {data.preco_label && (
-                      <div style={{ fontFamily: serif, fontSize: 28, color: c.sageDark, marginBottom: 8 }}>{data.preco_label}</div>
-                    )}
-                    <button onClick={comprar} style={btnPrimary(c.gold)}>
-                      {data.link_compra_externo ? `Comprar${data.plataforma_venda ? ` · ${data.plataforma_venda}` : ""}` : "Quero me inscrever"}
-                    </button>
-                    <p style={{ fontSize: 11, color: c.muted, margin: "10px 0 0", lineHeight: 1.5 }}>
-                      Aulas marcadas com PRÉVIA estão liberadas para você assistir agora.
-                    </p>
-                  </div>
-                )}
-
-                <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12 }}>
-                  Conteúdo programático
-                </div>
-                {data.modulos.length === 0 && <p style={{ color: c.muted, fontStyle: "italic", fontSize: 13 }}>Em breve.</p>}
-                {data.modulos.map((m, idx) => (
-                  <div key={m.id} style={{ marginBottom: 16 }}>
-                    <div style={{ fontSize: 11, color: c.muted, marginBottom: 6 }}>MÓDULO {String(idx + 1).padStart(2, "0")}</div>
-                    <div style={{ fontFamily: serif, fontSize: 17, marginBottom: 8 }}>{m.titulo}</div>
-                    <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                      {m.aulas.map((a) => {
-                        const ativo = aulaSel === a.id;
-                        return (
-                          <li key={a.id}>
-                            <button
-                              onClick={() => abrirAula(a.id, a.bloqueada, a.titulo)}
-                              style={{
-                                width: "100%", textAlign: "left", padding: "10px 12px",
-                                background: ativo ? c.sageDark : "transparent",
-                                color: ativo ? "white" : (a.bloqueada ? c.muted : c.ink),
-                                border: "none", borderLeft: `2px solid ${ativo ? c.gold : "transparent"}`,
-                                cursor: "pointer",
-                                fontFamily: sans, fontSize: 13, display: "flex", justifyContent: "space-between", gap: 8,
-                              }}
-                            >
-                              <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                {a.titulo}
-                              </span>
-                              <span style={{ fontSize: 10, opacity: 0.7 }}>
-                                {a.bloqueada ? "BLOQ" : a.previa_gratis ? "PRÉVIA" : `${a.duracao_min}min`}
-                              </span>
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                ))}
+          isMobile ? (
+            // MOBILE: uma única coluna, player no topo, lista embaixo
+            <div style={{ height: "100dvh", overflow: "auto", background: c.cream }}>
+              <div id="curso-modal-top" />
+              <div style={{ padding: "44px 16px 20px", background: "#000" }}>
+                {renderPlayer()}
+              </div>
+              <div style={{ padding: "20px 16px 32px", background: c.warm }}>
+                {renderLista()}
+              </div>
+            </div>
+          ) : (
+            // DESKTOP: 2 colunas
+            <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", height: "min(92vh, 760px)" }}>
+              <aside style={{ background: c.warm, borderRight: `1px solid ${c.border}`, overflow: "auto", padding: 24 }}>
+                {renderLista()}
               </aside>
-            )}
-
-            {/* Player */}
-            {showPlayer && (
-              <section style={{ background: c.cream, overflow: "auto", padding: isMobile ? "44px 20px 32px" : 32 }}>
-                {isMobile && (
-                  <button
-                    onClick={() => setMobileView("list")}
-                    style={{ background: "transparent", border: "none", color: c.sageDark, fontFamily: sans, fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", padding: "0 0 16px", cursor: "pointer" }}
-                  >
-                    ← Voltar ao curso
-                  </button>
-                )}
-                {bloqueioInfo && (
-                  <div style={{ padding: isMobile ? 24 : 48, textAlign: "center", background: c.warm, border: `1px solid ${c.border}` }}>
-                    <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.gold, marginBottom: 12 }}>CONTEÚDO EXCLUSIVO</div>
-                    <h3 style={{ fontFamily: serif, fontSize: isMobile ? 24 : 32, fontWeight: 400, margin: "0 0 12px" }}>{bloqueioInfo.titulo}</h3>
-                    <p style={{ color: c.muted, fontSize: 15, lineHeight: 1.6, margin: "0 auto 24px", maxWidth: 460 }}>
-                      Esta aula faz parte do conteúdo pago. Crie sua conta gratuita para acessar a área de aluna e desbloquear todos os cursos.
-                    </p>
-                    <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 12, justifyContent: "center" }}>
-                      <button onClick={irParaCadastro} style={btnPrimary(c.sageDark)}>
-                        {user ? "Ir para minha área" : "Criar conta grátis"}
-                      </button>
-                      {data.link_compra_externo && (
-                        <button onClick={comprar} style={btnPrimary(c.gold)}>
-                          Comprar agora{data.plataforma_venda ? ` · ${data.plataforma_venda}` : ""}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-                {!aulaSel && !bloqueioInfo && (
-                  <div style={{ color: c.muted, padding: 40, textAlign: "center" }}>
-                    {data.matriculado ? "Selecione uma aula." : "Selecione uma aula para começar."}
-                  </div>
-                )}
-                {aulaSel && (
-                  <>
-                    {playerErr && <p style={{ color: "#B23A48" }}>{playerErr}</p>}
-                    {!player && !playerErr && <p style={{ color: c.muted }}>Carregando aula…</p>}
-                    {player && (
-                      <>
-                        <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.muted, marginBottom: 8 }}>AULA</div>
-                        <h3 style={{ fontFamily: serif, fontSize: isMobile ? 22 : 28, fontWeight: 400, margin: "0 0 16px" }}>{player.aula.titulo}</h3>
-                        {player.conteudo.kind === "video_externo" && (
-                          <div style={{ aspectRatio: "16/9", background: "black" }}>
-                            <iframe src={player.conteudo.embedUrl} style={{ width: "100%", height: "100%", border: "none" }} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
-                          </div>
-                        )}
-                        {player.conteudo.kind === "video_upload" && (
-                          <video src={player.conteudo.url} controls style={{ width: "100%", maxHeight: "60vh", background: "black" }} />
-                        )}
-                        {player.conteudo.kind === "pdf" && (
-                          <iframe src={player.conteudo.url} style={{ width: "100%", height: "70vh", border: `1px solid ${c.border}` }} />
-                        )}
-                        {player.conteudo.kind === "texto" && (
-                          <div style={{ lineHeight: 1.7, fontSize: 15 }} dangerouslySetInnerHTML={{ __html: player.conteudo.html }} />
-                        )}
-                        {player.conteudo.kind === "vazio" && (
-                          <div style={{ padding: 24, background: c.warm, border: `1px solid ${c.border}`, textAlign: "center" }}>
-                            <p style={{ color: c.muted, margin: 0 }}>Esta aula ainda não tem conteúdo cadastrado.</p>
-                          </div>
-                        )}
-                        {player.aula.descricao && (
-                          <p style={{ marginTop: 20, color: c.muted, lineHeight: 1.7 }}>{player.aula.descricao}</p>
-                        )}
-                      </>
-                    )}
-                  </>
-                )}
+              <section style={{ background: c.cream, overflow: "auto", padding: 32 }}>
+                {renderPlayer()}
               </section>
-            )}
-          </div>
+            </div>
+          )
         )}
       </div>
     </div>
