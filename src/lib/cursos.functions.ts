@@ -204,6 +204,7 @@ export const getCursoBySlug = createServerFn({ method: "GET" })
   });
 
 // ============== Player de aula ==============
+export type AulaAnexo = { nome: string; url: string };
 export type AulaPlayer = {
   aula: { id: string; titulo: string; descricao: string | null; tipo: "video"|"pdf"|"texto"; duracao_min: number; previa_gratis: boolean };
   conteudo:
@@ -212,6 +213,7 @@ export type AulaPlayer = {
     | { kind: "pdf"; url: string }
     | { kind: "texto"; html: string }
     | { kind: "vazio" };
+  anexos: AulaAnexo[];
 };
 
 export const getAulaPlayer = createServerFn({ method: "POST" })
@@ -219,7 +221,7 @@ export const getAulaPlayer = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<AulaPlayer> => {
     const userId = await getUserIdFromAuthHeader();
     const { data: a, error } = await supabaseAdmin.from("curso_aulas")
-      .select("id, titulo, descricao, tipo, duracao_min, video_url, pdf_url, conteudo_html, previa_gratis, modulo_id")
+      .select("id, titulo, descricao, tipo, duracao_min, video_url, pdf_url, conteudo_html, previa_gratis, modulo_id, materiais_extras")
       .eq("id", data.aula_id).single();
     if (error || !a) throw new Error("Aula não encontrada");
 
@@ -229,7 +231,6 @@ export const getAulaPlayer = createServerFn({ method: "POST" })
 
     let conteudo: AulaPlayer["conteudo"] = { kind: "vazio" };
     if (a.tipo === "video" && a.video_url) {
-      // Se for path do bucket, gera signed; senão é URL externa
       if (a.video_url.startsWith("http")) {
         conteudo = { kind: "video_externo", embedUrl: toEmbed(a.video_url) ?? a.video_url };
       } else {
@@ -243,9 +244,22 @@ export const getAulaPlayer = createServerFn({ method: "POST" })
       conteudo = { kind: "texto", html: a.conteudo_html ?? "" };
     }
 
+    // Anexos para download (qualquer tipo de aula)
+    const raw = Array.isArray(a.materiais_extras) ? a.materiais_extras : [];
+    const anexos: AulaAnexo[] = [];
+    for (const item of raw) {
+      if (!item || typeof item !== "object") continue;
+      const nome = String((item as any).nome ?? "Material");
+      const path = String((item as any).path ?? "");
+      if (!path) continue;
+      const { data: signed } = await supabaseAdmin.storage.from("materiais-pdf").createSignedUrl(path, 60 * 60, { download: nome });
+      if (signed) anexos.push({ nome, url: signed.signedUrl });
+    }
+
     return {
       aula: { id: a.id, titulo: a.titulo, descricao: a.descricao, tipo: a.tipo as "video"|"pdf"|"texto", duracao_min: a.duracao_min, previa_gratis: a.previa_gratis },
       conteudo,
+      anexos,
     };
   });
 
