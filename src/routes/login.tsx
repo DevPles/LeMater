@@ -136,25 +136,6 @@ function LoginPage() {
         position: "relative",
       }}
     >
-      <Link
-        to="/"
-        style={{
-          position: "absolute",
-          top: 24,
-          left: 24,
-          ...neuRaised,
-          padding: "8px 16px",
-          fontSize: 10,
-          letterSpacing: "0.14em",
-          textTransform: "uppercase",
-          color: INK,
-          textDecoration: "none",
-          fontWeight: 500,
-          borderRadius: 999,
-        }}
-      >
-        Voltar
-      </Link>
 
       {/* Neumorphic split card — same on desktop and mobile */}
       <div
