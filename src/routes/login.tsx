@@ -265,6 +265,7 @@ function LoginPage() {
 
         {/* RIGHT half — SIGNUP */}
         <div
+          className="form-pane form-pane-right"
           style={{
             position: "absolute",
             top: 0,
@@ -275,6 +276,7 @@ function LoginPage() {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
+            transition: "opacity 300ms",
           }}
         >
           <form onSubmit={handleSignUp}>
