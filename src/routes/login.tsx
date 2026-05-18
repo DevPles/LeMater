@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-ro
 import { useState, type CSSProperties } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import lemateLogo from "@/assets/logo_oficial.png";
+import lemateLogo from "@/assets/logo_monograma.png";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
