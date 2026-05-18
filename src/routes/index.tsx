@@ -257,20 +257,7 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
         )}
         {!isMobile ? (
           <Link to="/login" style={{ textDecoration: "none" }}>
-            <button
-              style={{
-                background: c.sageDark,
-                color: "white",
-                fontSize: 12,
-                fontWeight: 500,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                padding: "10px 24px",
-                border: "none",
-                cursor: "pointer",
-                fontFamily: sans,
-              }}
-            >
+            <button style={btnPrimary}>
               ENTRAR
             </button>
           </Link>
