@@ -159,6 +159,7 @@ function LoginPage() {
       {/* Neumorphic split card — same on desktop and mobile */}
       <div
         className="login-card"
+        data-mode={mode}
         style={{
           ...neuRaised,
           width: "100%",
@@ -170,6 +171,7 @@ function LoginPage() {
       >
         {/* LEFT half — LOGIN / RECOVER */}
         <div
+          className="form-pane form-pane-left"
           style={{
             position: "absolute",
             top: 0,
@@ -180,6 +182,7 @@ function LoginPage() {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
+            transition: "opacity 300ms",
           }}
         >
           {mode === "recover" ? (
@@ -262,6 +265,7 @@ function LoginPage() {
 
         {/* RIGHT half — SIGNUP */}
         <div
+          className="form-pane form-pane-right"
           style={{
             position: "absolute",
             top: 0,
@@ -272,6 +276,7 @@ function LoginPage() {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
+            transition: "opacity 300ms",
           }}
         >
           <form onSubmit={handleSignUp}>
@@ -303,6 +308,7 @@ function LoginPage() {
 
         {/* SLIDING OVERLAY — sage brand panel */}
         <div
+          className="brand-pane"
           style={{
             position: "absolute",
             top: 0,
@@ -328,43 +334,99 @@ function LoginPage() {
             alt="Le Mater"
             style={{ height: 56, width: "auto", marginBottom: 18 }}
           />
-          <h2 style={{ fontFamily: serif, fontSize: 24, fontWeight: 600, margin: "0 0 8px", color: WARM }}>
-            {isSignup ? "Bem-vinda de volta" : "Olá!"}
-          </h2>
-          <p style={{ fontSize: 12, lineHeight: 1.6, color: "rgba(255,255,255,0.85)", maxWidth: 220, margin: "0 0 22px" }}>
-            {isSignup
-              ? "Já tem conta? Entre e continue."
-              : "Sem acesso ainda? Solicite seu cadastro."}
-          </p>
-          <button
-            type="button"
-            onClick={() => setMode(isSignup ? "login" : "signup")}
-            style={{
-              background: "transparent",
-              color: "white",
-              border: `1.5px solid ${TERRACOTTA}`,
-              padding: "10px 28px",
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.16em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              fontFamily: sans,
-              borderRadius: 999,
-              transition: "background 200ms",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = `${TERRACOTTA}33`)}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            {isSignup ? "Entrar" : "Cadastrar"}
-          </button>
+          <div className="brand-text" style={{ display: "contents" }}>
+            <h2 style={{ fontFamily: serif, fontSize: 24, fontWeight: 600, margin: "0 0 8px", color: WARM }}>
+              {isSignup ? "Bem-vinda de volta" : "Olá!"}
+            </h2>
+            <p style={{ fontSize: 12, lineHeight: 1.6, color: "rgba(255,255,255,0.85)", maxWidth: 220, margin: "0 0 22px" }}>
+              {isSignup
+                ? "Já tem conta? Entre e continue."
+                : "Sem acesso ainda? Solicite seu cadastro."}
+            </p>
+            <button
+              type="button"
+              onClick={() => setMode(isSignup ? "login" : "signup")}
+              style={{
+                background: "transparent",
+                color: "white",
+                border: `1.5px solid ${TERRACOTTA}`,
+                padding: "10px 28px",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                fontFamily: sans,
+                borderRadius: 999,
+                transition: "background 200ms",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = `${TERRACOTTA}33`)}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              {isSignup ? "Entrar" : "Cadastrar"}
+            </button>
+          </div>
         </div>
       </div>
 
       <style>{`
         @media (max-width: 640px) {
-          .login-card { height: 460px !important; max-width: 360px !important; }
-          .login-card form h1 { font-size: 20px !important; }
+          .login-card {
+            height: 560px !important;
+            max-width: 380px !important;
+          }
+          .login-card .brand-pane {
+            width: 100% !important;
+            height: 38% !important;
+            transform: none !important;
+            padding: 18px !important;
+            flex-direction: row !important;
+            gap: 14px !important;
+            justify-content: flex-start !important;
+            text-align: left !important;
+          }
+          .login-card .brand-pane img {
+            height: 44px !important;
+            margin-bottom: 0 !important;
+            flex-shrink: 0;
+          }
+          .login-card .brand-pane h2 {
+            font-size: 18px !important;
+            margin: 0 0 4px !important;
+          }
+          .login-card .brand-pane p {
+            font-size: 11px !important;
+            margin: 0 0 8px !important;
+            max-width: none !important;
+          }
+          .login-card .brand-pane .brand-text {
+            display: flex !important;
+            flex-direction: column;
+            align-items: flex-start;
+            flex: 1;
+          }
+          .login-card .brand-pane button {
+            padding: 8px 18px !important;
+            font-size: 10px !important;
+            align-self: flex-start;
+          }
+          .login-card .form-pane {
+            top: 38% !important;
+            width: 100% !important;
+            height: 62% !important;
+            left: 0 !important;
+            right: 0 !important;
+            padding: 22px 28px !important;
+          }
+          .login-card[data-mode="signup"] .form-pane-left {
+            opacity: 0 !important;
+            pointer-events: none !important;
+          }
+          .login-card:not([data-mode="signup"]) .form-pane-right {
+            opacity: 0 !important;
+            pointer-events: none !important;
+          }
+          .login-card form h1 { font-size: 22px !important; }
         }
       `}</style>
     </div>
