@@ -1,139 +1,90 @@
 ## Objetivo
 
-Unificar `/conteudos-gratis` em uma **vitrine única** de Conteúdos & Cursos Le Mater, alimentada 100% pelo `/admin → Materiais`, com:
+Criar um sistema completo de **cursos** (criação no Admin + venda + consumo pelo aluno), separado dos "materiais avulsos" que já existem.
 
-- Materiais grátis (públicos ou restritos a usuários liberados)
-- Cursos/produtos pagos vendidos por **link externo** (Hotmart, Kiwify, Teachable, Eduzz, etc.)
-- Cursos pagos consumidos **dentro do app** (PDF, vídeo nativo, YouTube/Vimeo, artigo)
-- `/atlas` vira a **biblioteca pessoal** (somente itens já liberados para o usuário)
-
-Visitante anônimo vê grátis + vitrine de venda. Usuário logado vê os mesmos cards já desbloqueados conforme permissão.
+Hoje só existe a tabela `materiais` (PDF/vídeo/artigo único). Não há conceito de curso com módulos, aulas, matrícula, progresso ou checkout próprio.
 
 ---
 
-## 1. Banco (migration única)
+## 1. Banco de dados (migração)
 
-**Em `materiais`** — novas colunas:
-- `acesso text not null default 'publico'` — `publico` | `restrito`
-- `link_compra text` — URL da plataforma de venda
-- `plataforma_venda text` — `hotmart` | `kiwify` | `teachable` | `eduzz` | `outro`
-- `preco_label text` — texto livre, ex. “R$ 197” ou “12x R$ 19,70”
-- `cta_label text` — texto customizado do botão (opcional)
+Novas tabelas:
 
-**Tabela nova `material_acessos`**:
-- `material_id uuid not null`, `user_id uuid not null`, `liberado_por uuid`, `created_at timestamptz default now()`
-- PK composta `(material_id, user_id)`
-- RLS: admin gerencia tudo; usuário lê apenas suas próprias linhas
+- **`cursos`** — `titulo`, `slug`, `descricao_curta`, `descricao_longa`, `capa_url`, `trailer_url`, `categoria`, `nivel`, `carga_horaria_min`, `preco_centavos`, `preco_label`, `link_compra_externo` (Hotmart/Kiwify), `plataforma_venda`, `publicado`, `ordem`, `instrutor_nome`, `instrutor_bio`, `instrutor_foto`.
+- **`curso_modulos`** — `curso_id`, `titulo`, `descricao`, `ordem`.
+- **`curso_aulas`** — `modulo_id`, `titulo`, `descricao`, `tipo` (video/pdf/texto), `video_url`, `pdf_url`, `conteudo_html`, `duracao_min`, `ordem`, `previa_gratis` (bool, para amostra pública).
+- **`curso_matriculas`** — `curso_id`, `user_id`, `origem` (manual/hotmart/admin), `ativo`, `expira_em`.
+- **`curso_progresso`** — `user_id`, `aula_id`, `concluida_em`.
 
-**Função `public.pode_ver_material(_user uuid, _mat uuid) returns boolean security definer`**:
-Retorna `true` se `materiais.publicado = true` E uma das condições:
-- `area='gratis' AND acesso='publico'`
-- `area='pago' AND acesso='publico' AND link_compra IS NOT NULL` (vitrine de venda externa, qualquer um vê)
-- `area='pago' AND acesso='publico' AND EXISTS app_acesso_pago(_user, ativo)`
-- existe linha em `material_acessos(_mat,_user)`
-- `_user` é admin
+RLS:
+- Admin: CRUD total em `cursos`, `curso_modulos`, `curso_aulas`, `curso_matriculas`.
+- Público (anon + auth): leitura de cursos `publicado=true` (vitrine) e aulas com `previa_gratis=true`.
+- Aluno: leitura das aulas só se tiver matrícula ativa OU acesso pago global (`app_acesso_pago.ativo`).
+- Aluno: CRUD do próprio progresso.
 
-**Atualizar policies de SELECT em `materiais`** (drop + recreate):
-- Para `anon` + `authenticated`: `publicado=true AND (acesso='publico' AND (area='gratis' OR link_compra IS NOT NULL))`
-- Para `authenticated` (acesso completo): `pode_ver_material(auth.uid(), id) = true`
-- Admin: mantém policy existente
+Função `pode_ver_aula(_user, _aula)` análoga à `pode_ver_material`.
+
+Webhook Hotmart existente (`hotmart_compras`) passa a criar `curso_matriculas` quando o produto for mapeado para um `curso_id`.
 
 ---
 
-## 2. Admin (`/admin → Materiais`)
+## 2. Server functions (`src/lib/cursos.functions.ts`)
 
-No modal de criar/editar material, adicionar:
-
-- **Capa** — upload para bucket público `materiais-capas` (já existe), opcional
-- **Acesso** — select `publico` | `restrito`
-- **Plataforma de venda** — select `hotmart`/`kiwify`/`teachable`/`eduzz`/`outro`/vazio
-- **Link de compra** — URL (opcional)
-- **Preço (texto livre)** — texto
-- **Texto do botão (CTA)** — texto opcional
-- Quando `Acesso = restrito`: seção **Usuários liberados** com busca em `profiles` (nome/email), botões Liberar / Revogar
-- Categorias sugeridas via `datalist`: Concepção, Gestação, Puerpério, Bebê, Cursos
-
-**Novas server functions em `src/lib/admin.functions.ts`**:
-- `buscarUsuarios({ termo })` — busca em `profiles` por nome/email (admin only)
-- `listMaterialAcessos({ material_id })`
-- `liberarAcessoMaterial({ material_id, user_id })`
-- `revogarAcessoMaterial({ material_id, user_id })`
-- `upsertMaterial` atualizado com os novos campos
+- `listCursosVitrine()` — pública, retorna cursos publicados (admin vê tudo).
+- `getCursoBySlug(slug)` — detalhes públicos + módulos/aulas (aulas pagas só com flag `bloqueada=true` se não matriculado).
+- `getCursoPlayer(slug)` — autenticado, valida matrícula/admin, retorna conteúdo completo + progresso.
+- `marcarAulaConcluida(aulaId)` — aluno.
+- Admin: `createCurso`, `updateCurso`, `deleteCurso`, `createModulo`, `updateModulo`, `deleteModulo`, `createAula`, `updateAula`, `deleteAula`, `reorderItems`, `liberarMatricula(userId, cursoId)`, `revogarMatricula`.
 
 ---
 
-## 3. Vitrine `/conteudos-gratis` (página única)
+## 3. Rotas frontend
 
-Layout no mesmo padrão Atlas Materno. Header + filtros no topo: **Tudo · Grátis · Cursos · Concepção · Gestação · Puerpério · Bebê**.
+**Públicas:**
+- `/cursos` — vitrine de todos os cursos publicados.
+- `/cursos/$slug` — landing page de venda (hero, instrutor, conteúdo programático, depoimentos, CTA "Comprar" → `link_compra_externo` ou "Acessar" se já matriculado).
 
-Lista carregada por `listMateriaisVitrine` (server fn pública, usa `supabaseAdmin` + sessão opcional para incluir restritos liberados). Retorna por material:
-- dados básicos + `capa_url`, `preco_label`, `plataforma_venda`, `link_compra`
-- flags derivadas: `pode_consumir`, `precisa_lead`, `vende_externo`
+**Autenticadas:**
+- `/_authenticated/meus-cursos` — lista de cursos em que o aluno tem matrícula ativa.
+- `/_authenticated/cursos/$slug/aula/$aulaId` — player (vídeo + descrição + lista lateral de aulas + botão "Marcar como concluída" + barra de progresso).
 
-**Quatro variações de card** (mesmo visual, CTA muda):
-1. **Grátis público** — badge “Grátis” → modal de lead → entrega no modal
-2. **Grátis restrito (liberado)** — badge “Liberado” → abre direto
-3. **Pago interno (com acesso)** — badge “Seu curso” → abre direto
-4. **Pago com link de compra** — badge da plataforma + `preco_label` + botão **Comprar agora** → `window.open(link_compra, '_blank', 'noopener,noreferrer')`
-5. **Pago interno sem acesso e sem link** — botão **Entrar / Adquirir** → `/login` ou `/atlas`
-
-Estados: carregando, vazio, erro.
-
----
-
-## 4. `/atlas` — biblioteca pessoal
-
-Lista somente o que o usuário logado pode consumir (`pode_ver_material` true E não é apenas vitrine de venda). Usa `getMaterialAccess` para entrega. Cards no mesmo layout, sem CTAs de compra.
+**Admin (`/admin`):**
+- Nova aba **CURSOS** no topo, ao lado de MATERIAIS.
+- Lista de cursos com Editar/Excluir/Publicar.
+- Editor de curso: form com dados gerais + gestão de módulos (drag-order) + aulas dentro de cada módulo + upload de capa/vídeo/PDF.
+- Aba **MATRÍCULAS** dentro do curso: buscar usuário e liberar/revogar acesso manual.
 
 ---
 
-## 5. Entrega do conteúdo
+## 4. Integração com o que já existe
 
-Novo arquivo `src/lib/materiais.functions.ts`:
-
-```
-type MaterialAccess =
-  | { kind: 'pdf'; url: string }
-  | { kind: 'video_upload'; url: string }
-  | { kind: 'video_externo'; embedUrl: string; rawUrl: string }
-  | { kind: 'artigo'; html: string }       // sanitizado server-side
-  | { kind: 'externo'; url: string }       // link de compra
-```
-
-- `listMateriaisVitrine` — pública, retorna cards visíveis para anônimo + (se logado) restritos liberados
-- `getMaterialGratisAccess({ material_id, lead })` — pública; grava lead em `leads_gratis`; libera apenas `area='gratis' AND acesso='publico' AND publicado=true`; assina URL do bucket privado conforme tipo
-- `getMaterialAccess({ material_id })` — autenticada (`requireSupabaseAuth`); valida via `pode_ver_material`; assina URL ou retorna HTML
-
-Sanitização de artigo com `isomorphic-dompurify` (`bun add isomorphic-dompurify`).
-
-Modal de player no front renderiza por `kind`:
-- `pdf` → iframe + botão **Baixar PDF**
-- `video_upload` → `<video controls>` + botão **Baixar**
-- `video_externo` → iframe embed YouTube/Vimeo
-- `artigo` → HTML formatado
-- `externo` → redireciona imediatamente
+- Página `/membro`: adicionar seção **"Meus Cursos"** acima de "Conteúdos Pagos", listando matrículas ativas com link para o player.
+- Página `/conteudos-gratis`: aba **CURSOS** passa a listar os cursos da nova tabela (não mais `materiais` filtrados por `area='curso'`).
+- Header público ganha link **CURSOS** apontando para `/cursos`.
 
 ---
 
-## 6. Arquivos a criar/editar
+## 5. Storage
 
-- **Migration**: colunas novas + `material_acessos` + RLS + `pode_ver_material` + recriar policies SELECT de `materiais`
-- `src/lib/materiais.functions.ts` *(novo)* — listagem vitrine + entrega
-- `src/lib/admin.functions.ts` — novas fns admin + `upsertMaterial` ampliado
-- `src/routes/conteudos-gratis.tsx` — vitrine única dinâmica + filtros + modais (lead + player)
-- `src/routes/_authenticated/atlas.tsx` — biblioteca pessoal usando as novas fns
-- `src/routes/_authenticated/admin.tsx` — novos campos no formulário de Material + UI de “Usuários liberados”
-- `package.json` — adicionar `isomorphic-dompurify`
+Reusar buckets existentes:
+- `materiais-capas` (público) → capas de curso.
+- `materiais-video` (privado) → vídeos de aulas, servidos via signed URL na server function do player.
+- `materiais-pdf` (privado) → PDFs de aulas.
 
 ---
 
-## 7. Critérios de aceitação
+## Detalhes técnicos
 
-1. Cadastrar grátis público (PDF, vídeo YouTube, vídeo nativo, artigo) → aparece, lead funciona, entrega correta
-2. Cadastrar curso pago externo (Hotmart/Kiwify/Teachable) com `link_compra` + preço → card mostra preço e selo, botão Comprar abre link em nova aba
-3. Cadastrar pago interno → aparece somente para usuários com `app_acesso_pago.ativo=true` e consome dentro do app
-4. Marcar material como `restrito` e liberar manualmente um usuário → só esse usuário e admins veem o card
-5. `publicado=false` nunca aparece publicamente
-6. `/atlas` mostra somente itens consumíveis pelo usuário logado
-7. Tentativa direta de `getMaterialAccess` para material não permitido retorna erro de permissão
-8. RLS verificada: anônimo via SDK só lê grátis públicos e pagos com `link_compra`
+- Todas as queries via `createServerFn` + `requireSupabaseAuth` quando autenticado, `supabaseAdmin` para vitrine pública.
+- Player de vídeo: detectar YouTube/Vimeo/MP4 nativo (igual ao já feito em `/membro`).
+- Marcação de progresso: upsert em `curso_progresso` no clique do botão e ao terminar o vídeo (90%).
+- Ordem de implementação: (1) migração + RLS, (2) server functions, (3) admin CRUD, (4) vitrine + landing, (5) player + meus-cursos, (6) integração `/membro` e header.
+
+---
+
+## Escopo deixado de fora (próxima rodada, se quiser)
+
+- Checkout integrado (Stripe/Paddle nativo do Lovable) — por ora mantém venda externa via `link_compra_externo` (Hotmart/Kiwify).
+- Certificado de conclusão.
+- Avaliações/quizzes ao final de cada módulo.
+- Cupons de desconto.
