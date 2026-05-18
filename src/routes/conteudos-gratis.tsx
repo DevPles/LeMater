@@ -237,6 +237,7 @@ function ConteudosGratisPage() {
   const [selecionado, setSelecionado] = useState<Conteudo | null>(null);
   const [form, setForm] = useState({ nome: "", email: "", telefone: "" });
   const [enviado, setEnviado] = useState(false);
+  const [acessando, setAcessando] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const enviarLead = useServerFn(registrarLead);
@@ -244,6 +245,7 @@ function ConteudosGratisPage() {
   const abrir = (item: Conteudo) => {
     setSelecionado(item);
     setEnviado(false);
+    setAcessando(false);
     setErro(null);
     setForm({ nome: "", email: "", telefone: "" });
   };
@@ -614,27 +616,101 @@ function ConteudosGratisPage() {
               ×
             </button>
             {enviado ? (
-              <div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    letterSpacing: "0.14em",
-                    textTransform: "uppercase",
-                    color: c.sage,
-                    marginBottom: 12,
-                  }}
-                >
-                  Material liberado
+              acessando ? (
+                <div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: c.sage,
+                      marginBottom: 12,
+                    }}
+                  >
+                    {selecionado.categoria} · Conteúdo liberado
+                  </div>
+                  <div style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, marginBottom: 16, lineHeight: 1.25 }}>
+                    {selecionado.titulo}
+                  </div>
+                  <p style={{ fontSize: 15, lineHeight: 1.7, color: c.muted, marginBottom: 24 }}>
+                    {selecionado.descricao}
+                  </p>
+                  <div
+                    style={{
+                      background: c.warm,
+                      padding: 24,
+                      borderRadius: 4,
+                      marginBottom: 20,
+                      border: `1px solid ${c.border}`,
+                    }}
+                  >
+                    <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>
+                      {selecionado.formato}
+                    </div>
+                    <p style={{ fontSize: 14, lineHeight: 1.6, color: c.ink, margin: 0 }}>
+                      Seu material está pronto. Clique no botão abaixo para baixar agora. Também enviamos uma cópia para <strong>{form.email}</strong>.
+                    </p>
+                  </div>
+                  <a
+                    href="#"
+                    onClick={(e) => e.preventDefault()}
+                    style={{
+                      display: "block",
+                      textAlign: "center",
+                      background: c.sageDark,
+                      color: "white",
+                      fontSize: 12,
+                      fontWeight: 500,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      padding: "16px 28px",
+                      textDecoration: "none",
+                      fontFamily: sans,
+                    }}
+                  >
+                    Baixar material em PDF
+                  </a>
                 </div>
-                <div style={{ fontFamily: serif, fontSize: 28, fontWeight: 400, marginBottom: 12 }}>
-                  Obrigada, {form.nome.split(" ")[0]}.
+              ) : (
+                <div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: c.sage,
+                      marginBottom: 12,
+                    }}
+                  >
+                    Material liberado
+                  </div>
+                  <div style={{ fontFamily: serif, fontSize: 28, fontWeight: 400, marginBottom: 12 }}>
+                    Obrigada, {form.nome.split(" ")[0]}.
+                  </div>
+                  <p style={{ fontSize: 15, lineHeight: 1.7, color: c.muted, margin: "0 0 24px" }}>
+                    Enviamos o material <strong style={{ color: c.ink }}>"{selecionado.titulo}"</strong>{" "}
+                    para <strong style={{ color: c.ink }}>{form.email}</strong>. Você também pode acessar agora mesmo abaixo.
+                  </p>
+                  <button
+                    onClick={() => setAcessando(true)}
+                    style={{
+                      background: c.sageDark,
+                      color: "white",
+                      fontSize: 12,
+                      fontWeight: 500,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      padding: "16px 28px",
+                      border: "none",
+                      cursor: "pointer",
+                      fontFamily: sans,
+                      width: "100%",
+                    }}
+                  >
+                    Acessar conteúdo agora
+                  </button>
                 </div>
-                <p style={{ fontSize: 15, lineHeight: 1.7, color: c.muted, margin: 0 }}>
-                  Enviamos o material <strong style={{ color: c.ink }}>"{selecionado.titulo}"</strong>{" "}
-                  para <strong style={{ color: c.ink }}>{form.email}</strong>. Confira sua caixa de
-                  entrada nos próximos minutos.
-                </p>
-              </div>
+              )
             ) : (
               <form onSubmit={submit} noValidate>
                 <div
