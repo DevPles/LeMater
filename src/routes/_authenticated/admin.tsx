@@ -522,3 +522,65 @@ function Td({ children, colSpan }: { children: any; colSpan?: number }) { return
 function Field({ label, children }: { label: string; children: any }) {
   return <label style={{ display: "block" }}><div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6 }}>{label}</div>{children}</label>;
 }
+
+function AcessosSection({ materialId }: { materialId: string }) {
+  const listFn = useServerFn(listMaterialAcessos);
+  const buscarFn = useServerFn(buscarUsuarios);
+  const liberarFn = useServerFn(liberarAcessoMaterial);
+  const revogarFn = useServerFn(revogarAcessoMaterial);
+  const [acessos, setAcessos] = useState<any[]>([]);
+  const [termo, setTermo] = useState("");
+  const [resultados, setResultados] = useState<any[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  const recarregar = () => listFn({ data: { material_id: materialId } }).then(setAcessos).catch(() => {});
+  useEffect(() => { recarregar(); }, [materialId]);
+
+  const buscar = async () => {
+    if (termo.trim().length < 2) return;
+    setBusy(true);
+    try { setResultados(await buscarFn({ data: { termo: termo.trim() } })); }
+    finally { setBusy(false); }
+  };
+
+  const liberar = async (user_id: string) => {
+    await liberarFn({ data: { material_id: materialId, user_id } });
+    setResultados([]); setTermo(""); recarregar();
+  };
+
+  const revogar = async (user_id: string) => {
+    if (!confirm("Revogar acesso deste usuário?")) return;
+    await revogarFn({ data: { material_id: materialId, user_id } });
+    recarregar();
+  };
+
+  return (
+    <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 14, marginTop: 6 }}>
+      <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>Usuários liberados</div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <input value={termo} onChange={(e) => setTermo(e.target.value)} placeholder="Buscar por nome ou e-mail…" style={inp} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); buscar(); } }} />
+        <button type="button" onClick={buscar} disabled={busy} style={btn(c.sage)}>Buscar</button>
+      </div>
+      {resultados.length > 0 && (
+        <div style={{ background: c.warm, border: `1px solid ${c.border}`, marginBottom: 12 }}>
+          {resultados.map((u) => (
+            <div key={u.user_id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", borderBottom: `1px solid ${c.border}` }}>
+              <div style={{ fontSize: 13 }}><strong>{u.nome ?? "—"}</strong> <span style={{ color: c.muted }}>· {u.email}</span></div>
+              <button type="button" onClick={() => liberar(u.user_id)} style={btnSm(c.sageDark)}>Liberar</button>
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ background: "white", border: `1px solid ${c.border}` }}>
+        {acessos.length === 0 ? (
+          <div style={{ padding: 14, fontSize: 13, color: c.muted }}>Nenhum usuário liberado ainda.</div>
+        ) : acessos.map((a) => (
+          <div key={a.user_id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", borderBottom: `1px solid ${c.border}` }}>
+            <div style={{ fontSize: 13 }}><strong>{a.nome ?? "—"}</strong> <span style={{ color: c.muted }}>· {a.email ?? a.user_id}</span></div>
+            <button type="button" onClick={() => revogar(a.user_id)} style={btnSm(c.danger)}>Revogar</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
