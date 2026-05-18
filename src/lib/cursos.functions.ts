@@ -224,7 +224,7 @@ export const getAulaPlayer = createServerFn({ method: "POST" })
     if (error || !a) throw new Error("Aula não encontrada");
 
     // Permissão
-    const { data: ok } = await supabaseAdmin.rpc("pode_ver_aula", { _user: userId, _aula: a.id });
+    const { data: ok } = await supabaseAdmin.rpc("pode_ver_aula", { _user: (userId ?? null) as any, _aula: a.id });
     if (!ok) throw new Error("Sem permissão para acessar esta aula");
 
     let conteudo: AulaPlayer["conteudo"] = { kind: "vazio" };
