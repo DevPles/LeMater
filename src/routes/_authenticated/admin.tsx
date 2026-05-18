@@ -7,7 +7,7 @@ import {
   dashboardStats, listAllMateriais, listLeads, listAlunos, listCompras,
   upsertMaterial, deleteMaterial, liberarAcessoManual, revogarAcesso, reativarAcesso, enviarResetSenha,
 } from "@/lib/admin.functions";
-import lemateLogo from "@/assets/lemater-logo.png";
+import lemateLogo from "@/assets/logo_monograma.png";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin · Le Mater" }], links: [{ rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" }] }),

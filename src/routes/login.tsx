@@ -336,7 +336,7 @@ function LoginPage() {
             left: 0,
             width: "50%",
             height: "100%",
-            transform: isSignup ? "translateX(100%)" : "translateX(0)",
+            transform: isSignup ? "translateX(0)" : "translateX(100%)",
             transition: "transform 700ms cubic-bezier(0.77, 0, 0.175, 1)",
             background: `linear-gradient(135deg, ${SAGE_DARK} 0%, ${SAGE} 100%)`,
             display: "flex",
