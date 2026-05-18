@@ -85,8 +85,11 @@ function Stat({ label, value }: { label: string; value: number | string }) {
 type MaterialRow = {
   id: string; titulo: string; descricao: string | null; categoria: string;
   tipo: "pdf" | "video_externo" | "video_upload" | "artigo";
-  area: "gratis" | "pago"; conteudo_url: string | null; conteudo_html: string | null;
+  area: "gratis" | "pago"; acesso: "publico" | "restrito";
+  conteudo_url: string | null; conteudo_html: string | null;
   capa_url: string | null; ordem: number; publicado: boolean;
+  link_compra: string | null; plataforma_venda: string | null;
+  preco_label: string | null; cta_label: string | null;
 };
 
 function MateriaisTab() {
