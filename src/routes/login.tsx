@@ -361,102 +361,10 @@ function LoginPage() {
         </div>
       </div>
 
-      {/* MOBILE fallback */}
-      <div className="login-mobile" style={{ display: "none", width: "100%", maxWidth: 380 }}>
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <img src={lemateLogo} alt="Le Mater" style={{ height: 56, width: "auto" }} />
-        </div>
-
-        <div style={{ ...neuRaised, padding: 22 }}>
-          <div style={{ display: "flex", gap: 6, marginBottom: 18 }}>
-            {(["login", "signup", "recover"] as Mode[]).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMode(m)}
-                style={{
-                  flex: 1,
-                  ...(mode === m ? neuInset : {}),
-                  background: mode === m ? SURFACE : "transparent",
-                  border: "none",
-                  padding: "8px 4px",
-                  fontSize: 9,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: mode === m ? SAGE_DARK : MUTED,
-                  cursor: "pointer",
-                  fontWeight: 600,
-                  borderRadius: 6,
-                }}
-              >
-                {m === "login" ? "Entrar" : m === "signup" ? "Cadastrar" : "Recuperar"}
-              </button>
-            ))}
-          </div>
-
-          {mode === "login" && (
-            <form onSubmit={handleLogin}>
-              <div style={{ marginBottom: 12 }}>
-                <label style={labelStyle}>E-mail</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} required />
-              </div>
-              <div style={{ marginBottom: 16 }}>
-                <label style={labelStyle}>Senha</label>
-                <div style={{ position: "relative" }}>
-                  <input
-                    type={showPwd ? "text" : "password"}
-                    value={senha}
-                    onChange={(e) => setSenha(e.target.value)}
-                    style={{ ...inputStyle, paddingRight: 72 }}
-                    required
-                  />
-                  <button type="button" onClick={() => setShowPwd((v) => !v)} style={eyeButton}>
-                    {showPwd ? "Ocultar" : "Mostrar"}
-                  </button>
-                </div>
-              </div>
-              <button type="submit" disabled={loading} style={primaryButton(loading)}>
-                {loading ? "Entrando..." : "Entrar"}
-              </button>
-            </form>
-          )}
-
-          {mode === "signup" && (
-            <form onSubmit={handleSignUp}>
-              <div style={{ marginBottom: 12 }}>
-                <label style={labelStyle}>Nome</label>
-                <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} style={inputStyle} required />
-              </div>
-              <div style={{ marginBottom: 12 }}>
-                <label style={labelStyle}>E-mail</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} required />
-              </div>
-              <div style={{ marginBottom: 16 }}>
-                <label style={labelStyle}>Senha</label>
-                <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} style={inputStyle} required />
-              </div>
-              <button type="submit" style={primaryButton(false)}>Solicitar acesso</button>
-            </form>
-          )}
-
-          {mode === "recover" && (
-            <form onSubmit={handleRecover}>
-              <div style={{ marginBottom: 16 }}>
-                <label style={labelStyle}>E-mail</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} required />
-              </div>
-              <button type="submit" disabled={loading} style={primaryButton(loading)}>
-                {loading ? "Enviando..." : "Enviar link"}
-              </button>
-            </form>
-          )}
-        </div>
-      </div>
-
       <style>{`
-        @media (max-width: 768px) {
-          .login-desktop { display: none !important; }
-          .login-mobile { display: block !important; }
+        @media (max-width: 640px) {
+          .login-card { height: 460px !important; max-width: 360px !important; }
+          .login-card form h1 { font-size: 20px !important; }
         }
       `}</style>
     </div>
