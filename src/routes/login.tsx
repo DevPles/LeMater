@@ -212,11 +212,11 @@ function LoginPage() {
                     type="button"
                     onClick={goBackFromRecover}
                     style={{
-                      flex: "0 0 auto",
+                      flex: 1,
                       background: "transparent",
                       color: SAGE_DARK,
                       border: `1.5px solid ${SAGE_DARK}`,
-                      padding: "12px 18px",
+                      padding: "12px 24px",
                       fontSize: 11,
                       fontWeight: 600,
                       letterSpacing: "0.16em",
@@ -224,11 +224,16 @@ function LoginPage() {
                       cursor: "pointer",
                       fontFamily: sans,
                       borderRadius: 8,
+                      whiteSpace: "nowrap",
                     }}
                   >
                     Voltar
                   </button>
-                  <button type="submit" disabled={loading} style={{ ...primaryButton(loading), flex: 1, width: "auto" }}>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    style={{ ...primaryButton(loading), flex: 1, width: "auto", whiteSpace: "nowrap" }}
+                  >
                     {loading ? "Enviando..." : "Enviar link"}
                   </button>
                 </div>
