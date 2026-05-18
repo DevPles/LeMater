@@ -369,8 +369,59 @@ function LoginPage() {
 
       <style>{`
         @media (max-width: 640px) {
-          .login-card { height: 460px !important; max-width: 360px !important; }
-          .login-card form h1 { font-size: 20px !important; }
+          .login-card {
+            height: 560px !important;
+            max-width: 380px !important;
+          }
+          .login-card .brand-pane {
+            width: 100% !important;
+            height: 38% !important;
+            transform: none !important;
+            padding: 18px !important;
+            flex-direction: row !important;
+            gap: 14px !important;
+            justify-content: flex-start !important;
+            text-align: left !important;
+          }
+          .login-card .brand-pane img {
+            height: 44px !important;
+            margin-bottom: 0 !important;
+            flex-shrink: 0;
+          }
+          .login-card .brand-pane h2 {
+            font-size: 18px !important;
+            margin: 0 0 4px !important;
+          }
+          .login-card .brand-pane p {
+            font-size: 11px !important;
+            margin: 0 0 8px !important;
+            max-width: none !important;
+          }
+          .login-card .brand-pane > div.brand-text {
+            flex: 1;
+          }
+          .login-card .brand-pane button {
+            padding: 8px 18px !important;
+            font-size: 10px !important;
+            align-self: flex-start;
+          }
+          .login-card .form-pane {
+            top: 38% !important;
+            width: 100% !important;
+            height: 62% !important;
+            left: 0 !important;
+            right: 0 !important;
+            padding: 22px 28px !important;
+          }
+          .login-card[data-mode="signup"] .form-pane-left {
+            opacity: 0 !important;
+            pointer-events: none !important;
+          }
+          .login-card:not([data-mode="signup"]) .form-pane-right {
+            opacity: 0 !important;
+            pointer-events: none !important;
+          }
+          .login-card form h1 { font-size: 22px !important; }
         }
       `}</style>
     </div>
