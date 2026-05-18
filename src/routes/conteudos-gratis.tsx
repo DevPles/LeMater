@@ -152,22 +152,24 @@ function ConteudoNav({ isMobile }: { isMobile: boolean }) {
           </ul>
         )}
         {!isMobile ? (
-          <Link to="/" search={{ s: "contato" } as any} style={{ textDecoration: "none" }}>
+          <Link to="/login" style={{ textDecoration: "none" }}>
             <button
               style={{
-                background: c.sageDark,
+                background: `linear-gradient(135deg, ${c.sageDark} 0%, ${c.sage} 100%)`,
                 color: "white",
-                fontSize: 12,
-                fontWeight: 500,
-                letterSpacing: "0.08em",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.16em",
                 textTransform: "uppercase",
-                padding: "10px 24px",
-                border: "none",
+                padding: "12px 24px",
+                border: "1.5px solid transparent",
+                borderRadius: 8,
+                boxShadow: "4px 4px 10px rgba(120, 100, 70, 0.25), -4px -4px 10px rgba(255, 250, 240, 0.95)",
                 cursor: "pointer",
                 fontFamily: sans,
               }}
             >
-              ACESSE APP
+              ENTRAR
             </button>
           </Link>
         ) : (
@@ -203,23 +205,25 @@ function ConteudoNav({ isMobile }: { isMobile: boolean }) {
               {label}
             </Link>
           ))}
-          <Link to="/" search={{ s: "contato" } as any} style={{ textDecoration: "none", marginTop: 16 }}>
+          <Link to="/login" style={{ textDecoration: "none", marginTop: 16 }}>
             <button
               style={{
-                background: c.sageDark,
+                background: `linear-gradient(135deg, ${c.sageDark} 0%, ${c.sage} 100%)`,
                 color: "white",
-                fontSize: 12,
-                fontWeight: 500,
-                letterSpacing: "0.08em",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.16em",
                 textTransform: "uppercase",
-                padding: "14px 24px",
-                border: "none",
+                padding: "12px 24px",
+                border: "1.5px solid transparent",
+                borderRadius: 8,
+                boxShadow: "4px 4px 10px rgba(120, 100, 70, 0.25), -4px -4px 10px rgba(255, 250, 240, 0.95)",
                 cursor: "pointer",
                 fontFamily: sans,
                 width: "100%",
               }}
             >
-              ACESSE APP
+              ENTRAR
             </button>
           </Link>
         </div>
