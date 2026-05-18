@@ -630,7 +630,7 @@ function Ticker() {
 
 function Sobre() {
   const paragrafos = [
-    "Rayssa Leslie é Enfermeira Brasileira Pós-Graduada em Obstetrícia e Neonatologia, especialista em ACLS pelo American Heart Association (AHA) e Certificada pela ALSO (Advanced Life Support in Obstetrics).",
+    "Rayssa Leslie é Enfermeira Brasileira Pós-Graduada em Obstetrícia e Neonatologia, especialista em ACLS American Heart Association (AHA) e Certificada pela ALSO (Advanced Life Support in Obstetrics).",
     "Com mais de 10 anos de experiência clínica em Saúde da Mulher, Obstetrícia e Cuidado Neonatal, desenvolveu o Método Le Mater, uma abordagem que une conhecimento técnico, inovação tecnológica, educação materna e cuidado especializado para acompanhar mulheres da concepção aos primeiros cuidados com o bebê.",
     "Sua trajetória profissional inclui atuação em ambientes hospitalares de média e alta complexidade, com foco em segurança do paciente, humanização da assistência, parto seguro, cuidado neonatal e protocolos baseados em evidências.",
     "Como Enfermeira Obstetra Senior III no Hospital Regional da Baixada Santista, participou de ações estratégicas voltadas à qualificação da assistência obstétrica, fortalecimento do parto seguro, promoção do parto normal e melhoria de indicadores materno-infantis.",
