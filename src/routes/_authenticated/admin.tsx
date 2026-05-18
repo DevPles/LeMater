@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   dashboardStats, listAllMateriais, listLeads, listAlunos, listCompras,
   upsertMaterial, deleteMaterial, liberarAcessoManual, revogarAcesso, reativarAcesso, enviarResetSenha,
+  buscarUsuarios, listMaterialAcessos, liberarAcessoMaterial, revogarAcessoMaterial,
 } from "@/lib/admin.functions";
 import lemateLogo from "@/assets/logo_monograma.png";
 
