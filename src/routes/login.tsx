@@ -159,6 +159,7 @@ function LoginPage() {
       {/* Neumorphic split card — same on desktop and mobile */}
       <div
         className="login-card"
+        data-mode={mode}
         style={{
           ...neuRaised,
           width: "100%",
