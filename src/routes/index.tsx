@@ -278,48 +278,116 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
             onClick={() => setOpen((v) => !v)}
             aria-label="Abrir menu"
             style={{
-              background: "none",
-              border: `1px solid ${c.border}`,
-              color: c.ink,
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              padding: "8px 14px",
+              position: "relative",
+              width: 44,
+              height: 44,
+              background: open ? c.sageDark : "transparent",
+              border: `1px solid ${open ? c.sageDark : c.border}`,
+              borderRadius: 999,
               cursor: "pointer",
-              fontFamily: sans,
+              transition: "all 300ms ease",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 5,
             }}
           >
-            {open ? "Fechar" : "Menu"}
+            <span
+              style={{
+                width: 18,
+                height: 1.5,
+                background: open ? "white" : c.ink,
+                transform: open ? "translateY(3px) rotate(45deg)" : "none",
+                transition: "all 300ms ease",
+              }}
+            />
+            <span
+              style={{
+                width: 18,
+                height: 1.5,
+                background: open ? "white" : c.ink,
+                transform: open ? "translateY(-3px) rotate(-45deg)" : "none",
+                transition: "all 300ms ease",
+              }}
+            />
           </button>
         )}
       </div>
-      {isMobile && open && (
-        <div style={{ padding: "8px 20px 20px", borderTop: `1px solid ${c.border}`, display: "flex", flexDirection: "column" }}>
-          {NAV_ITEMS.map(([id, label]) => (
-            <button key={id} onClick={() => handleGo(id)} style={{ ...linkStyle(id), textAlign: "left", borderBottom: `1px solid ${c.border}` }}>
-              {label}
-            </button>
-          ))}
-          <Link to="/login" style={{ textDecoration: "none", marginTop: 16 }}>
-            <button
-              style={{
-                background: c.sageDark,
-                color: "white",
-                fontSize: 12,
-                fontWeight: 500,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                padding: "14px 24px",
-                border: "none",
-                cursor: "pointer",
-                fontFamily: sans,
-                width: "100%",
-              }}
-            >
-              ENTRAR
-            </button>
-          </Link>
+      {isMobile && (
+        <div
+          style={{
+            position: "fixed",
+            top: 72,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(250,245,238,0.98)",
+            backdropFilter: "blur(20px)",
+            transform: open ? "translateY(0)" : "translateY(-100%)",
+            opacity: open ? 1 : 0,
+            pointerEvents: open ? "auto" : "none",
+            transition: "transform 500ms cubic-bezier(0.65, 0, 0.35, 1), opacity 400ms ease",
+            display: "flex",
+            flexDirection: "column",
+            padding: "32px 28px 40px",
+            overflowY: "auto",
+          }}
+        >
+          <ul style={{ listStyle: "none", margin: 0, padding: 0, flex: 1 }}>
+            {NAV_ITEMS.map(([id, label], i) => (
+              <li
+                key={id}
+                style={{
+                  borderBottom: `1px solid ${c.border}`,
+                  transform: open ? "translateY(0)" : "translateY(20px)",
+                  opacity: open ? 1 : 0,
+                  transition: `transform 500ms ease ${150 + i * 70}ms, opacity 500ms ease ${150 + i * 70}ms`,
+                }}
+              >
+                <button
+                  onClick={() => handleGo(id)}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 16,
+                    padding: "22px 4px",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: serif,
+                    fontSize: 30,
+                    fontWeight: 300,
+                    color: active === id ? c.sageDark : c.ink,
+                    textAlign: "left",
+                  }}
+                >
+                  <span style={{ fontFamily: sans, fontSize: 10, color: c.muted, letterSpacing: "0.15em", minWidth: 24 }}>
+                    0{i + 1}
+                  </span>
+                  <span style={{ flex: 1 }}>{label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div
+            style={{
+              marginTop: 32,
+              transform: open ? "translateY(0)" : "translateY(20px)",
+              opacity: open ? 1 : 0,
+              transition: `transform 500ms ease ${150 + NAV_ITEMS.length * 70}ms, opacity 500ms ease ${150 + NAV_ITEMS.length * 70}ms`,
+            }}
+          >
+            <Link to="/login" style={{ textDecoration: "none" }} onClick={() => setOpen(false)}>
+              <button style={{ ...btnPrimary, width: "100%", padding: "16px 24px", fontSize: 12 }}>
+                ENTRAR
+              </button>
+            </Link>
+            <div style={{ marginTop: 24, fontSize: 11, color: c.muted, letterSpacing: "0.1em", textTransform: "uppercase", textAlign: "center" }}>
+              contato@lemater.com
+            </div>
+          </div>
         </div>
       )}
     </nav>
