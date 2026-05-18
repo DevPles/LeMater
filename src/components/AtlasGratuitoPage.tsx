@@ -211,8 +211,78 @@ export function AtlasGratuitoPage({ categoria, titulo, intro, aprendizados, slug
         </div>
       </main>
 
-      <footer style={{ padding: "24px 48px", borderTop: `1px solid ${c.border}`, fontSize: 11, color: c.muted, letterSpacing: "0.06em", textAlign: "center" }}>
-        © 2026 · Le Mater · Rayssa Leslie
+      <footer
+        style={{
+          padding: isMobile ? "60px 24px 40px" : "80px 48px 48px",
+          background: "white",
+          borderTop: `1px solid ${c.border}`,
+        }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1fr",
+            gap: 40,
+            maxWidth: 1200,
+            margin: "0 auto",
+            marginBottom: 60,
+          }}
+        >
+          <div style={{ maxWidth: 300 }}>
+            <Link to="/">
+              <img src={lemateLogo} alt="Le Mater" style={{ height: 48, width: "auto", marginBottom: 24 }} />
+            </Link>
+            <p style={{ fontSize: 14, color: c.muted, lineHeight: 1.6, fontWeight: 300 }}>
+              Acompanhando mulheres da tentativa natural de engravidar aos primeiros cuidados com o bebê. 
+              Educação materna, tecnologia e acolhimento.
+            </p>
+          </div>
+          <div>
+            <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Plataforma</h4>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+              <li><Link to="/" search={{ s: "inicio" } as any} style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Início</Link></li>
+              <li><Link to="/" search={{ s: "sobre" } as any} style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Rayssa Leslie</Link></li>
+              <li><Link to="/conteudos-gratis" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Conteúdos Grátis</Link></li>
+              <li><Link to="/login" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Acessar Atlas</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Contato</h4>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+              <li style={{ fontSize: 13, color: c.muted }}>contato@lemater.com</li>
+              <li style={{ fontSize: 13, color: c.muted }}>Ribeirão Preto, SP</li>
+              <li style={{ fontSize: 13, color: c.muted }}>UNAERP</li>
+            </ul>
+          </div>
+          <div>
+            <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Idiomas</h4>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+              <li style={{ fontSize: 13, color: c.muted }}>Português</li>
+              <li style={{ fontSize: 13, color: c.muted }}>English</li>
+              <li style={{ fontSize: 13, color: c.muted }}>Español</li>
+            </ul>
+          </div>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingTop: 32,
+            borderTop: `1px solid ${c.border}`,
+            fontSize: 11,
+            color: c.muted,
+            letterSpacing: "0.06em",
+            flexWrap: "wrap",
+            gap: 16,
+          }}
+        >
+          <div>© 2026 · Le Mater · Todos os direitos reservados</div>
+          <div style={{ display: "flex", gap: 24 }}>
+            <span>Privacidade</span>
+            <span>Termos</span>
+          </div>
+        </div>
       </footer>
     </div>
   );
