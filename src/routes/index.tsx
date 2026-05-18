@@ -498,7 +498,8 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                 Enfermeira Pós Graduada em Obstetricia<br />
                 Enfermeira Pós Graduada em Neonatologista<br />
                 Especialista ACLS pelo American Heart Association (AHA)<br />
-                Criadora do Método Le Mater
+                Criadora do Método Le Mater<br />
+                Fundadora da Le Mater Estética
               </div>
             </div>
           </LiquidCard>
@@ -533,8 +534,8 @@ function Sobre() {
     "Sua trajetória profissional inclui atuação em ambientes hospitalares de média e alta complexidade, com foco em segurança do paciente, humanização da assistência, parto seguro, cuidado neonatal e protocolos baseados em evidências.",
     "Como Enfermeira Obstetra Senior III no Hospital Regional da Baixada Santista, participou de ações estratégicas voltadas à qualificação da assistência obstétrica, fortalecimento do parto seguro, promoção do parto normal e melhoria de indicadores materno-infantis.",
     "Também atuou no Centro de Estudos e Pesquisas Dr. João Amorim — CEJAM, com participação ativa na assistência direta e na construção de protocolos relacionados ao Programa Parto Seguro Paulista, na capital paulista.",
-    "Além da atuação em saúde materna, Rayssa Leslie é fundadora da Clínica de Estética Leslie, Pós-Graduada em Estética Avançada pelo Centro de Referência Estético NEPUGA, ampliando sua atuação para o autocuidado feminino, estética avançada e recuperação no pós-parto.",
-    "A Clínica de Estética Leslie nasce com uma linha de cuidados voltada especialmente para gestantes e mulheres no pós-parto, integrando estética, bem-estar, acolhimento, recuperação corporal e respeito às necessidades de cada fase da maternidade.",
+    "Além da atuação em saúde materna, Rayssa Leslie é fundadora da Le Mater Estética, Pós-Graduada em Estética Avançada pelo Centro de Referência Estético NEPUGA, ampliando sua atuação para o autocuidado feminino, estética avançada e recuperação no pós-parto.",
+    "A Le Mater Estética nasce com uma linha de cuidados voltada especialmente para gestantes e mulheres no pós-parto, integrando estética, bem-estar, acolhimento, recuperação corporal e respeito às necessidades de cada fase da maternidade.",
     "A partir dessa vivência prática, Rayssa criou o Método Le Mater, transformando sua experiência clínica em uma jornada de inovação no cuidado materno, com orientação profissional, educação, tecnologia e acolhimento.",
   ];
   const formacoes = [
@@ -545,7 +546,7 @@ function Sobre() {
     "ALSO — Advanced Life Support in Obstetrics",
     "Especialização em PICC",
     "Criadora do Método Le Mater",
-    "Fundadora da Clínica de Estética Leslie",
+    "Fundadora da Le Mater Estética",
   ];
   const isMobile = useIsMobile();
   return (
@@ -807,11 +808,78 @@ function Contato() {
 }
 
 function Footer() {
+  const isMobile = useIsMobile();
   return (
-    <footer style={{ padding: "24px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: `1px solid ${c.border}`, fontSize: 11, color: c.muted, letterSpacing: "0.06em", flexWrap: "wrap", gap: 16 }}>
-      <img src={lemateLogo} alt="Le Mater" style={{ height: 40, width: "auto", display: "block" }} />
-      <div>© 2024 · Rayssa Leslie · Todos os direitos reservados</div>
-      <div>A gestação que você merece viver.</div>
+    <footer
+      style={{
+        padding: isMobile ? "60px 24px 40px" : "80px 48px 48px",
+        background: "white",
+        borderTop: `1px solid ${c.border}`,
+      }}
+    >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1fr",
+          gap: 40,
+          maxWidth: 1200,
+          margin: "0 auto",
+          marginBottom: 60,
+        }}
+      >
+        <div style={{ maxWidth: 300 }}>
+          <img src={lemateLogo} alt="Le Mater" style={{ height: 48, width: "auto", marginBottom: 24 }} />
+          <p style={{ fontSize: 14, color: c.muted, lineHeight: 1.6, fontWeight: 300 }}>
+            Acompanhando mulheres da tentativa natural de engravidar aos primeiros cuidados com o bebê. 
+            Educação materna, tecnologia e acolhimento.
+          </p>
+        </div>
+        <div>
+          <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Plataforma</h4>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+            <li><Link to="/" search={{ s: "inicio" } as any} style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Início</Link></li>
+            <li><Link to="/" search={{ s: "sobre" } as any} style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Rayssa Leslie</Link></li>
+            <li><Link to="/conteudos-gratis" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Conteúdos Grátis</Link></li>
+            <li><Link to="/login" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Acessar Atlas</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Contato</h4>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+            <li style={{ fontSize: 13, color: c.muted }}>contato@lemater.com</li>
+            <li style={{ fontSize: 13, color: c.muted }}>Ribeirão Preto, SP</li>
+            <li style={{ fontSize: 13, color: c.muted }}>UNAERP</li>
+          </ul>
+        </div>
+        <div>
+          <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Idiomas</h4>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+            <li style={{ fontSize: 13, color: c.muted }}>Português</li>
+            <li style={{ fontSize: 13, color: c.muted }}>English</li>
+            <li style={{ fontSize: 13, color: c.muted }}>Español</li>
+          </ul>
+        </div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingTop: 32,
+          borderTop: `1px solid ${c.border}`,
+          fontSize: 11,
+          color: c.muted,
+          letterSpacing: "0.06em",
+          flexWrap: "wrap",
+          gap: 16,
+        }}
+      >
+        <div>© 2026 · Le Mater · Todos os direitos reservados</div>
+        <div style={{ display: "flex", gap: 24 }}>
+          <span>Privacidade</span>
+          <span>Termos</span>
+        </div>
+      </div>
     </footer>
   );
 }
