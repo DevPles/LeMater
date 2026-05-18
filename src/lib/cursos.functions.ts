@@ -244,7 +244,7 @@ export const getAulaPlayer = createServerFn({ method: "POST" })
     }
 
     return {
-      aula: { id: a.id, titulo: a.titulo, descricao: a.descricao, tipo: a.tipo, duracao_min: a.duracao_min, previa_gratis: a.previa_gratis },
+      aula: { id: a.id, titulo: a.titulo, descricao: a.descricao, tipo: a.tipo as "video"|"pdf"|"texto", duracao_min: a.duracao_min, previa_gratis: a.previa_gratis },
       conteudo,
     };
   });
