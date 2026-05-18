@@ -181,6 +181,30 @@ export default function CursosTab() {
                 <Field label="Bio"><textarea value={edit.instrutor_bio ?? ""} onChange={(e) => setEdit({ ...edit, instrutor_bio: e.target.value })} style={{ ...inp, minHeight: 60 }} /></Field>
               </div>
 
+              <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 14 }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>
+                  Materiais grátis para download (PDFs visíveis na página do curso)
+                </div>
+                <Field label="Adicionar novos PDFs">
+                  <input id="cursoMateriais" type="file" accept="application/pdf,.pdf" multiple style={inp} />
+                </Field>
+                {Array.isArray((edit as any).materiais_gratis) && (edit as any).materiais_gratis.length > 0 && (
+                  <ul style={{ listStyle: "none", padding: 0, margin: "8px 0 0", display: "grid", gap: 6 }}>
+                    {(edit as any).materiais_gratis.map((m: { nome: string; path: string }, i: number) => (
+                      <li key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", background: c.warm, border: `1px solid ${c.border}`, fontSize: 13 }}>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.nome}</span>
+                        <button
+                          onClick={() => setEdit({ ...edit, materiais_gratis: (edit as any).materiais_gratis.filter((_: any, j: number) => j !== i) } as any)}
+                          style={{ background: "transparent", border: "none", color: "#B23A48", cursor: "pointer", fontSize: 12, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}
+                        >
+                          Remover
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <Field label="Ordem"><input type="number" value={edit.ordem ?? 0} onChange={(e) => setEdit({ ...edit, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
                 <Field label="Publicado"><label style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0" }}><input type="checkbox" checked={!!edit.publicado} onChange={(e) => setEdit({ ...edit, publicado: e.target.checked })} /> Visível para o público</label></Field>
