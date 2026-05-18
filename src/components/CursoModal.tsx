@@ -186,9 +186,28 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                     ← Voltar ao curso
                   </button>
                 )}
-                {!aulaSel && (
+                {bloqueioInfo && (
+                  <div style={{ padding: isMobile ? 24 : 48, textAlign: "center", background: c.warm, border: `1px solid ${c.border}` }}>
+                    <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.gold, marginBottom: 12 }}>CONTEÚDO EXCLUSIVO</div>
+                    <h3 style={{ fontFamily: serif, fontSize: isMobile ? 24 : 32, fontWeight: 400, margin: "0 0 12px" }}>{bloqueioInfo.titulo}</h3>
+                    <p style={{ color: c.muted, fontSize: 15, lineHeight: 1.6, margin: "0 auto 24px", maxWidth: 460 }}>
+                      Esta aula faz parte do conteúdo pago. Crie sua conta gratuita para acessar a área de aluna e desbloquear todos os cursos.
+                    </p>
+                    <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 12, justifyContent: "center" }}>
+                      <button onClick={irParaCadastro} style={btnPrimary(c.sageDark)}>
+                        {user ? "Ir para minha área" : "Criar conta grátis"}
+                      </button>
+                      {data.link_compra_externo && (
+                        <button onClick={comprar} style={btnPrimary(c.gold)}>
+                          Comprar agora{data.plataforma_venda ? ` · ${data.plataforma_venda}` : ""}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {!aulaSel && !bloqueioInfo && (
                   <div style={{ color: c.muted, padding: 40, textAlign: "center" }}>
-                    {data.matriculado ? "Selecione uma aula." : "Selecione uma aula com PRÉVIA para assistir."}
+                    {data.matriculado ? "Selecione uma aula." : "Selecione uma aula para começar."}
                   </div>
                 )}
                 {aulaSel && (
