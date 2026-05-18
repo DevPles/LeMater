@@ -196,7 +196,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       <h2 style={{ fontFamily: serif, fontSize: isMobile ? 24 : 26, fontWeight: 400, margin: "0 0 8px", lineHeight: 1.2 }}>{data!.titulo}</h2>
       {data!.descricao_curta && <p style={{ fontSize: 13, color: c.muted, margin: "0 0 20px", lineHeight: 1.5 }}>{data!.descricao_curta}</p>}
 
-      {!data!.matriculado && data!.preco_label && (
+      {!data!.matriculado && data!.preco_label && data!.preco_label.toLowerCase() !== "grátis" && data!.preco_label.toLowerCase() !== "gratis" && (
         <div style={{ background: "white", padding: 14, border: `1px solid ${c.border}`, marginBottom: 16 }}>
           <div style={{ fontFamily: serif, fontSize: 22, color: c.sageDark }}>{data!.preco_label}</div>
         </div>
