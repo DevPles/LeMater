@@ -136,25 +136,6 @@ function LoginPage() {
         position: "relative",
       }}
     >
-      <Link
-        to="/"
-        style={{
-          position: "absolute",
-          top: 24,
-          left: 24,
-          ...neuRaised,
-          padding: "8px 16px",
-          fontSize: 10,
-          letterSpacing: "0.14em",
-          textTransform: "uppercase",
-          color: INK,
-          textDecoration: "none",
-          fontWeight: 500,
-          borderRadius: 999,
-        }}
-      >
-        Voltar
-      </Link>
 
       {/* Neumorphic split card — same on desktop and mobile */}
       <div
@@ -256,9 +237,34 @@ function LoginPage() {
                 Esqueci minha senha
               </button>
 
-              <button type="submit" disabled={loading} style={primaryButton(loading)}>
-                {loading ? "Entrando..." : "Entrar"}
-              </button>
+              <div style={{ display: "flex", gap: 10 }}>
+                <Link
+                  to="/"
+                  style={{
+                    flex: "0 0 auto",
+                    background: "transparent",
+                    color: SAGE_DARK,
+                    border: `1.5px solid ${SAGE_DARK}`,
+                    padding: "12px 18px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                    fontFamily: sans,
+                    borderRadius: 8,
+                    textDecoration: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  Voltar
+                </Link>
+                <button type="submit" disabled={loading} style={{ ...primaryButton(loading), flex: 1, width: "auto" }}>
+                  {loading ? "Entrando..." : "Entrar"}
+                </button>
+              </div>
             </form>
           )}
         </div>

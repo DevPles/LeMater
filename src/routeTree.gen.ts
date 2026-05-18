@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConteudosGratisRouteImport } from './routes/conteudos-gratis'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -17,6 +18,11 @@ import { Route as AuthenticatedAtlasRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -56,6 +62,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/conteudos-gratis': typeof ConteudosGratisRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/atlas': typeof AuthenticatedAtlasRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/conteudos-gratis': typeof ConteudosGratisRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/atlas': typeof AuthenticatedAtlasRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
@@ -74,6 +82,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/conteudos-gratis': typeof ConteudosGratisRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/atlas': typeof AuthenticatedAtlasRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
@@ -84,6 +93,7 @@ export interface FileRouteTypes {
     | '/'
     | '/conteudos-gratis'
     | '/login'
+    | '/reset-password'
     | '/admin'
     | '/atlas'
     | '/api/public/hotmart-webhook'
@@ -92,6 +102,7 @@ export interface FileRouteTypes {
     | '/'
     | '/conteudos-gratis'
     | '/login'
+    | '/reset-password'
     | '/admin'
     | '/atlas'
     | '/api/public/hotmart-webhook'
@@ -101,6 +112,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/conteudos-gratis'
     | '/login'
+    | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/atlas'
     | '/api/public/hotmart-webhook'
@@ -111,11 +123,19 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ConteudosGratisRoute: typeof ConteudosGratisRoute
   LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -187,6 +207,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ConteudosGratisRoute: ConteudosGratisRoute,
   LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
 }
 export const routeTree = rootRouteImport
