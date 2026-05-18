@@ -399,7 +399,10 @@ function LoginPage() {
             margin: 0 0 8px !important;
             max-width: none !important;
           }
-          .login-card .brand-pane > div.brand-text {
+          .login-card .brand-pane .brand-text {
+            display: flex !important;
+            flex-direction: column;
+            align-items: flex-start;
             flex: 1;
           }
           .login-card .brand-pane button {
