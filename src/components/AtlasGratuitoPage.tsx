@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
+import lemateLogo from "@/assets/lemater-logo.png";
 
 const c = {
   cream: "#FAF5EE",
