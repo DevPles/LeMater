@@ -20,6 +20,7 @@ import { Route as AuthenticatedMembroRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAtlasRouteImport } from './routes/_authenticated/atlas'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
+import { Route as AuthenticatedCursosSlugAprenderRouteImport } from './routes/_authenticated/cursos.$slug.aprender'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -75,6 +76,12 @@ const ApiPublicHotmartWebhookRoute = ApiPublicHotmartWebhookRouteImport.update({
   path: '/api/public/hotmart-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCursosSlugAprenderRoute =
+  AuthenticatedCursosSlugAprenderRouteImport.update({
+    id: '/cursos/$slug/aprender',
+    path: '/cursos/$slug/aprender',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/membro': typeof AuthenticatedMembroRoute
   '/cursos/$slug': typeof CursosSlugRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
+  '/cursos/$slug/aprender': typeof AuthenticatedCursosSlugAprenderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -99,6 +107,7 @@ export interface FileRoutesByTo {
   '/membro': typeof AuthenticatedMembroRoute
   '/cursos/$slug': typeof CursosSlugRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
+  '/cursos/$slug/aprender': typeof AuthenticatedCursosSlugAprenderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,6 +122,7 @@ export interface FileRoutesById {
   '/_authenticated/membro': typeof AuthenticatedMembroRoute
   '/cursos/$slug': typeof CursosSlugRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
+  '/_authenticated/cursos/$slug/aprender': typeof AuthenticatedCursosSlugAprenderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/membro'
     | '/cursos/$slug'
     | '/api/public/hotmart-webhook'
+    | '/cursos/$slug/aprender'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/membro'
     | '/cursos/$slug'
     | '/api/public/hotmart-webhook'
+    | '/cursos/$slug/aprender'
   id:
     | '__root__'
     | '/'
@@ -152,6 +164,7 @@ export interface FileRouteTypes {
     | '/_authenticated/membro'
     | '/cursos/$slug'
     | '/api/public/hotmart-webhook'
+    | '/_authenticated/cursos/$slug/aprender'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -243,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHotmartWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/cursos/$slug/aprender': {
+      id: '/_authenticated/cursos/$slug/aprender'
+      path: '/cursos/$slug/aprender'
+      fullPath: '/cursos/$slug/aprender'
+      preLoaderRoute: typeof AuthenticatedCursosSlugAprenderRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -250,12 +270,14 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAtlasRoute: typeof AuthenticatedAtlasRoute
   AuthenticatedMembroRoute: typeof AuthenticatedMembroRoute
+  AuthenticatedCursosSlugAprenderRoute: typeof AuthenticatedCursosSlugAprenderRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAtlasRoute: AuthenticatedAtlasRoute,
   AuthenticatedMembroRoute: AuthenticatedMembroRoute,
+  AuthenticatedCursosSlugAprenderRoute: AuthenticatedCursosSlugAprenderRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
