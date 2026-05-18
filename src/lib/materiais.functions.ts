@@ -264,3 +264,27 @@ async function buildAccess(m: {
   if (m.tipo === "pdf") return { kind: "pdf", url: signed.signedUrl };
   return { kind: "video_upload", url: signed.signedUrl };
 }
+
+/**
+ * Retorna o status de membro (se tem acesso pago ativo, é admin, etc.).
+ */
+export const getMembroStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const [admin, paid] = await Promise.all([
+      isAdmin(context.userId),
+      hasPaidAccess(context.userId),
+    ]);
+    const { data: prof } = await supabaseAdmin
+      .from("profiles")
+      .select("nome, email")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    return {
+      user_id: context.userId,
+      nome: prof?.nome ?? null,
+      email: prof?.email ?? null,
+      admin,
+      pago: paid,
+    };
+  });
