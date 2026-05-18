@@ -464,18 +464,17 @@ const linkButton: CSSProperties = {
 function primaryButton(loading: boolean): CSSProperties {
   return {
     width: "100%",
-    background: `linear-gradient(135deg, ${SAGE_DARK} 0%, ${SAGE} 100%)`,
+    background: SAGE_DARK,
     color: "white",
-    fontSize: 11,
-    fontWeight: 600,
-    letterSpacing: "0.16em",
+    fontSize: 12,
+    fontWeight: 500,
+    letterSpacing: "0.1em",
     textTransform: "uppercase",
-    padding: "12px 24px",
+    padding: "14px 32px",
     border: "none",
+    borderRadius: 0,
     cursor: loading ? "wait" : "pointer",
     fontFamily: sans,
     opacity: loading ? 0.7 : 1,
-    borderRadius: 8,
-    boxShadow: `4px 4px 10px ${SHADOW_DARK}, -4px -4px 10px ${SHADOW_LIGHT}`,
   };
 }
