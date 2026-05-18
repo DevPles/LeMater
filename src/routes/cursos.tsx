@@ -34,16 +34,20 @@ function CursosVitrine() {
   return (
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
       <SiteNav />
-      <main style={{ maxWidth: 1280, margin: "0 auto", padding: "120px 32px 80px" }}>
-        <header style={{ marginBottom: 48, maxWidth: 760 }}>
-          <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, marginBottom: 12 }}>Formação</div>
-          <h1 style={{ fontFamily: serif, fontSize: 56, fontWeight: 300, margin: 0, lineHeight: 1.05 }}>
-            Cursos Le Mater. <em style={{ color: c.sageDark }}>Toda a maternidade, do começo ao fim.</em>
-          </h1>
-          <p style={{ color: c.muted, marginTop: 16, fontSize: 16, lineHeight: 1.6 }}>
+      <main style={{ padding: "120px 48px 80px" }}>
+        <div style={{ marginBottom: 48, maxWidth: "100%" }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sage, fontWeight: 500, marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ width: 24, height: 1, background: c.sage }} />
+            FORMAÇÃO
+          </div>
+          <h2 style={{ fontFamily: serif, fontSize: "clamp(28px, 3vw, 44px)", fontWeight: 300, lineHeight: 1.1, color: c.ink, marginBottom: 20, whiteSpace: "nowrap" }}>
+            Cursos Le Mater. <em style={{ fontStyle: "italic", color: c.sage }}>Toda a maternidade, do começo ao fim.</em>
+          </h2>
+          <p style={{ fontSize: 15, lineHeight: 1.6, color: c.muted, fontWeight: 300, marginTop: 8 }}>
             Conteúdo profundo, acessível e respeitoso — guiado por médicas, enfermeiras e doulas referência.
           </p>
-        </header>
+        </div>
+
 
         {err && <p style={{ color: "#B23A48" }}>{err}</p>}
         {!items ? <p style={{ color: c.muted }}>Carregando…</p>
