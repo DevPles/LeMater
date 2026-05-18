@@ -58,7 +58,7 @@ function CursosVitrine() {
               </p>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 2 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 24 }}>
               {items.map((curso, i) => {
                 const badge = curso.matriculado
                   ? { label: "Seu acesso", color: c.sageDark }
