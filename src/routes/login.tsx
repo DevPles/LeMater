@@ -9,7 +9,7 @@ export const Route = createFileRoute("/login")({
     meta: [{ title: "Entrar · Le Mater" }],
     links: [{
       rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500;600&display=swap",
+      href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap",
     }],
   }),
   beforeLoad: async () => {
@@ -19,50 +19,54 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-// Neumorphic palette
-const NEU_BG = "#dde2e8";
-const NEU_LIGHT = "#ffffff";
-const NEU_DARK = "#a3b1c6";
-const NAVY = "#1a1557";
-const NAVY_DEEP = "#0f0a3a";
-const GOLD = "#f0c040";
-const INK = "#1c1c1a";
-const MUTED = "#6b7280";
+// Site palette
+const CREAM = "#FAF5EE";
+const WARM = "#F5EDE0";
+const SAGE = "#5C8A6E";
+const SAGE_DARK = "#2D5A42";
+const TERRACOTTA = "#C4714A";
+const INK = "#1C1C1A";
+const MUTED = "#6B6560";
 
-const serif = "'Playfair Display', serif";
+// Soft neumorphic surface based on warm cream
+const SURFACE = "#EDE5D6";
+const SHADOW_DARK = "rgba(120, 100, 70, 0.25)";
+const SHADOW_LIGHT = "rgba(255, 250, 240, 0.95)";
+
+const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
 const neuInset: CSSProperties = {
-  background: NEU_BG,
-  boxShadow: `inset 4px 4px 8px ${NEU_DARK}55, inset -4px -4px 8px ${NEU_LIGHT}`,
+  background: SURFACE,
+  boxShadow: `inset 3px 3px 6px ${SHADOW_DARK}, inset -3px -3px 6px ${SHADOW_LIGHT}`,
   border: "none",
-  borderRadius: 12,
+  borderRadius: 8,
 };
 
 const neuRaised: CSSProperties = {
-  background: NEU_BG,
-  boxShadow: `6px 6px 14px ${NEU_DARK}55, -6px -6px 14px ${NEU_LIGHT}`,
+  background: SURFACE,
+  boxShadow: `8px 8px 20px ${SHADOW_DARK}, -8px -8px 20px ${SHADOW_LIGHT}`,
   border: "none",
-  borderRadius: 16,
+  borderRadius: 14,
 };
 
 const inputStyle: CSSProperties = {
   ...neuInset,
   width: "100%",
-  padding: "14px 16px",
-  fontSize: 14,
+  padding: "10px 12px",
+  fontSize: 13,
   fontFamily: sans,
   color: INK,
   outline: "none",
 };
 
 const labelStyle: CSSProperties = {
-  fontSize: 11,
+  fontSize: 10,
   letterSpacing: "0.14em",
   textTransform: "uppercase",
   color: MUTED,
   fontWeight: 500,
-  marginBottom: 6,
+  marginBottom: 4,
   display: "block",
 };
 
@@ -93,7 +97,7 @@ function LoginPage() {
     navigate({ to: roles && roles.length > 0 ? "/admin" : "/atlas" });
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     toast.info("Cadastro por convite", {
       description: "Novas contas são criadas mediante convite do administrador. Entre em contato para solicitar acesso.",
@@ -122,7 +126,7 @@ function LoginPage() {
     <div
       style={{
         fontFamily: sans,
-        background: NEU_BG,
+        background: CREAM,
         color: INK,
         minHeight: "100vh",
         display: "flex",
@@ -132,7 +136,6 @@ function LoginPage() {
         position: "relative",
       }}
     >
-      {/* Back button */}
       <Link
         to="/"
         style={{
@@ -140,13 +143,14 @@ function LoginPage() {
           top: 24,
           left: 24,
           ...neuRaised,
-          padding: "10px 18px",
-          fontSize: 11,
+          padding: "8px 16px",
+          fontSize: 10,
           letterSpacing: "0.14em",
           textTransform: "uppercase",
           color: INK,
           textDecoration: "none",
           fontWeight: 500,
+          borderRadius: 999,
         }}
       >
         Voltar
@@ -158,228 +162,179 @@ function LoginPage() {
         style={{
           ...neuRaised,
           width: "100%",
-          maxWidth: 960,
-          minHeight: 560,
+          maxWidth: 720,
+          height: 440,
           position: "relative",
           overflow: "hidden",
-          display: "flex",
         }}
       >
-        {/* LEFT — form area (two stacked: login/recover on top, signup beneath) */}
-        <div style={{ flex: 1, position: "relative" }}>
-          {/* Login / Recover panel */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              padding: "56px 48px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              opacity: isSignup ? 0 : 1,
-              pointerEvents: isSignup ? "none" : "auto",
-              transition: "opacity 400ms ease 300ms",
-            }}
-          >
-            {mode === "login" && (
-              <form onSubmit={handleLogin}>
-                <h1 style={{ fontFamily: serif, fontSize: 34, fontWeight: 600, margin: "0 0 8px", color: NAVY }}>
-                  Entrar
-                </h1>
-                <p style={{ fontSize: 13, color: MUTED, margin: "0 0 32px" }}>
-                  Acesse sua área de conteúdos.
-                </p>
-
-                <div style={{ marginBottom: 18 }}>
-                  <label style={labelStyle}>E-mail</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={inputStyle}
-                    required
-                  />
-                </div>
-
-                <div style={{ marginBottom: 12 }}>
-                  <label style={labelStyle}>Senha</label>
-                  <div style={{ position: "relative" }}>
-                    <input
-                      type={showPwd ? "text" : "password"}
-                      value={senha}
-                      onChange={(e) => setSenha(e.target.value)}
-                      style={{ ...inputStyle, paddingRight: 90 }}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPwd((v) => !v)}
-                      style={{
-                        position: "absolute",
-                        right: 8,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        background: "transparent",
-                        border: "none",
-                        fontSize: 11,
-                        letterSpacing: "0.1em",
-                        textTransform: "uppercase",
-                        color: NAVY,
-                        cursor: "pointer",
-                        fontWeight: 600,
-                        padding: "6px 10px",
-                      }}
-                    >
-                      {showPwd ? "Ocultar" : "Mostrar"}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setMode("recover")}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    fontSize: 12,
-                    color: MUTED,
-                    cursor: "pointer",
-                    padding: 0,
-                    marginBottom: 28,
-                    textDecoration: "underline",
-                  }}
-                >
-                  Esqueci minha senha
-                </button>
-
-                <button type="submit" disabled={loading} style={primaryButton(loading)}>
-                  {loading ? "Entrando..." : "Entrar"}
-                </button>
-              </form>
-            )}
-
-            {mode === "recover" && (
-              <form onSubmit={handleRecover}>
-                <h1 style={{ fontFamily: serif, fontSize: 32, fontWeight: 600, margin: "0 0 8px", color: NAVY }}>
-                  Recuperar senha
-                </h1>
-                <p style={{ fontSize: 13, color: MUTED, margin: "0 0 32px" }}>
-                  Enviaremos um link para redefinir sua senha.
-                </p>
-
-                <div style={{ marginBottom: 28 }}>
-                  <label style={labelStyle}>E-mail</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={inputStyle}
-                    required
-                  />
-                </div>
-
-                <button type="submit" disabled={loading} style={primaryButton(loading)}>
-                  {loading ? "Enviando..." : "Enviar link"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setMode("login")}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    fontSize: 12,
-                    color: MUTED,
-                    cursor: "pointer",
-                    padding: 0,
-                    marginTop: 18,
-                    textDecoration: "underline",
-                  }}
-                >
-                  Voltar ao login
-                </button>
-              </form>
-            )}
-          </div>
-
-          {/* Signup panel */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              padding: "56px 48px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              opacity: isSignup ? 1 : 0,
-              pointerEvents: isSignup ? "auto" : "none",
-              transition: "opacity 400ms ease 300ms",
-            }}
-          >
-            <form onSubmit={handleSignUp}>
-              <h1 style={{ fontFamily: serif, fontSize: 34, fontWeight: 600, margin: "0 0 8px", color: NAVY }}>
-                Criar conta
-              </h1>
-              <p style={{ fontSize: 13, color: MUTED, margin: "0 0 28px" }}>
-                Solicite seu acesso ao sistema.
-              </p>
-
-              <div style={{ marginBottom: 16 }}>
-                <label style={labelStyle}>Nome</label>
-                <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} style={inputStyle} required />
-              </div>
-              <div style={{ marginBottom: 16 }}>
-                <label style={labelStyle}>E-mail</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} required />
-              </div>
-              <div style={{ marginBottom: 28 }}>
-                <label style={labelStyle}>Senha</label>
-                <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} style={inputStyle} required />
-              </div>
-
-              <button type="submit" style={primaryButton(false)}>
-                Solicitar acesso
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Right column placeholder (same size as overlay) */}
-        <div style={{ flex: 1 }} />
-
-        {/* SLIDING OVERLAY — navy brand panel */}
+        {/* LEFT half — LOGIN / RECOVER */}
         <div
           style={{
             position: "absolute",
             top: 0,
-            left: "50%",
+            left: 0,
             width: "50%",
             height: "100%",
-            transform: isSignup ? "translateX(-100%)" : "translateX(0)",
+            padding: "32px 36px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
+          {mode === "recover" ? (
+            <form onSubmit={handleRecover}>
+              <h1 style={{ fontFamily: serif, fontSize: 26, fontWeight: 600, margin: "0 0 4px", color: SAGE_DARK }}>
+                Recuperar senha
+              </h1>
+              <p style={{ fontSize: 12, color: MUTED, margin: "0 0 20px" }}>
+                Enviaremos um link de redefinição.
+              </p>
+              <div style={{ marginBottom: 18 }}>
+                <label style={labelStyle}>E-mail</label>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} required />
+              </div>
+              <button type="submit" disabled={loading} style={primaryButton(loading)}>
+                {loading ? "Enviando..." : "Enviar link"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("login")}
+                style={linkButton}
+              >
+                Voltar ao login
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleLogin}>
+              <h1 style={{ fontFamily: serif, fontSize: 26, fontWeight: 600, margin: "0 0 4px", color: SAGE_DARK }}>
+                Entrar
+              </h1>
+              <p style={{ fontSize: 12, color: MUTED, margin: "0 0 18px" }}>
+                Acesse seus conteúdos.
+              </p>
+
+              <div style={{ marginBottom: 12 }}>
+                <label style={labelStyle}>E-mail</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  style={inputStyle}
+                  required
+                />
+              </div>
+
+              <div style={{ marginBottom: 8 }}>
+                <label style={labelStyle}>Senha</label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showPwd ? "text" : "password"}
+                    value={senha}
+                    onChange={(e) => setSenha(e.target.value)}
+                    style={{ ...inputStyle, paddingRight: 72 }}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPwd((v) => !v)}
+                    style={eyeButton}
+                  >
+                    {showPwd ? "Ocultar" : "Mostrar"}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setMode("recover")}
+                style={{ ...linkButton, marginTop: 4, marginBottom: 16 }}
+              >
+                Esqueci minha senha
+              </button>
+
+              <button type="submit" disabled={loading} style={primaryButton(loading)}>
+                {loading ? "Entrando..." : "Entrar"}
+              </button>
+            </form>
+          )}
+        </div>
+
+        {/* RIGHT half — SIGNUP */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            width: "50%",
+            height: "100%",
+            padding: "32px 36px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
+          <form onSubmit={handleSignUp}>
+            <h1 style={{ fontFamily: serif, fontSize: 26, fontWeight: 600, margin: "0 0 4px", color: SAGE_DARK }}>
+              Criar conta
+            </h1>
+            <p style={{ fontSize: 12, color: MUTED, margin: "0 0 16px" }}>
+              Solicite seu acesso.
+            </p>
+
+            <div style={{ marginBottom: 10 }}>
+              <label style={labelStyle}>Nome</label>
+              <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} style={inputStyle} required />
+            </div>
+            <div style={{ marginBottom: 10 }}>
+              <label style={labelStyle}>E-mail</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} required />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={labelStyle}>Senha</label>
+              <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} style={inputStyle} required />
+            </div>
+
+            <button type="submit" style={primaryButton(false)}>
+              Solicitar acesso
+            </button>
+          </form>
+        </div>
+
+        {/* SLIDING OVERLAY — sage brand panel */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "50%",
+            height: "100%",
+            transform: isSignup ? "translateX(100%)" : "translateX(0)",
             transition: "transform 700ms cubic-bezier(0.77, 0, 0.175, 1)",
-            background: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY_DEEP} 100%)`,
+            background: `linear-gradient(135deg, ${SAGE_DARK} 0%, ${SAGE} 100%)`,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: 48,
+            padding: 32,
             color: "white",
             textAlign: "center",
-            borderRadius: 16,
+            borderRadius: 14,
+            zIndex: 2,
           }}
         >
           <img
             src={lemateLogo}
             alt="Le Mater"
-            style={{ height: 80, width: "auto", marginBottom: 28, filter: "brightness(1.1)" }}
+            style={{ height: 56, width: "auto", marginBottom: 18 }}
           />
-          <h2 style={{ fontFamily: serif, fontSize: 30, fontWeight: 600, margin: "0 0 14px", color: GOLD }}>
+          <h2 style={{ fontFamily: serif, fontSize: 24, fontWeight: 600, margin: "0 0 8px", color: WARM }}>
             {isSignup ? "Bem-vinda de volta" : "Olá!"}
           </h2>
-          <p style={{ fontSize: 14, lineHeight: 1.6, color: "rgba(255,255,255,0.8)", maxWidth: 280, margin: "0 0 32px" }}>
+          <p style={{ fontSize: 12, lineHeight: 1.6, color: "rgba(255,255,255,0.85)", maxWidth: 220, margin: "0 0 22px" }}>
             {isSignup
-              ? "Já tem uma conta? Entre e continue sua jornada."
-              : "Não possui acesso ainda? Solicite seu cadastro."}
+              ? "Já tem conta? Entre e continue."
+              : "Sem acesso ainda? Solicite seu cadastro."}
           </p>
           <button
             type="button"
@@ -387,18 +342,18 @@ function LoginPage() {
             style={{
               background: "transparent",
               color: "white",
-              border: `1.5px solid ${GOLD}`,
-              padding: "14px 38px",
-              fontSize: 12,
+              border: `1.5px solid ${TERRACOTTA}`,
+              padding: "10px 28px",
+              fontSize: 11,
               fontWeight: 600,
               letterSpacing: "0.16em",
               textTransform: "uppercase",
               cursor: "pointer",
               fontFamily: sans,
-              borderRadius: 8,
+              borderRadius: 999,
               transition: "background 200ms",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = `${GOLD}22`)}
+            onMouseEnter={(e) => (e.currentTarget.style.background = `${TERRACOTTA}33`)}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
             {isSignup ? "Entrar" : "Cadastrar"}
@@ -407,14 +362,13 @@ function LoginPage() {
       </div>
 
       {/* MOBILE fallback */}
-      <div className="login-mobile" style={{ display: "none", width: "100%", maxWidth: 420 }}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <img src={lemateLogo} alt="Le Mater" style={{ height: 72, width: "auto" }} />
+      <div className="login-mobile" style={{ display: "none", width: "100%", maxWidth: 380 }}>
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <img src={lemateLogo} alt="Le Mater" style={{ height: 56, width: "auto" }} />
         </div>
 
-        <div style={{ ...neuRaised, padding: 28 }}>
-          {/* Mode tabs */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+        <div style={{ ...neuRaised, padding: 22 }}>
+          <div style={{ display: "flex", gap: 6, marginBottom: 18 }}>
             {(["login", "signup", "recover"] as Mode[]).map((m) => (
               <button
                 key={m}
@@ -423,16 +377,16 @@ function LoginPage() {
                 style={{
                   flex: 1,
                   ...(mode === m ? neuInset : {}),
-                  background: mode === m ? NEU_BG : "transparent",
+                  background: mode === m ? SURFACE : "transparent",
                   border: "none",
-                  padding: "10px 6px",
-                  fontSize: 10,
+                  padding: "8px 4px",
+                  fontSize: 9,
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
-                  color: mode === m ? NAVY : MUTED,
+                  color: mode === m ? SAGE_DARK : MUTED,
                   cursor: "pointer",
                   fontWeight: 600,
-                  borderRadius: 8,
+                  borderRadius: 6,
                 }}
               >
                 {m === "login" ? "Entrar" : m === "signup" ? "Cadastrar" : "Recuperar"}
@@ -442,30 +396,21 @@ function LoginPage() {
 
           {mode === "login" && (
             <form onSubmit={handleLogin}>
-              <div style={{ marginBottom: 14 }}>
+              <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>E-mail</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} required />
               </div>
-              <div style={{ marginBottom: 20 }}>
+              <div style={{ marginBottom: 16 }}>
                 <label style={labelStyle}>Senha</label>
                 <div style={{ position: "relative" }}>
                   <input
                     type={showPwd ? "text" : "password"}
                     value={senha}
                     onChange={(e) => setSenha(e.target.value)}
-                    style={{ ...inputStyle, paddingRight: 90 }}
+                    style={{ ...inputStyle, paddingRight: 72 }}
                     required
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPwd((v) => !v)}
-                    style={{
-                      position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-                      background: "transparent", border: "none", fontSize: 11,
-                      letterSpacing: "0.1em", textTransform: "uppercase", color: NAVY,
-                      cursor: "pointer", fontWeight: 600, padding: "6px 10px",
-                    }}
-                  >
+                  <button type="button" onClick={() => setShowPwd((v) => !v)} style={eyeButton}>
                     {showPwd ? "Ocultar" : "Mostrar"}
                   </button>
                 </div>
@@ -478,15 +423,15 @@ function LoginPage() {
 
           {mode === "signup" && (
             <form onSubmit={handleSignUp}>
-              <div style={{ marginBottom: 14 }}>
+              <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>Nome</label>
                 <input type="text" value={nome} onChange={(e) => setNome(e.target.value)} style={inputStyle} required />
               </div>
-              <div style={{ marginBottom: 14 }}>
+              <div style={{ marginBottom: 12 }}>
                 <label style={labelStyle}>E-mail</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} required />
               </div>
-              <div style={{ marginBottom: 20 }}>
+              <div style={{ marginBottom: 16 }}>
                 <label style={labelStyle}>Senha</label>
                 <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} style={inputStyle} required />
               </div>
@@ -496,7 +441,7 @@ function LoginPage() {
 
           {mode === "recover" && (
             <form onSubmit={handleRecover}>
-              <div style={{ marginBottom: 20 }}>
+              <div style={{ marginBottom: 16 }}>
                 <label style={labelStyle}>E-mail</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} required />
               </div>
@@ -518,21 +463,49 @@ function LoginPage() {
   );
 }
 
+const eyeButton: CSSProperties = {
+  position: "absolute",
+  right: 6,
+  top: "50%",
+  transform: "translateY(-50%)",
+  background: "transparent",
+  border: "none",
+  fontSize: 10,
+  letterSpacing: "0.1em",
+  textTransform: "uppercase",
+  color: SAGE_DARK,
+  cursor: "pointer",
+  fontWeight: 600,
+  padding: "4px 8px",
+};
+
+const linkButton: CSSProperties = {
+  background: "transparent",
+  border: "none",
+  fontSize: 11,
+  color: MUTED,
+  cursor: "pointer",
+  padding: 0,
+  marginTop: 12,
+  textDecoration: "underline",
+  display: "block",
+};
+
 function primaryButton(loading: boolean): CSSProperties {
   return {
     width: "100%",
-    background: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY_DEEP} 100%)`,
+    background: `linear-gradient(135deg, ${SAGE_DARK} 0%, ${SAGE} 100%)`,
     color: "white",
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 600,
     letterSpacing: "0.16em",
     textTransform: "uppercase",
-    padding: "16px 28px",
+    padding: "12px 24px",
     border: "none",
     cursor: loading ? "wait" : "pointer",
     fontFamily: sans,
     opacity: loading ? 0.7 : 1,
-    borderRadius: 10,
-    boxShadow: `4px 4px 10px ${NEU_DARK}66, -4px -4px 10px ${NEU_LIGHT}`,
+    borderRadius: 8,
+    boxShadow: `4px 4px 10px ${SHADOW_DARK}, -4px -4px 10px ${SHADOW_LIGHT}`,
   };
 }
