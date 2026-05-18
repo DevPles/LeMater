@@ -171,6 +171,7 @@ function LoginPage() {
       >
         {/* LEFT half — LOGIN / RECOVER */}
         <div
+          className="form-pane form-pane-left"
           style={{
             position: "absolute",
             top: 0,
@@ -181,6 +182,7 @@ function LoginPage() {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
+            transition: "opacity 300ms",
           }}
         >
           {mode === "recover" ? (
