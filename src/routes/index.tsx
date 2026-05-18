@@ -512,7 +512,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               <button style={btnPrimary}>ACESSAR ATLAS MATERNO</button>
             </Link>
             <Link to="/conteudos-gratis" style={{ textDecoration: "none" }}>
-              <button style={btnSecondary}>Conteúdos</button>
+              <button style={{ ...btnSecondary, minWidth: 220 }}>Conteúdos</button>
             </Link>
           </div>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
