@@ -1,10 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { listCursosVitrine, type CursoVitrine } from "@/lib/cursos.functions";
 import { ContentCard } from "@/components/ContentCard";
 import { CursoModal } from "@/components/CursoModal";
-import lemateLogo from "@/assets/lemater-logo.png";
+import { SiteNav } from "@/components/SiteNav";
 
 export const Route = createFileRoute("/cursos")({
   head: () => ({
