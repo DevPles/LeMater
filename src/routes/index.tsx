@@ -832,7 +832,7 @@ function Footer() {
         <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <img src={lemateLogo} alt="Le Mater" style={{ height: 28, width: "auto" }} />
           <span style={{ fontSize: 12, color: c.muted, letterSpacing: "0.06em" }}>
-            © 2026 · Le Mater
+            © 2024 · Le Mater
           </span>
         </div>
         <div style={{ display: "flex", gap: 20, fontSize: 12, color: c.muted, flexWrap: "wrap" }}>
