@@ -8,6 +8,8 @@ import {
 } from "react";
 import rayssa from "@/assets/rayssa-portrait.jpg";
 import lemateLogo from "@/assets/logo_oficial.png";
+import appStoresBadges from "@/assets/app-stores.png";
+import appIcon from "@/assets/app-icon.png";
 import { LiquidCard } from "@/components/LiquidCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { translateBatch } from "@/lib/translate.functions";
@@ -558,6 +560,17 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                 <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 6 }}>{stat.lbl}</div>
               </div>
             ))}
+            <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
+              <div style={{ height: 38, display: "flex", alignItems: "center", gap: 10, justifyContent: isMobile ? "center" : "flex-start" }}>
+                <img src={appIcon} alt="Le Mater App" style={{ width: 36, height: 36, borderRadius: 8, boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }} />
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer" style={{ lineHeight: 0 }}>
+                    <img src={appStoresBadges} alt="Baixe nas lojas" style={{ height: 44, width: "auto", display: "block" }} />
+                  </a>
+                </div>
+              </div>
+              <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 6 }}>Baixar aplicativo</div>
+            </div>
           </div>
         </div>
         <div style={{ flex: "0 1 460px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: isMobile ? 20 : 32, minHeight: isMobile ? 360 : 480, alignSelf: "center", borderRadius: 16, width: isMobile ? "calc(100% - 40px)" : undefined, marginInline: isMobile ? 20 : undefined, marginBottom: isMobile ? 24 : undefined }}>
