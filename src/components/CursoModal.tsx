@@ -197,18 +197,16 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       {data!.descricao_curta && <p style={{ fontSize: 13, color: c.muted, margin: "0 0 20px", lineHeight: 1.5 }}>{data!.descricao_curta}</p>}
 
       {!data!.matriculado && (
-        <div style={{ background: "white", padding: 16, border: `1px solid ${c.border}`, marginBottom: 20 }}>
+        <div style={{ background: "white", padding: 14, border: `1px solid ${c.border}`, marginBottom: 20 }}>
           {data!.preco_label && (
-            <div style={{ fontFamily: serif, fontSize: 26, color: c.sageDark, marginBottom: 8 }}>{data!.preco_label}</div>
+            <div style={{ fontFamily: serif, fontSize: 22, color: c.sageDark, marginBottom: 4 }}>{data!.preco_label}</div>
           )}
-          <button onClick={comprar} style={btnPrimary(c.gold)}>
-            {data!.link_compra_externo ? `Comprar${data!.plataforma_venda ? ` · ${data!.plataforma_venda}` : ""}` : "Quero me inscrever"}
-          </button>
-          <p style={{ fontSize: 11, color: c.muted, margin: "10px 0 0", lineHeight: 1.5 }}>
-            Aulas marcadas com PRÉVIA estão liberadas para você assistir agora.
+          <p style={{ fontSize: 12, color: c.muted, margin: 0, lineHeight: 1.5 }}>
+            Aulas marcadas com <strong style={{ color: c.sageDark }}>PRÉVIA</strong> estão liberadas. Toque em qualquer aula bloqueada para comprar ou entrar na sua conta.
           </p>
         </div>
       )}
+
 
       <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12 }}>
         Conteúdo programático
