@@ -1,18 +1,25 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import lemateLogo from "@/assets/lemater-logo.png";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { registrarLead } from "@/lib/leads.functions";
+import {
+  listMateriaisVitrine,
+  getMaterialGratisAccess,
+  getMaterialAccess,
+  type VitrineMaterial,
+  type MaterialAccess,
+} from "@/lib/materiais.functions";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/conteudos-gratis")({
   head: () => ({
     meta: [
-      { title: "Conteúdo · Le Mater" },
+      { title: "Conteúdos & Cursos · Le Mater" },
       {
         name: "description",
         content:
-          "Materiais para mulheres em todas as fases da jornada materna — concepção, gestação, pós-parto e primeiros cuidados com o bebê.",
+          "Materiais e cursos para mulheres em todas as fases da jornada materna — concepção, gestação, pós-parto e bebê.",
       },
     ],
     links: [
@@ -41,62 +48,13 @@ const c = {
   ink: "#1C1C1A",
   muted: "#6B6560",
   border: "#E8DDD2",
+  gold: "#B8923A",
 };
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type Conteudo = {
-  numero: string;
-  categoria: string;
-  titulo: string;
-  descricao: string;
-  formato: string;
-  caminhoRecomendado: string;
-  rotaPrograma: string;
-};
-
-const CONTEUDOS: Conteudo[] = [
-  {
-    numero: "01",
-    categoria: "Concepção",
-    titulo: "7 sinais de que você pode estar\nerrando sua janela fértil",
-    descricao:
-      "Um guia direto para entender o seu ciclo, identificar o período fértil real e aumentar suas chances naturais de engravidar.",
-    formato: "PDF · Guia gratuito",
-    caminhoRecomendado: "Ajuda na Concepção Le Mater",
-    rotaPrograma: "/programas/concepcao",
-  },
-  {
-    numero: "02",
-    categoria: "Gestação",
-    titulo: "Primeiros passos\ndepois do positivo",
-    descricao:
-      "Mapa com tudo o que importa nas primeiras semanas: exames, suplementação, sinais de alerta e organização do pré-natal.",
-    formato: "PDF · Mapa gratuito",
-    caminhoRecomendado: "Programa Gestação Le Mater",
-    rotaPrograma: "/programas/gestacao",
-  },
-  {
-    numero: "03",
-    categoria: "Puerpério",
-    titulo: "Cuidados essenciais\nno pós-parto",
-    descricao:
-      "Checklist clínico de recuperação física, emocional e amamentação para os primeiros 40 dias depois do parto.",
-    formato: "PDF · Checklist gratuito",
-    caminhoRecomendado: "Pós-Parto Le Mater",
-    rotaPrograma: "/programas/pos-parto",
-  },
-  {
-    numero: "04",
-    categoria: "Bebê",
-    titulo: "Primeiros cuidados com\no recém-nascido",
-    descricao:
-      "Banho, sono seguro, coto umbilical, sinais de alerta e rotina prática para os primeiros dias do bebê em casa.",
-    formato: "PDF · Guia gratuito",
-    caminhoRecomendado: "Bebê e Primeiros Cuidados Le Mater",
-    rotaPrograma: "/programas/bebe-primeiros-cuidados",
-  },
-];
+const FILTROS = ["Tudo", "Grátis", "Cursos", "Concepção", "Gestação", "Puerpério", "Bebê"] as const;
+type Filtro = typeof FILTROS[number];
 
 function ConteudoNav({ isMobile }: { isMobile: boolean }) {
   const [open, setOpen] = useState(false);
@@ -115,80 +73,24 @@ function ConteudoNav({ isMobile }: { isMobile: boolean }) {
     display: "block",
   };
   return (
-    <nav
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        background: "rgba(250,245,238,0.92)",
-        backdropFilter: "blur(12px)",
-        borderBottom: `1px solid ${c.border}`,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: isMobile ? "16px 20px" : "20px 48px",
-        }}
-      >
+    <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(250,245,238,0.92)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}` }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: isMobile ? "16px 20px" : "20px 48px" }}>
         <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <img
-            src={lemateLogo}
-            alt="Le Mater"
-            style={{ height: isMobile ? 40 : 52, width: "auto", display: "block" }}
-          />
+          <img src={lemateLogo} alt="Le Mater" style={{ height: isMobile ? 40 : 52, width: "auto", display: "block" }} />
         </Link>
         {!isMobile && (
           <ul style={{ display: "flex", gap: 32, listStyle: "none", margin: 0, padding: 0, alignItems: "center" }}>
             {NAV_ITEMS.map(([id, label]) => (
-              <li key={id}>
-                <Link to="/" search={{ s: id } as any} style={linkStyle}>{label}</Link>
-              </li>
+              <li key={id}><Link to="/" search={{ s: id } as any} style={linkStyle}>{label}</Link></li>
             ))}
           </ul>
         )}
         {!isMobile ? (
           <Link to="/login" style={{ textDecoration: "none" }}>
-            <button
-              style={{
-                background: `linear-gradient(135deg, ${c.sageDark} 0%, ${c.sage} 100%)`,
-                color: "white",
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-                padding: "12px 24px",
-                border: "1.5px solid transparent",
-                borderRadius: 8,
-                boxShadow: "4px 4px 10px rgba(120, 100, 70, 0.25), -4px -4px 10px rgba(255, 250, 240, 0.95)",
-                cursor: "pointer",
-                fontFamily: sans,
-              }}
-            >
-              ENTRAR
-            </button>
+            <button style={{ background: `linear-gradient(135deg, ${c.sageDark} 0%, ${c.sage} 100%)`, color: "white", fontSize: 11, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", padding: "12px 24px", border: "1.5px solid transparent", borderRadius: 8, cursor: "pointer", fontFamily: sans }}>ENTRAR</button>
           </Link>
         ) : (
-          <button
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Abrir menu"
-            style={{
-              background: "none",
-              border: `1px solid ${c.border}`,
-              color: c.ink,
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              padding: "8px 14px",
-              cursor: "pointer",
-              fontFamily: sans,
-            }}
-          >
+          <button onClick={() => setOpen((v) => !v)} aria-label="Abrir menu" style={{ background: "none", border: `1px solid ${c.border}`, color: c.ink, fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", padding: "8px 14px", cursor: "pointer", fontFamily: sans }}>
             {open ? "Fechar" : "Menu"}
           </button>
         )}
@@ -196,35 +98,10 @@ function ConteudoNav({ isMobile }: { isMobile: boolean }) {
       {isMobile && open && (
         <div style={{ padding: "8px 20px 20px", borderTop: `1px solid ${c.border}`, display: "flex", flexDirection: "column" }}>
           {NAV_ITEMS.map(([id, label]) => (
-            <Link
-              key={id}
-              to="/"
-              search={{ s: id } as any}
-              style={{ ...linkStyle, textAlign: "left", borderBottom: `1px solid ${c.border}` }}
-            >
-              {label}
-            </Link>
+            <Link key={id} to="/" search={{ s: id } as any} style={{ ...linkStyle, textAlign: "left", borderBottom: `1px solid ${c.border}` }}>{label}</Link>
           ))}
           <Link to="/login" style={{ textDecoration: "none", marginTop: 16 }}>
-            <button
-              style={{
-                background: `linear-gradient(135deg, ${c.sageDark} 0%, ${c.sage} 100%)`,
-                color: "white",
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-                padding: "12px 24px",
-                border: "1.5px solid transparent",
-                borderRadius: 8,
-                boxShadow: "4px 4px 10px rgba(120, 100, 70, 0.25), -4px -4px 10px rgba(255, 250, 240, 0.95)",
-                cursor: "pointer",
-                fontFamily: sans,
-                width: "100%",
-              }}
-            >
-              ENTRAR
-            </button>
+            <button style={{ background: `linear-gradient(135deg, ${c.sageDark} 0%, ${c.sage} 100%)`, color: "white", fontSize: 11, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", padding: "12px 24px", border: "1.5px solid transparent", borderRadius: 8, cursor: "pointer", fontFamily: sans, width: "100%" }}>ENTRAR</button>
           </Link>
         </div>
       )}
@@ -232,106 +109,176 @@ function ConteudoNav({ isMobile }: { isMobile: boolean }) {
   );
 }
 
-function ConteudoCard({ item, onAbrir }: { item: Conteudo; onAbrir: (i: Conteudo) => void }) {
+function plataformaLabel(p: string | null): string {
+  if (!p) return "Comprar";
+  const map: Record<string, string> = {
+    hotmart: "Hotmart", kiwify: "Kiwify", teachable: "Teachable", eduzz: "Eduzz", outro: "Curso externo",
+  };
+  return map[p.toLowerCase()] ?? p;
+}
+
+function tipoLabel(t: VitrineMaterial["tipo"]): string {
+  return t === "pdf" ? "PDF" : t === "video_externo" ? "Vídeo" : t === "video_upload" ? "Vídeo" : "Artigo";
+}
+
+function badgeFor(m: VitrineMaterial): { label: string; color: string } {
+  if (m.vende_externo) return { label: plataformaLabel(m.plataforma_venda), color: c.gold };
+  if (m.area === "gratis") return { label: "Grátis", color: c.sage };
+  if (m.acesso === "restrito" && m.pode_consumir) return { label: "Liberado para você", color: c.sage };
+  if (m.area === "pago" && m.pode_consumir) return { label: "Seu curso", color: c.sageDark };
+  return { label: "Curso", color: c.muted };
+}
+
+function ctaTextFor(m: VitrineMaterial): string {
+  if (m.cta_label) return m.cta_label;
+  if (m.vende_externo) return "Comprar agora";
+  if (m.pode_consumir && m.area === "pago") return "Acessar curso";
+  if (m.pode_consumir) return "Acessar agora";
+  if (m.area === "gratis") return "Acessar gratuitamente";
+  return "Entrar para acessar";
+}
+
+function ConteudoCard({ item, numero, onAcao }: { item: VitrineMaterial; numero: string; onAcao: (m: VitrineMaterial) => void }) {
   const [hover, setHover] = useState(false);
   const isDark = hover;
+  const badge = badgeFor(item);
   return (
     <div
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      style={{
-        background: isDark ? c.sageDark : c.warm,
-        padding: 40,
-        transition: "background .3s",
-        position: "relative",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-      }}
+      style={{ background: isDark ? c.sageDark : c.warm, padding: 40, transition: "background .3s", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
-        <div style={{ fontFamily: serif, fontSize: 64, fontWeight: 300, color: isDark ? "rgba(255,255,255,0.18)" : c.border, lineHeight: 1 }}>
-          {item.numero}
+      {item.capa_url && (
+        <div style={{ marginBottom: 18, marginLeft: -40, marginRight: -40, marginTop: -40 }}>
+          <img src={item.capa_url} alt="" style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }} />
         </div>
-        <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: isDark ? c.sageLight : c.sage, fontWeight: 500 }}>
-          {item.categoria}
+      )}
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
+        <div style={{ fontFamily: serif, fontSize: 64, fontWeight: 300, color: isDark ? "rgba(255,255,255,0.18)" : c.border, lineHeight: 1 }}>{numero}</div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+          <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: isDark ? "white" : "white", background: badge.color, padding: "4px 10px", fontWeight: 600 }}>{badge.label}</span>
+          <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: isDark ? c.sageLight : c.sage, fontWeight: 500 }}>{item.categoria}</div>
         </div>
       </div>
-      <div style={{ fontFamily: serif, fontSize: 28, fontWeight: 400, color: isDark ? "white" : c.ink, marginBottom: 14, lineHeight: 1.15, whiteSpace: "pre-line" }}>
+      <div style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, color: isDark ? "white" : c.ink, marginBottom: 14, lineHeight: 1.2 }}>
         {item.titulo}
       </div>
-      <p style={{ fontSize: 14, lineHeight: 1.7, color: isDark ? "rgba(255,255,255,0.75)" : c.muted, marginBottom: 24 }}>
-        {item.descricao}
-      </p>
-      <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : c.border}`, paddingTop: 20, marginBottom: 20 }}>
-        <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 8 }}>
-          Formato
+      {item.descricao && (
+        <p style={{ fontSize: 14, lineHeight: 1.7, color: isDark ? "rgba(255,255,255,0.75)" : c.muted, marginBottom: 24 }}>
+          {item.descricao}
+        </p>
+      )}
+      <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : c.border}`, paddingTop: 16, marginBottom: 18, display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+        <div>
+          <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 4 }}>Formato</div>
+          <div style={{ fontSize: 14, color: isDark ? "white" : c.ink }}>{tipoLabel(item.tipo)}</div>
         </div>
-        <div style={{ fontSize: 14, lineHeight: 1.5, color: isDark ? "white" : c.ink, fontWeight: 400 }}>
-          {item.formato}
-        </div>
+        {item.preco_label && (
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 4 }}>Investimento</div>
+            <div style={{ fontFamily: serif, fontSize: 22, color: isDark ? "white" : c.sageDark }}>{item.preco_label}</div>
+          </div>
+        )}
       </div>
       <button
-        onClick={() => onAbrir(item)}
-        style={{
-          background: isDark ? "white" : c.sageDark,
-          color: isDark ? c.sageDark : "white",
-          fontSize: 11,
-          fontWeight: 500,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          padding: "14px 24px",
-          border: "none",
-          cursor: "pointer",
-          fontFamily: sans,
-          width: "100%",
-          marginBottom: 24,
-        }}
+        onClick={() => onAcao(item)}
+        style={{ background: isDark ? "white" : c.sageDark, color: isDark ? c.sageDark : "white", fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", padding: "14px 24px", border: "none", cursor: "pointer", fontFamily: sans, width: "100%", marginTop: "auto" }}
       >
-        Acessar gratuitamente
+        {ctaTextFor(item)}
       </button>
-      <div style={{ marginTop: "auto", paddingTop: 8 }}>
-        <div style={{ fontSize: 12, color: isDark ? "rgba(255,255,255,0.6)" : c.muted, fontStyle: "italic", fontFamily: serif }}>
-          Caminho recomendado: {item.caminhoRecomendado}
-        </div>
-      </div>
     </div>
   );
 }
 
 function ConteudosGratisPage() {
   const isMobile = useIsMobile();
-  const [selecionado, setSelecionado] = useState<Conteudo | null>(null);
-  const [form, setForm] = useState({ nome: "", email: "", telefone: "" });
-  const [enviado, setEnviado] = useState(false);
-  const [acessando, setAcessando] = useState(false);
-  const [enviando, setEnviando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
-  const enviarLead = useServerFn(registrarLead);
+  const { user } = useAuth();
+  const listFn = useServerFn(listMateriaisVitrine);
+  const acessoGratis = useServerFn(getMaterialGratisAccess);
+  const acessoAuth = useServerFn(getMaterialAccess);
 
-  const abrir = (item: Conteudo) => {
-    setSelecionado(item);
-    setEnviado(false);
-    setAcessando(false);
-    setErro(null);
+  const [items, setItems] = useState<VitrineMaterial[] | null>(null);
+  const [erroLista, setErroLista] = useState<string | null>(null);
+  const [filtro, setFiltro] = useState<Filtro>("Tudo");
+  const [selecionado, setSelecionado] = useState<VitrineMaterial | null>(null);
+  const [form, setForm] = useState({ nome: "", email: "", telefone: "" });
+  const [acesso, setAcesso] = useState<MaterialAccess | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [erroModal, setErroModal] = useState<string | null>(null);
+
+  useEffect(() => {
+    listFn()
+      .then((d) => setItems(d as VitrineMaterial[]))
+      .catch((e) => setErroLista(e?.message ?? "Erro ao carregar"));
+  }, [user?.id]);
+
+  const filtrados = useMemo(() => {
+    if (!items) return [];
+    if (filtro === "Tudo") return items;
+    if (filtro === "Grátis") return items.filter((m) => m.area === "gratis");
+    if (filtro === "Cursos") return items.filter((m) => m.area === "pago" || m.vende_externo);
+    return items.filter((m) => m.categoria?.toLowerCase().includes(filtro.toLowerCase()));
+  }, [items, filtro]);
+
+  const fechar = () => {
+    setSelecionado(null);
+    setAcesso(null);
+    setErroModal(null);
     setForm({ nome: "", email: "", telefone: "" });
   };
 
-  const fechar = () => setSelecionado(null);
+  const abrir = async (m: VitrineMaterial) => {
+    setSelecionado(m);
+    setAcesso(null);
+    setErroModal(null);
+    setForm({ nome: "", email: "", telefone: "" });
 
-  const submit = async (e: React.FormEvent) => {
+    // Caminho externo: abre direto a página de venda
+    if (m.vende_externo && m.link_compra) {
+      window.open(m.link_compra, "_blank", "noopener,noreferrer");
+      setSelecionado(null);
+      return;
+    }
+
+    // Já pode consumir: busca acesso imediato (autenticado)
+    if (m.pode_consumir) {
+      try {
+        const r = await acessoAuth({ data: { material_id: m.id } });
+        setAcesso(r);
+      } catch (e: any) {
+        setErroModal(e?.message ?? "Erro");
+      }
+      return;
+    }
+
+    // Pago sem permissão e sem link → manda pro login
+    if (m.area === "pago") {
+      window.location.href = "/login";
+      setSelecionado(null);
+      return;
+    }
+    // Grátis público → cai no formulário de lead
+  };
+
+  const submitLead = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErro(null);
+    setErroModal(null);
+    if (!selecionado) return;
     if (!form.nome.trim() || !/^\S+@\S+\.\S+$/.test(form.email) || form.telefone.replace(/\D/g, "").length < 8) {
-      setErro("Preencha nome, e-mail válido e telefone (mín. 8 dígitos).");
+      setErroModal("Preencha nome, e-mail válido e telefone (mín. 8 dígitos).");
       return;
     }
     setEnviando(true);
     try {
-      await enviarLead({ data: { nome: form.nome.trim(), email: form.email.trim(), telefone: form.telefone.trim() } });
-      setEnviado(true);
+      const r = await acessoGratis({
+        data: {
+          material_id: selecionado.id,
+          lead: { nome: form.nome.trim(), email: form.email.trim(), telefone: form.telefone.trim() },
+        },
+      });
+      setAcesso(r);
     } catch (err: any) {
-      setErro(err?.message ?? "Erro ao enviar.");
+      setErroModal(err?.message ?? "Erro ao enviar.");
     }
     setEnviando(false);
   };
@@ -340,145 +287,78 @@ function ConteudosGratisPage() {
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
       <ConteudoNav isMobile={isMobile} />
 
-      {/* Atlas-style header + grid */}
       <section style={{ paddingTop: 70 }}>
         <div style={{ padding: isMobile ? "60px 24px" : "80px 48px" }}>
-          <div style={{ marginBottom: 48, maxWidth: "100%" }}>
-            <div
-              style={{
-                fontSize: 11,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                color: c.sage,
-                fontWeight: 500,
-                marginBottom: 24,
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
+          <div style={{ marginBottom: 32 }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sage, fontWeight: 500, marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ width: 24, height: 1, background: c.sage }} />
-              Conteúdo gratuito
+              Conteúdos & Cursos
             </div>
-            <h1
-              style={{
-                fontFamily: serif,
-                fontSize: "clamp(28px, 3vw, 44px)",
-                fontWeight: 300,
-                lineHeight: 1.1,
-                color: c.ink,
-                marginBottom: 20,
-              }}
-            >
-              Materiais educativos. <em style={{ fontStyle: "italic", color: c.sage }}>Toda a jornada materna.</em>
+            <h1 style={{ fontFamily: serif, fontSize: "clamp(28px, 3vw, 44px)", fontWeight: 300, lineHeight: 1.1, color: c.ink, marginBottom: 16 }}>
+              Materiais educativos e cursos. <em style={{ fontStyle: "italic", color: c.sage }}>Toda a jornada materna.</em>
             </h1>
-            <p style={{ fontSize: 15, lineHeight: 1.6, color: c.muted, fontWeight: 300, marginTop: 8 }}>
-              Concepção, gestação, pós-parto e cuidados com o bebê.
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: c.muted, fontWeight: 300 }}>
+              Concepção, gestação, pós-parto, bebê e cursos completos para você acessar agora.
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2,1fr)", gap: 2 }}>
-            {CONTEUDOS.map((item) => (
-              <ConteudoCard key={item.numero} item={item} onAbrir={abrir} />
+
+          {/* Filtros */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 40 }}>
+            {FILTROS.map((f) => (
+              <button
+                key={f}
+                onClick={() => setFiltro(f)}
+                style={{
+                  fontFamily: sans, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase",
+                  padding: "10px 18px", cursor: "pointer",
+                  background: filtro === f ? c.sageDark : "transparent",
+                  color: filtro === f ? "white" : c.muted,
+                  border: `1px solid ${filtro === f ? c.sageDark : c.border}`,
+                }}
+              >
+                {f}
+              </button>
             ))}
           </div>
+
+          {erroLista ? (
+            <p style={{ color: "#B23A48" }}>{erroLista}</p>
+          ) : items === null ? (
+            <p style={{ color: c.muted }}>Carregando conteúdos…</p>
+          ) : filtrados.length === 0 ? (
+            <div style={{ background: c.warm, padding: 60, textAlign: "center", border: `1px solid ${c.border}` }}>
+              <p style={{ fontFamily: serif, fontSize: 22, color: c.muted, margin: 0 }}>
+                Nenhum conteúdo nesta categoria ainda.
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(340px, 1fr))", gap: 2 }}>
+              {filtrados.map((m, i) => (
+                <ConteudoCard
+                  key={m.id}
+                  item={m}
+                  numero={String(i + 1).padStart(2, "0")}
+                  onAcao={abrir}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* CTA Programa Pago */}
-      <section
-        style={{
-          background: c.warm,
-          padding: isMobile ? "56px 24px" : "88px 48px",
-          textAlign: "center",
-        }}
-      >
-        <div
-          style={{
-            fontSize: 11,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: c.muted,
-            marginBottom: 18,
-          }}
-        >
-          Quer ir além?
-        </div>
-        <h2
-          style={{
-            fontFamily: serif,
-            fontSize: "clamp(28px,3.4vw,42px)",
-            fontWeight: 300,
-            margin: "0 0 16px",
-            lineHeight: 1.2,
-          }}
-        >
-          Conheça o Atlas Materno completo
-        </h2>
-        <p
-          style={{
-            fontSize: 16,
-            lineHeight: 1.7,
-            color: c.muted,
-            maxWidth: 620,
-            margin: "0 auto 32px",
-            fontWeight: 300,
-          }}
-        >
-          Programas pagos com acompanhamento, cartão digital da gestante, recomendações inteligentes por
-          fase e teleconsulta com a Rayssa.
-        </p>
-        <Link to="/" style={{ textDecoration: "none" }}>
-          <button
-            style={{
-              background: "transparent",
-              color: c.sageDark,
-              fontSize: 12,
-              fontWeight: 500,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              padding: "16px 36px",
-              border: `1.5px solid ${c.sageDark}`,
-              cursor: "pointer",
-              fontFamily: sans,
-            }}
-          >
-            Ver programas completos
-          </button>
-        </Link>
-      </section>
-
-      <footer
-        style={{
-          padding: isMobile ? "60px 24px 40px" : "80px 48px 48px",
-          background: "white",
-          borderTop: `1px solid ${c.border}`,
-        }}
-      >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1fr",
-            gap: 40,
-            maxWidth: 1200,
-            margin: "0 auto",
-            marginBottom: 60,
-          }}
-        >
+      <footer style={{ padding: isMobile ? "60px 24px 40px" : "80px 48px 48px", background: "white", borderTop: `1px solid ${c.border}` }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1fr", gap: 40, maxWidth: 1200, margin: "0 auto", marginBottom: 60 }}>
           <div style={{ maxWidth: 300 }}>
-            <Link to="/">
-              <img src={lemateLogo} alt="Le Mater" style={{ height: 48, width: "auto", marginBottom: 24 }} />
-            </Link>
+            <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 48, marginBottom: 24 }} /></Link>
             <p style={{ fontSize: 14, color: c.muted, lineHeight: 1.6, fontWeight: 300 }}>
-              Acompanhando mulheres da tentativa natural de engravidar aos primeiros cuidados com o bebê. 
-              Educação materna, tecnologia e acolhimento.
+              Acompanhando mulheres da tentativa natural de engravidar aos primeiros cuidados com o bebê.
             </p>
           </div>
           <div>
             <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Plataforma</h4>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
               <li><Link to="/" search={{ s: "inicio" } as any} style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Início</Link></li>
-              <li><Link to="/" search={{ s: "sobre" } as any} style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Rayssa Leslie</Link></li>
-              <li><Link to="/conteudos-gratis" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Conteúdos Grátis</Link></li>
+              <li><Link to="/conteudos-gratis" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Conteúdos & Cursos</Link></li>
               <li><Link to="/login" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Acessar Atlas</Link></li>
             </ul>
           </div>
@@ -487,251 +367,48 @@ function ConteudosGratisPage() {
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
               <li style={{ fontSize: 13, color: c.muted }}>contato@lemater.com</li>
               <li style={{ fontSize: 13, color: c.muted }}>Ribeirão Preto, SP</li>
-              <li style={{ fontSize: 13, color: c.muted }}>UNAERP</li>
             </ul>
           </div>
-          <div>
-            <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Idiomas</h4>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-              <li style={{ fontSize: 13, color: c.muted }}>Português</li>
-              <li style={{ fontSize: 13, color: c.muted }}>English</li>
-              <li style={{ fontSize: 13, color: c.muted }}>Español</li>
-            </ul>
-          </div>
+          <div />
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingTop: 32,
-            borderTop: `1px solid ${c.border}`,
-            fontSize: 11,
-            color: c.muted,
-            letterSpacing: "0.06em",
-            flexWrap: "wrap",
-            gap: 16,
-            textAlign: "center",
-          }}
-        >
-          <div>© 2026 · Le Mater · Todos os direitos reservados</div>
-          <div style={{ display: "flex", gap: 24 }}>
-            <span>Privacidade</span>
-            <span>Termos</span>
-          </div>
+        <div style={{ paddingTop: 32, borderTop: `1px solid ${c.border}`, fontSize: 11, color: c.muted, textAlign: "center" }}>
+          © 2026 · Le Mater · Todos os direitos reservados
         </div>
       </footer>
 
       {/* Modal */}
       {selecionado && (
-        <div
-          onClick={fechar}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(28,28,26,0.55)",
-            zIndex: 200,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 20,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: c.cream,
-              maxWidth: 520,
-              width: "100%",
-              padding: isMobile ? 28 : 44,
-              position: "relative",
-              border: `1px solid ${c.border}`,
-            }}
-          >
-            <button
-              onClick={fechar}
-              style={{
-                position: "absolute",
-                top: 14,
-                right: 18,
-                background: "none",
-                border: "none",
-                fontSize: 22,
-                color: c.muted,
-                cursor: "pointer",
-                fontFamily: serif,
-              }}
-              aria-label="Fechar"
-            >
-              ×
-            </button>
-            {enviado ? (
-              acessando ? (
-                <div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      letterSpacing: "0.14em",
-                      textTransform: "uppercase",
-                      color: c.sage,
-                      marginBottom: 12,
-                    }}
-                  >
-                    {selecionado.categoria} · Conteúdo liberado
-                  </div>
-                  <div style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, marginBottom: 16, lineHeight: 1.25 }}>
-                    {selecionado.titulo}
-                  </div>
-                  <p style={{ fontSize: 15, lineHeight: 1.7, color: c.muted, marginBottom: 24 }}>
-                    {selecionado.descricao}
-                  </p>
-                  <div
-                    style={{
-                      background: c.warm,
-                      padding: 24,
-                      borderRadius: 4,
-                      marginBottom: 20,
-                      border: `1px solid ${c.border}`,
-                    }}
-                  >
-                    <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>
-                      {selecionado.formato}
-                    </div>
-                    <p style={{ fontSize: 14, lineHeight: 1.6, color: c.ink, margin: 0 }}>
-                      Seu material está pronto. Clique no botão abaixo para baixar agora. Também enviamos uma cópia para <strong>{form.email}</strong>.
-                    </p>
-                  </div>
-                  <a
-                    href="#"
-                    onClick={(e) => e.preventDefault()}
-                    style={{
-                      display: "block",
-                      textAlign: "center",
-                      background: c.sageDark,
-                      color: "white",
-                      fontSize: 12,
-                      fontWeight: 500,
-                      letterSpacing: "0.14em",
-                      textTransform: "uppercase",
-                      padding: "16px 28px",
-                      textDecoration: "none",
-                      fontFamily: sans,
-                    }}
-                  >
-                    Baixar material em PDF
-                  </a>
-                </div>
-              ) : (
-                <div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      letterSpacing: "0.14em",
-                      textTransform: "uppercase",
-                      color: c.sage,
-                      marginBottom: 12,
-                    }}
-                  >
-                    Material liberado
-                  </div>
-                  <div style={{ fontFamily: serif, fontSize: 28, fontWeight: 400, marginBottom: 12 }}>
-                    Obrigada, {form.nome.split(" ")[0]}.
-                  </div>
-                  <p style={{ fontSize: 15, lineHeight: 1.7, color: c.muted, margin: "0 0 24px" }}>
-                    Enviamos o material <strong style={{ color: c.ink }}>"{selecionado.titulo}"</strong>{" "}
-                    para <strong style={{ color: c.ink }}>{form.email}</strong>. Você também pode acessar agora mesmo abaixo.
-                  </p>
-                  <button
-                    onClick={() => setAcessando(true)}
-                    style={{
-                      background: c.sageDark,
-                      color: "white",
-                      fontSize: 12,
-                      fontWeight: 500,
-                      letterSpacing: "0.14em",
-                      textTransform: "uppercase",
-                      padding: "16px 28px",
-                      border: "none",
-                      cursor: "pointer",
-                      fontFamily: sans,
-                      width: "100%",
-                    }}
-                  >
-                    Acessar conteúdo agora
-                  </button>
-                </div>
-              )
+        <div onClick={fechar} style={{ position: "fixed", inset: 0, background: "rgba(28,28,26,0.7)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: c.cream, maxWidth: acesso ? 1000 : 520, width: "100%", maxHeight: "92vh", overflow: "auto", padding: isMobile ? 24 : 36, position: "relative", border: `1px solid ${c.border}` }}>
+            <button onClick={fechar} aria-label="Fechar" style={{ position: "absolute", top: 12, right: 18, background: "none", border: "none", fontSize: 26, color: c.muted, cursor: "pointer", fontFamily: serif }}>×</button>
+
+            {acesso ? (
+              <PlayerView mat={selecionado} acesso={acesso} />
             ) : (
-              <form onSubmit={submit} noValidate>
-                <div
-                  style={{
-                    fontSize: 10,
-                    letterSpacing: "0.18em",
-                    textTransform: "uppercase",
-                    color: c.muted,
-                    marginBottom: 8,
-                  }}
-                >
-                  {selecionado.categoria} · {selecionado.formato}
+              <form onSubmit={submitLead} noValidate>
+                <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 8 }}>
+                  {selecionado.categoria} · {tipoLabel(selecionado.tipo)}
                 </div>
-                <div
-                  style={{
-                    fontFamily: serif,
-                    fontSize: 24,
-                    fontWeight: 400,
-                    marginBottom: 10,
-                    lineHeight: 1.25,
-                  }}
-                >
+                <div style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, marginBottom: 10, lineHeight: 1.25 }}>
                   {selecionado.titulo}
                 </div>
                 <p style={{ fontSize: 14, lineHeight: 1.6, color: c.muted, marginBottom: 24 }}>
-                  Preencha abaixo e receba o material gratuitamente no seu e-mail.
+                  Preencha abaixo para liberar o conteúdo gratuitamente.
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 18 }}>
-                  <input
-                    placeholder="Seu nome"
-                    value={form.nome}
-                    onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                    style={inputStyle}
-                  />
-                  <input
-                    type="email"
-                    placeholder="Seu melhor e-mail"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    style={inputStyle}
-                  />
-                  <input
-                    type="tel"
-                    placeholder="WhatsApp / Telefone"
-                    value={form.telefone}
-                    onChange={(e) => setForm({ ...form, telefone: e.target.value })}
-                    style={inputStyle}
-                  />
+                  <input placeholder="Seu nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} style={inputStyle} />
+                  <input type="email" placeholder="Seu melhor e-mail" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} style={inputStyle} />
+                  <input type="tel" placeholder="WhatsApp / Telefone" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} style={inputStyle} />
                 </div>
-                {erro && <div style={{ fontSize: 13, color: "#B23A48", marginBottom: 12 }}>{erro}</div>}
-                <button
-                  type="submit"
-                  disabled={enviando}
-                  style={{
-                    background: c.sageDark,
-                    color: "white",
-                    fontSize: 12,
-                    fontWeight: 500,
-                    letterSpacing: "0.14em",
-                    textTransform: "uppercase",
-                    padding: "16px 28px",
-                    border: "none",
-                    cursor: enviando ? "wait" : "pointer",
-                    fontFamily: sans,
-                    width: "100%",
-                    opacity: enviando ? 0.7 : 1,
-                  }}
-                >
-                  {enviando ? "Enviando…" : "Liberar conteúdo gratuito"}
+                {erroModal && <div style={{ fontSize: 13, color: "#B23A48", marginBottom: 12 }}>{erroModal}</div>}
+                <button type="submit" disabled={enviando} style={{ background: c.sageDark, color: "white", fontSize: 12, fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase", padding: "16px 28px", border: "none", cursor: enviando ? "wait" : "pointer", fontFamily: sans, width: "100%", opacity: enviando ? 0.7 : 1 }}>
+                  {enviando ? "Liberando…" : "Liberar conteúdo agora"}
                 </button>
               </form>
+            )}
+
+            {!acesso && erroModal && !enviando && (
+              <div style={{ fontSize: 13, color: "#B23A48", marginTop: 12 }}>{erroModal}</div>
             )}
           </div>
         </div>
@@ -740,13 +417,50 @@ function ConteudosGratisPage() {
   );
 }
 
+function PlayerView({ mat, acesso }: { mat: VitrineMaterial; acesso: MaterialAccess }) {
+  return (
+    <div>
+      <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.sage, marginBottom: 10 }}>
+        {mat.categoria} · Liberado
+      </div>
+      <h2 style={{ fontFamily: serif, fontSize: 28, fontWeight: 400, margin: "0 0 20px" }}>{mat.titulo}</h2>
+
+      {acesso.kind === "pdf" && (
+        <>
+          <a href={acesso.url} download target="_blank" rel="noreferrer" style={dlBtn}>Baixar PDF</a>
+          <iframe src={acesso.url} title={mat.titulo} style={{ width: "100%", height: "70vh", border: `1px solid ${c.border}`, marginTop: 16 }} />
+        </>
+      )}
+      {acesso.kind === "video_upload" && (
+        <>
+          <video src={acesso.url} controls style={{ width: "100%", maxHeight: "70vh", background: "black" }} />
+          <a href={acesso.url} download target="_blank" rel="noreferrer" style={{ ...dlBtn, marginTop: 16 }}>Baixar vídeo</a>
+        </>
+      )}
+      {acesso.kind === "video_externo" && (
+        <div style={{ aspectRatio: "16/9", width: "100%" }}>
+          <iframe src={acesso.embedUrl} title={mat.titulo} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen style={{ width: "100%", height: "100%", border: "none" }} />
+        </div>
+      )}
+      {acesso.kind === "artigo" && (
+        <div style={{ lineHeight: 1.7, fontSize: 15, color: c.ink }} dangerouslySetInnerHTML={{ __html: acesso.html }} />
+      )}
+      {acesso.kind === "externo" && (
+        <div>
+          <p style={{ fontSize: 15, color: c.muted, marginBottom: 16 }}>Este conteúdo está disponível na plataforma de vendas.</p>
+          <a href={acesso.url} target="_blank" rel="noopener noreferrer" style={dlBtn}>Abrir agora</a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const dlBtn: CSSProperties = {
+  display: "inline-block", background: c.sageDark, color: "white", fontSize: 12, fontWeight: 500,
+  letterSpacing: "0.14em", textTransform: "uppercase", padding: "14px 28px", textDecoration: "none", fontFamily: sans,
+};
+
 const inputStyle: CSSProperties = {
-  width: "100%",
-  background: "white",
-  border: `1px solid ${c.border}`,
-  padding: "14px 16px",
-  fontSize: 14,
-  fontFamily: sans,
-  color: c.ink,
-  outline: "none",
+  width: "100%", background: "white", border: `1px solid ${c.border}`, padding: "14px 16px",
+  fontSize: 14, fontFamily: sans, color: c.ink, outline: "none",
 };
