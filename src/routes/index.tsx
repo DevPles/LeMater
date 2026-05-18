@@ -315,100 +315,101 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
           </button>
         )}
       </div>
-      {isMobile && (
-        <>
-          <div
-            onClick={() => setOpen(false)}
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(20, 20, 20, 0.45)",
-              opacity: open ? 1 : 0,
-              pointerEvents: open ? "auto" : "none",
-              transition: "opacity 300ms ease",
-              zIndex: 200,
-            }}
-          />
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              right: 0,
-              bottom: 0,
-              width: "82%",
-              maxWidth: 340,
-              background: "#faf5ee",
-              transform: open ? "translateX(0)" : "translateX(100%)",
-              transition: "transform 400ms cubic-bezier(0.4, 0, 0.2, 1)",
-              zIndex: 210,
-              display: "flex",
-              flexDirection: "column",
-              boxShadow: open ? "-20px 0 40px rgba(0,0,0,0.12)" : "none",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "flex-end", padding: "20px 20px 0" }}>
-              <button
-                onClick={() => setOpen(false)}
-                aria-label="Fechar menu"
-                style={{
-                  width: 40,
-                  height: 40,
-                  background: "transparent",
-                  border: `1px solid ${c.border}`,
-                  borderRadius: 999,
-                  cursor: "pointer",
-                  fontFamily: sans,
-                  fontSize: 18,
-                  color: c.ink,
-                  lineHeight: 1,
-                }}
-              >
-                ×
-              </button>
+    </nav>
+    {isMobile && (
+      <>
+        <div
+          onClick={() => setOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(20, 20, 20, 0.45)",
+            opacity: open ? 1 : 0,
+            pointerEvents: open ? "auto" : "none",
+            transition: "opacity 300ms ease",
+            zIndex: 200,
+          }}
+        />
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: "82%",
+            maxWidth: 340,
+            background: "#faf5ee",
+            transform: open ? "translateX(0)" : "translateX(100%)",
+            transition: "transform 400ms cubic-bezier(0.4, 0, 0.2, 1)",
+            zIndex: 210,
+            display: "flex",
+            flexDirection: "column",
+            boxShadow: open ? "-20px 0 40px rgba(0,0,0,0.12)" : "none",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "flex-end", padding: "20px 20px 0" }}>
+            <button
+              onClick={() => setOpen(false)}
+              aria-label="Fechar menu"
+              style={{
+                width: 40,
+                height: 40,
+                background: "transparent",
+                border: `1px solid ${c.border}`,
+                borderRadius: 999,
+                cursor: "pointer",
+                fontFamily: sans,
+                fontSize: 18,
+                color: c.ink,
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+          </div>
+          <div style={{ padding: "20px 28px 24px" }}>
+            <div style={{ fontSize: 10, letterSpacing: "0.2em", color: c.muted, textTransform: "uppercase", marginBottom: 20 }}>
+              Navegação
             </div>
-            <div style={{ padding: "20px 28px 24px" }}>
-              <div style={{ fontSize: 10, letterSpacing: "0.2em", color: c.muted, textTransform: "uppercase", marginBottom: 20 }}>
-                Navegação
-              </div>
-              <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                {NAV_ITEMS.map(([id, label]) => (
-                  <li key={id}>
-                    <button
-                      onClick={() => handleGo(id)}
-                      style={{
-                        width: "100%",
-                        padding: "16px 0",
-                        background: "none",
-                        border: "none",
-                        borderBottom: `1px solid ${c.border}`,
-                        cursor: "pointer",
-                        fontFamily: sans,
-                        fontSize: 14,
-                        fontWeight: 500,
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        color: active === id ? c.sageDark : c.ink,
-                        textAlign: "left",
-                      }}
-                    >
-                      {label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div style={{ marginTop: "auto", padding: "0 28px 32px" }}>
-              <Link to="/login" style={{ textDecoration: "none" }} onClick={() => setOpen(false)}>
-                <button style={{ ...btnPrimary, width: "100%" }}>ENTRAR</button>
-              </Link>
-              <div style={{ marginTop: 20, fontSize: 11, color: c.muted, letterSpacing: "0.08em" }}>
-                contato@lemater.com
-              </div>
+            <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+              {NAV_ITEMS.map(([id, label]) => (
+                <li key={id}>
+                  <button
+                    onClick={() => handleGo(id)}
+                    style={{
+                      width: "100%",
+                      padding: "16px 0",
+                      background: "none",
+                      border: "none",
+                      borderBottom: `1px solid ${c.border}`,
+                      cursor: "pointer",
+                      fontFamily: sans,
+                      fontSize: 14,
+                      fontWeight: 500,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      color: active === id ? c.sageDark : c.ink,
+                      textAlign: "left",
+                    }}
+                  >
+                    {label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div style={{ marginTop: "auto", padding: "0 28px 32px" }}>
+            <Link to="/login" style={{ textDecoration: "none" }} onClick={() => setOpen(false)}>
+              <button style={{ ...btnPrimary, width: "100%" }}>ENTRAR</button>
+            </Link>
+            <div style={{ marginTop: 20, fontSize: 11, color: c.muted, letterSpacing: "0.08em" }}>
+              contato@lemater.com
             </div>
           </div>
-        </>
-      )}
-    </nav>
+        </div>
+      </>
+    )}
+    </>
   );
 }
 
