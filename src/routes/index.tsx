@@ -402,7 +402,7 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
             <Link to="/login" style={{ textDecoration: "none" }} onClick={() => setOpen(false)}>
               <button style={{ ...btnPrimary, width: "100%" }}>ENTRAR</button>
             </Link>
-            <div style={{ marginTop: 20, fontSize: 11, color: c.muted, letterSpacing: "0.08em" }}>
+            <div style={{ marginTop: 20, fontSize: 11, color: c.muted, letterSpacing: "0.08em", textAlign: "center" }}>
               contato@lemater.com
             </div>
           </div>
