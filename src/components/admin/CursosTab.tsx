@@ -400,6 +400,26 @@ function EstruturaTab({ cursoId, modulos, aulas, onChanged }: { cursoId: string;
               {editAula.tipo === "texto" && (
                 <Field label="Conteúdo HTML"><textarea value={editAula.conteudo_html ?? ""} onChange={(e) => setEditAula({ ...editAula, conteudo_html: e.target.value })} style={{ ...inp, minHeight: 200, fontFamily: "monospace", fontSize: 13 }} /></Field>
               )}
+              <Field label="Materiais para download (anexos)">
+                <div style={{ display: "grid", gap: 8 }}>
+                  {Array.isArray(editAula.materiais_extras) && editAula.materiais_extras.length > 0 && (
+                    <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 4 }}>
+                      {editAula.materiais_extras.map((a: { nome: string; path: string }, i: number) => (
+                        <li key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: c.warm, padding: "6px 10px", fontSize: 13 }}>
+                          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.nome}</span>
+                          <button
+                            type="button"
+                            onClick={() => setEditAula({ ...editAula, materiais_extras: editAula.materiais_extras.filter((_: any, j: number) => j !== i) })}
+                            style={{ background: "transparent", border: "none", color: c.danger, cursor: "pointer", fontSize: 12, marginLeft: 8 }}
+                          >Remover</button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <input id="aulaAnexosFile" type="file" multiple style={inp} />
+                  <small style={{ color: c.muted, fontSize: 11 }}>Aceita múltiplos arquivos (PDF, DOC, imagens etc.) — ficam disponíveis para download dentro da aula.</small>
+                </div>
+              </Field>
               <Field label="Prévia"><label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}><input type="checkbox" checked={!!editAula.previa_gratis} onChange={(e) => setEditAula({ ...editAula, previa_gratis: e.target.checked })} /> Liberar como prévia gratuita (visível antes da compra)</label></Field>
             </div>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
