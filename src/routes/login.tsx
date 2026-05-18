@@ -232,7 +232,22 @@ function LoginPage() {
               <button
                 type="button"
                 onClick={() => setMode("recover")}
-                style={{ ...linkButton, marginTop: 4, marginBottom: 16 }}
+                style={{
+                  background: "transparent",
+                  border: `1.5px solid ${SAGE_DARK}`,
+                  color: SAGE_DARK,
+                  fontSize: 10,
+                  fontWeight: 600,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  padding: "8px 14px",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontFamily: sans,
+                  marginTop: 6,
+                  marginBottom: 16,
+                  width: "100%",
+                }}
               >
                 Esqueci minha senha
               </button>
