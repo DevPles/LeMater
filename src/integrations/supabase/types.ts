@@ -163,6 +163,48 @@ export type Database = {
           },
         ]
       }
+      atlas_cards: {
+        Row: {
+          ativo: boolean
+          categoria: string | null
+          created_at: string
+          descricao: string | null
+          id: string
+          imagem_url: string | null
+          link: string | null
+          ordem: number
+          titulo: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          categoria?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          imagem_url?: string | null
+          link?: string | null
+          ordem?: number
+          titulo: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          imagem_url?: string | null
+          link?: string | null
+          ordem?: number
+          titulo?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       atlas_leads: {
         Row: {
           created_at: string

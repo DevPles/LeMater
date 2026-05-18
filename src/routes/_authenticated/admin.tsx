@@ -18,7 +18,7 @@ const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type Tab = "dash" | "materiais" | "leads" | "alunos" | "compras";
+type Tab = "dash" | "materiais" | "atlas" | "leads" | "alunos" | "compras";
 
 function AdminPage() {
   const { isAdmin, loading } = useAuth();
@@ -38,7 +38,7 @@ function AdminPage() {
       <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 40 }} /></Link>
         <div style={{ display: "flex", gap: 4 }}>
-          {(["dash","materiais","leads","alunos","compras"] as Tab[]).map((t) => (
+          {(["dash","materiais","atlas","leads","alunos","compras"] as Tab[]).map((t) => (
             <button key={t} onClick={() => setTab(t)} style={tabBtn(tab === t)}>{tabLabel(t)}</button>
           ))}
         </div>
@@ -47,6 +47,7 @@ function AdminPage() {
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 28px 80px" }}>
         {tab === "dash" && <DashboardTab />}
         {tab === "materiais" && <MateriaisTab />}
+        {tab === "atlas" && <AtlasCardsTab />}
         {tab === "leads" && <LeadsTab />}
         {tab === "alunos" && <AlunosTab />}
         {tab === "compras" && <ComprasTab />}
@@ -327,6 +328,127 @@ function ComprasTab() {
   );
 }
 
+type AtlasCardRow = {
+  id: string; titulo: string; descricao: string | null;
+  imagem_url: string | null; video_url: string | null; link: string | null;
+  categoria: string | null; ordem: number; ativo: boolean;
+};
+
+function AtlasCardsTab() {
+  const [items, setItems] = useState<AtlasCardRow[]>([]);
+  const [edit, setEdit] = useState<Partial<AtlasCardRow> | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const reload = async () => {
+    const { data, error } = await supabase
+      .from("atlas_cards")
+      .select("*")
+      .order("categoria", { ascending: true })
+      .order("ordem", { ascending: true });
+    if (error) { alert(error.message); return; }
+    setItems((data ?? []) as AtlasCardRow[]);
+  };
+  useEffect(() => { reload(); }, []);
+
+  const novo = () => setEdit({ titulo: "", descricao: "", imagem_url: "", video_url: "", link: "", categoria: "", ordem: 0, ativo: true });
+
+  const salvar = async () => {
+    if (!edit?.titulo) { alert("Título é obrigatório"); return; }
+    setBusy(true);
+    const payload = {
+      titulo: edit.titulo,
+      descricao: edit.descricao || null,
+      imagem_url: edit.imagem_url || null,
+      video_url: edit.video_url || null,
+      link: edit.link || null,
+      categoria: edit.categoria || null,
+      ordem: edit.ordem ?? 0,
+      ativo: edit.ativo ?? true,
+    };
+    const { error } = edit.id
+      ? await supabase.from("atlas_cards").update(payload).eq("id", edit.id)
+      : await supabase.from("atlas_cards").insert(payload);
+    setBusy(false);
+    if (error) { alert(error.message); return; }
+    setEdit(null);
+    reload();
+  };
+
+  const remover = async (id: string) => {
+    if (!confirm("Remover este card?")) return;
+    const { error } = await supabase.from("atlas_cards").delete().eq("id", id);
+    if (error) { alert(error.message); return; }
+    reload();
+  };
+
+  const toggleAtivo = async (row: AtlasCardRow) => {
+    const { error } = await supabase.from("atlas_cards").update({ ativo: !row.ativo }).eq("id", row.id);
+    if (error) { alert(error.message); return; }
+    reload();
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <h1 style={h1}>Atlas Materno</h1>
+        <button onClick={novo} style={btn(c.sageDark)}>Novo card</button>
+      </div>
+
+      <div style={{ background: "white", border: `1px solid ${c.border}`, overflow: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+          <thead><tr style={{ background: c.warm }}>
+            <Th>Ordem</Th><Th>Título</Th><Th>Categoria</Th><Th>Mídia</Th><Th>Ativo</Th><Th> </Th>
+          </tr></thead>
+          <tbody>
+            {items.map((row) => (
+              <tr key={row.id} style={{ borderTop: `1px solid ${c.border}` }}>
+                <Td>{row.ordem}</Td>
+                <Td>{row.titulo}</Td>
+                <Td>{row.categoria ?? "—"}</Td>
+                <Td>{[row.imagem_url && "Imagem", row.video_url && "Vídeo", row.link && "Link"].filter(Boolean).join(" · ") || "—"}</Td>
+                <Td>
+                  <button onClick={() => toggleAtivo(row)} style={{ ...btnSm(row.ativo ? c.sageDark : c.muted) }}>
+                    {row.ativo ? "Ativo" : "Inativo"}
+                  </button>
+                </Td>
+                <Td>
+                  <button onClick={() => setEdit(row)} style={btnSm(c.sage)}>Editar</button>{" "}
+                  <button onClick={() => remover(row.id)} style={btnSm(c.danger)}>Excluir</button>
+                </Td>
+              </tr>
+            ))}
+            {items.length === 0 && <tr><Td colSpan={6}>Nenhum card cadastrado.</Td></tr>}
+          </tbody>
+        </table>
+      </div>
+
+      {edit && (
+        <div onClick={() => setEdit(null)} style={modalBg}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "white", maxWidth: 640, width: "100%", padding: 32, border: `1px solid ${c.border}`, maxHeight: "90vh", overflow: "auto" }}>
+            <h2 style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, margin: "0 0 20px" }}>{edit.id ? "Editar card" : "Novo card"}</h2>
+            <div style={{ display: "grid", gap: 14 }}>
+              <Field label="Título"><input value={edit.titulo ?? ""} onChange={(e) => setEdit({ ...edit, titulo: e.target.value })} style={inp} /></Field>
+              <Field label="Descrição"><textarea value={edit.descricao ?? ""} onChange={(e) => setEdit({ ...edit, descricao: e.target.value })} style={{ ...inp, minHeight: 90 }} /></Field>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <Field label="Categoria"><input value={edit.categoria ?? ""} onChange={(e) => setEdit({ ...edit, categoria: e.target.value })} style={inp} placeholder="ex: Pré-natal" /></Field>
+                <Field label="Ordem"><input type="number" value={edit.ordem ?? 0} onChange={(e) => setEdit({ ...edit, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+              </div>
+              <Field label="URL da imagem"><input value={edit.imagem_url ?? ""} onChange={(e) => setEdit({ ...edit, imagem_url: e.target.value })} style={inp} placeholder="https://..." /></Field>
+              <Field label="URL do vídeo"><input value={edit.video_url ?? ""} onChange={(e) => setEdit({ ...edit, video_url: e.target.value })} style={inp} placeholder="YouTube, Vimeo ou MP4" /></Field>
+              <Field label="Link (botão / destino do card)"><input value={edit.link ?? ""} onChange={(e) => setEdit({ ...edit, link: e.target.value })} style={inp} placeholder="https://..." /></Field>
+              <Field label="Status"><label style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0" }}><input type="checkbox" checked={!!edit.ativo} onChange={(e) => setEdit({ ...edit, ativo: e.target.checked })} /> Card ativo (visível ao público)</label></Field>
+            </div>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 24 }}>
+              <button onClick={() => setEdit(null)} style={btn(c.muted)}>Cancelar</button>
+              <button onClick={salvar} disabled={busy} style={{ ...btn(c.sageDark), opacity: busy ? 0.6 : 1 }}>{busy ? "Salvando…" : "Salvar"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const h1: CSSProperties = { fontFamily: serif, fontSize: 36, fontWeight: 300, margin: "0 0 24px" };
 const inp: CSSProperties = { width: "100%", background: "white", border: `1px solid ${c.border}`, padding: "10px 12px", fontSize: 14, fontFamily: sans, color: c.ink, outline: "none" };
 const modalBg: CSSProperties = { position: "fixed", inset: 0, background: "rgba(28,28,26,0.6)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 };
@@ -340,7 +462,7 @@ function btnSm(bg: string): CSSProperties {
 function tabBtn(active: boolean): CSSProperties {
   return { background: active ? c.sageDark : "transparent", color: active ? "white" : c.muted, fontSize: 12, fontWeight: 500, letterSpacing: "0.10em", textTransform: "uppercase", padding: "10px 18px", border: "none", cursor: "pointer", fontFamily: sans };
 }
-function tabLabel(t: Tab) { return t === "dash" ? "Painel" : t === "materiais" ? "Materiais" : t === "leads" ? "Leads" : t === "alunos" ? "Alunos" : "Compras"; }
+function tabLabel(t: Tab) { return t === "dash" ? "Painel" : t === "materiais" ? "Materiais" : t === "atlas" ? "Atlas" : t === "leads" ? "Leads" : t === "alunos" ? "Alunos" : "Compras"; }
 
 function Th({ children }: { children: any }) { return <th style={{ textAlign: "left", padding: "12px 14px", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, fontWeight: 500 }}>{children}</th>; }
 function Td({ children, colSpan }: { children: any; colSpan?: number }) { return <td colSpan={colSpan} style={{ padding: "12px 14px", color: c.ink }}>{children}</td>; }
