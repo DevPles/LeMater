@@ -838,7 +838,7 @@ function Footer() {
           <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Contato</h4>
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
             <li style={{ fontSize: 13, color: c.muted }}>contato@lemater.com</li>
-            <li style={{ fontSize: 13, color: c.muted }}>Ribeirão Preto, SP</li>
+            <li style={{ fontSize: 13, color: c.muted }}>Brasil, o país do parto saudável</li>
           </ul>
         </div>
       </div>
