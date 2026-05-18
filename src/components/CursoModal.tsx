@@ -31,13 +31,23 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const [aulaSel, setAulaSel] = useState<string | null>(null);
   const [player, setPlayer] = useState<AulaPlayer | null>(null);
   const [playerErr, setPlayerErr] = useState<string | null>(null);
+  const [bloqueioInfo, setBloqueioInfo] = useState<{ titulo: string } | null>(null);
   // Em mobile: 'list' (sidebar) ou 'player'
   const [mobileView, setMobileView] = useState<"list" | "player">("list");
 
   useEffect(() => {
     fn({ data: { slug } })
       .then((d) => {
-        setData(d as CursoDetalhe | null);
+        const det = d as CursoDetalhe | null;
+        setData(det);
+        // Auto-seleciona primeira aula liberada (prévia ou matriculado)
+        if (det) {
+          const first = det.modulos.flatMap((m) => m.aulas).find((a) => !a.bloqueada);
+          if (first) {
+            setAulaSel(first.id);
+            setBloqueioInfo(null);
+          }
+        }
       })
       .catch((e) => setErr(e?.message ?? "Erro"));
   }, [slug, user?.id]);
@@ -58,13 +68,24 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   }, []);
 
   const fechar = () => onClose();
+  const irParaCadastro = () => {
+    navigate({ to: "/login" });
+  };
   const comprar = () => {
     if (!data) return;
     if (data.link_compra_externo) window.open(data.link_compra_externo, "_blank", "noopener,noreferrer");
     else if (!user) navigate({ to: "/login" });
   };
 
-  const abrirAula = (id: string) => {
+  const abrirAula = (id: string, bloqueada: boolean, titulo: string) => {
+    if (bloqueada) {
+      setBloqueioInfo({ titulo });
+      setAulaSel(null);
+      setPlayer(null);
+      if (isMobile) setMobileView("player");
+      return;
+    }
+    setBloqueioInfo(null);
     setAulaSel(id);
     if (isMobile) setMobileView("player");
   };
@@ -128,14 +149,13 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                         return (
                           <li key={a.id}>
                             <button
-                              disabled={a.bloqueada}
-                              onClick={() => abrirAula(a.id)}
+                              onClick={() => abrirAula(a.id, a.bloqueada, a.titulo)}
                               style={{
                                 width: "100%", textAlign: "left", padding: "10px 12px",
                                 background: ativo ? c.sageDark : "transparent",
                                 color: ativo ? "white" : (a.bloqueada ? c.muted : c.ink),
                                 border: "none", borderLeft: `2px solid ${ativo ? c.gold : "transparent"}`,
-                                cursor: a.bloqueada ? "not-allowed" : "pointer",
+                                cursor: "pointer",
                                 fontFamily: sans, fontSize: 13, display: "flex", justifyContent: "space-between", gap: 8,
                               }}
                             >
@@ -166,9 +186,28 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                     ← Voltar ao curso
                   </button>
                 )}
-                {!aulaSel && (
+                {bloqueioInfo && (
+                  <div style={{ padding: isMobile ? 24 : 48, textAlign: "center", background: c.warm, border: `1px solid ${c.border}` }}>
+                    <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.gold, marginBottom: 12 }}>CONTEÚDO EXCLUSIVO</div>
+                    <h3 style={{ fontFamily: serif, fontSize: isMobile ? 24 : 32, fontWeight: 400, margin: "0 0 12px" }}>{bloqueioInfo.titulo}</h3>
+                    <p style={{ color: c.muted, fontSize: 15, lineHeight: 1.6, margin: "0 auto 24px", maxWidth: 460 }}>
+                      Esta aula faz parte do conteúdo pago. Crie sua conta gratuita para acessar a área de aluna e desbloquear todos os cursos.
+                    </p>
+                    <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 12, justifyContent: "center" }}>
+                      <button onClick={irParaCadastro} style={btnPrimary(c.sageDark)}>
+                        {user ? "Ir para minha área" : "Criar conta grátis"}
+                      </button>
+                      {data.link_compra_externo && (
+                        <button onClick={comprar} style={btnPrimary(c.gold)}>
+                          Comprar agora{data.plataforma_venda ? ` · ${data.plataforma_venda}` : ""}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {!aulaSel && !bloqueioInfo && (
                   <div style={{ color: c.muted, padding: 40, textAlign: "center" }}>
-                    {data.matriculado ? "Selecione uma aula." : "Selecione uma aula com PRÉVIA para assistir."}
+                    {data.matriculado ? "Selecione uma aula." : "Selecione uma aula para começar."}
                   </div>
                 )}
                 {aulaSel && (
