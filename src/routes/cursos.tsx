@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { listCursosVitrine, type CursoVitrine } from "@/lib/cursos.functions";
 import { ContentCard } from "@/components/ContentCard";
