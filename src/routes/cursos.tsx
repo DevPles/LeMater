@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { listCursosVitrine, type CursoVitrine } from "@/lib/cursos.functions";
+import { ContentCard } from "@/components/ContentCard";
+import { CursoModal } from "@/components/CursoModal";
 import lemateLogo from "@/assets/lemater-logo.png";
 
 export const Route = createFileRoute("/cursos")({
@@ -23,6 +25,7 @@ function CursosVitrine() {
   const fn = useServerFn(listCursosVitrine);
   const [items, setItems] = useState<CursoVitrine[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [openSlug, setOpenSlug] = useState<string | null>(null);
 
   useEffect(() => {
     fn().then((d) => setItems(d as CursoVitrine[])).catch((e) => setErr(e?.message ?? "Erro"));
@@ -31,7 +34,7 @@ function CursosVitrine() {
   return (
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
       <TopBar />
-      <main style={{ maxWidth: 1180, margin: "0 auto", padding: "120px 32px 80px" }}>
+      <main style={{ maxWidth: 1280, margin: "0 auto", padding: "120px 32px 80px" }}>
         <header style={{ marginBottom: 48, maxWidth: 760 }}>
           <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, marginBottom: 12 }}>Formação</div>
           <h1 style={{ fontFamily: serif, fontSize: 56, fontWeight: 300, margin: 0, lineHeight: 1.05 }}>
@@ -51,49 +54,36 @@ function CursosVitrine() {
               </p>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 28 }}>
-              {items.map((curso) => (
-                <Link key={curso.id} to="/cursos/$slug" params={{ slug: curso.slug }} style={{ textDecoration: "none", color: "inherit" }}>
-                  <article style={{ background: "white", border: `1px solid ${c.border}`, overflow: "hidden", display: "flex", flexDirection: "column", height: "100%", transition: "transform .2s, box-shadow .2s" }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 28px rgba(45,90,66,0.12)"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.boxShadow = ""; }}
-                  >
-                    {curso.capa_url ? (
-                      <img src={curso.capa_url} alt="" style={{ width: "100%", height: 180, objectFit: "cover" }} />
-                    ) : (
-                      <div style={{ height: 180, background: `linear-gradient(135deg, ${c.warm}, ${c.cream})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ fontFamily: serif, fontSize: 32, color: c.sageDark, opacity: 0.6 }}>Le Mater</span>
-                      </div>
-                    )}
-                    <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
-                      <span style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted }}>
-                        {curso.categoria} · {curso.nivel}
-                        {curso.matriculado && <> · <span style={{ color: c.sageDark, fontWeight: 600 }}>SEU</span></>}
-                        {!curso.publicado && <> · <span style={{ color: c.gold }}>RASCUNHO</span></>}
-                      </span>
-                      <h2 style={{ fontFamily: serif, fontSize: 24, fontWeight: 400, margin: 0, lineHeight: 1.2 }}>{curso.titulo}</h2>
-                      {curso.descricao_curta && <p style={{ fontSize: 14, color: c.muted, margin: 0, lineHeight: 1.55 }}>{curso.descricao_curta}</p>}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto", paddingTop: 14, borderTop: `1px solid ${c.border}` }}>
-                        <span style={{ fontSize: 12, color: c.muted }}>
-                          {curso.total_aulas} {curso.total_aulas === 1 ? "aula" : "aulas"}
-                          {curso.carga_horaria_min > 0 && <> · {Math.round(curso.carga_horaria_min / 60)}h</>}
-                        </span>
-                        {curso.matriculado ? (
-                          <span style={{ fontSize: 12, fontWeight: 600, color: c.sageDark, letterSpacing: "0.08em" }}>ACESSAR</span>
-                        ) : curso.preco_label ? (
-                          <span style={{ fontSize: 14, fontWeight: 500, color: c.sageDark }}>{curso.preco_label}</span>
-                        ) : (
-                          <span style={{ fontSize: 12, color: c.muted }}>Saiba mais</span>
-                        )}
-                      </div>
-                    </div>
-                  </article>
-                </Link>
-              ))}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 2 }}>
+              {items.map((curso, i) => {
+                const badge = curso.matriculado
+                  ? { label: "Seu acesso", color: c.sageDark }
+                  : curso.preco_label
+                    ? { label: "Curso pago", color: c.gold }
+                    : { label: "Curso", color: c.sage };
+                return (
+                  <ContentCard
+                    key={curso.id}
+                    numero={String(i + 1).padStart(2, "0")}
+                    categoria={`${curso.categoria} · ${curso.nivel}`}
+                    badge={badge}
+                    titulo={curso.titulo}
+                    descricao={curso.descricao_curta}
+                    capa_url={curso.capa_url}
+                    metaLabel="Conteúdo"
+                    metaValor={`${curso.total_aulas} ${curso.total_aulas === 1 ? "aula" : "aulas"}${curso.carga_horaria_min > 0 ? ` · ${Math.round(curso.carga_horaria_min / 60)}h` : ""}`}
+                    precoLabel={!curso.matriculado ? curso.preco_label : null}
+                    ctaLabel={curso.matriculado ? "Acessar curso" : "Ver conteúdo"}
+                    onAction={() => setOpenSlug(curso.slug)}
+                  />
+                );
+              })}
             </div>
           )}
       </main>
       <Footer />
+
+      {openSlug && <CursoModal slug={openSlug} onClose={() => setOpenSlug(null)} />}
     </div>
   );
 }
