@@ -104,3 +104,51 @@ export function LinkIcon({ className, size = 22 }: IconProps) {
     </svg>
   );
 }
+
+export function YouTubeIcon({ className, size = 22 }: IconProps) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill="#FF0000" d="M31.33 9.6a4 4 0 0 0-2.82-2.83C26.02 6.1 16 6.1 16 6.1s-10.02 0-12.51.67A4 4 0 0 0 .67 9.6C0 12.1 0 16 0 16s0 3.9.67 6.4a4 4 0 0 0 2.82 2.83C5.98 25.9 16 25.9 16 25.9s10.02 0 12.51-.67a4 4 0 0 0 2.82-2.83C32 19.9 32 16 32 16s0-3.9-.67-6.4Z"/>
+      <path fill="#FFFFFF" d="M12.8 20.8 21.13 16 12.8 11.2Z"/>
+    </svg>
+  );
+}
+
+export function TikTokIcon({ className, size = 22 }: IconProps) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="32" height="32" rx="7" fill="#000000"/>
+      <path fill="#25F4EE" d="M21.5 11.8a5.5 5.5 0 0 1-3-2.3h-2.7v11.2a2.5 2.5 0 1 1-2.5-2.5c.26 0 .5.04.74.12v-2.78a5.3 5.3 0 0 0-.74-.05 5.2 5.2 0 1 0 5.2 5.2V14.8a8 8 0 0 0 4.6 1.45v-2.7c-.6 0-1.18-.12-1.6-.45Z"/>
+      <path fill="#FE2C55" d="M22.5 12.8a5.5 5.5 0 0 1-3-2.3h-2.7v11.2a2.5 2.5 0 1 1-2.5-2.5c.26 0 .5.04.74.12v-2.78a5.3 5.3 0 0 0-.74-.05 5.2 5.2 0 1 0 5.2 5.2V15.8a8 8 0 0 0 4.6 1.45v-2.7c-.6 0-1.18-.12-1.6-.45Z"/>
+      <path fill="#FFFFFF" d="M22 12.3a5.5 5.5 0 0 1-3-2.3h-2.7v11.2a2.5 2.5 0 1 1-2.5-2.5c.26 0 .5.04.74.12v-2.78a5.3 5.3 0 0 0-.74-.05 5.2 5.2 0 1 0 5.2 5.2V15.3a8 8 0 0 0 4.6 1.45v-2.7c-.6 0-1.18-.12-1.6-.45Z"/>
+    </svg>
+  );
+}
+
+export function HotmartIcon({ className, size = 22 }: IconProps) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="32" height="32" rx="7" fill="#EF4A23"/>
+      <path fill="#FFFFFF" d="M10.5 22.5c-1.5-1.6-1.8-3.8-.8-5.6 1-1.7 2.9-3.4 5-5.4 1.6 2 3.6 3.8 4.5 5.5 1 1.8.6 4-.9 5.5-2.1 2.1-5.6 2.1-7.8 0Zm3.9-1.2a2.3 2.3 0 1 0 0-4.6 2.3 2.3 0 0 0 0 4.6Z"/>
+    </svg>
+  );
+}
+
+export function KiwifyIcon({ className, size = 22 }: IconProps) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="32" height="32" rx="7" fill="#03B97F"/>
+      <text x="16" y="22" textAnchor="middle" fontFamily="system-ui, -apple-system, sans-serif" fontSize="16" fontWeight="800" fill="#FFFFFF">k</text>
+    </svg>
+  );
+}
+
+export function TeachableIcon({ className, size = 22 }: IconProps) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="32" height="32" rx="7" fill="#4F4FEC"/>
+      <text x="16" y="22" textAnchor="middle" fontFamily="system-ui, -apple-system, sans-serif" fontSize="16" fontWeight="800" fill="#FFFFFF">T</text>
+    </svg>
+  );
+}
+
