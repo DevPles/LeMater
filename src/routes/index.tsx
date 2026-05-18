@@ -467,14 +467,14 @@ const btnPrimary: CSSProperties = {
 };
 
 const btnSecondary: CSSProperties = {
-  background: "transparent",
-  color: c.ink,
+  background: `linear-gradient(135deg, ${c.sageDark} 0%, ${c.sage} 100%)`,
+  color: "white",
   fontSize: 11,
   fontWeight: 600,
   letterSpacing: "0.16em",
   textTransform: "uppercase",
   padding: "12px 24px",
-  border: `1.5px solid ${c.border}`,
+  border: "1.5px solid transparent",
   borderRadius: 8,
   boxShadow: "4px 4px 10px rgba(120, 100, 70, 0.25), -4px -4px 10px rgba(255, 250, 240, 0.95)",
   cursor: "pointer",
