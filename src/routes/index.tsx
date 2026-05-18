@@ -586,12 +586,22 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                 <div style={{ background: c.sageDark, color: "white", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 10px", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.25)" }}>★ 5.0</div>
               </div>
               <div style={{ fontSize: 12.5, color: "#0f2e22", lineHeight: 1.6, fontWeight: 700, textShadow: "0 1px 3px rgba(255,255,255,0.95), 0 0 10px rgba(255,255,255,0.7)" }}>
-                {isMobile ? "Pós Graduada em Obstetricia" : "Enfermeira Pós Graduada em Obstetricia"}<br />
-                {isMobile ? "Pós Graduada em Neonatologista" : "Enfermeira Pós Graduada em Neonatologista"}<br />
-                {isMobile ? "ACLS American Heart Association (AHA)" : "Especialista ACLS pelo American Heart Association (AHA)"}<br />
+                <span className="lm-desktop-only">Enfermeira Pós Graduada em Obstetricia</span>
+                <span className="lm-mobile-only">Pós Graduada em Obstetricia</span><br />
+                <span className="lm-desktop-only">Enfermeira Pós Graduada em Neonatologista</span>
+                <span className="lm-mobile-only">Pós Graduada em Neonatologista</span><br />
+                <span className="lm-desktop-only">Especialista ACLS pelo American Heart Association (AHA)</span>
+                <span className="lm-mobile-only">ACLS American Heart Association (AHA)</span><br />
                 Criadora do Método Le Mater<br />
                 Fundadora da Le Mater Estética
               </div>
+              <style>{`
+                .lm-mobile-only { display: none; }
+                @media (max-width: 767px) {
+                  .lm-desktop-only { display: none; }
+                  .lm-mobile-only { display: inline; }
+                }
+              `}</style>
             </div>
           </LiquidCard>
         </div>
