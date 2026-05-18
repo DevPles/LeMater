@@ -820,7 +820,7 @@ function Footer() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr",
+          gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr",
           gap: 40,
           maxWidth: 1200,
           margin: "0 auto",
@@ -833,15 +833,6 @@ function Footer() {
             Acompanhando mulheres da tentativa natural de engravidar aos primeiros cuidados com o bebê. 
             Educação materna, tecnologia e acolhimento.
           </p>
-        </div>
-        <div>
-          <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Plataforma</h4>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-            <li><Link to="/" search={{ s: "inicio" } as any} style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Início</Link></li>
-            <li><Link to="/" search={{ s: "sobre" } as any} style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Rayssa Leslie</Link></li>
-            <li><Link to="/conteudos-gratis" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Conteúdos Grátis</Link></li>
-            <li><Link to="/login" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Acessar Atlas</Link></li>
-          </ul>
         </div>
         <div>
           <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Contato</h4>
