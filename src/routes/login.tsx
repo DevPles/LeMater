@@ -364,7 +364,8 @@ function LoginPage() {
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               {isSignup ? "Entrar" : "Cadastrar"}
-          </button>
+            </button>
+          </div>
         </div>
       </div>
 
