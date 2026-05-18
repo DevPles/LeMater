@@ -315,80 +315,77 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
         )}
       </div>
       {isMobile && (
-        <div
-          style={{
-            position: "fixed",
-            top: 72,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(250,245,238,0.98)",
-            backdropFilter: "blur(20px)",
-            transform: open ? "translateY(0)" : "translateY(-100%)",
-            opacity: open ? 1 : 0,
-            pointerEvents: open ? "auto" : "none",
-            transition: "transform 500ms cubic-bezier(0.65, 0, 0.35, 1), opacity 400ms ease",
-            display: "flex",
-            flexDirection: "column",
-            padding: "32px 28px 40px",
-            overflowY: "auto",
-          }}
-        >
-          <ul style={{ listStyle: "none", margin: 0, padding: 0, flex: 1 }}>
-            {NAV_ITEMS.map(([id, label], i) => (
-              <li
-                key={id}
-                style={{
-                  borderBottom: `1px solid ${c.border}`,
-                  transform: open ? "translateY(0)" : "translateY(20px)",
-                  opacity: open ? 1 : 0,
-                  transition: `transform 500ms ease ${150 + i * 70}ms, opacity 500ms ease ${150 + i * 70}ms`,
-                }}
-              >
-                <button
-                  onClick={() => handleGo(id)}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "baseline",
-                    gap: 16,
-                    padding: "22px 4px",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontFamily: serif,
-                    fontSize: 30,
-                    fontWeight: 300,
-                    color: active === id ? c.sageDark : c.ink,
-                    textAlign: "left",
-                  }}
-                >
-                  <span style={{ fontFamily: sans, fontSize: 10, color: c.muted, letterSpacing: "0.15em", minWidth: 24 }}>
-                    0{i + 1}
-                  </span>
-                  <span style={{ flex: 1 }}>{label}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+        <>
+          <div
+            onClick={() => setOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(20, 20, 20, 0.35)",
+              opacity: open ? 1 : 0,
+              pointerEvents: open ? "auto" : "none",
+              transition: "opacity 300ms ease",
+              zIndex: 90,
+            }}
+          />
           <div
             style={{
-              marginTop: 32,
-              transform: open ? "translateY(0)" : "translateY(20px)",
-              opacity: open ? 1 : 0,
-              transition: `transform 500ms ease ${150 + NAV_ITEMS.length * 70}ms, opacity 500ms ease ${150 + NAV_ITEMS.length * 70}ms`,
+              position: "fixed",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: "82%",
+              maxWidth: 340,
+              background: c.warm,
+              transform: open ? "translateX(0)" : "translateX(100%)",
+              transition: "transform 400ms cubic-bezier(0.4, 0, 0.2, 1)",
+              zIndex: 95,
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: open ? "-20px 0 40px rgba(0,0,0,0.08)" : "none",
             }}
           >
-            <Link to="/login" style={{ textDecoration: "none" }} onClick={() => setOpen(false)}>
-              <button style={{ ...btnPrimary, width: "100%", padding: "16px 24px", fontSize: 12 }}>
-                ENTRAR
-              </button>
-            </Link>
-            <div style={{ marginTop: 24, fontSize: 11, color: c.muted, letterSpacing: "0.1em", textTransform: "uppercase", textAlign: "center" }}>
-              contato@lemater.com
+            <div style={{ padding: "84px 28px 24px" }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.2em", color: c.muted, textTransform: "uppercase", marginBottom: 24 }}>
+                Navegação
+              </div>
+              <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                {NAV_ITEMS.map(([id, label]) => (
+                  <li key={id}>
+                    <button
+                      onClick={() => handleGo(id)}
+                      style={{
+                        width: "100%",
+                        padding: "14px 0",
+                        background: "none",
+                        border: "none",
+                        borderBottom: `1px solid ${c.border}`,
+                        cursor: "pointer",
+                        fontFamily: sans,
+                        fontSize: 14,
+                        fontWeight: 500,
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        color: active === id ? c.sageDark : c.ink,
+                        textAlign: "left",
+                      }}
+                    >
+                      {label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div style={{ marginTop: "auto", padding: "0 28px 32px" }}>
+              <Link to="/login" style={{ textDecoration: "none" }} onClick={() => setOpen(false)}>
+                <button style={{ ...btnPrimary, width: "100%" }}>ENTRAR</button>
+              </Link>
+              <div style={{ marginTop: 20, fontSize: 11, color: c.muted, letterSpacing: "0.08em" }}>
+                contato@lemater.com
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </nav>
   );
