@@ -196,14 +196,37 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       <h2 style={{ fontFamily: serif, fontSize: isMobile ? 24 : 26, fontWeight: 400, margin: "0 0 8px", lineHeight: 1.2 }}>{data!.titulo}</h2>
       {data!.descricao_curta && <p style={{ fontSize: 13, color: c.muted, margin: "0 0 20px", lineHeight: 1.5 }}>{data!.descricao_curta}</p>}
 
-      {!data!.matriculado && (
-        <div style={{ background: "white", padding: 14, border: `1px solid ${c.border}`, marginBottom: 20 }}>
-          {data!.preco_label && (
-            <div style={{ fontFamily: serif, fontSize: 22, color: c.sageDark, marginBottom: 4 }}>{data!.preco_label}</div>
-          )}
-          <p style={{ fontSize: 12, color: c.muted, margin: 0, lineHeight: 1.5 }}>
-            Aulas marcadas com <strong style={{ color: c.sageDark }}>PRÉVIA</strong> estão liberadas. Toque em qualquer aula bloqueada para comprar ou entrar na sua conta.
-          </p>
+      {!data!.matriculado && data!.preco_label && (
+        <div style={{ background: "white", padding: 14, border: `1px solid ${c.border}`, marginBottom: 16 }}>
+          <div style={{ fontFamily: serif, fontSize: 22, color: c.sageDark }}>{data!.preco_label}</div>
+        </div>
+      )}
+
+      {data!.materiais_gratis.length > 0 && (
+        <div style={{ background: c.warm, padding: 14, border: `1px solid ${c.border}`, marginBottom: 20 }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.sageDark, marginBottom: 10 }}>
+            MATERIAIS GRÁTIS
+          </div>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
+            {data!.materiais_gratis.map((m, i) => (
+              <li key={i}>
+                <a
+                  href={m.url}
+                  download={m.nome}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    padding: "10px 12px", background: "white", border: `1px solid ${c.border}`,
+                    textDecoration: "none", color: c.ink, fontSize: 13, fontFamily: sans,
+                  }}
+                >
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.nome}</span>
+                  <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: c.sageDark, marginLeft: 12 }}>Baixar ↓</span>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
