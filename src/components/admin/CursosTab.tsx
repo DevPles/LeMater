@@ -62,6 +62,16 @@ export default function CursosTab() {
         const { data: pub } = supabase.storage.from("materiais-capas").getPublicUrl(up.path);
         capa_url = pub.publicUrl;
       }
+      // Upload materiais grátis (PDFs no nível do curso)
+      let materiais_gratis: { nome: string; path: string }[] = Array.isArray((edit as any).materiais_gratis) ? [...(edit as any).materiais_gratis] : [];
+      const matInput = document.getElementById("cursoMateriais") as HTMLInputElement | null;
+      const matFiles = matInput?.files ? Array.from(matInput.files) : [];
+      for (const f of matFiles) {
+        const path = `cursos/materiais/${Date.now()}-${f.name.replace(/[^\w.-]/g, "_")}`;
+        const { error: upErr } = await supabase.storage.from("materiais-pdf").upload(path, f);
+        if (upErr) { alert("Falha upload material: " + upErr.message); setBusy(false); return; }
+        materiais_gratis.push({ nome: f.name, path });
+      }
       const payload: any = {
         id: edit.id, titulo: edit.titulo!, slug: edit.slug!,
         descricao_curta: edit.descricao_curta || null,
@@ -77,6 +87,7 @@ export default function CursosTab() {
         instrutor_nome: edit.instrutor_nome || null,
         instrutor_bio: edit.instrutor_bio || null,
         instrutor_foto: edit.instrutor_foto || null,
+        materiais_gratis,
       };
       const row = await upsertFn({ data: payload });
       setEdit(null);
