@@ -505,7 +505,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           <p
             style={{ fontSize: isMobile ? 15 : 16, lineHeight: 1.6, color: c.muted, maxWidth: 640, marginBottom: 36, textAlign: "center", marginInline: "auto" }}
           >
-            Criada pela Enfermeira Brasileira, Rayssa Leslie, Enfermeira Pós Graduada em Obstetricia formada pela UNAERP, a Le Mater une orientação Pré-Concepcional, Educação Materna, Carteira Digital da Gestante e Inteligência Artificial para Acompanhar mulheres da tentativa natural de Engravidar aos Primeiros Cuidados com o bebê.
+            Criada pela Enfermeira Obstetra Rayssa Leslie, a Le Mater é um ecossistema tecnológico de Cuidado Materno que integra Educação, Orientação Profissional, Carteira Digital da Gestante e Acompanhamento da tentativa de engravidar ao Pós-Parto.
           </p>
           <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
             <Link to="/atlas" style={{ textDecoration: "none" }}>
