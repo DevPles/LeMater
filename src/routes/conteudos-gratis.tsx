@@ -232,6 +232,73 @@ function ConteudoNav({ isMobile }: { isMobile: boolean }) {
   );
 }
 
+function ConteudoCard({ item, onAbrir }: { item: Conteudo; onAbrir: (i: Conteudo) => void }) {
+  const [hover, setHover] = useState(false);
+  const isDark = hover;
+  return (
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        background: isDark ? c.sageDark : c.warm,
+        padding: 40,
+        transition: "background .3s",
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
+        <div style={{ fontFamily: serif, fontSize: 64, fontWeight: 300, color: isDark ? "rgba(255,255,255,0.18)" : c.border, lineHeight: 1 }}>
+          {item.numero}
+        </div>
+        <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: isDark ? c.sageLight : c.sage, fontWeight: 500 }}>
+          {item.categoria}
+        </div>
+      </div>
+      <div style={{ fontFamily: serif, fontSize: 28, fontWeight: 400, color: isDark ? "white" : c.ink, marginBottom: 14, lineHeight: 1.15, whiteSpace: "pre-line" }}>
+        {item.titulo}
+      </div>
+      <p style={{ fontSize: 14, lineHeight: 1.7, color: isDark ? "rgba(255,255,255,0.75)" : c.muted, marginBottom: 24 }}>
+        {item.descricao}
+      </p>
+      <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : c.border}`, paddingTop: 20, marginBottom: 20 }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 8 }}>
+          Formato
+        </div>
+        <div style={{ fontSize: 14, lineHeight: 1.5, color: isDark ? "white" : c.ink, fontWeight: 400 }}>
+          {item.formato}
+        </div>
+      </div>
+      <button
+        onClick={() => onAbrir(item)}
+        style={{
+          background: isDark ? "white" : c.sageDark,
+          color: isDark ? c.sageDark : "white",
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          padding: "14px 24px",
+          border: "none",
+          cursor: "pointer",
+          fontFamily: sans,
+          width: "100%",
+          marginBottom: 24,
+        }}
+      >
+        Acessar gratuitamente
+      </button>
+      <div style={{ marginTop: "auto", paddingTop: 8 }}>
+        <div style={{ fontSize: 12, color: isDark ? "rgba(255,255,255,0.6)" : c.muted, fontStyle: "italic", fontFamily: serif }}>
+          Caminho recomendado: {item.caminhoRecomendado}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ConteudosGratisPage() {
   const isMobile = useIsMobile();
   const [selecionado, setSelecionado] = useState<Conteudo | null>(null);
