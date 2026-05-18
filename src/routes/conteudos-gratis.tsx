@@ -51,40 +51,50 @@ type Conteudo = {
   titulo: string;
   descricao: string;
   formato: string;
+  caminhoRecomendado: string;
+  rotaPrograma: string;
 };
 
 const CONTEUDOS: Conteudo[] = [
   {
     numero: "01",
     categoria: "Concepção",
-    titulo: "7 sinais de que você pode estar errando sua janela fértil",
+    titulo: "7 sinais de que você pode estar\nerrando sua janela fértil",
     descricao:
       "Um guia direto para entender o seu ciclo, identificar o período fértil real e aumentar suas chances naturais de engravidar.",
     formato: "PDF · Guia gratuito",
+    caminhoRecomendado: "Ajuda na Concepção Le Mater",
+    rotaPrograma: "/programas/concepcao",
   },
   {
     numero: "02",
     categoria: "Gestação",
-    titulo: "Primeiros passos depois do positivo",
+    titulo: "Primeiros passos\ndepois do positivo",
     descricao:
       "Mapa com tudo o que importa nas primeiras semanas: exames, suplementação, sinais de alerta e organização do pré-natal.",
     formato: "PDF · Mapa gratuito",
+    caminhoRecomendado: "Programa Gestação Le Mater",
+    rotaPrograma: "/programas/gestacao",
   },
   {
     numero: "03",
     categoria: "Puerpério",
-    titulo: "Cuidados essenciais no pós-parto",
+    titulo: "Cuidados essenciais\nno pós-parto",
     descricao:
       "Checklist clínico de recuperação física, emocional e amamentação para os primeiros 40 dias depois do parto.",
     formato: "PDF · Checklist gratuito",
+    caminhoRecomendado: "Pós-Parto Le Mater",
+    rotaPrograma: "/programas/pos-parto",
   },
   {
     numero: "04",
     categoria: "Bebê",
-    titulo: "Primeiros cuidados com o recém-nascido",
+    titulo: "Primeiros cuidados com\no recém-nascido",
     descricao:
       "Banho, sono seguro, coto umbilical, sinais de alerta e rotina prática para os primeiros dias do bebê em casa.",
     formato: "PDF · Guia gratuito",
+    caminhoRecomendado: "Bebê e Primeiros Cuidados Le Mater",
+    rotaPrograma: "/programas/bebe-primeiros-cuidados",
   },
 ];
 
