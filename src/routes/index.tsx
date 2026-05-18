@@ -321,11 +321,11 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
             style={{
               position: "fixed",
               inset: 0,
-              background: "rgba(20, 20, 20, 0.35)",
+              background: "rgba(20, 20, 20, 0.45)",
               opacity: open ? 1 : 0,
               pointerEvents: open ? "auto" : "none",
               transition: "opacity 300ms ease",
-              zIndex: 90,
+              zIndex: 200,
             }}
           />
           <div
@@ -336,17 +336,37 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
               bottom: 0,
               width: "82%",
               maxWidth: 340,
-              background: c.warm,
+              background: "#faf5ee",
               transform: open ? "translateX(0)" : "translateX(100%)",
               transition: "transform 400ms cubic-bezier(0.4, 0, 0.2, 1)",
-              zIndex: 95,
+              zIndex: 210,
               display: "flex",
               flexDirection: "column",
-              boxShadow: open ? "-20px 0 40px rgba(0,0,0,0.08)" : "none",
+              boxShadow: open ? "-20px 0 40px rgba(0,0,0,0.12)" : "none",
             }}
           >
-            <div style={{ padding: "84px 28px 24px" }}>
-              <div style={{ fontSize: 10, letterSpacing: "0.2em", color: c.muted, textTransform: "uppercase", marginBottom: 24 }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", padding: "20px 20px 0" }}>
+              <button
+                onClick={() => setOpen(false)}
+                aria-label="Fechar menu"
+                style={{
+                  width: 40,
+                  height: 40,
+                  background: "transparent",
+                  border: `1px solid ${c.border}`,
+                  borderRadius: 999,
+                  cursor: "pointer",
+                  fontFamily: sans,
+                  fontSize: 18,
+                  color: c.ink,
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <div style={{ padding: "20px 28px 24px" }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.2em", color: c.muted, textTransform: "uppercase", marginBottom: 20 }}>
                 Navegação
               </div>
               <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
@@ -356,7 +376,7 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
                       onClick={() => handleGo(id)}
                       style={{
                         width: "100%",
-                        padding: "14px 0",
+                        padding: "16px 0",
                         background: "none",
                         border: "none",
                         borderBottom: `1px solid ${c.border}`,
