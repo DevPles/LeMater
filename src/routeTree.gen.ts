@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConteudosGratisRouteImport } from './routes/conteudos-gratis'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedMembroRouteImport } from './routes/_authenticated/membro'
 import { Route as AuthenticatedAtlasRouteImport } from './routes/_authenticated/atlas'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
@@ -42,6 +43,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedMembroRoute = AuthenticatedMembroRouteImport.update({
+  id: '/membro',
+  path: '/membro',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAtlasRoute = AuthenticatedAtlasRouteImport.update({
   id: '/atlas',
   path: '/atlas',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/atlas': typeof AuthenticatedAtlasRoute
+  '/membro': typeof AuthenticatedMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/atlas': typeof AuthenticatedAtlasRoute
+  '/membro': typeof AuthenticatedMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
 }
 export interface FileRoutesById {
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/atlas': typeof AuthenticatedAtlasRoute
+  '/_authenticated/membro': typeof AuthenticatedMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
 }
 export interface FileRouteTypes {
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin'
     | '/atlas'
+    | '/membro'
     | '/api/public/hotmart-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin'
     | '/atlas'
+    | '/membro'
     | '/api/public/hotmart-webhook'
   id:
     | '__root__'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/atlas'
+    | '/_authenticated/membro'
     | '/api/public/hotmart-webhook'
   fileRoutesById: FileRoutesById
 }
@@ -164,6 +176,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/membro': {
+      id: '/_authenticated/membro'
+      path: '/membro'
+      fullPath: '/membro'
+      preLoaderRoute: typeof AuthenticatedMembroRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/atlas': {
       id: '/_authenticated/atlas'
       path: '/atlas'
@@ -191,11 +210,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAtlasRoute: typeof AuthenticatedAtlasRoute
+  AuthenticatedMembroRoute: typeof AuthenticatedMembroRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAtlasRoute: AuthenticatedAtlasRoute,
+  AuthenticatedMembroRoute: AuthenticatedMembroRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -213,3 +234,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
