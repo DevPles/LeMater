@@ -149,14 +149,13 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                         return (
                           <li key={a.id}>
                             <button
-                              disabled={a.bloqueada}
-                              onClick={() => abrirAula(a.id)}
+                              onClick={() => abrirAula(a.id, a.bloqueada, a.titulo)}
                               style={{
                                 width: "100%", textAlign: "left", padding: "10px 12px",
                                 background: ativo ? c.sageDark : "transparent",
                                 color: ativo ? "white" : (a.bloqueada ? c.muted : c.ink),
                                 border: "none", borderLeft: `2px solid ${ativo ? c.gold : "transparent"}`,
-                                cursor: a.bloqueada ? "not-allowed" : "pointer",
+                                cursor: "pointer",
                                 fontFamily: sans, fontSize: 13, display: "flex", justifyContent: "space-between", gap: 8,
                               }}
                             >
