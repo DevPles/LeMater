@@ -58,6 +58,7 @@ export type CursoDetalhe = {
   instrutor_foto: string | null;
   publicado: boolean;
   modulos: CursoModuloFull[];
+  materiais_gratis: { nome: string; url: string }[];
   matriculado: boolean;
   admin: boolean;
 };
