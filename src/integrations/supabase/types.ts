@@ -311,6 +311,7 @@ export type Database = {
           descricao: string | null
           duracao_min: number
           id: string
+          materiais_extras: Json
           modulo_id: string
           ordem: number
           pdf_url: string | null
@@ -326,6 +327,7 @@ export type Database = {
           descricao?: string | null
           duracao_min?: number
           id?: string
+          materiais_extras?: Json
           modulo_id: string
           ordem?: number
           pdf_url?: string | null
@@ -341,6 +343,7 @@ export type Database = {
           descricao?: string | null
           duracao_min?: number
           id?: string
+          materiais_extras?: Json
           modulo_id?: string
           ordem?: number
           pdf_url?: string | null
