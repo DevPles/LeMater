@@ -350,6 +350,7 @@ const CursoSchema = z.object({
   instrutor_nome: z.string().max(120).nullable().optional(),
   instrutor_bio: z.string().max(2000).nullable().optional(),
   instrutor_foto: z.string().nullable().optional(),
+  materiais_gratis: z.array(z.object({ nome: z.string().min(1).max(200), path: z.string().min(1).max(500) })).optional(),
 });
 
 export const adminUpsertCurso = createServerFn({ method: "POST" })
