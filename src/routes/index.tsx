@@ -372,7 +372,7 @@ const btnPrimary: CSSProperties = {
   letterSpacing: "0.16em",
   textTransform: "uppercase",
   padding: "12px 24px",
-  border: "none",
+  border: "1.5px solid transparent",
   borderRadius: 8,
   boxShadow: "4px 4px 10px rgba(120, 100, 70, 0.25), -4px -4px 10px rgba(255, 250, 240, 0.95)",
   cursor: "pointer",
