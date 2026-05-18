@@ -341,7 +341,7 @@ function btnSm(bg: string): CSSProperties {
 function tabBtn(active: boolean): CSSProperties {
   return { background: active ? c.sageDark : "transparent", color: active ? "white" : c.muted, fontSize: 12, fontWeight: 500, letterSpacing: "0.10em", textTransform: "uppercase", padding: "10px 18px", border: "none", cursor: "pointer", fontFamily: sans };
 }
-function tabLabel(t: Tab) { return t === "dash" ? "Painel" : t === "materiais" ? "Materiais" : t === "leads" ? "Leads" : t === "alunos" ? "Alunos" : "Compras"; }
+function tabLabel(t: Tab) { return t === "dash" ? "Painel" : t === "materiais" ? "Materiais" : t === "atlas" ? "Atlas" : t === "leads" ? "Leads" : t === "alunos" ? "Alunos" : "Compras"; }
 
 function Th({ children }: { children: any }) { return <th style={{ textAlign: "left", padding: "12px 14px", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, fontWeight: 500 }}>{children}</th>; }
 function Td({ children, colSpan }: { children: any; colSpan?: number }) { return <td colSpan={colSpan} style={{ padding: "12px 14px", color: c.ink }}>{children}</td>; }
