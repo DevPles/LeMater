@@ -38,8 +38,8 @@ export const Route = createRootRoute({
       { property: "og:description", content: "Acompanhamento Materno com Aplicativo, Cursos, Carteira Digital da Gestante e Teleconsulta de Enfermagem com Rayssa Leslie." },
       { name: "twitter:description", content: "Acompanhamento Materno com Aplicativo, Cursos, Carteira Digital da Gestante e Teleconsulta de Enfermagem com Rayssa Leslie." },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3f7b1b73-82b7-412e-bc31-e7bb1f461f97/id-preview-2018461f--f70afa81-002d-4470-8211-2a90bfccffdd.lovable.app-1778873238930.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3f7b1b73-82b7-412e-bc31-e7bb1f461f97/id-preview-2018461f--f70afa81-002d-4470-8211-2a90bfccffdd.lovable.app-1778873238930.png" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/hsIaJ1cV77Y8R02Q0Rs8lMxhMw62/social-images/social-1779131613877-CAPA_HOTMARKT.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/hsIaJ1cV77Y8R02Q0Rs8lMxhMw62/social-images/social-1779131613877-CAPA_HOTMARKT.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
