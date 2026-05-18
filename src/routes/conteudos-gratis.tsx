@@ -237,6 +237,7 @@ function ConteudosGratisPage() {
   const [selecionado, setSelecionado] = useState<Conteudo | null>(null);
   const [form, setForm] = useState({ nome: "", email: "", telefone: "" });
   const [enviado, setEnviado] = useState(false);
+  const [acessando, setAcessando] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const enviarLead = useServerFn(registrarLead);
@@ -244,6 +245,7 @@ function ConteudosGratisPage() {
   const abrir = (item: Conteudo) => {
     setSelecionado(item);
     setEnviado(false);
+    setAcessando(false);
     setErro(null);
     setForm({ nome: "", email: "", telefone: "" });
   };
