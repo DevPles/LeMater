@@ -386,14 +386,15 @@ function LoginPage() {
             height: 38% !important;
             transform: none !important;
             padding: 18px !important;
-            flex-direction: row !important;
-            gap: 14px !important;
-            justify-content: flex-start !important;
-            text-align: left !important;
+            flex-direction: column !important;
+            gap: 6px !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
           }
           .login-card .brand-pane img {
-            height: 44px !important;
-            margin-bottom: 0 !important;
+            height: 96px !important;
+            margin-bottom: 6px !important;
             flex-shrink: 0;
           }
           .login-card .brand-pane h2 {
@@ -408,13 +409,11 @@ function LoginPage() {
           .login-card .brand-pane .brand-text {
             display: flex !important;
             flex-direction: column;
-            align-items: flex-start;
-            flex: 1;
+            align-items: center;
           }
           .login-card .brand-pane button {
             padding: 8px 18px !important;
             font-size: 10px !important;
-            align-self: flex-start;
           }
           .login-card .form-pane {
             top: 38% !important;
