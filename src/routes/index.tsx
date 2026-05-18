@@ -573,19 +573,19 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             </div>
           </div>
         </div>
-        <div style={{ flex: "0 1 460px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: isMobile ? 20 : 32, minHeight: isMobile ? 360 : 480, alignSelf: "center", borderRadius: 16, width: isMobile ? "calc(100% - 40px)" : undefined, marginInline: isMobile ? 20 : undefined, marginBottom: isMobile ? 24 : undefined }}>
+        <div style={{ flex: "0 1 360px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: isMobile ? 16 : 24, minHeight: isMobile ? 300 : 400, alignSelf: "center", borderRadius: 16, width: isMobile ? "calc(100% - 40px)" : undefined, marginInline: isMobile ? 20 : undefined, marginBottom: isMobile ? 24 : undefined }}>
           <img
             src={rayssa}
             alt="Rayssa Leslie, Enfermeira Pós Graduada em Obstetricia"
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
           />
-          <LiquidCard bgOpacity={0} style={{ padding: "18px 20px", display: "flex", alignItems: "flex-start", gap: 12, position: "relative", zIndex: 2, background: "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))", backdropFilter: "blur(8px) saturate(180%) contrast(110%)", WebkitBackdropFilter: "blur(8px) saturate(180%) contrast(110%)", borderColor: "rgba(255,255,255,0.18)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.2), 0 8px 24px -14px rgba(0,0,0,0.18)" }}>
+          <LiquidCard bgOpacity={0} style={{ padding: "14px 16px", display: "flex", alignItems: "flex-start", gap: 10, position: "relative", zIndex: 2, background: "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))", backdropFilter: "blur(8px) saturate(180%) contrast(110%)", WebkitBackdropFilter: "blur(8px) saturate(180%) contrast(110%)", borderColor: "rgba(255,255,255,0.18)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.2), 0 8px 24px -14px rgba(0,0,0,0.18)" }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: "#0f2e22", textShadow: "0 1px 3px rgba(255,255,255,0.95), 0 0 12px rgba(255,255,255,0.7)" }}>Rayssa Leslie</div>
-                <div style={{ background: c.sageDark, color: "white", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", padding: "4px 10px", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.25)" }}>★ 5.0</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 6 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#0f2e22", textShadow: "0 1px 3px rgba(255,255,255,0.95), 0 0 12px rgba(255,255,255,0.7)" }}>Rayssa Leslie</div>
+                <div style={{ background: c.sageDark, color: "white", fontSize: 9, letterSpacing: "0.08em", textTransform: "uppercase", padding: "3px 8px", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.25)" }}>★ 5.0</div>
               </div>
-              <div style={{ fontSize: 12.5, color: "#0f2e22", lineHeight: 1.6, fontWeight: 700, textShadow: "0 1px 3px rgba(255,255,255,0.95), 0 0 10px rgba(255,255,255,0.7)" }}>
+              <div style={{ fontSize: 10.5, color: "#0f2e22", lineHeight: 1.5, fontWeight: 700, textShadow: "0 1px 3px rgba(255,255,255,0.95), 0 0 10px rgba(255,255,255,0.7)" }}>
                 <span className="lm-desktop-only">Enfermeira Pós Graduada em Obstetricia</span>
                 <span className="lm-mobile-only">Pós Graduada em Obstetricia</span><br />
                 <span className="lm-desktop-only">Enfermeira Pós Graduada em Neonatologista</span>
