@@ -33,7 +33,7 @@ function CursosVitrine() {
 
   return (
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
-      <TopBar />
+      <SiteNav />
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "120px 32px 80px" }}>
         <header style={{ marginBottom: 48, maxWidth: 760 }}>
           <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, marginBottom: 12 }}>Formação</div>
