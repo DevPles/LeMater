@@ -820,7 +820,7 @@ function Footer() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr 1fr",
+          gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr 1fr",
           gap: 40,
           maxWidth: 1200,
           margin: "0 auto",
@@ -849,14 +849,6 @@ function Footer() {
             <li style={{ fontSize: 13, color: c.muted }}>contato@lemater.com</li>
             <li style={{ fontSize: 13, color: c.muted }}>Ribeirão Preto, SP</li>
             <li style={{ fontSize: 13, color: c.muted }}>UNAERP</li>
-          </ul>
-        </div>
-        <div>
-          <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Idiomas</h4>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-            <li style={{ fontSize: 13, color: c.muted }}>Português</li>
-            <li style={{ fontSize: 13, color: c.muted }}>English</li>
-            <li style={{ fontSize: 13, color: c.muted }}>Español</li>
           </ul>
         </div>
       </div>
