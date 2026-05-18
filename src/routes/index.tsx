@@ -812,52 +812,31 @@ function Footer() {
   return (
     <footer
       style={{
-        padding: isMobile ? "60px 24px 40px" : "80px 48px 48px",
+        padding: isMobile ? "28px 24px" : "32px 48px",
         background: "white",
         borderTop: `1px solid ${c.border}`,
       }}
     >
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr",
-          gap: 40,
           maxWidth: 1200,
           margin: "0 auto",
-          marginBottom: 60,
-        }}
-      >
-        <div style={{ maxWidth: 300 }}>
-          <img src={lemateLogo} alt="Le Mater" style={{ height: 48, width: "auto", marginBottom: 24 }} />
-          <p style={{ fontSize: 14, color: c.muted, lineHeight: 1.6, fontWeight: 300 }}>
-            Acompanhando mulheres da tentativa natural de engravidar aos primeiros cuidados com o bebê. 
-            Educação materna, tecnologia e acolhimento.
-          </p>
-        </div>
-        <div>
-          <h4 style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.ink, marginBottom: 20, fontWeight: 600 }}>Contato</h4>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-            <li style={{ fontSize: 13, color: c.muted }}>contato@lemater.com</li>
-            <li style={{ fontSize: 13, color: c.muted }}>Brasil, o país do parto saudável</li>
-          </ul>
-        </div>
-      </div>
-      <div
-        style={{
           display: "flex",
+          flexDirection: isMobile ? "column" : "row",
           justifyContent: "space-between",
-          alignItems: "center",
-          paddingTop: 32,
-          borderTop: `1px solid ${c.border}`,
-          fontSize: 11,
-          color: c.muted,
-          letterSpacing: "0.06em",
-          flexWrap: "wrap",
+          alignItems: isMobile ? "flex-start" : "center",
           gap: 16,
         }}
       >
-        <div>© 2026 · Le Mater · Todos os direitos reservados</div>
-        <div style={{ display: "flex", gap: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <img src={lemateLogo} alt="Le Mater" style={{ height: 28, width: "auto" }} />
+          <span style={{ fontSize: 12, color: c.muted, letterSpacing: "0.06em" }}>
+            © 2026 · Le Mater
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: 20, fontSize: 12, color: c.muted, flexWrap: "wrap" }}>
+          <span>contato@lemater.com</span>
+          <span>Brasil, o país do parto saudável</span>
           <span>Privacidade</span>
           <span>Termos</span>
         </div>
