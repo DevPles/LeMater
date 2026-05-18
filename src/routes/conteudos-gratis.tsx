@@ -273,163 +273,48 @@ function ConteudosGratisPage() {
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
       <ConteudoNav isMobile={isMobile} />
 
-      {/* Hero */}
-      <header
-        style={{
-          maxWidth: 980,
-          margin: "0 auto",
-          padding: isMobile ? "120px 24px 32px" : "160px 48px 48px",
-          textAlign: "center",
-        }}
-      >
-        <h1
-          style={{
-            fontFamily: serif,
-            fontSize: "clamp(34px,5vw,64px)",
-            fontWeight: 300,
-            lineHeight: 1.1,
-            margin: "0 0 24px",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          Conteúdo
-        </h1>
-        <p
-          style={{
-            fontSize: 17,
-            lineHeight: 1.7,
-            color: c.muted,
-            fontWeight: 300,
-            maxWidth: 680,
-            margin: "0 auto",
-            whiteSpace: "pre-line",
-          }}
-        >
-          Materiais educativos sobre concepção, gestação, parto, pós-parto e cuidados maternos.
-        </p>
-      </header>
-
-      {/* Cards */}
-      <section
-        style={{
-          maxWidth: 1180,
-          margin: "0 auto",
-          padding: isMobile ? "16px 20px 80px" : "32px 48px 120px",
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-          gap: isMobile ? 20 : 28,
-        }}
-      >
-        {CONTEUDOS.map((item) => (
-          <article
-            key={item.numero}
-            style={{
-              background: "white",
-              border: `1px solid ${c.border}`,
-              padding: isMobile ? 28 : 40,
-              display: "flex",
-              flexDirection: "column",
-              gap: 18,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "baseline",
-                justifyContent: "space-between",
-                gap: 16,
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: serif,
-                  fontSize: 28,
-                  color: c.sage,
-                  fontWeight: 300,
-                }}
-              >
-                {item.numero}
-              </span>
-              <span
-                style={{
-                  fontSize: 10,
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  color: c.muted,
-                }}
-              >
-                {item.categoria}
-              </span>
-            </div>
-            <h2
-              style={{
-                fontFamily: serif,
-                fontSize: 26,
-                lineHeight: 1.2,
-                fontWeight: 400,
-                margin: 0,
-                color: c.ink,
-                whiteSpace: "pre-line",
-              }}
-            >
-              {item.titulo}
-            </h2>
-            <p style={{ fontSize: 15, lineHeight: 1.65, color: c.muted, margin: 0 }}>
-              {item.descricao}
-            </p>
+      {/* Atlas-style header + grid */}
+      <section style={{ paddingTop: 70 }}>
+        <div style={{ padding: isMobile ? "60px 24px" : "80px 48px" }}>
+          <div style={{ marginBottom: 48, maxWidth: "100%" }}>
             <div
               style={{
                 fontSize: 11,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
                 color: c.sage,
-                paddingTop: 8,
-                borderTop: `1px solid ${c.border}`,
-                marginTop: "auto",
+                fontWeight: 500,
+                marginBottom: 24,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
               }}
             >
-              {item.formato}
+              <span style={{ width: 24, height: 1, background: c.sage }} />
+              Conteúdo gratuito
             </div>
-            <button
-              onClick={() => abrir(item)}
+            <h1
               style={{
-                background: c.sageDark,
-                color: "white",
-                fontSize: 12,
-                fontWeight: 500,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                padding: "16px 28px",
-                border: "none",
-                cursor: "pointer",
-                fontFamily: sans,
-                marginTop: 8,
-                alignSelf: "flex-start",
-                width: isMobile ? "100%" : "auto",
+                fontFamily: serif,
+                fontSize: "clamp(28px, 3vw, 44px)",
+                fontWeight: 300,
+                lineHeight: 1.1,
+                color: c.ink,
+                marginBottom: 20,
               }}
             >
-              Acessar gratuitamente
-            </button>
-            <div style={{ marginTop: 12, paddingTop: 16, borderTop: `1px solid ${c.border}` }}>
-              <div style={{ fontSize: 12, color: c.muted, marginBottom: 6, fontStyle: "italic", fontFamily: serif }}>
-                Caminho recomendado: {item.caminhoRecomendado}
-              </div>
-              <Link to="/" search={{ s: "produtos" } as any} style={{
-                fontSize: 10,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                color: c.sageDark,
-                textDecoration: "none",
-                borderBottom: `1px solid ${c.sageDark}`,
-                paddingBottom: 2,
-                display: "inline-block",
-                fontWeight: 500,
-              }}>
-                Ver programa completo
-              </Link>
-            </div>
-          </article>
-        ))}
+              Materiais educativos. <em style={{ fontStyle: "italic", color: c.sage }}>Toda a jornada materna.</em>
+            </h1>
+            <p style={{ fontSize: 15, lineHeight: 1.6, color: c.muted, fontWeight: 300, marginTop: 8 }}>
+              Concepção, gestação, pós-parto e cuidados com o bebê.
+            </p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(2,1fr)", gap: 2 }}>
+            {CONTEUDOS.map((item) => (
+              <ConteudoCard key={item.numero} item={item} onAbrir={abrir} />
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* CTA Programa Pago */}
