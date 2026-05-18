@@ -156,14 +156,14 @@ function LoginPage() {
         Voltar
       </Link>
 
-      {/* DESKTOP — neumorphic split card */}
+      {/* Neumorphic split card — same on desktop and mobile */}
       <div
-        className="login-desktop"
+        className="login-card"
         style={{
           ...neuRaised,
           width: "100%",
-          maxWidth: 720,
-          height: 440,
+          maxWidth: 600,
+          height: 380,
           position: "relative",
           overflow: "hidden",
         }}
