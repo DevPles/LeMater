@@ -80,6 +80,7 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
+  const [recoverSent, setRecoverSent] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,6 +108,10 @@ function LoginPage() {
 
   const handleRecover = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) {
+      toast.error("Informe seu e-mail.");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -116,9 +121,14 @@ function LoginPage() {
       toast.error("Não foi possível enviar o e-mail.");
       return;
     }
-    toast.success("Verifique seu e-mail para redefinir a senha.");
+    setRecoverSent(true);
+  };
+
+  const goBackFromRecover = () => {
+    setRecoverSent(false);
     setMode("login");
   };
+
 
   const isSignup = mode === "signup";
 
