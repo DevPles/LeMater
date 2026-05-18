@@ -31,13 +31,23 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const [aulaSel, setAulaSel] = useState<string | null>(null);
   const [player, setPlayer] = useState<AulaPlayer | null>(null);
   const [playerErr, setPlayerErr] = useState<string | null>(null);
+  const [bloqueioInfo, setBloqueioInfo] = useState<{ titulo: string } | null>(null);
   // Em mobile: 'list' (sidebar) ou 'player'
   const [mobileView, setMobileView] = useState<"list" | "player">("list");
 
   useEffect(() => {
     fn({ data: { slug } })
       .then((d) => {
-        setData(d as CursoDetalhe | null);
+        const det = d as CursoDetalhe | null;
+        setData(det);
+        // Auto-seleciona primeira aula liberada (prévia ou matriculado)
+        if (det) {
+          const first = det.modulos.flatMap((m) => m.aulas).find((a) => !a.bloqueada);
+          if (first) {
+            setAulaSel(first.id);
+            setBloqueioInfo(null);
+          }
+        }
       })
       .catch((e) => setErr(e?.message ?? "Erro"));
   }, [slug, user?.id]);
@@ -58,13 +68,24 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   }, []);
 
   const fechar = () => onClose();
+  const irParaCadastro = () => {
+    navigate({ to: "/login" });
+  };
   const comprar = () => {
     if (!data) return;
     if (data.link_compra_externo) window.open(data.link_compra_externo, "_blank", "noopener,noreferrer");
     else if (!user) navigate({ to: "/login" });
   };
 
-  const abrirAula = (id: string) => {
+  const abrirAula = (id: string, bloqueada: boolean, titulo: string) => {
+    if (bloqueada) {
+      setBloqueioInfo({ titulo });
+      setAulaSel(null);
+      setPlayer(null);
+      if (isMobile) setMobileView("player");
+      return;
+    }
+    setBloqueioInfo(null);
     setAulaSel(id);
     if (isMobile) setMobileView("player");
   };
