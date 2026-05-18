@@ -91,14 +91,16 @@ export const listMateriaisVitrine = createServerFn({ method: "GET" }).handler(as
   const paid = await hasPaidAccess(userId);
   const liberados = await liberadoIds(userId);
 
-  const { data, error } = await supabaseAdmin
+  let query = supabaseAdmin
     .from("materiais")
     .select(
       "id, titulo, descricao, categoria, tipo, area, acesso, capa_url, link_compra, plataforma_venda, preco_label, cta_label, ordem, created_at, publicado",
     )
-    .eq("publicado", true)
     .order("ordem", { ascending: true })
     .order("created_at", { ascending: false });
+  // Admin vê tudo (inclusive rascunhos); demais só publicados
+  if (!admin) query = query.eq("publicado", true);
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
 
   const items: VitrineMaterial[] = [];
