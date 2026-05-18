@@ -103,14 +103,14 @@ function MateriaisTab() {
   const reload = () => list().then((d) => setItems(d as MaterialRow[]));
   useEffect(() => { reload(); }, []);
 
-  const novo = () => setEdit({ titulo: "", descricao: "", categoria: "geral", tipo: "pdf", area: "gratis", conteudo_url: "", conteudo_html: "", capa_url: "", ordem: 0, publicado: false });
+  const novo = () => setEdit({ titulo: "", descricao: "", categoria: "Concepção", tipo: "pdf", area: "gratis", acesso: "publico", conteudo_url: "", conteudo_html: "", capa_url: "", link_compra: "", plataforma_venda: "", preco_label: "", cta_label: "", ordem: 0, publicado: false });
 
   const salvar = async () => {
     if (!edit?.titulo || !edit.tipo || !edit.area) return;
     setBusy(true);
     try {
       let conteudo_url = edit.conteudo_url ?? null;
-      // Upload se houver arquivo
+      let capa_url = edit.capa_url ?? null;
       const fileInput = document.getElementById("matFile") as HTMLInputElement | null;
       if (fileInput?.files?.[0] && (edit.tipo === "pdf" || edit.tipo === "video_upload")) {
         const f = fileInput.files[0];
@@ -120,10 +120,24 @@ function MateriaisTab() {
         if (upErr) { alert("Falha no upload: " + upErr.message); setBusy(false); return; }
         conteudo_url = path;
       }
+      const capaInput = document.getElementById("matCapa") as HTMLInputElement | null;
+      if (capaInput?.files?.[0]) {
+        const f = capaInput.files[0];
+        const path = `${Date.now()}-${f.name.replace(/[^\w.-]/g, "_")}`;
+        const { data: up, error: upErr } = await supabase.storage.from("materiais-capas").upload(path, f, { upsert: false });
+        if (upErr) { alert("Falha no upload da capa: " + upErr.message); setBusy(false); return; }
+        const { data: pub } = supabase.storage.from("materiais-capas").getPublicUrl(up.path);
+        capa_url = pub.publicUrl;
+      }
       await upsert({ data: {
         id: edit.id, titulo: edit.titulo!, descricao: edit.descricao ?? null,
         categoria: edit.categoria || "geral", tipo: edit.tipo!, area: edit.area!,
-        conteudo_url, conteudo_html: edit.conteudo_html ?? null, capa_url: edit.capa_url ?? null,
+        acesso: edit.acesso ?? "publico",
+        conteudo_url, conteudo_html: edit.conteudo_html ?? null, capa_url,
+        link_compra: edit.link_compra ?? null,
+        plataforma_venda: edit.plataforma_venda ?? null,
+        preco_label: edit.preco_label ?? null,
+        cta_label: edit.cta_label ?? null,
         ordem: edit.ordem ?? 0, publicado: !!edit.publicado,
       } });
       setEdit(null);
