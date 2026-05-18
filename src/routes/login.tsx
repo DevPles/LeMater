@@ -80,6 +80,7 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
+  const [recoverSent, setRecoverSent] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,6 +108,10 @@ function LoginPage() {
 
   const handleRecover = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) {
+      toast.error("Informe seu e-mail.");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -116,9 +121,14 @@ function LoginPage() {
       toast.error("Não foi possível enviar o e-mail.");
       return;
     }
-    toast.success("Verifique seu e-mail para redefinir a senha.");
+    setRecoverSent(true);
+  };
+
+  const goBackFromRecover = () => {
+    setRecoverSent(false);
     setMode("login");
   };
+
 
   const isSignup = mode === "signup";
 
@@ -167,28 +177,64 @@ function LoginPage() {
           }}
         >
           {mode === "recover" ? (
-            <form onSubmit={handleRecover}>
-              <h1 style={{ fontFamily: serif, fontSize: 26, fontWeight: 600, margin: "0 0 4px", color: SAGE_DARK }}>
-                Recuperar senha
-              </h1>
-              <p style={{ fontSize: 12, color: MUTED, margin: "0 0 20px" }}>
-                Enviaremos um link de redefinição.
-              </p>
-              <div style={{ marginBottom: 18 }}>
-                <label style={labelStyle}>E-mail</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} required />
+            recoverSent ? (
+              <div>
+                <h1 style={{ fontFamily: serif, fontSize: 26, fontWeight: 600, margin: "0 0 10px", color: SAGE_DARK }}>
+                  Verifique seu e-mail
+                </h1>
+                <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.6, margin: "0 0 8px" }}>
+                  Enviamos um link de redefinição para:
+                </p>
+                <p style={{ fontSize: 13, color: INK, fontWeight: 600, margin: "0 0 18px", wordBreak: "break-all" }}>
+                  {email}
+                </p>
+                <p style={{ fontSize: 11, color: MUTED, lineHeight: 1.6, margin: "0 0 20px" }}>
+                  Clique no link no e-mail para definir sua nova senha. Se não encontrar, verifique a caixa de spam.
+                </p>
+                <button type="button" onClick={goBackFromRecover} style={primaryButton(false)}>
+                  Voltar ao login
+                </button>
               </div>
-              <button type="submit" disabled={loading} style={primaryButton(loading)}>
-                {loading ? "Enviando..." : "Enviar link"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("login")}
-                style={linkButton}
-              >
-                Voltar ao login
-              </button>
-            </form>
+            ) : (
+              <form onSubmit={handleRecover}>
+                <h1 style={{ fontFamily: serif, fontSize: 26, fontWeight: 600, margin: "0 0 4px", color: SAGE_DARK }}>
+                  Recuperar senha
+                </h1>
+                <p style={{ fontSize: 12, color: MUTED, margin: "0 0 20px" }}>
+                  Enviaremos um link de redefinição.
+                </p>
+                <div style={{ marginBottom: 18 }}>
+                  <label style={labelStyle}>E-mail</label>
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} required />
+                </div>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button
+                    type="button"
+                    onClick={goBackFromRecover}
+                    style={{
+                      flex: "0 0 auto",
+                      background: "transparent",
+                      color: SAGE_DARK,
+                      border: `1.5px solid ${SAGE_DARK}`,
+                      padding: "12px 18px",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      letterSpacing: "0.16em",
+                      textTransform: "uppercase",
+                      cursor: "pointer",
+                      fontFamily: sans,
+                      borderRadius: 8,
+                    }}
+                  >
+                    Voltar
+                  </button>
+                  <button type="submit" disabled={loading} style={{ ...primaryButton(loading), flex: 1, width: "auto" }}>
+                    {loading ? "Enviando..." : "Enviar link"}
+                  </button>
+                </div>
+              </form>
+            )
+
           ) : (
             <form onSubmit={handleLogin}>
               <h1 style={{ fontFamily: serif, fontSize: 26, fontWeight: 600, margin: "0 0 4px", color: SAGE_DARK }}>
