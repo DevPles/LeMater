@@ -7,7 +7,7 @@ import {
   type CSSProperties,
 } from "react";
 import rayssa from "@/assets/rayssa-portrait.jpg";
-import lemateLogo from "@/assets/lemater-logo.png";
+import lemateLogo from "@/assets/logo_oficial.png";
 import { LiquidCard } from "@/components/LiquidCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { translateBatch } from "@/lib/translate.functions";
