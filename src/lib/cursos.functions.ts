@@ -423,6 +423,7 @@ const AulaSchema = z.object({
   duracao_min: z.number().int().min(0).default(0),
   ordem: z.number().int().default(0),
   previa_gratis: z.boolean().default(false),
+  materiais_extras: z.array(z.object({ nome: z.string().min(1).max(200), path: z.string().min(1).max(500) })).optional(),
 });
 
 export const adminUpsertAula = createServerFn({ method: "POST" })
