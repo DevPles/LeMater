@@ -71,17 +71,17 @@ export function ContentCard(p: ContentCardProps) {
         </p>
       )}
       {(p.metaLabel || p.precoLabel) && (
-        <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : c.border}`, paddingTop: 16, marginBottom: 18, display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+        <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : c.border}`, paddingTop: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
           {p.metaLabel && (
             <div>
-              <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 4 }}>{p.metaLabel}</div>
-              <div style={{ fontSize: 14, color: isDark ? "white" : c.ink }}>{p.metaValor}</div>
+              <div style={{ fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 3 }}>{p.metaLabel}</div>
+              <div style={{ fontSize: 13, color: isDark ? "white" : c.ink }}>{p.metaValor}</div>
             </div>
           )}
           {p.precoLabel && (
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 4 }}>{p.precoTituloLabel ?? "Investimento"}</div>
-              <div style={{ fontFamily: serif, fontSize: 22, color: isDark ? "white" : c.sageDark }}>{p.precoLabel}</div>
+              <div style={{ fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 3 }}>{p.precoTituloLabel ?? "Investimento"}</div>
+              <div style={{ fontFamily: serif, fontSize: 18, color: isDark ? "white" : c.sageDark }}>{p.precoLabel}</div>
             </div>
           )}
         </div>
@@ -92,8 +92,8 @@ export function ContentCard(p: ContentCardProps) {
         onClick={(e) => { e.stopPropagation(); p.onAction(); }}
         style={{
           background: isDark ? "white" : c.sageDark, color: isDark ? c.sageDark : "white",
-          fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase",
-          padding: "14px 24px", border: "none", cursor: "pointer", fontFamily: sans,
+          fontSize: 10, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase",
+          padding: "11px 20px", border: "none", cursor: "pointer", fontFamily: sans,
           width: "100%", marginTop: "auto",
         } as CSSProperties}
       >
