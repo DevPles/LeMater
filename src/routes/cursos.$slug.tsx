@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getCursoBySlug, type CursoDetalhe } from "@/lib/cursos.functions";
