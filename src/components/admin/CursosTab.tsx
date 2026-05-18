@@ -45,6 +45,7 @@ export default function CursosTab() {
     carga_horaria_min: 0, preco_centavos: 0, preco_label: "",
     link_compra_externo: "", plataforma_venda: "", publicado: false, ordem: 0,
     instrutor_nome: "", instrutor_bio: "", instrutor_foto: "",
+    materiais_gratis: [],
   });
 
   const salvar = async () => {
