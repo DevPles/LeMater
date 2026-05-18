@@ -572,6 +572,24 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               </div>
               <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 6 }}>Baixar aplicativo</div>
             </div>
+            <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
+              <div style={{ height: 38, display: "flex", alignItems: "center", gap: 8, justifyContent: isMobile ? "center" : "flex-start", flexWrap: "wrap" }}>
+                {[
+                  { Icon: InstagramIcon, href: "https://www.instagram.com/aleslierayssa", label: "Instagram" },
+                  { Icon: YouTubeIcon, href: "https://youtube.com/@lemateroficial", label: "YouTube" },
+                  { Icon: TikTokIcon, href: "https://www.tiktok.com/@lematerbr", label: "TikTok" },
+                  { Icon: HotmartIcon, href: "https://hotmart.com", label: "Hotmart" },
+                  { Icon: KiwifyIcon, href: "https://kiwify.com.br", label: "Kiwify" },
+                  { Icon: TeachableIcon, href: "https://teachable.com", label: "Teachable" },
+                ].map(({ Icon, href, label }) => (
+                  <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} title={label} style={{ lineHeight: 0, display: "inline-flex", transition: "transform 150ms, opacity 150ms", opacity: 0.92 }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.opacity = "1"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.opacity = "0.92"; }}>
+                    <Icon size={26} />
+                  </a>
+                ))}
+              </div>
+              <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 6 }}>Redes & plataformas</div>
+            </div>
+
           </div>
         </div>
         <div style={{ flex: "0 1 360px", background: c.warm, display: "flex", flexDirection: "column", justifyContent: "flex-end", position: "relative", overflow: "hidden", padding: isMobile ? 16 : 24, minHeight: isMobile ? 300 : 400, alignSelf: "center", borderRadius: 16, width: isMobile ? "calc(100% - 40px)" : undefined, marginInline: isMobile ? 20 : undefined, marginBottom: isMobile ? 24 : undefined }}>
