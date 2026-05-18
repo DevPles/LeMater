@@ -839,7 +839,6 @@ function Footer() {
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
             <li style={{ fontSize: 13, color: c.muted }}>contato@lemater.com</li>
             <li style={{ fontSize: 13, color: c.muted }}>Ribeirão Preto, SP</li>
-            <li style={{ fontSize: 13, color: c.muted }}>UNAERP</li>
           </ul>
         </div>
       </div>
