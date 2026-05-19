@@ -1283,9 +1283,9 @@ async function gerarPDFCartao(args: {
 
   // Pequena marca decorativa centralizada / logo institucional
   if (logoData) {
-    const logoW2 = 50;
-    const logoH2 = 21;
-    doc.addImage(logoData, "PNG", (halfW - logoW2) / 2, 12, logoW2, logoH2);
+    const logoW2 = 28;
+    const logoH2 = 28;
+    doc.addImage(logoData, "PNG", (halfW - logoW2) / 2, 8, logoW2, logoH2);
   } else {
     doc.setFillColor(pr, pg, pb);
     doc.rect((halfW - 28) / 2, 14, 28, 1.5, "F");
