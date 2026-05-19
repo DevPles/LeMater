@@ -1,9 +1,16 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { useAutoTranslate } from "@/hooks/useAutoTranslate";
 import appCss from "../styles.css?url";
 import { LangProvider } from "@/lib/translate.context";
 
 function NotFoundComponent() {
+  useEffect(() => {
+    if (window.location.pathname === "/atlas" || window.location.pathname === "/conteudos-gratis" || window.location.pathname.startsWith("/atlas-materno")) {
+      window.location.replace("/cursos");
+    }
+  }, []);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
