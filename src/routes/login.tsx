@@ -602,6 +602,14 @@ const css = `
   color: #ffffff;
 }
 
+.web-brand-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
 .web-brand-logo {
   width: 88px;
   height: 88px;
