@@ -120,7 +120,7 @@ export default function MateriaisTab({
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <h1 style={h1}>{titulo}</h1>
-        <button onClick={novo} style={btn(c.sageDark)}>{ctaNovo}</button>
+        {!esconderNovo && <button onClick={novo} style={btn(c.sageDark)}>{ctaNovo}</button>}
       </div>
 
       <div style={{ background: "white", border: `1px solid ${c.border}` }}>
