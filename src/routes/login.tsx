@@ -188,6 +188,7 @@ function LoginPage() {
               onPasswordChange={update("loginPassword")}
               onTogglePassword={() => setShowPassword((current) => !current)}
               onRecover={() => goToMode("recover")}
+              onBack={() => navigate({ to: "/" })}
               onSubmit={handleLogin}
             />
           )}
