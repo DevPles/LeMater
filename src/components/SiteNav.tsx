@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type CSSProperties } from "react";
-import lemateLogo from "@/assets/lemater-logo.png";
+import lemateLogo from "@/assets/logo_oficial.png";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLang, type Lang } from "@/lib/translate.context";
 
 const c = {
   cream: "#FAF5EE",
@@ -24,6 +25,14 @@ const NAV_ITEMS: ReadonlyArray<{ label: string; to: string; search?: Record<stri
 export function SiteNav() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const { lang, setLang } = useLang();
+  const LANG_OPTIONS: { code: string; target: Lang; country: string; label: string }[] = [
+    { code: "br", target: "pt", country: "Brasil", label: "Português" },
+    { code: "es", target: "es", country: "España", label: "Español" },
+    { code: "us", target: "en", country: "United States", label: "English" },
+  ];
+  const currentFlag = LANG_OPTIONS.find((o) => o.target === lang) ?? LANG_OPTIONS[0];
 
   const linkStyle: CSSProperties = {
     fontSize: 13,
