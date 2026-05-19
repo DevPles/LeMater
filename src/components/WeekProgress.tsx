@@ -13,7 +13,7 @@ export function WeekProgress({ currentWeek, totalWeeks = 40 }: WeekProgressProps
     currentWeek <= 13 ? "1º Trimestre" : currentWeek <= 26 ? "2º Trimestre" : "3º Trimestre";
 
   return (
-    <Link to="/gestacao" className="block transition-transform hover:scale-[1.01]">
+    <Link to="/app/gestacao" className="block transition-transform hover:scale-[1.01]">
       <LiquidCard className="p-5" bgOpacity={0.55}>
         <div className="mb-3 flex items-center justify-between">
           <div>
