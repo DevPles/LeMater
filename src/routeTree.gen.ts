@@ -16,6 +16,7 @@ import { Route as HomeRouteImport } from './routes/home'
 import { Route as CartaoRouteImport } from './routes/cartao'
 import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtlasSlugRouteImport } from './routes/atlas.$slug'
@@ -66,6 +67,11 @@ const AtlasRoute = AtlasRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertasRoute = AlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -151,6 +157,7 @@ const AuthenticatedAtlasSlugAprenderRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alertas': typeof AlertasRoute
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
   '/cartao': typeof CartaoRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alertas': typeof AlertasRoute
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
   '/cartao': typeof CartaoRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/alertas': typeof AlertasRoute
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
   '/cartao': typeof CartaoRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/alertas'
     | '/app'
     | '/atlas'
     | '/cartao'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/alertas'
     | '/app'
     | '/atlas'
     | '/cartao'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/alertas'
     | '/app'
     | '/atlas'
     | '/cartao'
@@ -302,6 +314,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AlertasRoute: typeof AlertasRoute
   AppRoute: typeof AppRouteWithChildren
   AtlasRoute: typeof AtlasRouteWithChildren
   CartaoRoute: typeof CartaoRoute
@@ -361,6 +374,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alertas': {
+      id: '/alertas'
+      path: '/alertas'
+      fullPath: '/alertas'
+      preLoaderRoute: typeof AlertasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -533,6 +553,7 @@ const AtlasRouteWithChildren = AtlasRoute._addFileChildren(AtlasRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AlertasRoute: AlertasRoute,
   AppRoute: AppRouteWithChildren,
   AtlasRoute: AtlasRouteWithChildren,
   CartaoRoute: CartaoRoute,
