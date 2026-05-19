@@ -527,8 +527,8 @@ const css = `
   cursor: pointer;
 }
 
-.forgot-button {
-  align-self: stretch;
+.web-secondary-button {
+  height: 44px;
   border: 1.5px solid ${GREEN};
   background: transparent;
   color: ${GREEN};
@@ -537,8 +537,20 @@ const css = `
   letter-spacing: 0.18em;
   text-transform: uppercase;
   cursor: pointer;
-  padding: 12px 16px;
+  padding: 0 16px;
   border-radius: 6px;
+}
+
+.forgot-button {
+  align-self: stretch;
+  border-radius: 999px;
+  margin-top: 4px;
+}
+
+.web-form-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
   margin-top: 4px;
 }
 
