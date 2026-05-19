@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as CartaoRouteImport } from './routes/cartao'
@@ -35,6 +36,11 @@ import { Route as AuthenticatedAtlasSlugAprenderRouteImport } from './routes/_au
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/cartao': typeof CartaoRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
+  '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/cartao': typeof CartaoRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
+  '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/cartao': typeof CartaoRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
+  '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/membro': typeof AuthenticatedMembroRoute
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/cartao'
     | '/home'
     | '/login'
+    | '/perfil'
     | '/reset-password'
     | '/admin'
     | '/membro'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/cartao'
     | '/home'
     | '/login'
+    | '/perfil'
     | '/reset-password'
     | '/admin'
     | '/membro'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/cartao'
     | '/home'
     | '/login'
+    | '/perfil'
     | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/membro'
@@ -295,6 +307,7 @@ export interface RootRouteChildren {
   CartaoRoute: typeof CartaoRoute
   HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
+  PerfilRoute: typeof PerfilRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
 }
@@ -306,6 +319,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -518,6 +538,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartaoRoute: CartaoRoute,
   HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
+  PerfilRoute: PerfilRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
 }
