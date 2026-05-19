@@ -27,7 +27,7 @@ type Curso = any;
 type Modulo = any;
 type Aula = any;
 
-export default function CursosTab() {
+export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boolean } = {}) {
   const listFn = useServerFn(adminListCursos);
   const upsertFn = useServerFn(adminUpsertCurso);
   const delFn = useServerFn(adminDeleteCurso);
@@ -48,12 +48,6 @@ export default function CursosTab() {
     materiais_gratis: [],
   });
 
-  // Auto-abrir formulário quando AtlasContentTab dispara evento
-  useEffect(() => {
-    const handler = () => novo();
-    window.addEventListener("atlas-novo-curso", handler);
-    return () => window.removeEventListener("atlas-novo-curso", handler);
-  }, []);
 
   const salvar = async () => {
     if (!edit?.titulo || !edit.slug) { alert("Título e slug são obrigatórios"); return; }
@@ -114,8 +108,9 @@ export default function CursosTab() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <h1 style={h1}>Cursos</h1>
-        <button onClick={novo} style={btn(c.sageDark)}>Novo curso</button>
+        {!esconderNovo && <button onClick={novo} style={btn(c.sageDark)}>Novo curso</button>}
       </div>
+
 
       <div style={{ background: "white", border: `1px solid ${c.border}`, overflow: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>

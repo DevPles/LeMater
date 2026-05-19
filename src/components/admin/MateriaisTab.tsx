@@ -39,7 +39,8 @@ export default function MateriaisTab({
   forcarCategoria,
   titulo = "Materiais",
   ctaNovo = "Novo material",
-}: { forcarCategoria?: string; titulo?: string; ctaNovo?: string } = {}) {
+  esconderNovo = false,
+}: { forcarCategoria?: string; titulo?: string; ctaNovo?: string; esconderNovo?: boolean } = {}) {
   const list = useServerFn(listAllMateriais);
   const upsert = useServerFn(upsertMaterial);
   const del = useServerFn(deleteMaterial);
@@ -65,13 +66,8 @@ export default function MateriaisTab({
     ordem: 0, publicado: false,
   });
 
-  // Auto-abrir formulário quando AtlasContentTab dispara evento
-  useEffect(() => {
-    const eventName = forcarCategoria ? "atlas-novo-servico" : "atlas-novo-material";
-    const handler = () => novo();
-    window.addEventListener(eventName, handler);
-    return () => window.removeEventListener(eventName, handler);
-  }, [forcarCategoria]);
+
+
 
   const salvar = async () => {
     if (!edit?.titulo || !edit.tipo || !edit.area) return;
@@ -124,7 +120,7 @@ export default function MateriaisTab({
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <h1 style={h1}>{titulo}</h1>
-        <button onClick={novo} style={btn(c.sageDark)}>{ctaNovo}</button>
+        {!esconderNovo && <button onClick={novo} style={btn(c.sageDark)}>{ctaNovo}</button>}
       </div>
 
       <div style={{ background: "white", border: `1px solid ${c.border}` }}>
