@@ -372,10 +372,52 @@ function CartaoPage() {
   const imc = (altura && pesoInicial) ? pesoInicial / (altura * altura) : null;
   const imcInfo = imc ? classificarIMC(imc) : null;
 
-  const vitals = (cartaoContent.vitals ?? []).map((v: { label: string; value: string; change: string; unit?: string }, i: number) => ({
-    ...v,
-    color: vitalColors[i % vitalColors.length],
-  }));
+  // Sinais vitais derivados das medições reais (com fallback para o CMS)
+  const vitals = useMemo(() => {
+    const ult = (arr: { semana: number; valor: number; data: string }[]) => arr[arr.length - 1];
+    const last = (filter: (p: string) => boolean) => {
+      const arr = medicoes
+        .filter(m => filter(m.parametro.toLowerCase()))
+        .map(m => ({ semana: m.semana, valor: m.valor, data: m.data }));
+      return ult(arr);
+    };
+    const fmtDelta = (cur?: number, prev?: number, unit = "") => {
+      if (cur == null || prev == null) return "";
+      const d = cur - prev;
+      const sign = d > 0 ? "+" : "";
+      return `${sign}${d.toFixed(unit === "kg" ? 1 : 0)}${unit}`;
+    };
+
+    const pesoArr = series.peso;
+    const sisArr = medicoes.filter(m => m.parametro.toLowerCase().includes("sist"));
+    const diaArr = medicoes.filter(m => m.parametro.toLowerCase().includes("diast"));
+    const bcf = last(p => p.includes("bcf") || p.includes("batim"));
+    const glic = last(p => p.includes("glic"));
+
+    const derivados: { label: string; value: string; change: string }[] = [];
+    if (pesoArr.length) {
+      const cur = pesoArr[pesoArr.length - 1].peso;
+      const prev = pesoArr.length > 1 ? pesoArr[pesoArr.length - 2].peso : undefined;
+      derivados.push({ label: "Peso", value: `${cur.toFixed(1)} kg`, change: fmtDelta(cur, prev, " kg") || "—" });
+    }
+    if (sisArr.length && diaArr.length) {
+      const sCur = sisArr[sisArr.length - 1].valor;
+      const dCur = diaArr[diaArr.length - 1].valor;
+      derivados.push({ label: "Pressão", value: `${sCur}/${dCur}`, change: "mmHg" });
+    }
+    if (bcf) {
+      derivados.push({ label: "BCF", value: `${bcf.valor} bpm`, change: `Sem. ${bcf.semana}` });
+    }
+    if (glic) {
+      derivados.push({ label: "Glicemia", value: `${glic.valor} mg/dL`, change: `Sem. ${glic.semana}` });
+    }
+
+    const fonte = derivados.length ? derivados : (cartaoContent.vitals ?? []);
+    return fonte.map((v: { label: string; value: string; change: string }, i: number) => ({
+      ...v,
+      color: vitalColors[i % vitalColors.length],
+    }));
+  }, [medicoes, series.peso, cartaoContent.vitals]);
 
   // ====== URL pública do cartão (para QR) — sempre aponta para o id da gestante exibida ======
   const ownerUserId = isShared ? shareUserId : session?.user?.id;
