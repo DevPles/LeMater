@@ -6,6 +6,7 @@ import { useLang, type Lang } from "@/lib/translate.context";
 
 const c = {
   cream: "#FAF5EE",
+  warm: "#F5EDE0",
   sage: "#5C8A6E",
   sageDark: "#2D5A42",
   ink: "#1C1C1A",
