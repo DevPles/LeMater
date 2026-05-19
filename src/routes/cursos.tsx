@@ -60,9 +60,10 @@ function CursosVitrine() {
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 20 }}>
               {items.map((curso, i) => {
+                const precoGratis = curso.preco_label?.trim().toLowerCase() === "grátis" || curso.preco_label?.trim().toLowerCase() === "gratis";
                 const badge = curso.matriculado
                   ? { label: "Seu acesso", color: c.sageDark }
-                  : curso.preco_label
+                  : curso.preco_label && !precoGratis
                     ? { label: "Conteúdo pago", color: c.gold }
                     : { label: "Atlas Materno", color: c.sage };
                 return (
@@ -76,7 +77,7 @@ function CursosVitrine() {
                     capa_url={curso.capa_url}
                     metaLabel="Conteúdo"
                     metaValor={`${curso.total_aulas} ${curso.total_aulas === 1 ? "aula" : "aulas"}${curso.carga_horaria_min > 0 ? ` · ${Math.round(curso.carga_horaria_min / 60)}h` : ""}`}
-                    precoLabel={!curso.matriculado ? curso.preco_label : null}
+                    precoLabel={!curso.matriculado && !precoGratis ? curso.preco_label : null}
                     ctaLabel={curso.matriculado ? "Acessar conteúdo" : "Ver conteúdo"}
                     onAction={() => setOpenSlug(curso.slug)}
                   />
