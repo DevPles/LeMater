@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VideosRouteImport } from './routes/videos'
 import { Route as VideochamadaRouteImport } from './routes/videochamada'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
@@ -41,11 +40,6 @@ import { Route as AppSalaRoomIdRouteImport } from './routes/app.sala.$roomId'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
 import { Route as AuthenticatedAtlasSlugAprenderRouteImport } from './routes/_authenticated/atlas.$slug.aprender'
 
-const VideosRoute = VideosRouteImport.update({
-  id: '/videos',
-  path: '/videos',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const VideochamadaRoute = VideochamadaRouteImport.update({
   id: '/videochamada',
   path: '/videochamada',
@@ -211,7 +205,6 @@ export interface FileRoutesByFullPath {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/videochamada': typeof VideochamadaRoute
-  '/videos': typeof VideosRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
   '/app/alertas': typeof AppAlertasRoute
@@ -243,7 +236,6 @@ export interface FileRoutesByTo {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/videochamada': typeof VideochamadaRoute
-  '/videos': typeof VideosRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
   '/app/alertas': typeof AppAlertasRoute
@@ -277,7 +269,6 @@ export interface FileRoutesById {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/videochamada': typeof VideochamadaRoute
-  '/videos': typeof VideosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/membro': typeof AuthenticatedMembroRoute
   '/app/alertas': typeof AppAlertasRoute
@@ -311,7 +302,6 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/reset-password'
     | '/videochamada'
-    | '/videos'
     | '/admin'
     | '/membro'
     | '/app/alertas'
@@ -343,7 +333,6 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/reset-password'
     | '/videochamada'
-    | '/videos'
     | '/admin'
     | '/membro'
     | '/app/alertas'
@@ -376,7 +365,6 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/reset-password'
     | '/videochamada'
-    | '/videos'
     | '/_authenticated/admin'
     | '/_authenticated/membro'
     | '/app/alertas'
@@ -410,20 +398,12 @@ export interface RootRouteChildren {
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   VideochamadaRoute: typeof VideochamadaRoute
-  VideosRoute: typeof VideosRoute
   SalaRoomIdRoute: typeof SalaRoomIdRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/videos': {
-      id: '/videos'
-      path: '/videos'
-      fullPath: '/videos'
-      preLoaderRoute: typeof VideosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/videochamada': {
       id: '/videochamada'
       path: '/videochamada'
@@ -706,10 +686,19 @@ const rootRouteChildren: RootRouteChildren = {
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   VideochamadaRoute: VideochamadaRoute,
-  VideosRoute: VideosRoute,
   SalaRoomIdRoute: SalaRoomIdRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
