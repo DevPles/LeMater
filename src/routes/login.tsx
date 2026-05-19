@@ -117,7 +117,7 @@ function LoginPage() {
           </button>
 
           <div className="web-form-side">
-            <div className="web-form-track" style={{ transform: `translateX(${isRegister ? "-50%" : "0"})` }}>
+            <div className="web-form-track">
               <div className="web-form-panel">
                 {isRecover ? (
                   <RecoverForm
