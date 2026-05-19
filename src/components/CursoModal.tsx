@@ -65,11 +65,13 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
 
   const fechar = () => onClose();
   const irParaCadastro = () => navigate({ to: "/login" });
-  const comprar = () => {
-    if (!data) return;
-    if (data.link_compra_externo) window.open(data.link_compra_externo, "_blank", "noopener,noreferrer");
-    else if (!user) navigate({ to: "/login" });
-  };
+  const linksCompra = (() => {
+    const arr = data?.links_compra ?? [];
+    if (arr.length > 0) return arr;
+    if (data?.link_compra_externo) return [{ plataforma: data.plataforma_venda || "Comprar", url: data.link_compra_externo }];
+    return [] as { plataforma: string; url: string }[];
+  })();
+  const comprarUrl = (url: string) => window.open(url, "_blank", "noopener,noreferrer");
 
   const abrirAula = (id: string, bloqueada: boolean, titulo: string) => {
     if (bloqueada) {
@@ -99,14 +101,19 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
           <p style={{ color: c.muted, fontSize: 14, lineHeight: 1.6, margin: "0 auto 20px", maxWidth: 460 }}>
             Esta aula faz parte do conteúdo pago. Entre na área de aluna para acessar o Atlas Materno completo.
           </p>
-          <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 10, justifyContent: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, justifyContent: "center", alignItems: "center", maxWidth: 360, margin: "0 auto" }}>
             <button onClick={irParaCadastro} style={btnPrimary(c.sageDark)}>
               {user ? "Ir para minha área" : "Entrar"}
             </button>
-            {data?.link_compra_externo && (
-              <button onClick={comprar} style={btnPrimary(c.gold)}>
-                Comprar agora{data.plataforma_venda ? ` · ${data.plataforma_venda}` : ""}
-              </button>
+            {linksCompra.length > 0 && (
+              <>
+                <div style={{ fontSize: 10, letterSpacing: "0.18em", color: c.muted, marginTop: 6 }}>OU COMPRE POR</div>
+                {linksCompra.map((l, i) => (
+                  <button key={i} onClick={() => comprarUrl(l.url)} style={btnPrimary(c.gold)}>
+                    {l.plataforma}
+                  </button>
+                ))}
+              </>
             )}
           </div>
         </div>

@@ -54,6 +54,7 @@ export type CursoDetalhe = {
   preco_label: string | null;
   link_compra_externo: string | null;
   plataforma_venda: string | null;
+  links_compra: { plataforma: string; url: string }[];
   instrutor_nome: string | null;
   instrutor_bio: string | null;
   instrutor_foto: string | null;
@@ -211,6 +212,11 @@ export const getCursoBySlug = createServerFn({ method: "GET" })
       preco_label: c.preco_label,
       link_compra_externo: c.link_compra_externo,
       plataforma_venda: c.plataforma_venda,
+      links_compra: Array.isArray((c as any).links_compra)
+        ? ((c as any).links_compra as any[])
+            .filter((l) => l && typeof l.url === "string" && l.url.trim())
+            .map((l) => ({ plataforma: String(l.plataforma ?? "").trim() || "Comprar", url: String(l.url).trim() }))
+        : [],
       instrutor_nome: c.instrutor_nome, instrutor_bio: c.instrutor_bio, instrutor_foto: c.instrutor_foto,
       publicado: c.publicado, modulos, materiais_gratis, matriculado, admin,
     };
@@ -347,6 +353,10 @@ const CursoSchema = z.object({
   preco_label: z.string().max(60).nullable().optional(),
   link_compra_externo: z.string().nullable().optional(),
   plataforma_venda: z.string().max(40).nullable().optional(),
+  links_compra: z.array(z.object({
+    plataforma: z.string().trim().min(1).max(40),
+    url: z.string().trim().url().max(500),
+  })).max(10).optional(),
   publicado: z.boolean().default(false),
   ordem: z.number().int().default(0),
   instrutor_nome: z.string().max(120).nullable().optional(),

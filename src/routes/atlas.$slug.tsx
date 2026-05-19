@@ -39,10 +39,11 @@ function CursoLanding() {
   );
 
   const totalAulas = data.modulos.reduce((s, m) => s + m.aulas.length, 0);
-  const comprar = () => {
-    if (data.link_compra_externo) window.open(data.link_compra_externo, "_blank", "noopener,noreferrer");
-    else if (!user) navigate({ to: "/login" });
-  };
+  const linksCompra = data.links_compra?.length > 0
+    ? data.links_compra
+    : data.link_compra_externo
+      ? [{ plataforma: data.plataforma_venda || "Comprar", url: data.link_compra_externo }]
+      : [];
   const acessar = () => navigate({ to: "/atlas/$slug/aprender", params: { slug: data.slug } });
 
   return (
@@ -71,9 +72,15 @@ function CursoLanding() {
                 ) : (
                   <>
                     {data.preco_label && <span style={{ fontFamily: serif, fontSize: 32, fontWeight: 400, color: c.sageDark }}>{data.preco_label}</span>}
-                    <button onClick={comprar} style={btn(c.gold)}>
-                      {data.link_compra_externo ? `Comprar${data.plataforma_venda ? ` (${data.plataforma_venda})` : ""}` : "Quero me inscrever"}
-                    </button>
+                    {linksCompra.length > 0 ? (
+                      linksCompra.map((l, i) => (
+                        <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" style={{ ...btn(c.gold), textDecoration: "none", display: "inline-block" }}>
+                          Comprar · {l.plataforma}
+                        </a>
+                      ))
+                    ) : (
+                      <button onClick={() => !user && navigate({ to: "/login" })} style={btn(c.gold)}>Quero me inscrever</button>
+                    )}
                   </>
                 )}
               </div>
@@ -164,10 +171,16 @@ function CursoLanding() {
             <div style={{ marginTop: 28 }}>
               {data.matriculado ? (
                 <button onClick={acessar} style={btn(c.gold)}>Acessar conteúdo</button>
+              ) : linksCompra.length > 0 ? (
+                <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+                  {linksCompra.map((l, i) => (
+                    <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" style={{ ...btn(c.gold), textDecoration: "none", display: "inline-block" }}>
+                      Comprar · {l.plataforma}
+                    </a>
+                  ))}
+                </div>
               ) : (
-                <button onClick={comprar} style={btn(c.gold)}>
-                  {data.preco_label ? `Comprar por ${data.preco_label}` : "Quero me inscrever"}
-                </button>
+                <button onClick={() => !user && navigate({ to: "/login" })} style={btn(c.gold)}>Quero me inscrever</button>
               )}
             </div>
           </div>
