@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import RegistrationModal from "@/components/RegistrationModal";
 import { useLang, FLAG_TO_LANG } from "@/lib/translate.context";
+import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/app")({
   head: () => ({
