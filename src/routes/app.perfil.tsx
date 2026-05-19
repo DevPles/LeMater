@@ -464,12 +464,12 @@ function PerfilPage() {
             <label className="block text-sm font-medium text-foreground mb-1">
               E-mail
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                 placeholder="seu@email.com"
                 autoComplete="email"
               />
@@ -477,7 +477,7 @@ function PerfilPage() {
                 type="button"
                 onClick={handleAlterarEmail}
                 disabled={salvandoEmail || !email || email === (profile?.email ?? "")}
-                className="px-3 py-2 rounded-full bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition disabled:opacity-50 whitespace-nowrap"
+                className="shrink-0 px-3 py-2 rounded-full bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition disabled:opacity-50"
               >
                 {salvandoEmail ? "..." : "Alterar e-mail"}
               </button>

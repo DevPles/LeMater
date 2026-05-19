@@ -33,7 +33,7 @@ export function BottomNav() {
               }`}
             >
               <span
-                className={`text-[10px] sm:text-xs font-semibold uppercase tracking-wide truncate ${
+                className={`text-[9px] sm:text-xs font-semibold uppercase tracking-tight truncate max-w-full ${
                   isActive ? "text-primary" : ""
                 }`}
               >
