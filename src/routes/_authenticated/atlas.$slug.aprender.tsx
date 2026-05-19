@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { getCursoBySlug, getAulaPlayer, marcarAulaConcluida, type CursoDetalhe, type AulaPlayer } from "@/lib/atlas.functions";
+import { getCursoBySlug, getAulaPlayer, marcarAulaConcluida, type CursoDetalhe, type AulaPlayer } from "@/lib/cursos.functions";
 import lemateLogo from "@/assets/lemater-logo.png";
 
 export const Route = createFileRoute("/_authenticated/atlas/$slug/aprender")({

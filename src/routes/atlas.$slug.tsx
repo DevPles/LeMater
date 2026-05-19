@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getCursoBySlug, type CursoDetalhe } from "@/lib/atlas.functions";
+import { getCursoBySlug, type CursoDetalhe } from "@/lib/cursos.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { SiteNav } from "@/components/SiteNav";
 
