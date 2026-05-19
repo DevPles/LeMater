@@ -8,7 +8,7 @@ import { ProntuarioConsultaModal } from "@/components/ProntuarioConsultaModal";
 import { LoadingMessage } from "@/components/LoadingMessage";
 import { NotificacoesCard } from "@/components/NotificacoesCard";
 
-export const Route = createFileRoute("/profissional")({
+export const Route = createFileRoute("/app/profissional")({
   head: () => ({
     meta: [
       { title: "Portal do Profissional — MãeDigital" },

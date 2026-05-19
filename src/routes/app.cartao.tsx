@@ -47,7 +47,7 @@ function paletaPorSexo(sexo: string | null | undefined) {
   };
 }
 
-export const Route = createFileRoute("/cartao")({
+export const Route = createFileRoute("/app/cartao")({
   head: () => ({
     meta: [
       { title: "Cartão Digital da Gestante — MãeDigital" },

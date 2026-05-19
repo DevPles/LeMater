@@ -6,7 +6,7 @@ import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import { LoadingMessage } from "@/components/LoadingMessage";
 import { NotificacoesCard } from "@/components/NotificacoesCard";
 
-export const Route = createFileRoute("/perfil")({
+export const Route = createFileRoute("/app/perfil")({
   head: () => ({
     meta: [
       { title: "Meu Perfil — MãeDigital" },

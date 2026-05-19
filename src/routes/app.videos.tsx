@@ -11,7 +11,7 @@ import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import { ReelRecorder } from "@/components/ReelRecorder";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/videos")({
+export const Route = createFileRoute("/app/videos")({
   head: () => ({
     meta: [
       { title: "Vídeos Educativos — MãeDigital" },
