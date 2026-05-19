@@ -117,11 +117,7 @@ function LoginPage() {
           </button>
 
           <div className="web-form-side">
-            <motion.div
-              className="web-form-track"
-              animate={{ x: isRegister ? "-50%" : "0%" }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            >
+            <div className="web-form-track">
               <div className="web-form-panel">
                 {isRecover ? (
                   <RecoverForm
@@ -157,10 +153,11 @@ function LoginPage() {
                   onEmailChange={update("signEmail")}
                   onPasswordChange={update("signPassword")}
                   onTogglePassword={() => setShowPassword((current) => !current)}
+                  onBack={() => navigate({ to: "/" })}
                   onSubmit={handleSignUp}
                 />
               </div>
-            </motion.div>
+            </div>
           </div>
 
           <motion.aside
