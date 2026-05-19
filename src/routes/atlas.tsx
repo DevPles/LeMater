@@ -84,7 +84,7 @@ function CursosVitrine() {
             </div>
           )}
       </main>
-      <Footer />
+      <SiteFooter />
 
       {openSlug && <CursoModal slug={openSlug} onClose={() => setOpenSlug(null)} />}
     </div>
