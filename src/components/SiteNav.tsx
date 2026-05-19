@@ -13,8 +13,7 @@ const c = {
 };
 const sans = "'DM Sans', sans-serif";
 
-// Mesmos itens do header da home. "ATLAS MATERNO" agora vai para /cursos
-// (página única de conteúdos).
+// Mesmos itens do header da home. "ATLAS MATERNO" é a página única de conteúdos.
 const NAV_ITEMS: ReadonlyArray<{ label: string; to: string; search?: Record<string, string> }> = [
   { label: "Início", to: "/" },
   { label: "Sobre", to: "/", search: { s: "sobre" } },
