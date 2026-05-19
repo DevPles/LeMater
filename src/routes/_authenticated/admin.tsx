@@ -79,11 +79,16 @@ function AdminPage() {
 
   return (
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
-      <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 40 }} /></Link>
-        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-          {(["dash","atlas","leads","alunos","compras"] as Tab[]).map((t) => (
-            <button key={t} onClick={() => setTab(t)} style={tabBtn(tab === t)}>{tabLabel(t)}</button>
+      <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "10px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 36 }} /></Link>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", flex: 1, justifyContent: "center", alignItems: "center" }}>
+          {TAB_GROUPS.map((group) => (
+            <div key={group.label} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, background: "rgba(255,255,255,0.6)", border: `1px solid ${c.border}` }}>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", color: c.muted, marginRight: 4 }}>{group.label}</span>
+              {group.tabs.map((t) => (
+                <button key={t.id} onClick={() => setTab(t.id)} style={tabBtn(tab === t.id)}>{t.label}</button>
+              ))}
+            </div>
           ))}
         </div>
         <button onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/app" }); }} style={btn(c.sage)}>Sair</button>
@@ -91,8 +96,20 @@ function AdminPage() {
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 28px 80px" }}>
         {tab === "dash" && <DashboardTab />}
         {tab === "atlas" && <AtlasContentTab />}
+        {tab === "materiais" && <MateriaisTab />}
+        {tab === "cursos" && <CursosTab />}
+        {tab === "telas" && <TelasTab />}
+        {tab === "consultas" && <ConsultasTab />}
+        {tab === "gravacoes" && <GravacoesTab />}
+        {tab === "profissionais" && <ProfissionaisTab />}
+        {tab === "dados" && <DadosClinicosTab />}
+        {tab === "parametros" && <ParametrosTab />}
+        {tab === "relatorios" && <RelatoriosEpidemiologicosTab />}
         {tab === "leads" && <LeadsTab />}
         {tab === "alunos" && <AlunosTab />}
+        {tab === "usuarios" && <UsuariosTab />}
+        {tab === "acessos" && <AcessosUsuariosTab />}
+        {tab === "compras" && <ComprasTab />}
         {tab === "compras" && <ComprasTab />}
       </main>
     </div>
