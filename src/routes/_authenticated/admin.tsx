@@ -19,7 +19,7 @@ const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type Tab = "dash" | "conteudos" | "atlas" | "leads" | "alunos" | "compras";
+type Tab = "dash" | "atlas" | "leads" | "alunos" | "compras";
 
 function AdminPage() {
   const { isAdmin, loading } = useAuth();
