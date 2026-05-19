@@ -674,32 +674,59 @@ const css = `
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 28px 18px;
+    justify-content: flex-start;
+    padding: 32px 16px 24px;
     background: ${CREAM};
   }
 
-  .mobile-logo { width: 88px; height: 88px; object-fit: contain; margin-bottom: 22px; }
+  .mobile-logo { width: 72px; height: 72px; object-fit: contain; margin-bottom: 18px; }
 
   .mobile-card {
-    width: min(100%, 420px);
-    border-radius: 18px;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 16px;
     background: ${CREAM_PANEL};
-    padding: 28px 22px;
-    box-shadow: 0 20px 40px -20px rgba(35, 71, 53, 0.3);
+    padding: 22px 18px;
+    box-shadow: 0 16px 32px -18px rgba(35, 71, 53, 0.28);
   }
 
-  .mobile-form { display: flex; flex-direction: column; gap: 16px; }
+  .mobile-form { display: flex; flex-direction: column; gap: 14px; }
+
+  .mobile-form .form-title { font-size: 26px; }
+  .mobile-form .form-subtitle { font-size: 13px; margin: 4px 0 2px; }
+  .mobile-form .neo-input { height: 42px; font-size: 14px; }
+  .mobile-form .field-label { font-size: 10px; letter-spacing: 0.18em; }
+  .mobile-form .web-primary-button { height: 44px; font-size: 12px; margin-top: 4px; }
+
+  .mobile-link {
+    align-self: flex-start;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: ${GREEN};
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
 
   .mobile-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    margin-top: 18px;
+    margin-top: 16px;
   }
 
-  .mobile-actions button { border-color: ${GREEN}; color: ${GREEN}; }
-
-  .form-title { font-size: 30px; }
+  .mobile-actions button {
+    height: 42px;
+    border-color: ${GREEN};
+    color: ${GREEN};
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
 }
 `;
