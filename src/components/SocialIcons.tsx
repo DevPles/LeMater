@@ -152,3 +152,13 @@ export function TeachableIcon({ className, size = 22 }: IconProps) {
   );
 }
 
+export function SpotifyIcon({ className, size = 22 }: IconProps) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="16" cy="16" r="16" fill="#1DB954"/>
+      <path fill="#FFFFFF" d="M22.6 22.3c-.27.44-.84.58-1.28.31-3.5-2.14-7.9-2.62-13.1-1.44a.93.93 0 1 1-.41-1.82c5.66-1.28 10.54-.72 14.45 1.67.44.27.58.84.34 1.28Zm1.76-3.4c-.34.55-1.06.73-1.6.39-4-2.46-10.1-3.17-14.83-1.74a1.16 1.16 0 1 1-.67-2.22c5.4-1.63 12.1-.83 16.69 1.98.55.34.72 1.06.4 1.6Zm.15-3.55c-4.8-2.85-12.72-3.12-17.3-1.73a1.4 1.4 0 1 1-.81-2.68c5.27-1.6 14.02-1.29 19.55 2 .67.4.89 1.27.5 1.93-.4.66-1.27.88-1.94.48Z"/>
+    </svg>
+  );
+}
+
+
