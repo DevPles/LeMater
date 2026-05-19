@@ -7,7 +7,7 @@ import { SiteNav } from "@/components/SiteNav";
 
 export const Route = createFileRoute("/cursos/$slug")({
   head: ({ params }) => ({
-    meta: [{ title: `Curso · Le Mater` }],
+    meta: [{ title: `Atlas Materno · Le Mater` }],
     links: [{ rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" }],
   }),
   component: CursoLanding,
@@ -33,8 +33,8 @@ function CursoLanding() {
   if (data === undefined) return <Wrapper><p style={{ color: c.muted }}>Carregando…</p></Wrapper>;
   if (data === null) return (
     <Wrapper>
-      <h1 style={{ fontFamily: serif, fontSize: 36 }}>Curso não encontrado</h1>
-      <Link to="/cursos" style={{ color: c.sageDark }}>← Ver todos os cursos</Link>
+      <h1 style={{ fontFamily: serif, fontSize: 36 }}>Conteúdo não encontrado</h1>
+      <Link to="/cursos" style={{ color: c.sageDark }}>← Ver Atlas Materno</Link>
     </Wrapper>
   );
 
@@ -53,7 +53,7 @@ function CursoLanding() {
         <section style={{ background: `linear-gradient(135deg, ${c.warm}, ${c.cream})`, padding: "60px 32px 80px", borderBottom: `1px solid ${c.border}` }}>
           <div style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 56, alignItems: "center" }}>
             <div>
-              <Link to="/cursos" style={{ fontSize: 12, color: c.muted, textDecoration: "none", letterSpacing: "0.1em" }}>← TODOS OS CURSOS</Link>
+              <Link to="/cursos" style={{ fontSize: 12, color: c.muted, textDecoration: "none", letterSpacing: "0.1em" }}>← ATLAS MATERNO</Link>
               <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, margin: "16px 0 10px" }}>
                 {data.categoria} · {data.nivel}
                 {!data.publicado && <> · <span style={{ color: c.gold }}>RASCUNHO (admin)</span></>}
@@ -67,7 +67,7 @@ function CursoLanding() {
               </div>
               <div style={{ marginTop: 32, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
                 {data.matriculado ? (
-                  <button onClick={acessar} style={btn(c.sageDark)}>Acessar curso</button>
+                  <button onClick={acessar} style={btn(c.sageDark)}>Acessar conteúdo</button>
                 ) : (
                   <>
                     {data.preco_label && <span style={{ fontFamily: serif, fontSize: 32, fontWeight: 400, color: c.sageDark }}>{data.preco_label}</span>}
@@ -98,7 +98,7 @@ function CursoLanding() {
         {data.descricao_longa && (
           <section style={{ padding: "80px 32px", borderBottom: `1px solid ${c.border}` }}>
             <div style={{ maxWidth: 760, margin: "0 auto" }}>
-              <h2 style={h2}>Sobre o curso</h2>
+              <h2 style={h2}>Sobre o conteúdo</h2>
               <div style={{ fontSize: 16, lineHeight: 1.75, color: c.ink, whiteSpace: "pre-wrap" }}>{data.descricao_longa}</div>
             </div>
           </section>
@@ -163,7 +163,7 @@ function CursoLanding() {
             <p style={{ marginTop: 16, opacity: 0.85, fontSize: 16 }}>Acesso vitalício ao conteúdo. Comece quando quiser.</p>
             <div style={{ marginTop: 28 }}>
               {data.matriculado ? (
-                <button onClick={acessar} style={btn(c.gold)}>Acessar curso</button>
+                <button onClick={acessar} style={btn(c.gold)}>Acessar conteúdo</button>
               ) : (
                 <button onClick={comprar} style={btn(c.gold)}>
                   {data.preco_label ? `Comprar por ${data.preco_label}` : "Quero me inscrever"}
