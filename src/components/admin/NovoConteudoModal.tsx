@@ -144,7 +144,7 @@ export default function NovoConteudoModal({
       titulo: curso.titulo, slug: curso.slug,
       descricao_curta: curso.descricao_curta || null,
       descricao_longa: curso.descricao_longa || null,
-      capa_url, trailer_url: curso.trailer_url || null,
+      capa_url, capa_video_url, trailer_url: curso.trailer_url || null,
       categoria: curso.categoria, nivel: curso.nivel,
       carga_horaria_min: Number(curso.carga_horaria_min) || 0,
       preco_centavos: Number(curso.preco_centavos) || 0,
@@ -325,7 +325,11 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
         <Field label="Carga horária (min)"><input type="number" value={curso.carga_horaria_min} onChange={(e) => setCurso({ ...curso, carga_horaria_min: parseInt(e.target.value) || 0 })} style={inp} /></Field>
       </div>
 
-      <Field label="Capa (imagem)"><input type="file" accept="image/*" onChange={(e) => setCurso({ ...curso, capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
+      <Field label="Capa (imagem — fallback / poster do vídeo)"><input type="file" accept="image/*" onChange={(e) => setCurso({ ...curso, capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
+      <Field label="Vídeo de capa (loop curto 3–6s, opcional — substitui a imagem na vitrine)">
+        <input type="file" accept="video/mp4,video/webm" onChange={(e) => setCurso({ ...curso, capaVideo: e.target.files?.[0] ?? null })} style={inp} />
+        {curso.capaVideo && <div style={{ fontSize: 11, color: c.muted, marginTop: 6 }}>{curso.capaVideo.name} · {(curso.capaVideo.size / 1024 / 1024).toFixed(1)} MB</div>}
+      </Field>
       <Field label="Trailer (URL YouTube/Vimeo, opcional)"><input value={curso.trailer_url} onChange={(e) => setCurso({ ...curso, trailer_url: e.target.value })} style={inp} /></Field>
 
       <div style={sectionTitle}>Venda</div>
