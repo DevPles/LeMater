@@ -162,16 +162,18 @@ function LoginPage() {
             animate={{ x: mode === "register" ? "-100%" : "0%" }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            <img className="web-brand-logo" src={logoMonograma} alt="Le Mater" />
-            <h2>{mode === "register" ? "Bem-vinda de volta" : "Olá!"}</h2>
-            <p>{mode === "register" ? "Já tem conta? Entre agora." : "Sem acesso ainda? Solicite seu cadastro."}</p>
-            <button
-              type="button"
-              className="web-brand-button"
-              onClick={() => goToMode(mode === "register" ? "login" : "register")}
-            >
-              {mode === "register" ? "LOGIN" : "CADASTRAR"}
-            </button>
+            <div className="web-brand-content" key={mode}>
+              <img className="web-brand-logo" src={logoMonograma} alt="Le Mater" />
+              <h2>{mode === "register" ? "Bem-vinda de volta" : "Olá!"}</h2>
+              <p>{mode === "register" ? "Já tem conta? Entre agora." : "Sem acesso ainda? Solicite seu cadastro."}</p>
+              <button
+                type="button"
+                className="web-brand-button"
+                onClick={() => goToMode(mode === "register" ? "login" : "register")}
+              >
+                {mode === "register" ? "LOGIN" : "CADASTRAR"}
+              </button>
+            </div>
           </motion.aside>
         </motion.div>
       </section>
