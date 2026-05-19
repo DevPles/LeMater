@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useState, type ChangeEvent, type ComponentProps, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -250,11 +250,11 @@ function LoginForm({
   showPassword: boolean;
   loading: boolean;
   mobile?: boolean;
-  onEmailChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onPasswordChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onPasswordChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onTogglePassword: () => void;
   onRecover: () => void;
-  onSubmit: (event: React.FormEvent) => void;
+  onSubmit: (event: FormEvent) => void;
 }) {
   return (
     <form className={mobile ? "mobile-form" : "web-form"} onSubmit={onSubmit}>
@@ -288,11 +288,11 @@ function RegisterForm({
   password: string;
   showPassword: boolean;
   mobile?: boolean;
-  onNameChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onEmailChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onPasswordChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onNameChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onPasswordChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onTogglePassword: () => void;
-  onSubmit: (event: React.FormEvent) => void;
+  onSubmit: (event: FormEvent) => void;
 }) {
   return (
     <form className={mobile ? "mobile-form" : "web-form"} onSubmit={onSubmit}>
@@ -318,8 +318,8 @@ function RecoverForm({
   email: string;
   loading: boolean;
   mobile?: boolean;
-  onEmailChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onSubmit: (event: React.FormEvent) => void;
+  onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onSubmit: (event: FormEvent) => void;
   onBack: () => void;
 }) {
   return (
@@ -345,7 +345,7 @@ function FormHeader({ title, subtitle }: { title: string; subtitle: string }) {
   );
 }
 
-function Field({ label, type = "text", ...props }: React.ComponentProps<typeof Input> & { label: string }) {
+function Field({ label, type = "text", ...props }: ComponentProps<typeof Input> & { label: string }) {
   return (
     <div className="field-group">
       <Label className="field-label">{label}</Label>
@@ -362,7 +362,7 @@ function PasswordField({
 }: {
   value: string;
   show: boolean;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onToggle: () => void;
 }) {
   return (
