@@ -7,7 +7,7 @@ import {
   dashboardStats, listLeads, listAlunos, listCompras,
   liberarAcessoManual, revogarAcesso, reativarAcesso, enviarResetSenha,
 } from "@/lib/admin.functions";
-import ConteudosTab from "@/components/admin/ConteudosTab";
+import AtlasContentTab from "@/components/admin/AtlasContentTab";
 import lemateLogo from "@/assets/logo_monograma.png";
 
 export const Route = createFileRoute("/_authenticated/admin")({
