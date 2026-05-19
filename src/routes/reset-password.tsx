@@ -1,151 +1,164 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState, type CSSProperties } from "react";
-import { toast } from "sonner";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LoadingMessage } from "@/components/LoadingMessage";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
-    meta: [{ title: "Redefinir senha · Le Mater" }],
-    links: [{
-      rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap",
-    }],
+    meta: [
+      { title: "Redefinir senha — MãeDigital" },
+      { name: "description", content: "Defina uma nova senha para a sua conta." },
+    ],
   }),
   component: ResetPasswordPage,
 });
 
-const CREAM = "#FAF5EE";
-const SAGE = "#5C8A6E";
-const SAGE_DARK = "#2D5A42";
-const INK = "#1C1C1A";
-const MUTED = "#6B6560";
-const SURFACE = "#EDE5D6";
-const SHADOW_DARK = "rgba(120, 100, 70, 0.25)";
-const SHADOW_LIGHT = "rgba(255, 250, 240, 0.95)";
-const serif = "'Cormorant Garamond', serif";
-const sans = "'DM Sans', sans-serif";
-
 function ResetPasswordPage() {
   const navigate = useNavigate();
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [hasRecovery, setHasRecovery] = useState(false);
+  const [novaSenha, setNovaSenha] = useState("");
+  const [confirmar, setConfirmar] = useState("");
+  const [mostrar, setMostrar] = useState(false);
+  const [salvando, setSalvando] = useState(false);
+  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   useEffect(() => {
-    // Supabase auto-processes the recovery token in the URL hash on load
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
-        setReady(true);
+    // Supabase entrega o token no hash (#access_token=...&type=recovery) e
+    // dispara o evento PASSWORD_RECOVERY assim que processa a sessão.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setHasRecovery(true);
+        setSessionReady(true);
+      } else if (session) {
+        setSessionReady(true);
       }
     });
+
+    // Fallback: se já existe sessão ativa, libera o formulário
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setReady(true);
+      if (data.session) {
+        setSessionReady(true);
+        if (typeof window !== "undefined" && window.location.hash.includes("type=recovery")) {
+          setHasRecovery(true);
+        }
+      } else {
+        setSessionReady(true);
+      }
     });
+
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password.length < 6) {
-      toast.error("A senha deve ter ao menos 6 caracteres.");
+  const handleSalvar = async () => {
+    setMsg(null);
+    if (novaSenha.length < 6) {
+      setMsg({ type: "err", text: "A senha precisa ter ao menos 6 caracteres." });
       return;
     }
-    if (password !== confirm) {
-      toast.error("As senhas não coincidem.");
+    if (novaSenha !== confirmar) {
+      setMsg({ type: "err", text: "As senhas não coincidem." });
       return;
     }
-    setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    setLoading(false);
-    if (error) {
-      toast.error("Não foi possível redefinir a senha.");
-      return;
+    setSalvando(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: novaSenha });
+      if (error) throw error;
+      setMsg({ type: "ok", text: "Senha redefinida com sucesso! Redirecionando..." });
+      setTimeout(() => navigate({ to: "/home" }), 1500);
+    } catch (e) {
+      setMsg({ type: "err", text: (e as Error).message || "Falha ao redefinir senha." });
+    } finally {
+      setSalvando(false);
     }
-    toast.success("Senha redefinida com sucesso.");
-    await supabase.auth.signOut();
-    navigate({ to: "/login" });
-  };
-
-  const inputStyle: CSSProperties = {
-    background: SURFACE,
-    boxShadow: `inset 3px 3px 6px ${SHADOW_DARK}, inset -3px -3px 6px ${SHADOW_LIGHT}`,
-    border: "none",
-    borderRadius: 8,
-    width: "100%",
-    padding: "10px 12px",
-    fontSize: 13,
-    fontFamily: sans,
-    color: INK,
-    outline: "none",
-  };
-  const labelStyle: CSSProperties = {
-    fontSize: 10,
-    letterSpacing: "0.14em",
-    textTransform: "uppercase",
-    color: MUTED,
-    fontWeight: 500,
-    marginBottom: 4,
-    display: "block",
-  };
-  const primary: CSSProperties = {
-    background: `linear-gradient(135deg, ${SAGE_DARK} 0%, ${SAGE} 100%)`,
-    color: "white",
-    fontSize: 11,
-    fontWeight: 600,
-    letterSpacing: "0.16em",
-    textTransform: "uppercase",
-    padding: "12px 24px",
-    border: "none",
-    cursor: loading ? "wait" : "pointer",
-    fontFamily: sans,
-    opacity: loading ? 0.7 : 1,
-    borderRadius: 8,
-    boxShadow: `4px 4px 10px ${SHADOW_DARK}, -4px -4px 10px ${SHADOW_LIGHT}`,
-    flex: 1,
   };
 
   return (
-    <div style={{
-      fontFamily: sans, background: CREAM, color: INK, minHeight: "100vh",
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
-    }}>
-      <div style={{
-        background: SURFACE,
-        boxShadow: `8px 8px 20px ${SHADOW_DARK}, -8px -8px 20px ${SHADOW_LIGHT}`,
-        borderRadius: 14, padding: "36px 32px", width: "100%", maxWidth: 420,
-      }}>
-        <h1 style={{ fontFamily: serif, fontSize: 28, fontWeight: 600, margin: "0 0 4px", color: SAGE_DARK }}>
+    <div className="min-h-[100dvh] bg-gradient-to-b from-white via-blue-100 to-[#1a1557] flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md bg-[#1a1557] border border-[#f0c040]/30 rounded-2xl p-6 shadow-2xl"
+      >
+        <h1 className="text-[#f0c040] text-2xl font-display text-center mb-1">
           Redefinir senha
         </h1>
-        <p style={{ fontSize: 12, color: MUTED, margin: "0 0 22px" }}>
-          {ready ? "Defina sua nova senha." : "Validando link de recuperação..."}
+        <p className="text-white/70 text-center text-sm mb-5">
+          Defina uma nova senha para a sua conta.
         </p>
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>Nova senha</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} required minLength={6} disabled={!ready} />
-          </div>
-          <div style={{ marginBottom: 20 }}>
-            <label style={labelStyle}>Confirmar senha</label>
-            <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} style={inputStyle} required minLength={6} disabled={!ready} />
-          </div>
-          <div style={{ display: "flex", gap: 10 }}>
-            <Link to="/login" style={{
-              background: "transparent", color: SAGE_DARK, border: `1.5px solid ${SAGE_DARK}`,
-              padding: "12px 18px", fontSize: 11, fontWeight: 600, letterSpacing: "0.16em",
-              textTransform: "uppercase", cursor: "pointer", fontFamily: sans, borderRadius: 8,
-              textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center",
-            }}>
-              Voltar
-            </Link>
-            <button type="submit" disabled={loading || !ready} style={primary}>
-              {loading ? "Salvando..." : "Salvar"}
+        {!sessionReady ? (
+          <LoadingMessage />
+        ) : !hasRecovery ? (
+          <div className="text-center">
+            <p className="text-red-200 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 text-sm mb-4">
+              Link inválido ou expirado. Solicite um novo link na tela de login.
+            </p>
+            <button
+              onClick={() => navigate({ to: "/" })}
+              className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm px-6 py-2.5 rounded-full transition-colors"
+            >
+              Voltar para o login
             </button>
           </div>
-        </form>
-      </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <div>
+              <Label className="text-white/90 text-xs font-medium">Nova senha</Label>
+              <div className="relative">
+                <Input
+                  type={mostrar ? "text" : "password"}
+                  value={novaSenha}
+                  onChange={(e) => setNovaSenha(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#f0c040] focus:ring-[#f0c040]/30 h-10 text-sm pr-16"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrar((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[#f0c040] hover:text-[#e5b535] text-[11px] font-medium px-2"
+                >
+                  {mostrar ? "Ocultar" : "Mostrar"}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-white/90 text-xs font-medium">Confirmar nova senha</Label>
+              <Input
+                type={mostrar ? "text" : "password"}
+                value={confirmar}
+                onChange={(e) => setConfirmar(e.target.value)}
+                placeholder="Repita a senha"
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#f0c040] focus:ring-[#f0c040]/30 h-10 text-sm"
+              />
+            </div>
+
+            {msg && (
+              <p
+                className={`text-xs px-3 py-2 rounded-lg ${
+                  msg.type === "ok"
+                    ? "text-emerald-200 bg-emerald-500/10 border border-emerald-500/30"
+                    : "text-red-200 bg-red-500/10 border border-red-500/30"
+                }`}
+              >
+                {msg.text}
+              </p>
+            )}
+
+            <button
+              onClick={handleSalvar}
+              disabled={salvando}
+              className="mt-2 bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm py-2.5 rounded-full shadow-lg shadow-[#f0c040]/30 transition-colors disabled:opacity-40"
+            >
+              {salvando ? "Salvando..." : "Redefinir senha"}
+            </button>
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 }

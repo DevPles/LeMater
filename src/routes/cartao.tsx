@@ -88,6 +88,7 @@ function semanaGestacional(dataConsultaBR: string, dumBR: string): number {
 function calcularDPP(dumBR: string): string {
   const dum = parseBR(dumBR);
   if (!dum) return "—";
+  // Regra de Naegele: DUM + 280 dias
   const dpp = new Date(dum);
   dpp.setDate(dpp.getDate() + 280);
   return formatBR(dpp);
@@ -113,9 +114,10 @@ function classificarIMC(imc: number): { label: string; color: string } {
 
 const vitalColors = ["bg-coral-light", "bg-mint-light", "bg-warm", "bg-blush"];
 
+// ============= Tipos de dados ===================
 interface MedicaoReal {
   id: string;
-  data: string;
+  data: string; // BR
   parametro: string;
   valor: number;
   semana: number;
@@ -125,7 +127,7 @@ interface MedicaoReal {
 interface VacinaReal {
   id: string;
   vacina: string;
-  data: string;
+  data: string; // BR
   lote?: string;
   fabricante?: string;
   observacao?: string;
@@ -134,7 +136,7 @@ interface VacinaReal {
 interface ExameReal {
   id: string;
   tipo_exame: string;
-  data: string;
+  data: string; // BR
   status: string;
   resultado?: string;
   arquivo_path?: string | null;
@@ -144,8 +146,8 @@ interface ExameReal {
 
 interface ConsultaReal {
   id: string;
-  data: string;
-  hora: string;
+  data: string; // BR
+  hora: string; // HH:MM
   titulo?: string;
   tipo?: string;
   status: string;
@@ -162,6 +164,7 @@ function CartaoPage() {
   const { profile: ownProfile, session } = useGestanteProfile();
   const { u: shareUserId } = Route.useSearch();
 
+  // Quando vem com ?u=<id>, carrega snapshot público (read-only)
   const [publicSnap, setPublicSnap] = useState<{
     profile: any; medicoes: any[]; vacinas: any[]; exames: any[];
   } | null>(null);
@@ -182,6 +185,7 @@ function CartaoPage() {
   const bebeSexo = profile?.bebe_sexo ?? null;
   const palette = paletaPorSexo(bebeSexo);
 
+  // ====== Dados clínicos REAIS do banco ======
   const [medicoes, setMedicoes] = useState<MedicaoReal[]>([]);
   const [vacinas, setVacinas] = useState<VacinaReal[]>([]);
   const [exames, setExames] = useState<ExameReal[]>([]);
@@ -189,7 +193,7 @@ function CartaoPage() {
   const [lancamentoOpen, setLancamentoOpen] = useState(false);
 
   const carregarDados = useCallback(async () => {
-    if (isShared) return;
+    if (isShared) return; // dados vêm do snapshot público
     if (!session?.user?.id) return;
     const uid = session.user.id;
     const [mRes, vRes, eRes, iRes, cRes] = await Promise.all([
@@ -284,6 +288,7 @@ function CartaoPage() {
 
   useEffect(() => { carregarDados(); }, [carregarDados]);
 
+  // Quando temos snapshot público, popula medicoes/vacinas/exames a partir dele
   useEffect(() => {
     if (!isShared || !publicSnap) return;
     setMedicoes((publicSnap.medicoes ?? []).map((r: any) => ({
@@ -311,6 +316,7 @@ function CartaoPage() {
     })));
   }, [isShared, publicSnap]);
 
+  // ====== Info da paciente derivada do banco ======
   const dumBR = profile?.dum
     ? formatBR(new Date(profile.dum + "T00:00:00"))
     : cartaoContent.dum;
@@ -328,6 +334,7 @@ function CartaoPage() {
     weeks: String(semanasAtual),
   };
 
+  // ====== Séries derivadas das medições reais ======
   const series = useMemo(() => {
     const peso = medicoes.filter(m => m.parametro.toLowerCase().startsWith("peso"))
       .map(m => ({ semana: m.semana, peso: m.valor, data: m.data }));
@@ -354,6 +361,7 @@ function CartaoPage() {
     return { peso, pressao, au, bcf, glicemia };
   }, [medicoes]);
 
+  // ====== IMC e ganho de peso ======
   const altura = medicoes.find(m => {
     const p = m.parametro.toLowerCase();
     return p === "altura_pessoa" || p === "estatura" || p.startsWith("estatura");
@@ -369,6 +377,7 @@ function CartaoPage() {
     color: vitalColors[i % vitalColors.length],
   }));
 
+  // ====== URL pública do cartão (para QR) — sempre aponta para o id da gestante exibida ======
   const ownerUserId = isShared ? shareUserId : session?.user?.id;
   const cartaoUrl = typeof window !== "undefined"
     ? `${window.location.origin}/cartao?u=${ownerUserId ?? ""}`
@@ -445,6 +454,7 @@ function CartaoPage() {
         ))}
       </div>
 
+      {/* Patient Card */}
       <motion.div className="mb-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <LiquidCard className="p-4">
           <div className="flex items-center gap-3 mb-3">
@@ -493,6 +503,7 @@ function CartaoPage() {
         </LiquidCard>
       </motion.div>
 
+      {/* Botão de novo lançamento - visível em todas as abas exceto "resumo" */}
       {(tab === "lancamentos" || tab === "vacinas") && session?.user?.id && (
         <div className="mb-3 flex justify-end">
           <button
@@ -535,6 +546,7 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
   type FiltroTimeline = "geral" | "clinico" | "exame" | "vacina" | "historico";
   const [filtro, setFiltro] = useState<FiltroTimeline>("geral");
 
+  // Linha do tempo unificada
   type Item = { id: string; data: string; titulo: string; tipo: "clinico" | "vacina" | "exame" | "historico"; semana?: number; nota?: string; arquivo_path?: string | null; bucket?: "exam-attachments" | "image-exams" };
 
   const labelHistorico = (t?: string) => {
@@ -699,6 +711,7 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
 
 /* ========== LANÇAMENTOS TAB ========== */
 function LancamentosTab({ medicoes }: { medicoes: MedicaoReal[] }) {
+  // Agrupa por data
   const grupos = useMemo(() => {
     const map = new Map<string, MedicaoReal[]>();
     medicoes.forEach(m => {
@@ -835,12 +848,14 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
   const bcfF = filtrar(series.bcf);
   const glicemiaF = filtrar(series.glicemia);
 
+  // Combinado: peso + PAM (pressão arterial média)
   const combinado = pressaoF.map(p => {
     const pam = (p.sistolica && p.diastolica) ? (p.sistolica + 2 * p.diastolica) / 3 : null;
     const peso = pesoF.find(x => x.semana === p.semana)?.peso ?? null;
     return { semana: p.semana, pam, peso };
   });
 
+  // Cruzamento: Glicemia x Peso (alerta para resistência insulínica/DMG)
   const semanasGP = Array.from(new Set([...glicemiaF, ...pesoF].map(d => d.semana))).sort((a, b) => a - b);
   const glicemiaPeso = semanasGP.map(s => ({
     semana: s,
@@ -848,6 +863,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
     peso: pesoF.find(p => p.semana === s)?.peso ?? null,
   })).filter(d => d.glicemia !== null || d.peso !== null);
 
+  // Cruzamento: Altura uterina x Peso (proporcionalidade do crescimento)
   const semanasAP = Array.from(new Set([...auF, ...pesoF].map(d => d.semana))).sort((a, b) => a - b);
   const auPeso = semanasAP.map(s => ({
     semana: s,
@@ -933,6 +949,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
         <p className="text-[10px] text-muted-foreground mt-2">Mostrando semana {semanaRange.min} → {semanaRange.max}</p>
       </div>
 
+      {/* CURVA DE PESO */}
       <div className={chartCard}>
         <h4 className={chartTitle}>Curva de Ganho de Peso (kg)</h4>
         {pesoF.length === 0 ? <Vazio texto="Sem registros de peso no período." /> : (
@@ -954,6 +971,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
         )}
       </div>
 
+      {/* PRESSÃO ARTERIAL com faixa normal */}
       <div className={chartCard}>
         <h4 className={chartTitle}>Curva Pressórica (mmHg) — referência: 90-140 / 60-90</h4>
         {pressaoF.length === 0 ? <Vazio texto="Sem registros pressóricos no período." /> : (
@@ -976,6 +994,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
         )}
       </div>
 
+      {/* COMBINADO peso x PAM */}
       <div className={chartCard}>
         <h4 className={chartTitle}>Peso × Pressão Arterial Média</h4>
         <p className="text-[10px] text-muted-foreground mb-2">Cruzamento útil para monitorar pré-eclâmpsia: ganho rápido de peso + PAM crescente é sinal de alerta.</p>
@@ -996,9 +1015,10 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
         )}
       </div>
 
+      {/* CRUZAMENTO INTELIGENTE: Glicemia × Peso */}
       <div className={chartCard}>
         <h4 className={chartTitle}>Glicemia × Peso — risco de DMG</h4>
-        <p className="text-[10px] text-muted-foreground mb-2">Elevações simultâneas de glicemia capilar e peso podem indicar resistência insulínica ou diabetes gestacional. Faixa normal: glicemia &lt; 95 mg/dL em jejum.</p>
+        <p className="text-[10px] text-muted-foreground mb-2">Eleva­ções simultâneas de glicemia capilar e peso podem indicar resistência insulínica ou diabetes gestacional. Faixa normal: glicemia &lt; 95 mg/dL em jejum.</p>
         {glicemiaPeso.filter(d => d.glicemia !== null).length === 0 ? <Vazio texto="Sem registros de glicemia no período." /> : (
           <ResponsiveContainer width="100%" height={220}>
             <ComposedChart data={glicemiaPeso} margin={{ top: 18, right: 12, left: 4, bottom: 8 }}>
@@ -1018,6 +1038,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
         )}
       </div>
 
+      {/* CRUZAMENTO INTELIGENTE: Altura uterina × Peso */}
       <div className={chartCard}>
         <h4 className={chartTitle}>Altura Uterina × Peso — proporcionalidade do crescimento</h4>
         <p className="text-[10px] text-muted-foreground mb-2">A altura uterina deve crescer junto com o ganho de peso materno. Discrepâncias podem indicar restrição ou macrossomia fetal.</p>
@@ -1037,6 +1058,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
         )}
       </div>
 
+      {/* ALTURA UTERINA */}
       <div className={chartCard}>
         <h4 className={chartTitle}>Altura Uterina (cm) — referência MS</h4>
         {auF.length === 0 ? <Vazio texto="Sem registros de altura uterina no período." /> : (
@@ -1058,6 +1080,7 @@ function GraficosTab({ palette, dum, series }: { palette: Palette; dum: string; 
         )}
       </div>
 
+      {/* BCF */}
       <div className={chartCard}>
         <h4 className={chartTitle}>BCF (bpm) — normal: 110-160</h4>
         {bcfF.length === 0 ? <Vazio texto="Sem registros de BCF no período." /> : (
@@ -1123,8 +1146,7 @@ async function gerarPDFCartao(args: {
   palette: Palette;
   cartaoUrl: string;
 }) {
-  const { patientInfo, vitals, medicoes, vacinas, exames, consultas, series, ganhoPeso, imc, imcInfo, altura: _altura, palette, cartaoUrl } = args;
-  void _altura;
+  const { patientInfo, vitals, medicoes, vacinas, exames, consultas, series, ganhoPeso, imc, imcInfo, altura, palette, cartaoUrl } = args;
   const doc = new jsPDF({ unit: "mm", format: "a4", compress: true, orientation: "landscape" });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -1138,6 +1160,7 @@ async function gerarPDFCartao(args: {
 
   doc.setFont("helvetica", "normal");
 
+  // ======== Footer ========
   const drawFooter = (pageNum: number, totalPages: number) => {
     doc.setFillColor(pr, pg, pb);
     doc.rect(0, pageH - 9, pageW, 9, "F");
@@ -1149,14 +1172,20 @@ async function gerarPDFCartao(args: {
     doc.text(`Pag. ${pageNum} de ${totalPages}`, pageW - margin, pageH - 3.5, { align: "right" });
   };
 
+  // ======== Carregar foto + QR Code + logo em paralelo ========
   const [fotoData, qrData, logoData] = await Promise.all([
     patientInfo.fotoUrl ? imageToDataUrl(patientInfo.fotoUrl) : Promise.resolve(null),
     QRCode.toDataURL(cartaoUrl || "https://maedigital.app", { width: 240, margin: 1, color: { dark: palette.primary, light: "#ffffff" } }),
     imageToDataUrl(logoHospitalUrl).catch(() => null),
   ]);
 
+  // ============================================================
+  // FOLDER - 4 paginas paisagem (Capa + 3 folhas internas)
+  // Cada pagina dobrada ao meio: metade esquerda + metade direita
+  // ============================================================
   const halfW = pageW / 2;
 
+  // Helper genérico de fundo + linha de dobra ============
   const drawBaseFolderPage = () => {
     doc.setFillColor(252, 252, 254);
     doc.rect(0, 0, pageW, pageH, "F");
@@ -1171,14 +1200,24 @@ async function gerarPDFCartao(args: {
     doc.text("DOBRE AQUI", halfW, pageH / 2, { align: "center", angle: 90 });
   };
 
+  // =============================================================
+  // PAGINA 1 - CAPA DO FOLDER (dividida em 2 faces)
+  // Esquerda  = CONTRACAPA (institucional sobrio)
+  // Direita   = CAPA FRONTAL (titulo + nome + data)
+  // =============================================================
   drawBaseFolderPage();
 
+  // ===== METADE DIREITA: CAPA FRONTAL =====
+  // Fundo navy somente na capa frontal
   doc.setFillColor(pr, pg, pb);
   doc.rect(halfW, 0, halfW, pageH, "F");
+  // Faixa gold superior (marca)
   doc.setFillColor(ar, ag, ab);
   doc.rect(halfW, 0, halfW, 6, "F");
+  // Faixa gold inferior
   doc.rect(halfW, pageH - 6, halfW, 6, "F");
 
+  // Logo do Hospital Electro Bonini no topo (sobre fundo navy: caixa branca)
   if (logoData) {
     const logoW = 42;
     const logoH = 18;
@@ -1194,6 +1233,7 @@ async function gerarPDFCartao(args: {
     doc.text("LeMater", halfW + halfW / 2, 16, { align: "center" });
   }
 
+  // Bloco branco central elegante com titulo
   const coverBandY = pageH / 2 - 32;
   const coverBandH = 64;
   doc.setFillColor(255, 255, 255);
@@ -1202,6 +1242,7 @@ async function gerarPDFCartao(args: {
   doc.rect(halfW + 10, coverBandY, halfW - 20, 1.5, "F");
   doc.rect(halfW + 10, coverBandY + coverBandH - 1.5, halfW - 20, 1.5, "F");
 
+  // Titulo principal
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(...muted);
@@ -1209,15 +1250,18 @@ async function gerarPDFCartao(args: {
   doc.setFontSize(30);
   doc.setTextColor(pr, pg, pb);
   doc.text("GESTANTE", halfW + halfW / 2, coverBandY + 34, { align: "center" });
+  // Linha gold curta
   const cLineLen = 28;
   doc.setFillColor(ar, ag, ab);
   doc.rect(halfW + halfW / 2 - cLineLen / 2, coverBandY + 40, cLineLen, 1, "F");
+  // Subtitulo
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...muted);
   doc.text("Acompanhamento Pre-Natal", halfW + halfW / 2, coverBandY + 50, { align: "center" });
   doc.text("Sistema LeMater", halfW + halfW / 2, coverBandY + 56, { align: "center" });
 
+  // Nome da gestante (em destaque na parte inferior da capa)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   doc.setTextColor(255, 255, 255);
@@ -1227,6 +1271,8 @@ async function gerarPDFCartao(args: {
   doc.setTextColor(ar, ag, ab);
   doc.text(`EMITIDO EM ${formatBR(new Date()).toUpperCase()}`, halfW + halfW / 2, pageH - 14, { align: "center" });
 
+  // ===== METADE ESQUERDA: CONTRACAPA (sobria, sem QR/links) =====
+  // Fundo branco neutro, info institucional no rodape
   doc.setTextColor(...muted);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
@@ -1235,6 +1281,7 @@ async function gerarPDFCartao(args: {
   doc.setFontSize(7.5);
   doc.text("Saude materna com credencial clinica", 14, pageH - 13);
 
+  // Pequena marca decorativa centralizada / logo institucional
   if (logoData) {
     const logoW2 = 50;
     const logoH2 = 21;
@@ -1251,6 +1298,7 @@ async function gerarPDFCartao(args: {
   doc.setTextColor(pr, pg, pb);
   doc.text("DOCUMENTO DE ACOMPANHAMENTO PRE-NATAL", halfW / 2, 38, { align: "center" });
 
+  // Bloco central da contracapa: ficha de identificacao discreta
   const idY = pageH / 2 - 32;
   const idW = halfW - 28;
   doc.setDrawColor(220, 220, 230);
@@ -1264,6 +1312,7 @@ async function gerarPDFCartao(args: {
   doc.setLineWidth(0.3);
   doc.line(18, idY + 9, 14 + idW - 4, idY + 9);
 
+  // Foto da gestante (canto direito da ficha)
   const photoSize = 28;
   const photoX = 14 + idW - photoSize - 5;
   const photoY = idY + 13;
@@ -1279,6 +1328,7 @@ async function gerarPDFCartao(args: {
     doc.setLineWidth(0.4);
     doc.roundedRect(photoX, photoY, photoSize, photoSize, 2, 2, "S");
   } else {
+    // Placeholder caso nao haja foto
     doc.setFillColor(245, 245, 250);
     doc.setDrawColor(220, 220, 230);
     doc.setLineWidth(0.3);
@@ -1296,7 +1346,7 @@ async function gerarPDFCartao(args: {
     { l: "Cidade / Bairro", v: `${patientInfo.cidade ?? "-"} / ${patientInfo.bairro ?? "-"}` },
     { l: "Unidade de saude", v: patientInfo.unidadeSaude ?? "-" },
   ];
-  const fieldsW = idW - photoSize - 14;
+  const fieldsW = idW - photoSize - 14; // largura util dos campos (deixa espaco p/ foto)
   let idFy = idY + 16;
   idFields.forEach((f) => {
     doc.setFont("helvetica", "normal");
@@ -1311,6 +1361,7 @@ async function gerarPDFCartao(args: {
     idFy += 9.5;
   });
 
+  // ===== QR CODE + LINK do cartao digital online =====
   const qrSize = 32;
   const qrY = idY + 64 + 8;
   const qrBoxW = idW;
@@ -1319,7 +1370,9 @@ async function gerarPDFCartao(args: {
   doc.setDrawColor(220, 220, 230);
   doc.setLineWidth(0.3);
   doc.roundedRect(14, qrY, qrBoxW, qrBoxH, 2, 2, "FD");
+  // QR a esquerda
   doc.addImage(qrData, "PNG", 14 + 5, qrY + 5, qrSize, qrSize);
+  // Texto a direita
   const tX = 14 + 5 + qrSize + 6;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
@@ -1333,6 +1386,7 @@ async function gerarPDFCartao(args: {
     qrBoxW - qrSize - 18,
   );
   desc.forEach((ln: string, i: number) => doc.text(ln, tX, qrY + 14 + i * 3.2));
+  // Link
   const linkY = qrY + qrBoxH - 5;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.8);
@@ -1342,6 +1396,7 @@ async function gerarPDFCartao(args: {
   doc.text(linkLines[0], tX, linkY);
   doc.link(tX, linkY - 3, doc.getTextWidth(linkLines[0]), 4, { url: linkUrl });
 
+  // ===== Pré-cálculo de parametros (compartilhado entre matriz e graficos) =====
   const normParam = (p: string): string => {
     return p
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -1389,9 +1444,14 @@ async function gerarPDFCartao(args: {
     (labelByKey.get(a) ?? a).localeCompare(labelByKey.get(b) ?? b)
   );
 
+
+  // =============================================================
+  // PAGINA 2 - FOLHA 1 (Dados gestacionais + Sinais vitais + Vacinas + Exames)
+  // =============================================================
   doc.addPage("a4", "landscape");
   drawBaseFolderPage();
 
+  // METADE ESQUERDA: Dados gestacionais + IMC + Antecedentes
   const lX = 14;
   const lW = halfW - 28;
   doc.setTextColor(pr, pg, pb);
@@ -1402,6 +1462,7 @@ async function gerarPDFCartao(args: {
   doc.setLineWidth(0.5);
   doc.line(lX, 21, lX + lW, 21);
 
+  // KPIs gestacionais em GRADE 3 colunas (compactos)
   const kpis3 = [
     { label: "SEMANA", value: `${patientInfo.weeks}a`, sub: "atual" },
     { label: "DUM", value: patientInfo.dum, sub: "ult. menstr." },
@@ -1427,10 +1488,12 @@ async function gerarPDFCartao(args: {
     doc.text(k.sub, x + 3, 40.5);
   });
 
+  // IMC + Antecedentes em UMA UNICA LINHA lado a lado (otimiza espaco)
   let iy = 45;
   const imcW = lW * 0.34;
   const antW = lW - imcW - 3;
 
+  // IMC
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(225, 225, 230);
   doc.roundedRect(lX, iy, imcW, 20, 2, 2, "FD");
@@ -1463,6 +1526,7 @@ async function gerarPDFCartao(args: {
     doc.text("ganho atual", lX + imcW - 3, iy + 17, { align: "right" });
   }
 
+  // Antecedentes ao lado do IMC
   const antX = lX + imcW + 3;
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(225, 225, 230);
@@ -1502,6 +1566,7 @@ async function gerarPDFCartao(args: {
   });
   iy += 24;
 
+  // SINAIS VITAIS na esquerda (grade compacta)
   doc.setTextColor(pr, pg, pb);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
@@ -1536,6 +1601,10 @@ async function gerarPDFCartao(args: {
     iy += vH + 4;
   }
 
+  // (bloco "PROXIMOS PASSOS E ORIENTACOES" removido a pedido do usuario)
+
+  // VACINAS e EXAMES agora ficam na MESMA face (metade esquerda),
+  // logo abaixo de SINAIS VITAIS, aproveitando o espaco livre.
   const rX = lX;
   const rW = lW;
   let ry = iy + 2;
@@ -1549,6 +1618,7 @@ async function gerarPDFCartao(args: {
   doc.line(rX, ry + 3, rX + rW, ry + 3);
   ry += 7;
 
+  // Helper: tabela simples reutilizavel
   const drawSimpleTable = (
     x: number, y: number, w: number,
     headers: { label: string; widthPct: number; align?: "left" | "center" | "right" }[],
@@ -1576,6 +1646,7 @@ async function gerarPDFCartao(args: {
     let drawnRows = 0;
     for (let ri = 0; ri < rows.length; ri++) {
       const row = rows[ri];
+      // Pre-calcula a altura desta linha (maior numero de linhas entre as celulas)
       doc.setFontSize(7);
       let maxLines = 1;
       const cellLines: string[][] = headers.map((h, ci) => {
@@ -1619,6 +1690,7 @@ async function gerarPDFCartao(args: {
     return cy;
   };
 
+  // Helper: agrupa itens por data (mais recente primeiro) -> "data | tipos concatenados"
   const agruparPorData = <T,>(itens: T[], getData: (i: T) => string, getTipo: (i: T) => string): string[][] => {
     const map = new Map<string, string[]>();
     itens.forEach((it) => {
@@ -1658,6 +1730,7 @@ async function gerarPDFCartao(args: {
     ry += 14;
   }
 
+  // EXAMES como tabela
   doc.setTextColor(pr, pg, pb);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
@@ -1684,6 +1757,9 @@ async function gerarPDFCartao(args: {
     doc.text("Nenhum exame registrado.", rX + 3, ry + 6.5);
   }
 
+  // =============================================================
+  // METADE DIREITA DA PAGINA 2: Consultas (quantidade, datas e observacoes)
+  // =============================================================
   const rgX = halfW + 14;
   const rgW = halfW - 28;
   let rgY = 18;
@@ -1692,6 +1768,7 @@ async function gerarPDFCartao(args: {
   const realizadas = consultas.filter(c => c.status === "realizado").length;
   const agendadas = consultas.filter(c => c.status === "reservado").length;
 
+  // Titulo
   doc.setTextColor(pr, pg, pb);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
@@ -1701,6 +1778,7 @@ async function gerarPDFCartao(args: {
   doc.line(rgX, rgY + 3, rgX + rgW, rgY + 3);
   rgY += 7;
 
+  // Bloco de resumo (3 stats)
   const statW = (rgW - 4) / 3;
   const statH = 13;
   const stats = [
@@ -1723,6 +1801,7 @@ async function gerarPDFCartao(args: {
   });
   rgY += statH + 4;
 
+  // Subtitulo - MATRIZ CRUZADA
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(pr, pg, pb);
@@ -1737,7 +1816,8 @@ async function gerarPDFCartao(args: {
   doc.text("Linhas = data da consulta  |  Colunas = parametro clinico", rgX, rgY + 1.5);
   rgY += 4;
 
-  const matrizMaxY = pageH / 2 + 18;
+  // Renderiza matriz cruzada na face direita (limitada para deixar espaço ao histórico)
+  const matrizMaxY = pageH / 2 + 18; // matriz ocupa ~metade superior
   if (medicoes.length === 0) {
     doc.setFont("helvetica", "italic");
     doc.setFontSize(8);
@@ -1798,6 +1878,7 @@ async function gerarPDFCartao(args: {
     const rowHR = Math.max(3.4, Math.min(5.6, (availHR - matHeaderHR) / Math.max(1, datasMatrizR.length)));
     const fontRowR = rowHR >= 5.0 ? 5.6 : rowHR >= 4.2 ? 5.0 : 4.4;
 
+    // Header
     doc.setFillColor(pr, pg, pb);
     doc.rect(rgX, rgY, matTotalWR, matHeaderHR, "F");
     doc.setTextColor(255, 255, 255);
@@ -1817,6 +1898,7 @@ async function gerarPDFCartao(args: {
       });
     });
 
+    // Rows
     datasMatrizR.forEach((d, ri) => {
       const ry5 = rgY + matHeaderHR + ri * rowHR;
       if (ri % 2 === 0) {
@@ -1849,6 +1931,7 @@ async function gerarPDFCartao(args: {
       });
     });
 
+    // Bordas
     const totalHR = matHeaderHR + datasMatrizR.length * rowHR;
     doc.setDrawColor(pr, pg, pb);
     doc.setLineWidth(0.3);
@@ -1871,6 +1954,7 @@ async function gerarPDFCartao(args: {
     rgY += totalHR + 4;
   }
 
+  // ===== HISTÓRICO E OBSERVAÇÕES CLÍNICAS =====
   const histLimY = pageH - 8;
   if (rgY < histLimY - 8) {
     doc.setFont("helvetica", "bold");
@@ -1893,6 +1977,7 @@ async function gerarPDFCartao(args: {
       doc.setTextColor(...muted);
       doc.text("Nenhuma consulta registrada.", rgX + 2, rgY + 4);
     } else {
+      // Layout em grade: 3 colunas de cards lado a lado
       const cols = 3;
       const gap = 2;
       const cardW = (rgW - gap * (cols - 1)) / cols;
@@ -1905,22 +1990,26 @@ async function gerarPDFCartao(args: {
         const cardY = startY + row * (cardH + gap);
         if (cardY + cardH > histLimY) break;
 
+        // Fundo do card
         doc.setFillColor(248, 248, 252);
         doc.setDrawColor(225, 225, 235);
         doc.setLineWidth(0.2);
         doc.roundedRect(cardX, cardY, cardW, cardH, 1.2, 1.2, "FD");
 
+        // Data/hora
         doc.setFont("helvetica", "bold");
         doc.setFontSize(6.5);
         doc.setTextColor(pr, pg, pb);
         doc.text(`${c.data} ${c.hora}`, cardX + 1.5, cardY + 3);
 
+        // Status à direita
         const statusTxt = c.status === "realizado" ? "REALIZADA" : "AGENDADA";
         doc.setFont("helvetica", "normal");
         doc.setFontSize(5.2);
         doc.setTextColor(...muted);
         doc.text(statusTxt, cardX + cardW - 1.5, cardY + 3, { align: "right" });
 
+        // Título
         doc.setFont("helvetica", "normal");
         doc.setFontSize(6);
         doc.setTextColor(...dark);
@@ -1928,6 +2017,7 @@ async function gerarPDFCartao(args: {
         const tLines = doc.splitTextToSize(tituloC, cardW - 3) as string[];
         doc.text(tLines[0] ?? "", cardX + 1.5, cardY + 6);
 
+        // Observação
         if (c.observacao && c.observacao.trim()) {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(5.6);
@@ -1954,6 +2044,9 @@ async function gerarPDFCartao(args: {
     }
   }
 
+  // ================================================================
+  // PAGINAS 3 e 4 - GRAFICOS INTERCALADOS + DADOS CLINICOS EM GRADE
+  // ================================================================
   const drawChartBox = (
     bx: number, by: number, bw: number, bh: number,
     title: string,
@@ -1988,6 +2081,7 @@ async function gerarPDFCartao(args: {
     const maxX = Math.max(...allX, minX + 1);
     const dataMinY = Math.min(...allY);
     const dataMaxY = Math.max(...allY);
+    // Janela Y centrada nos dados; refRange so amplia se nao deixar band ocupar tudo
     let yLo: number;
     let yHi: number;
     {
@@ -1995,6 +2089,7 @@ async function gerarPDFCartao(args: {
       yLo = dataMinY - padBase;
       yHi = dataMaxY + padBase;
       if (refRange) {
+        // Inclui band somente se ela cabe sem ocupar mais de ~50% do grafico
         const totalSpan = yHi - yLo;
         const bandSpan = refRange.max - refRange.min;
         if (bandSpan <= totalSpan * 0.6) {
@@ -2008,6 +2103,7 @@ async function gerarPDFCartao(args: {
           yHi = Math.max(yHi, r.max + padBase * 0.2);
         });
       }
+      // Arredonda para escala "bonita"
       const niceStep = (range: number): number => {
         const raw = range / 4;
         const pow = Math.pow(10, Math.floor(Math.log10(raw)));
@@ -2023,6 +2119,7 @@ async function gerarPDFCartao(args: {
     const sx = (v: number) => plotX + ((v - minX) / Math.max(1, maxX - minX)) * plotW;
     const sy = (v: number) => plotY + plotH - ((v - yLo) / Math.max(0.0001, yHi - yLo)) * plotH;
 
+    // Faixa normal (so se intersecta a janela visivel)
     if (refRange) {
       const visMin = Math.max(refRange.min, yLo);
       const visMax = Math.min(refRange.max, yHi);
@@ -2034,6 +2131,7 @@ async function gerarPDFCartao(args: {
       }
     }
 
+    // Linhas tracejadas de referencia adicionais (ex.: limites sistolica/diastolica)
     if (extraRefs && extraRefs.length) {
       extraRefs.forEach(r => {
         const col = r.color ?? [120, 120, 130];
@@ -2054,6 +2152,7 @@ async function gerarPDFCartao(args: {
       });
     }
 
+    // Gridlines em escala "bonita"
     doc.setDrawColor(235, 235, 240);
     doc.setLineWidth(0.15);
     doc.setFont("helvetica", "normal");
@@ -2067,6 +2166,7 @@ async function gerarPDFCartao(args: {
       doc.text(val.toFixed(0), plotX - 1, yy + 1.3, { align: "right" });
     }
 
+    // Eixo X: distribui ticks uniformemente (max 6) para evitar sobreposicao
     const xs = Array.from(new Set(allX)).sort((a, b) => a - b);
     const xTickCount = Math.min(xs.length, 6);
     const xTicks: number[] = [];
@@ -2115,6 +2215,7 @@ async function gerarPDFCartao(args: {
       sorted.forEach((p) => {
         const px = sx(p.x);
         const py = sy(p.y);
+        // Coloca o rotulo abaixo se o ponto estiver perto do topo do plot, senao acima
         const nearTop = py - plotY < 4;
         const ty = nearTop ? py + 3.2 : py - 1.8;
         const txt = Number.isInteger(p.y) ? String(p.y) : p.y.toFixed(1);
@@ -2144,6 +2245,13 @@ async function gerarPDFCartao(args: {
     }
   };
 
+  // ================================================================
+  // PAGINAS DE EVOLUCAO CLINICA: por parametro -> GRAFICO | TABELA lado a lado
+  // ================================================================
+
+  // (parametros, labelByKey e helpers já calculados acima — reutilizamos)
+
+  // Helper: detecta valor numerico (lida com "120/80")
   const numFromValor = (v: string | number): number | null => {
     if (typeof v === "number") return v;
     const s = String(v).trim();
@@ -2151,6 +2259,7 @@ async function gerarPDFCartao(args: {
     return m ? parseFloat(m[0].replace(",", ".")) : null;
   };
 
+  // Mapeia parametro -> serie + cor + range
   const paramConfig = (param: string): {
     color: [number, number, number];
     refRange?: { min: number; max: number; label?: string };
@@ -2180,6 +2289,8 @@ async function gerarPDFCartao(args: {
     if (param === "pressao arterial" || (lp.includes("press") && (lp.includes("sist") || lp.includes("diast") || lp.includes("arter")))) {
       return {
         color: [239, 68, 68],
+        // Em vez de uma banda unica, mostramos linhas tracejadas para os limites
+        // normais da sistolica (90-140) e da diastolica (60-90), cada uma na cor da curva.
         extraRefs: [
           { min: 90, max: 140, label: "Sistolica normal", color: [239, 68, 68] },
           { min: 60, max: 90, label: "Diastolica normal", color: [59, 130, 246] },
@@ -2197,6 +2308,7 @@ async function gerarPDFCartao(args: {
         series: [{ color: [245, 158, 11], values: series.glicemia.map(d => ({ x: d.semana, y: d.glicemia })), name: "Glicemia (mg/dL)" }],
       };
     }
+    // Generico: cria serie a partir das medicoes
     const items = porParametro.get(param) ?? [];
     const vals = items
       .map(it => ({ x: it.semana, y: numFromValor(it.valor) }))
@@ -2209,11 +2321,14 @@ async function gerarPDFCartao(args: {
     };
   };
 
+  // Layout do FOLDER: cada pagina A4 landscape tem DUAS FACES (esquerda/direita).
+  // Em cada face fica 1 GRAFICO (em cima) + 1 TABELA (embaixo) do mesmo parametro.
+  // Logo, 2 parametros por pagina (um em cada face).
   const blocksPerPage = 2;
-  const faceW = halfW - margin - 5;
-  const faceH = pageH - 26;
-  const chartH = Math.round(faceH * 0.55);
-  const tableH = faceH - chartH - 4;
+  const faceW = halfW - margin - 5;       // largura util de uma face
+  const faceH = pageH - 26;               // altura util de uma face
+  const chartH = Math.round(faceH * 0.55); // grafico = 55% da altura da face
+  const tableH = faceH - chartH - 4;       // tabela = restante
 
   const drawTableBox = (
     bx: number, by: number, bw: number, bh: number,
@@ -2225,6 +2340,7 @@ async function gerarPDFCartao(args: {
     doc.setDrawColor(225, 225, 230);
     doc.setLineWidth(0.3);
     doc.roundedRect(bx, by, bw, bh, 2, 2, "FD");
+    // Titulo
     doc.setFillColor(accent[0], accent[1], accent[2]);
     doc.rect(bx, by, bw, 7, "F");
     doc.setTextColor(255, 255, 255);
@@ -2233,6 +2349,7 @@ async function gerarPDFCartao(args: {
     doc.text(title.toUpperCase(), bx + 3, by + 5);
     doc.setFontSize(7);
     doc.text(`${items.length} registro${items.length !== 1 ? "s" : ""}`, bx + bw - 3, by + 5, { align: "right" });
+    // Header colunas
     const headerY = by + 7;
     const headerHt = 5.5;
     doc.setFillColor(245, 245, 250);
@@ -2248,6 +2365,7 @@ async function gerarPDFCartao(args: {
     doc.text("SEM", bx + 3 + cDataW, headerY + 3.8);
     doc.text("VALOR", bx + 3 + cDataW + cSemW, headerY + 3.8);
     doc.text("OBSERVACAO", bx + 3 + cDataW + cSemW + cValW, headerY + 3.8);
+    // Rows
     const rowsStartY = headerY + headerHt;
     const rowsH = bh - (rowsStartY - by) - 2;
     const rowHt = 4.5;
@@ -2269,6 +2387,7 @@ async function gerarPDFCartao(args: {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(...dark);
       doc.text(String(m.valor), bx + 3 + cDataW + cSemW, ry5 + 3.2);
+      // Observacao (truncada para caber)
       doc.setFont("helvetica", "normal");
       doc.setFontSize(6.5);
       doc.setTextColor(...muted);
@@ -2288,6 +2407,7 @@ async function gerarPDFCartao(args: {
     }
   };
 
+  // Inicia a primeira pagina de evolucao
   if (parametros.length) {
     let pageIndex = 0;
     let posInPage = 0;
@@ -2312,6 +2432,7 @@ async function gerarPDFCartao(args: {
       const paramLabel = labelByKey.get(param) ?? param;
       const cfg = paramConfig(param);
       let items = porParametro.get(param)!;
+      // Para pressao arterial: consolida sis+dia em "120/80" por (data, semana)
       if (param === "pressao arterial") {
         const grupos = new Map<string, { data: string; semana: number; sis?: number; dia?: number }>();
         items.forEach((m) => {
@@ -2338,6 +2459,7 @@ async function gerarPDFCartao(args: {
           })) as unknown as MedicaoReal[];
       }
       const accent: [number, number, number] = cfg?.color ?? [pr, pg, pb];
+      // Cada face: esquerda (posInPage=0) inicia em x=margin, direita em x=halfW+5
       const xFace = posInPage === 0 ? margin : halfW + 5;
       const yChart = 18;
       const yTable = yChart + chartH + 4;
@@ -2379,11 +2501,13 @@ async function gerarPDFCartao(args: {
         }
       }
 
+      // TABELA logo abaixo do grafico, dentro da mesma face
       drawTableBox(xFace, yTable, faceW, tableH, paramLabel, items, accent);
 
       posInPage = (posInPage + 1) % blocksPerPage;
     });
   } else {
+    // Pagina vazia explicativa
     doc.addPage("a4", "landscape");
     drawBaseFolderPage();
     doc.setFont("helvetica", "bold");
@@ -2401,6 +2525,9 @@ async function gerarPDFCartao(args: {
     doc.text("Nenhum dado clinico registrado.", pageW / 2, pageH / 2 + 2, { align: "center" });
   }
 
+  // (Matriz Cruzada agora é renderizada na face direita da página de Consultas de Pré-Natal)
+
+  // ============ Footer em todas as páginas ============
   const totalPages = doc.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);

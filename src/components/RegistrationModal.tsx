@@ -572,15 +572,14 @@ export default function RegistrationModal({
 
                     // Detecta papel do usuário para direcionar à área correta
                     const userId = signInData.user?.id;
-                    let destino: "/profissional" | "/admin" | "/home" = "/home";
+                    let destino: "/profissional" | "/home" = "/home";
                     if (userId) {
                       const { data: roles } = await supabase
                         .from("user_roles")
                         .select("role")
                         .eq("user_id", userId);
                       const list = (roles ?? []).map((r) => r.role as string);
-                      if (list.includes("admin")) destino = "/admin";
-                      else if (list.includes("profissional")) destino = "/profissional";
+                      if (list.includes("profissional")) destino = "/profissional";
                     }
                     navigate({ to: destino });
                   } catch (e) {

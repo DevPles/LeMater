@@ -51,6 +51,8 @@ function AgendamentosPage() {
     setLoading(true);
     setMsg(null);
     if (tab === "disponiveis") {
+      // Mostra slots disponíveis que ainda não terminaram (considera 2h de janela retroativa
+      // para cobrir slots em andamento ou recém-iniciados que o profissional acabou de liberar)
       const limite = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
       const { data, error } = await supabase
         .from("appointment_slots")
@@ -99,6 +101,7 @@ function AgendamentosPage() {
     }
     setBooking(slotId);
     setMsg(null);
+    // book_slot é SECURITY DEFINER e usa auth.uid() para garantir rastreabilidade
     const { data, error } = await supabase.rpc("book_slot", { _slot_id: slotId });
     if (error) {
       setMsg("Não foi possível reservar: " + error.message);
