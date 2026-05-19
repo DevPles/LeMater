@@ -253,6 +253,8 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
                     + Adicionar link de compra
                   </button>
                 </div>
+              </div>
+
 
               <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 14 }}>
                 <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>Instrutor</div>
