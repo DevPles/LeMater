@@ -291,6 +291,7 @@ function RegisterForm({
   onEmailChange,
   onPasswordChange,
   onTogglePassword,
+  onBack,
   onSubmit,
 }: {
   name: string;
@@ -302,6 +303,7 @@ function RegisterForm({
   onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onPasswordChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onTogglePassword: () => void;
+  onBack?: () => void;
   onSubmit: (event: FormEvent) => void;
 }) {
   return (
@@ -310,9 +312,16 @@ function RegisterForm({
       <Field label="Nome" value={name} onChange={onNameChange} autoComplete="name" required />
       <Field label="E-mail" type="email" value={email} onChange={onEmailChange} autoComplete="email" required />
       <PasswordField value={password} show={showPassword} onChange={onPasswordChange} onToggle={onTogglePassword} />
-      <button className="web-primary-button" type="submit">
-        Solicitar acesso
-      </button>
+      <div className="web-form-actions">
+        {onBack && (
+          <button className="web-secondary-button" type="button" onClick={onBack}>
+            Voltar
+          </button>
+        )}
+        <button className="web-primary-button" type="submit">
+          Solicitar acesso
+        </button>
+      </div>
     </form>
   );
 }
