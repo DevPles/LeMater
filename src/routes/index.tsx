@@ -11,7 +11,7 @@ import lemateLogo from "@/assets/logo_oficial.png";
 import appStoresBadges from "@/assets/app-stores.png";
 import appIcon from "@/assets/app-icon.png";
 import { LiquidCard } from "@/components/LiquidCard";
-import { InstagramIcon, YouTubeIcon, TikTokIcon, HotmartIcon, KiwifyIcon, TeachableIcon } from "@/components/SocialIcons";
+import { InstagramIcon, YouTubeIcon, TikTokIcon, HotmartIcon, KiwifyIcon, TeachableIcon, SpotifyIcon } from "@/components/SocialIcons";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { translateBatch } from "@/lib/translate.functions";
 import { useLang, FLAG_TO_LANG, isTranslatable, type Lang } from "@/lib/translate.context";
