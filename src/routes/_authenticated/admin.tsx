@@ -39,7 +39,7 @@ function AdminPage() {
       <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 40 }} /></Link>
         <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-          {(["dash","conteudos","atlas","leads","alunos","compras"] as Tab[]).map((t) => (
+          {(["dash","atlas","leads","alunos","compras"] as Tab[]).map((t) => (
             <button key={t} onClick={() => setTab(t)} style={tabBtn(tab === t)}>{tabLabel(t)}</button>
           ))}
         </div>
@@ -47,8 +47,7 @@ function AdminPage() {
       </nav>
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 28px 80px" }}>
         {tab === "dash" && <DashboardTab />}
-        {tab === "conteudos" && <ConteudosTab />}
-        {tab === "atlas" && <AtlasCardsTab />}
+        {tab === "atlas" && <AtlasContentTab />}
         {tab === "leads" && <LeadsTab />}
         {tab === "alunos" && <AlunosTab />}
         {tab === "compras" && <ComprasTab />}
