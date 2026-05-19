@@ -158,7 +158,6 @@ function LoginPage() {
           </div>
 
           <motion.aside
-            key={mode === "register" ? "brand-register" : "brand-login"}
             className="web-brand-side"
             animate={{ x: mode === "register" ? "-100%" : "0%" }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
