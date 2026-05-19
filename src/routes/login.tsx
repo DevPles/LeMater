@@ -243,6 +243,7 @@ function LoginForm({
   onPasswordChange,
   onTogglePassword,
   onRecover,
+  onBack,
   onSubmit,
 }: {
   email: string;
@@ -254,6 +255,7 @@ function LoginForm({
   onPasswordChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onTogglePassword: () => void;
   onRecover: () => void;
+  onBack: () => void;
   onSubmit: (event: FormEvent) => void;
 }) {
   return (
