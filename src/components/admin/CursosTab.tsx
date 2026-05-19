@@ -41,7 +41,7 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
 
   const novo = () => setEdit({
     titulo: "", slug: "", descricao_curta: "", descricao_longa: "",
-    capa_url: "", trailer_url: "", categoria: "geral", nivel: "iniciante",
+    capa_url: "", capa_video_url: "", trailer_url: "", categoria: "geral", nivel: "iniciante",
     carga_horaria_min: 0, preco_centavos: 0, preco_label: "",
     link_compra_externo: "", plataforma_venda: "", publicado: false, ordem: 0,
     instrutor_nome: "", instrutor_bio: "", instrutor_foto: "",
@@ -63,6 +63,16 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
         const { data: pub } = supabase.storage.from("materiais-capas").getPublicUrl(up.path);
         capa_url = pub.publicUrl;
       }
+      let capa_video_url = (edit as any).capa_video_url || null;
+      const capaVideoInput = document.getElementById("cursoCapaVideo") as HTMLInputElement | null;
+      if (capaVideoInput?.files?.[0]) {
+        const f = capaVideoInput.files[0];
+        if (f.size > 25 * 1024 * 1024) { alert("Vídeo muito grande (máx 25 MB). Comprima antes."); setBusy(false); return; }
+        const path = `cursos/video/${Date.now()}-${f.name.replace(/[^\w.-]/g, "_")}`;
+        const { data: up, error: upErr } = await supabase.storage.from("materiais-capas").upload(path, f, { contentType: f.type });
+        if (upErr) { alert("Falha upload vídeo: " + upErr.message); setBusy(false); return; }
+        capa_video_url = supabase.storage.from("materiais-capas").getPublicUrl(up.path).data.publicUrl;
+      }
       // Upload materiais grátis (PDFs no nível do curso)
       let materiais_gratis: { nome: string; path: string }[] = Array.isArray((edit as any).materiais_gratis) ? [...(edit as any).materiais_gratis] : [];
       const matInput = document.getElementById("cursoMateriais") as HTMLInputElement | null;
@@ -77,7 +87,7 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
         id: edit.id, titulo: edit.titulo!, slug: edit.slug!,
         descricao_curta: edit.descricao_curta || null,
         descricao_longa: edit.descricao_longa || null,
-        capa_url, trailer_url: edit.trailer_url || null,
+        capa_url, capa_video_url, trailer_url: edit.trailer_url || null,
         categoria: edit.categoria || "geral", nivel: edit.nivel || "iniciante",
         carga_horaria_min: Number(edit.carga_horaria_min) || 0,
         preco_centavos: Number(edit.preco_centavos) || 0,
@@ -160,7 +170,19 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
                 <input id="cursoCapa" type="file" accept="image/*" style={inp} />
                 {edit.capa_url && <img src={edit.capa_url} alt="capa" style={{ marginTop: 8, maxHeight: 120, border: `1px solid ${c.border}` }} />}
               </Field>
+              <Field label={`Vídeo de capa em loop (opcional, mp4/webm, máx 25 MB) ${(edit as any).capa_video_url ? "(atual)" : ""}`}>
+                <input id="cursoCapaVideo" type="file" accept="video/mp4,video/webm" style={inp} />
+                {(edit as any).capa_video_url && (
+                  <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+                    <video src={(edit as any).capa_video_url} autoPlay muted loop playsInline style={{ maxHeight: 120, border: `1px solid ${c.border}` }} />
+                    <button type="button" onClick={() => setEdit({ ...edit, capa_video_url: "" } as any)} style={{ background: "transparent", border: "none", color: c.danger, cursor: "pointer", fontSize: 12, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                      Remover vídeo
+                    </button>
+                  </div>
+                )}
+              </Field>
               <Field label="Trailer (URL YouTube/Vimeo, opcional)"><input value={edit.trailer_url ?? ""} onChange={(e) => setEdit({ ...edit, trailer_url: e.target.value })} style={inp} /></Field>
+
 
               <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 14 }}>
                 <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>Venda</div>
