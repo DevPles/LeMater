@@ -112,9 +112,6 @@ function LoginPage() {
           transition={{ duration: 0.45 }}
           className="web-login-card"
         >
-          <button className="web-back" type="button" onClick={() => navigate({ to: "/" })}>
-            Voltar
-          </button>
 
           <div className="web-form-side">
             <div className="web-form-track">
