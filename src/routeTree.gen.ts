@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideosRouteImport } from './routes/videos'
+import { Route as VideochamadaRouteImport } from './routes/videochamada'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfissionalRouteImport } from './routes/profissional'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -40,6 +41,11 @@ import { Route as AuthenticatedAtlasSlugAprenderRouteImport } from './routes/_au
 const VideosRoute = VideosRouteImport.update({
   id: '/videos',
   path: '/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VideochamadaRoute = VideochamadaRouteImport.update({
+  id: '/videochamada',
+  path: '/videochamada',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/profissional': typeof ProfissionalRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/profissional': typeof ProfissionalRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
@@ -243,6 +251,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/profissional': typeof ProfissionalRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/membro': typeof AuthenticatedMembroRoute
@@ -273,6 +282,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/profissional'
     | '/reset-password'
+    | '/videochamada'
     | '/videos'
     | '/admin'
     | '/membro'
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/profissional'
     | '/reset-password'
+    | '/videochamada'
     | '/videos'
     | '/admin'
     | '/membro'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/profissional'
     | '/reset-password'
+    | '/videochamada'
     | '/videos'
     | '/_authenticated/admin'
     | '/_authenticated/membro'
@@ -360,6 +372,7 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   ProfissionalRoute: typeof ProfissionalRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  VideochamadaRoute: typeof VideochamadaRoute
   VideosRoute: typeof VideosRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
 }
@@ -371,6 +384,13 @@ declare module '@tanstack/react-router' {
       path: '/videos'
       fullPath: '/videos'
       preLoaderRoute: typeof VideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/videochamada': {
+      id: '/videochamada'
+      path: '/videochamada'
+      fullPath: '/videochamada'
+      preLoaderRoute: typeof VideochamadaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -623,6 +643,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   ProfissionalRoute: ProfissionalRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  VideochamadaRoute: VideochamadaRoute,
   VideosRoute: VideosRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
 }
