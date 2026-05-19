@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AppRouteImport } from './routes/app'
@@ -30,6 +31,11 @@ import { Route as AppSalaRoomIdRouteImport } from './routes/app.sala.$roomId'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
 import { Route as AuthenticatedAtlasSlugAprenderRouteImport } from './routes/_authenticated/atlas.$slug.aprender'
 
+const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
+  id: '/redefinir-senha',
+  path: '/redefinir-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
   '/login': typeof LoginRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
   '/app/alertas': typeof AppAlertasRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
   '/login': typeof LoginRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
   '/app/alertas': typeof AppAlertasRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
   '/login': typeof LoginRoute
+  '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/membro': typeof AuthenticatedMembroRoute
   '/app/alertas': typeof AppAlertasRoute
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/atlas'
     | '/login'
+    | '/redefinir-senha'
     | '/admin'
     | '/membro'
     | '/app/alertas'
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/atlas'
     | '/login'
+    | '/redefinir-senha'
     | '/admin'
     | '/membro'
     | '/app/alertas'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/atlas'
     | '/login'
+    | '/redefinir-senha'
     | '/_authenticated/admin'
     | '/_authenticated/membro'
     | '/app/alertas'
@@ -269,11 +281,19 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AtlasRoute: typeof AtlasRouteWithChildren
   LoginRoute: typeof LoginRoute
+  RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/redefinir-senha': {
+      id: '/redefinir-senha'
+      path: '/redefinir-senha'
+      fullPath: '/redefinir-senha'
+      preLoaderRoute: typeof RedefinirSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -477,6 +497,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AtlasRoute: AtlasRouteWithChildren,
   LoginRoute: LoginRoute,
+  RedefinirSenhaRoute: RedefinirSenhaRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
 }
 export const routeTree = rootRouteImport

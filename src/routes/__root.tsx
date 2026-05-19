@@ -2,6 +2,7 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 import { useAutoTranslate } from "@/hooks/useAutoTranslate";
 import appCss from "../styles.css?url";
 import { LangProvider } from "@/lib/translate.context";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -74,6 +75,7 @@ function RootComponent() {
   return (
     <>
       <Outlet />
+      <Toaster />
       {translating && (
         <div style={{
           position: "fixed",
