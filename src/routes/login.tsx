@@ -116,13 +116,14 @@ function LoginPage() {
   };
 
   const isMobile = useIsMobile();
-  const slideOffset = mode === "register" ? "-100%" : "0%";
+  const desktopSlideOffset = mode === "register" ? "-100%" : "0%";
+  const mobileFormOffset = mode === "register" ? "-50%" : "0%";
   const brandAnim = isMobile
     ? { x: "0%", y: "0%" }
-    : { x: slideOffset, y: "0%" };
+    : { x: desktopSlideOffset, y: "0%" };
   const trackAnim = isMobile
-    ? { x: "0%", y: slideOffset }
-    : { x: slideOffset, y: "0%" };
+    ? { x: "0%", y: mobileFormOffset }
+    : { x: desktopSlideOffset, y: "0%" };
 
   return (
     <main className="web-login-shell">
@@ -191,7 +192,7 @@ function LoginPage() {
             <div className="web-brand-content" key={mode}>
               <img className="web-brand-logo" src={logoMonograma} alt="Le Mater" />
               <h2>{mode === "register" ? "Bem-vinda de volta" : "Olá!"}</h2>
-              <p>{mode === "register" ? "Já tem conta? Entre agora." : "Sem acesso ainda? Solicite seu cadastro."}</p>
+              <p>{mode === "register" ? "Já tem conta? Entre e continue." : "Sem acesso ainda? Solicite seu cadastro."}</p>
               <button
                 type="button"
                 className="web-brand-button"
