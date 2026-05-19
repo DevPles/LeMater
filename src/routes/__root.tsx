@@ -7,6 +7,27 @@ import { LangProvider } from "@/lib/translate.context";
 function NotFoundComponent() {
   useEffect(() => {
     const p = window.location.pathname;
+    const legacyAppRedirects: Record<string, string> = {
+      "/home": "/app/home",
+      "/cartao": "/app/cartao",
+      "/perfil": "/app/perfil",
+      "/alertas": "/app/alertas",
+      "/gestacao": "/app/gestacao",
+      "/profissional": "/app/profissional",
+      "/videos": "/app/videos",
+      "/videochamada": "/app/videochamada",
+    };
+
+    if (legacyAppRedirects[p]) {
+      window.location.replace(`${legacyAppRedirects[p]}${window.location.search}`);
+      return;
+    }
+
+    if (p.startsWith("/sala/")) {
+      window.location.replace(`/app${p}${window.location.search}`);
+      return;
+    }
+
     if (p === "/cursos" || p === "/conteudos-gratis" || p.startsWith("/atlas-materno")) {
       window.location.replace("/atlas");
     }
