@@ -20,7 +20,7 @@ function PerfilPage() {
   return (
     <main className="max-w-md mx-auto px-4 pt-6 space-y-4">
       <header className="flex items-center gap-4">
-        <UserAvatar nome={profile?.nome ?? null} fotoUrl={profile?.foto_url ?? null} size={64} />
+        <UserAvatar name={profile?.nome ?? undefined} photoUrl={profile?.foto_url ?? null} />
         <div>
           <h1 className="font-display text-xl font-bold text-foreground">{profile?.nome ?? "—"}</h1>
           <p className="text-xs text-muted-foreground">{session?.user.email ?? ""}</p>
