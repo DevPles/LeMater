@@ -25,7 +25,14 @@ function AppLayout() {
   const matches = useMatches();
   // If a child route is matched, render it. Otherwise show the welcome screen.
   const hasChild = matches.some((m) => m.routeId !== "__root__" && m.routeId !== "/app");
-  if (hasChild) return <Outlet />;
+  if (hasChild) {
+    return (
+      <>
+        <Outlet />
+        <BottomNav />
+      </>
+    );
+  }
   return <WelcomeScreen />;
 }
 
