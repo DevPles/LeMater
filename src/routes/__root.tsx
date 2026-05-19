@@ -1,10 +1,37 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, Navigate, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
 import { useAutoTranslate } from "@/hooks/useAutoTranslate";
 import appCss from "../styles.css?url";
 import { LangProvider } from "@/lib/translate.context";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
+  const location = useLocation();
+  const legacyMobilePath = location.pathname.replace(/\/+$/, "");
+
+  switch (legacyMobilePath) {
+    case "/home":
+      return <Navigate to="/app/home" replace />;
+    case "/gestacao":
+      return <Navigate to="/app/gestacao" replace />;
+    case "/cartao":
+      return <Navigate to="/app/cartao" replace />;
+    case "/alertas":
+      return <Navigate to="/app/alertas" replace />;
+    case "/perfil":
+      return <Navigate to="/app/perfil" replace />;
+    case "/profissional":
+      return <Navigate to="/app/profissional" replace />;
+    case "/videochamada":
+      return <Navigate to="/app/videochamada" replace />;
+    case "/videos":
+      return <Navigate to="/app/videos" replace />;
+  }
+
+  if (legacyMobilePath.startsWith("/sala/")) {
+    const roomId = legacyMobilePath.slice("/sala/".length);
+    if (roomId) return <Navigate to="/app/sala/$roomId" params={{ roomId }} replace />;
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
