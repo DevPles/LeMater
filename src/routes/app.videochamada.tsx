@@ -12,7 +12,7 @@ const SALA_TOLERANCIA_MS = 30 * 60 * 1000;
 export const Route = createFileRoute("/app/videochamada")({
   head: () => ({
     meta: [
-      { title: "Agendamentos — MãeDigital" },
+      { title: "App — Agendamentos — MãeDigital" },
       { name: "description", content: "Agende consultas com profissionais nos horários disponíveis." },
     ],
   }),

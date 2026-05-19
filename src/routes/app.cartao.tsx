@@ -50,7 +50,7 @@ function paletaPorSexo(sexo: string | null | undefined) {
 export const Route = createFileRoute("/app/cartao")({
   head: () => ({
     meta: [
-      { title: "Cartão Digital da Gestante — MãeDigital" },
+      { title: "App — Cartão Digital da Gestante — MãeDigital" },
       { name: "description", content: "Acompanhe o cartão digital da gestação e evolução do parto." },
     ],
   }),

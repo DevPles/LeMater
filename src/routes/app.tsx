@@ -9,7 +9,7 @@ import { translateBatch } from "@/lib/translate.functions";
 export const Route = createFileRoute("/app")({
   head: () => ({
     meta: [
-      { title: "MãeDigital — Carteira Digital da Gestante" },
+      { title: "App — Carteira Digital da Gestante — MãeDigital" },
       { name: "description", content: "\n. Acompanhe sua gestação com suporte profissional." },
     ],
     links: [

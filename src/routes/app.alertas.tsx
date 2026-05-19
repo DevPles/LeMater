@@ -9,7 +9,7 @@ import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 export const Route = createFileRoute("/app/alertas")({
   head: () => ({
     meta: [
-      { title: "Alertas — MãeDigital" },
+      { title: "App — Alertas — MãeDigital" },
       { name: "description", content: "Alertas automáticos a partir dos seus dados clínicos." },
     ],
   }),
