@@ -89,7 +89,7 @@ function LoginPage() {
       if (!email || !email.includes("@")) throw new Error("Informe um e-mail válido.");
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/app/reset-password`,
+        redirectTo: `${window.location.origin}/redefinir-senha`,
       });
       if (error) throw error;
 
