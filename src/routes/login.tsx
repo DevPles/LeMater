@@ -115,6 +115,15 @@ function LoginPage() {
     }
   };
 
+  const isMobile = useIsMobile();
+  const slideOffset = mode === "register" ? "-100%" : "0%";
+  const brandAnim = isMobile
+    ? { x: "0%", y: slideOffset }
+    : { x: slideOffset, y: "0%" };
+  const trackAnim = isMobile
+    ? { x: "0%", y: slideOffset }
+    : { x: slideOffset, y: "0%" };
+
   return (
     <main className="web-login-shell">
       <section className="web-login-desktop" aria-label="Login web">
@@ -124,9 +133,12 @@ function LoginPage() {
           transition={{ duration: 0.45 }}
           className="web-login-card"
         >
-
           <div className="web-form-side">
-            <div className="web-form-track">
+            <motion.div
+              className="web-form-track"
+              animate={trackAnim}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            >
               <div className="web-form-panel">
                 {isRecover ? (
                   <RecoverForm
@@ -166,12 +178,12 @@ function LoginPage() {
                   onSubmit={handleSignUp}
                 />
               </div>
-            </div>
+            </motion.div>
           </div>
 
           <motion.aside
             className="web-brand-side"
-            animate={{ x: mode === "register" ? "-100%" : "0%" }}
+            animate={brandAnim}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="web-brand-content" key={mode}>
@@ -190,66 +202,11 @@ function LoginPage() {
         </motion.div>
       </section>
 
-      <section className="web-login-mobile" aria-label="Login web mobile">
-        <img className="mobile-logo" src={logoMonograma} alt="Le Mater" />
-        <div className="mobile-card">
-          {mode === "login" && (
-            <LoginForm
-              email={form.loginEmail}
-              password={form.loginPassword}
-              showPassword={showPassword}
-              loading={loading}
-              mobile
-              onEmailChange={update("loginEmail")}
-              onPasswordChange={update("loginPassword")}
-              onTogglePassword={() => setShowPassword((current) => !current)}
-              onRecover={() => goToMode("recover")}
-              onBack={() => navigate({ to: "/" })}
-              onSubmit={handleLogin}
-            />
-          )}
-          {mode === "register" && (
-            <RegisterForm
-              name={form.signName}
-              email={form.signEmail}
-              password={form.signPassword}
-              showPassword={showPassword}
-              mobile
-              onNameChange={update("signName")}
-              onEmailChange={update("signEmail")}
-              onPasswordChange={update("signPassword")}
-              onTogglePassword={() => setShowPassword((current) => !current)}
-              onSubmit={handleSignUp}
-            />
-          )}
-          {mode === "recover" && (
-            <RecoverForm
-              email={form.recoverEmail}
-              loading={loading}
-              mobile
-              onEmailChange={update("recoverEmail")}
-              onSubmit={handleRecover}
-              onBack={() => goToMode("login")}
-            />
-          )}
-
-          <div className="mobile-actions">
-            <Button type="button" variant="outline" onClick={() => navigate({ to: "/" })}>
-              Voltar
-            </Button>
-            {mode !== "recover" && (
-              <Button type="button" variant="outline" onClick={() => goToMode(mode === "login" ? "register" : "login")}>
-                {mode === "login" ? "Cadastrar" : "Entrar"}
-              </Button>
-            )}
-          </div>
-        </div>
-      </section>
-
       <style>{css}</style>
     </main>
   );
 }
+
 
 function LoginForm({
   email,
