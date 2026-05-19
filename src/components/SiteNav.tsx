@@ -113,7 +113,7 @@ export function SiteNav() {
             </ul>
           )}
           {!isMobile ? (
-            <Link to="/app" style={{ textDecoration: "none" }}>
+            <Link to="/login" style={{ textDecoration: "none" }}>
               <button style={entrarBtn}>ENTRAR</button>
             </Link>
           ) : (
