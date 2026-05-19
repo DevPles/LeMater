@@ -16,9 +16,24 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtlasSlugRouteImport } from './routes/atlas.$slug'
 import { Route as AuthenticatedMembroRouteImport } from './routes/_authenticated/membro'
+import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
+import { Route as AuthenticatedAppVideosRouteImport } from './routes/_authenticated/app.videos'
+import { Route as AuthenticatedAppVideochamadaRouteImport } from './routes/_authenticated/app.videochamada'
+import { Route as AuthenticatedAppProfissionalRouteImport } from './routes/_authenticated/app.profissional'
+import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authenticated/app.perfil'
+import { Route as AuthenticatedAppGestacaoRouteImport } from './routes/_authenticated/app.gestacao'
+import { Route as AuthenticatedAppCartaoRouteImport } from './routes/_authenticated/app.cartao'
+import { Route as AuthenticatedAppAtlasMaternoRouteImport } from './routes/_authenticated/app.atlas-materno'
+import { Route as AuthenticatedAppAlertasRouteImport } from './routes/_authenticated/app.alertas'
 import { Route as AuthenticatedAtlasSlugAprenderRouteImport } from './routes/_authenticated/atlas.$slug.aprender'
+import { Route as AuthenticatedAppSalaRoomIdRouteImport } from './routes/_authenticated/app.sala.$roomId'
+import { Route as AuthenticatedAppAtlasMaternoPosPartoRouteImport } from './routes/_authenticated/app.atlas-materno.pos-parto'
+import { Route as AuthenticatedAppAtlasMaternoGestacaoRouteImport } from './routes/_authenticated/app.atlas-materno.gestacao'
+import { Route as AuthenticatedAppAtlasMaternoConcepcaoRouteImport } from './routes/_authenticated/app.atlas-materno.concepcao'
+import { Route as AuthenticatedAppAtlasMaternoBebeRouteImport } from './routes/_authenticated/app.atlas-materno.bebe'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -54,21 +69,105 @@ const AuthenticatedMembroRoute = AuthenticatedMembroRouteImport.update({
   path: '/membro',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAppRoute,
 } as any)
 const ApiPublicHotmartWebhookRoute = ApiPublicHotmartWebhookRouteImport.update({
   id: '/api/public/hotmart-webhook',
   path: '/api/public/hotmart-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAppVideosRoute = AuthenticatedAppVideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppVideochamadaRoute =
+  AuthenticatedAppVideochamadaRouteImport.update({
+    id: '/videochamada',
+    path: '/videochamada',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppProfissionalRoute =
+  AuthenticatedAppProfissionalRouteImport.update({
+    id: '/profissional',
+    path: '/profissional',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppPerfilRoute = AuthenticatedAppPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppGestacaoRoute =
+  AuthenticatedAppGestacaoRouteImport.update({
+    id: '/gestacao',
+    path: '/gestacao',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCartaoRoute = AuthenticatedAppCartaoRouteImport.update({
+  id: '/cartao',
+  path: '/cartao',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppAtlasMaternoRoute =
+  AuthenticatedAppAtlasMaternoRouteImport.update({
+    id: '/atlas-materno',
+    path: '/atlas-materno',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAlertasRoute = AuthenticatedAppAlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAtlasSlugAprenderRoute =
   AuthenticatedAtlasSlugAprenderRouteImport.update({
     id: '/atlas/$slug/aprender',
     path: '/atlas/$slug/aprender',
     getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAppSalaRoomIdRoute =
+  AuthenticatedAppSalaRoomIdRouteImport.update({
+    id: '/sala/$roomId',
+    path: '/sala/$roomId',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAtlasMaternoPosPartoRoute =
+  AuthenticatedAppAtlasMaternoPosPartoRouteImport.update({
+    id: '/pos-parto',
+    path: '/pos-parto',
+    getParentRoute: () => AuthenticatedAppAtlasMaternoRoute,
+  } as any)
+const AuthenticatedAppAtlasMaternoGestacaoRoute =
+  AuthenticatedAppAtlasMaternoGestacaoRouteImport.update({
+    id: '/gestacao',
+    path: '/gestacao',
+    getParentRoute: () => AuthenticatedAppAtlasMaternoRoute,
+  } as any)
+const AuthenticatedAppAtlasMaternoConcepcaoRoute =
+  AuthenticatedAppAtlasMaternoConcepcaoRouteImport.update({
+    id: '/concepcao',
+    path: '/concepcao',
+    getParentRoute: () => AuthenticatedAppAtlasMaternoRoute,
+  } as any)
+const AuthenticatedAppAtlasMaternoBebeRoute =
+  AuthenticatedAppAtlasMaternoBebeRouteImport.update({
+    id: '/bebe',
+    path: '/bebe',
+    getParentRoute: () => AuthenticatedAppAtlasMaternoRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -77,9 +176,24 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/app': typeof AuthenticatedAppRouteWithChildren
   '/membro': typeof AuthenticatedMembroRoute
   '/atlas/$slug': typeof AtlasSlugRoute
+  '/app/alertas': typeof AuthenticatedAppAlertasRoute
+  '/app/atlas-materno': typeof AuthenticatedAppAtlasMaternoRouteWithChildren
+  '/app/cartao': typeof AuthenticatedAppCartaoRoute
+  '/app/gestacao': typeof AuthenticatedAppGestacaoRoute
+  '/app/perfil': typeof AuthenticatedAppPerfilRoute
+  '/app/profissional': typeof AuthenticatedAppProfissionalRoute
+  '/app/videochamada': typeof AuthenticatedAppVideochamadaRoute
+  '/app/videos': typeof AuthenticatedAppVideosRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
+  '/app/': typeof AuthenticatedAppIndexRoute
+  '/app/atlas-materno/bebe': typeof AuthenticatedAppAtlasMaternoBebeRoute
+  '/app/atlas-materno/concepcao': typeof AuthenticatedAppAtlasMaternoConcepcaoRoute
+  '/app/atlas-materno/gestacao': typeof AuthenticatedAppAtlasMaternoGestacaoRoute
+  '/app/atlas-materno/pos-parto': typeof AuthenticatedAppAtlasMaternoPosPartoRoute
+  '/app/sala/$roomId': typeof AuthenticatedAppSalaRoomIdRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
 }
 export interface FileRoutesByTo {
@@ -90,7 +204,21 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
   '/atlas/$slug': typeof AtlasSlugRoute
+  '/app/alertas': typeof AuthenticatedAppAlertasRoute
+  '/app/atlas-materno': typeof AuthenticatedAppAtlasMaternoRouteWithChildren
+  '/app/cartao': typeof AuthenticatedAppCartaoRoute
+  '/app/gestacao': typeof AuthenticatedAppGestacaoRoute
+  '/app/perfil': typeof AuthenticatedAppPerfilRoute
+  '/app/profissional': typeof AuthenticatedAppProfissionalRoute
+  '/app/videochamada': typeof AuthenticatedAppVideochamadaRoute
+  '/app/videos': typeof AuthenticatedAppVideosRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
+  '/app': typeof AuthenticatedAppIndexRoute
+  '/app/atlas-materno/bebe': typeof AuthenticatedAppAtlasMaternoBebeRoute
+  '/app/atlas-materno/concepcao': typeof AuthenticatedAppAtlasMaternoConcepcaoRoute
+  '/app/atlas-materno/gestacao': typeof AuthenticatedAppAtlasMaternoGestacaoRoute
+  '/app/atlas-materno/pos-parto': typeof AuthenticatedAppAtlasMaternoPosPartoRoute
+  '/app/sala/$roomId': typeof AuthenticatedAppSalaRoomIdRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
 }
 export interface FileRoutesById {
@@ -101,9 +229,24 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
   '/_authenticated/membro': typeof AuthenticatedMembroRoute
   '/atlas/$slug': typeof AtlasSlugRoute
+  '/_authenticated/app/alertas': typeof AuthenticatedAppAlertasRoute
+  '/_authenticated/app/atlas-materno': typeof AuthenticatedAppAtlasMaternoRouteWithChildren
+  '/_authenticated/app/cartao': typeof AuthenticatedAppCartaoRoute
+  '/_authenticated/app/gestacao': typeof AuthenticatedAppGestacaoRoute
+  '/_authenticated/app/perfil': typeof AuthenticatedAppPerfilRoute
+  '/_authenticated/app/profissional': typeof AuthenticatedAppProfissionalRoute
+  '/_authenticated/app/videochamada': typeof AuthenticatedAppVideochamadaRoute
+  '/_authenticated/app/videos': typeof AuthenticatedAppVideosRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
+  '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
+  '/_authenticated/app/atlas-materno/bebe': typeof AuthenticatedAppAtlasMaternoBebeRoute
+  '/_authenticated/app/atlas-materno/concepcao': typeof AuthenticatedAppAtlasMaternoConcepcaoRoute
+  '/_authenticated/app/atlas-materno/gestacao': typeof AuthenticatedAppAtlasMaternoGestacaoRoute
+  '/_authenticated/app/atlas-materno/pos-parto': typeof AuthenticatedAppAtlasMaternoPosPartoRoute
+  '/_authenticated/app/sala/$roomId': typeof AuthenticatedAppSalaRoomIdRoute
   '/_authenticated/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
 }
 export interface FileRouteTypes {
@@ -114,9 +257,24 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/admin'
+    | '/app'
     | '/membro'
     | '/atlas/$slug'
+    | '/app/alertas'
+    | '/app/atlas-materno'
+    | '/app/cartao'
+    | '/app/gestacao'
+    | '/app/perfil'
+    | '/app/profissional'
+    | '/app/videochamada'
+    | '/app/videos'
     | '/api/public/hotmart-webhook'
+    | '/app/'
+    | '/app/atlas-materno/bebe'
+    | '/app/atlas-materno/concepcao'
+    | '/app/atlas-materno/gestacao'
+    | '/app/atlas-materno/pos-parto'
+    | '/app/sala/$roomId'
     | '/atlas/$slug/aprender'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -127,7 +285,21 @@ export interface FileRouteTypes {
     | '/admin'
     | '/membro'
     | '/atlas/$slug'
+    | '/app/alertas'
+    | '/app/atlas-materno'
+    | '/app/cartao'
+    | '/app/gestacao'
+    | '/app/perfil'
+    | '/app/profissional'
+    | '/app/videochamada'
+    | '/app/videos'
     | '/api/public/hotmart-webhook'
+    | '/app'
+    | '/app/atlas-materno/bebe'
+    | '/app/atlas-materno/concepcao'
+    | '/app/atlas-materno/gestacao'
+    | '/app/atlas-materno/pos-parto'
+    | '/app/sala/$roomId'
     | '/atlas/$slug/aprender'
   id:
     | '__root__'
@@ -137,9 +309,24 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/_authenticated/admin'
+    | '/_authenticated/app'
     | '/_authenticated/membro'
     | '/atlas/$slug'
+    | '/_authenticated/app/alertas'
+    | '/_authenticated/app/atlas-materno'
+    | '/_authenticated/app/cartao'
+    | '/_authenticated/app/gestacao'
+    | '/_authenticated/app/perfil'
+    | '/_authenticated/app/profissional'
+    | '/_authenticated/app/videochamada'
+    | '/_authenticated/app/videos'
     | '/api/public/hotmart-webhook'
+    | '/_authenticated/app/'
+    | '/_authenticated/app/atlas-materno/bebe'
+    | '/_authenticated/app/atlas-materno/concepcao'
+    | '/_authenticated/app/atlas-materno/gestacao'
+    | '/_authenticated/app/atlas-materno/pos-parto'
+    | '/_authenticated/app/sala/$roomId'
     | '/_authenticated/atlas/$slug/aprender'
   fileRoutesById: FileRoutesById
 }
@@ -203,12 +390,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMembroRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/app': {
+      id: '/_authenticated/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/app/': {
+      id: '/_authenticated/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/api/public/hotmart-webhook': {
       id: '/api/public/hotmart-webhook'
@@ -217,6 +418,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHotmartWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/app/videos': {
+      id: '/_authenticated/app/videos'
+      path: '/videos'
+      fullPath: '/app/videos'
+      preLoaderRoute: typeof AuthenticatedAppVideosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/videochamada': {
+      id: '/_authenticated/app/videochamada'
+      path: '/videochamada'
+      fullPath: '/app/videochamada'
+      preLoaderRoute: typeof AuthenticatedAppVideochamadaRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/profissional': {
+      id: '/_authenticated/app/profissional'
+      path: '/profissional'
+      fullPath: '/app/profissional'
+      preLoaderRoute: typeof AuthenticatedAppProfissionalRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/perfil': {
+      id: '/_authenticated/app/perfil'
+      path: '/perfil'
+      fullPath: '/app/perfil'
+      preLoaderRoute: typeof AuthenticatedAppPerfilRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/gestacao': {
+      id: '/_authenticated/app/gestacao'
+      path: '/gestacao'
+      fullPath: '/app/gestacao'
+      preLoaderRoute: typeof AuthenticatedAppGestacaoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/cartao': {
+      id: '/_authenticated/app/cartao'
+      path: '/cartao'
+      fullPath: '/app/cartao'
+      preLoaderRoute: typeof AuthenticatedAppCartaoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/atlas-materno': {
+      id: '/_authenticated/app/atlas-materno'
+      path: '/atlas-materno'
+      fullPath: '/app/atlas-materno'
+      preLoaderRoute: typeof AuthenticatedAppAtlasMaternoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/alertas': {
+      id: '/_authenticated/app/alertas'
+      path: '/alertas'
+      fullPath: '/app/alertas'
+      preLoaderRoute: typeof AuthenticatedAppAlertasRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
     '/_authenticated/atlas/$slug/aprender': {
       id: '/_authenticated/atlas/$slug/aprender'
       path: '/atlas/$slug/aprender'
@@ -224,17 +481,108 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAtlasSlugAprenderRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/app/sala/$roomId': {
+      id: '/_authenticated/app/sala/$roomId'
+      path: '/sala/$roomId'
+      fullPath: '/app/sala/$roomId'
+      preLoaderRoute: typeof AuthenticatedAppSalaRoomIdRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/atlas-materno/pos-parto': {
+      id: '/_authenticated/app/atlas-materno/pos-parto'
+      path: '/pos-parto'
+      fullPath: '/app/atlas-materno/pos-parto'
+      preLoaderRoute: typeof AuthenticatedAppAtlasMaternoPosPartoRouteImport
+      parentRoute: typeof AuthenticatedAppAtlasMaternoRoute
+    }
+    '/_authenticated/app/atlas-materno/gestacao': {
+      id: '/_authenticated/app/atlas-materno/gestacao'
+      path: '/gestacao'
+      fullPath: '/app/atlas-materno/gestacao'
+      preLoaderRoute: typeof AuthenticatedAppAtlasMaternoGestacaoRouteImport
+      parentRoute: typeof AuthenticatedAppAtlasMaternoRoute
+    }
+    '/_authenticated/app/atlas-materno/concepcao': {
+      id: '/_authenticated/app/atlas-materno/concepcao'
+      path: '/concepcao'
+      fullPath: '/app/atlas-materno/concepcao'
+      preLoaderRoute: typeof AuthenticatedAppAtlasMaternoConcepcaoRouteImport
+      parentRoute: typeof AuthenticatedAppAtlasMaternoRoute
+    }
+    '/_authenticated/app/atlas-materno/bebe': {
+      id: '/_authenticated/app/atlas-materno/bebe'
+      path: '/bebe'
+      fullPath: '/app/atlas-materno/bebe'
+      preLoaderRoute: typeof AuthenticatedAppAtlasMaternoBebeRouteImport
+      parentRoute: typeof AuthenticatedAppAtlasMaternoRoute
+    }
   }
 }
 
+interface AuthenticatedAppAtlasMaternoRouteChildren {
+  AuthenticatedAppAtlasMaternoBebeRoute: typeof AuthenticatedAppAtlasMaternoBebeRoute
+  AuthenticatedAppAtlasMaternoConcepcaoRoute: typeof AuthenticatedAppAtlasMaternoConcepcaoRoute
+  AuthenticatedAppAtlasMaternoGestacaoRoute: typeof AuthenticatedAppAtlasMaternoGestacaoRoute
+  AuthenticatedAppAtlasMaternoPosPartoRoute: typeof AuthenticatedAppAtlasMaternoPosPartoRoute
+}
+
+const AuthenticatedAppAtlasMaternoRouteChildren: AuthenticatedAppAtlasMaternoRouteChildren =
+  {
+    AuthenticatedAppAtlasMaternoBebeRoute:
+      AuthenticatedAppAtlasMaternoBebeRoute,
+    AuthenticatedAppAtlasMaternoConcepcaoRoute:
+      AuthenticatedAppAtlasMaternoConcepcaoRoute,
+    AuthenticatedAppAtlasMaternoGestacaoRoute:
+      AuthenticatedAppAtlasMaternoGestacaoRoute,
+    AuthenticatedAppAtlasMaternoPosPartoRoute:
+      AuthenticatedAppAtlasMaternoPosPartoRoute,
+  }
+
+const AuthenticatedAppAtlasMaternoRouteWithChildren =
+  AuthenticatedAppAtlasMaternoRoute._addFileChildren(
+    AuthenticatedAppAtlasMaternoRouteChildren,
+  )
+
+interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppAlertasRoute: typeof AuthenticatedAppAlertasRoute
+  AuthenticatedAppAtlasMaternoRoute: typeof AuthenticatedAppAtlasMaternoRouteWithChildren
+  AuthenticatedAppCartaoRoute: typeof AuthenticatedAppCartaoRoute
+  AuthenticatedAppGestacaoRoute: typeof AuthenticatedAppGestacaoRoute
+  AuthenticatedAppPerfilRoute: typeof AuthenticatedAppPerfilRoute
+  AuthenticatedAppProfissionalRoute: typeof AuthenticatedAppProfissionalRoute
+  AuthenticatedAppVideochamadaRoute: typeof AuthenticatedAppVideochamadaRoute
+  AuthenticatedAppVideosRoute: typeof AuthenticatedAppVideosRoute
+  AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
+  AuthenticatedAppSalaRoomIdRoute: typeof AuthenticatedAppSalaRoomIdRoute
+}
+
+const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppAlertasRoute: AuthenticatedAppAlertasRoute,
+  AuthenticatedAppAtlasMaternoRoute:
+    AuthenticatedAppAtlasMaternoRouteWithChildren,
+  AuthenticatedAppCartaoRoute: AuthenticatedAppCartaoRoute,
+  AuthenticatedAppGestacaoRoute: AuthenticatedAppGestacaoRoute,
+  AuthenticatedAppPerfilRoute: AuthenticatedAppPerfilRoute,
+  AuthenticatedAppProfissionalRoute: AuthenticatedAppProfissionalRoute,
+  AuthenticatedAppVideochamadaRoute: AuthenticatedAppVideochamadaRoute,
+  AuthenticatedAppVideosRoute: AuthenticatedAppVideosRoute,
+  AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
+  AuthenticatedAppSalaRoomIdRoute: AuthenticatedAppSalaRoomIdRoute,
+}
+
+const AuthenticatedAppRouteWithChildren =
+  AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
   AuthenticatedMembroRoute: typeof AuthenticatedMembroRoute
   AuthenticatedAtlasSlugAprenderRoute: typeof AuthenticatedAtlasSlugAprenderRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
   AuthenticatedMembroRoute: AuthenticatedMembroRoute,
   AuthenticatedAtlasSlugAprenderRoute: AuthenticatedAtlasSlugAprenderRoute,
 }
