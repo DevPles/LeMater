@@ -1219,8 +1219,8 @@ async function gerarPDFCartao(args: {
 
   // Logo do Hospital Electro Bonini no topo (sobre fundo navy: caixa branca)
   if (logoData) {
-    const logoW = 42;
-    const logoH = 18;
+    const logoW = 22;
+    const logoH = 22;
     const logoX = halfW + (halfW - logoW) / 2;
     const logoY = 10;
     doc.setFillColor(255, 255, 255);
