@@ -23,6 +23,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SalaRoomIdRouteImport } from './routes/sala.$roomId'
 import { Route as AtlasSlugRouteImport } from './routes/atlas.$slug'
 import { Route as AppVideosRouteImport } from './routes/app.videos'
 import { Route as AppVideochamadaRouteImport } from './routes/app.videochamada'
@@ -105,6 +106,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalaRoomIdRoute = SalaRoomIdRouteImport.update({
+  id: '/sala/$roomId',
+  path: '/sala/$roomId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AtlasSlugRoute = AtlasSlugRouteImport.update({
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/app/videochamada': typeof AppVideochamadaRoute
   '/app/videos': typeof AppVideosRoute
   '/atlas/$slug': typeof AtlasSlugRoute
+  '/sala/$roomId': typeof SalaRoomIdRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
   '/app/sala/$roomId': typeof AppSalaRoomIdRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
@@ -233,6 +240,7 @@ export interface FileRoutesByTo {
   '/app/videochamada': typeof AppVideochamadaRoute
   '/app/videos': typeof AppVideosRoute
   '/atlas/$slug': typeof AtlasSlugRoute
+  '/sala/$roomId': typeof SalaRoomIdRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
   '/app/sala/$roomId': typeof AppSalaRoomIdRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
@@ -264,6 +272,7 @@ export interface FileRoutesById {
   '/app/videochamada': typeof AppVideochamadaRoute
   '/app/videos': typeof AppVideosRoute
   '/atlas/$slug': typeof AtlasSlugRoute
+  '/sala/$roomId': typeof SalaRoomIdRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
   '/app/sala/$roomId': typeof AppSalaRoomIdRoute
   '/_authenticated/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
@@ -295,6 +304,7 @@ export interface FileRouteTypes {
     | '/app/videochamada'
     | '/app/videos'
     | '/atlas/$slug'
+    | '/sala/$roomId'
     | '/api/public/hotmart-webhook'
     | '/app/sala/$roomId'
     | '/atlas/$slug/aprender'
@@ -324,6 +334,7 @@ export interface FileRouteTypes {
     | '/app/videochamada'
     | '/app/videos'
     | '/atlas/$slug'
+    | '/sala/$roomId'
     | '/api/public/hotmart-webhook'
     | '/app/sala/$roomId'
     | '/atlas/$slug/aprender'
@@ -354,6 +365,7 @@ export interface FileRouteTypes {
     | '/app/videochamada'
     | '/app/videos'
     | '/atlas/$slug'
+    | '/sala/$roomId'
     | '/api/public/hotmart-webhook'
     | '/app/sala/$roomId'
     | '/_authenticated/atlas/$slug/aprender'
@@ -374,6 +386,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   VideochamadaRoute: typeof VideochamadaRoute
   VideosRoute: typeof VideosRoute
+  SalaRoomIdRoute: typeof SalaRoomIdRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
 }
 
@@ -475,6 +488,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sala/$roomId': {
+      id: '/sala/$roomId'
+      path: '/sala/$roomId'
+      fullPath: '/sala/$roomId'
+      preLoaderRoute: typeof SalaRoomIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/atlas/$slug': {
@@ -645,6 +665,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   VideochamadaRoute: VideochamadaRoute,
   VideosRoute: VideosRoute,
+  SalaRoomIdRoute: SalaRoomIdRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
 }
 export const routeTree = rootRouteImport
