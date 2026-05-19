@@ -404,7 +404,6 @@ function TopBar({ onSair, admin }: { onSair: () => void; admin: boolean }) {
     <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(250,245,238,0.92)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 44 }} /></Link>
       <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-        <Link to="/app" style={navLink}>Abrir app</Link>
         <Link to="/membro" style={navLink}>Minha área</Link>
         <Link to="/atlas" style={navLink}>Atlas Materno</Link>
         {admin && <Link to="/admin" style={navLink}>Admin</Link>}

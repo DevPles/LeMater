@@ -48,21 +48,21 @@ export function UserAvatar({ name = "Mamãe", week, photoUrl }: UserAvatarProps)
             </div>
             <div className="py-1">
               <Link
-                to="/app/perfil"
+                to="/perfil"
                 onClick={() => setOpen(false)}
                 className="block px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
               >
                 Meu Perfil
               </Link>
               <Link
-                to="/app/cartao"
+                to="/cartao"
                 onClick={() => setOpen(false)}
                 className="block px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
               >
                 Meu Cartão
               </Link>
               <Link
-                to="/app/alertas"
+                to="/alertas"
                 onClick={() => setOpen(false)}
                 className="block px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
               >
