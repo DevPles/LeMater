@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VideosRouteImport } from './routes/videos'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfissionalRouteImport } from './routes/profissional'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -36,6 +37,11 @@ import { Route as AppSalaRoomIdRouteImport } from './routes/app.sala.$roomId'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
 import { Route as AuthenticatedAtlasSlugAprenderRouteImport } from './routes/_authenticated/atlas.$slug.aprender'
 
+const VideosRoute = VideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/profissional': typeof ProfissionalRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/videos': typeof VideosRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
   '/app/alertas': typeof AppAlertasRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/profissional': typeof ProfissionalRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/videos': typeof VideosRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
   '/app/alertas': typeof AppAlertasRoute
@@ -235,6 +243,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/profissional': typeof ProfissionalRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/videos': typeof VideosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/membro': typeof AuthenticatedMembroRoute
   '/app/alertas': typeof AppAlertasRoute
@@ -264,6 +273,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/profissional'
     | '/reset-password'
+    | '/videos'
     | '/admin'
     | '/membro'
     | '/app/alertas'
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/profissional'
     | '/reset-password'
+    | '/videos'
     | '/admin'
     | '/membro'
     | '/app/alertas'
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/profissional'
     | '/reset-password'
+    | '/videos'
     | '/_authenticated/admin'
     | '/_authenticated/membro'
     | '/app/alertas'
@@ -348,11 +360,19 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   ProfissionalRoute: typeof ProfissionalRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  VideosRoute: typeof VideosRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/videos': {
+      id: '/videos'
+      path: '/videos'
+      fullPath: '/videos'
+      preLoaderRoute: typeof VideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -603,6 +623,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   ProfissionalRoute: ProfissionalRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  VideosRoute: VideosRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
 }
 export const routeTree = rootRouteImport
