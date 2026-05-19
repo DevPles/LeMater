@@ -9,7 +9,7 @@ import { LoadingMessage } from "@/components/LoadingMessage";
 const SALA_ANTECEDENCIA_MS = 15 * 60 * 1000;
 const SALA_TOLERANCIA_MS = 30 * 60 * 1000;
 
-export const Route = createFileRoute("/app_/videochamada")({
+export const Route = createFileRoute("/app/videochamada")({
   head: () => ({
     meta: [
       { title: "App — Agendamentos — MãeDigital" },
