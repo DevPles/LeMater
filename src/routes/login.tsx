@@ -57,15 +57,15 @@ function LoginPage() {
       return;
     }
 
-    let destino: "/membro" | "/admin" = "/membro";
+    let isAdmin = false;
     if (data.user?.id) {
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", data.user.id);
-      if ((roles ?? []).some((r) => r.role === "admin")) destino = "/admin";
+      isAdmin = (roles ?? []).some((r) => r.role === "admin");
     }
-    navigate({ to: destino });
+    navigate({ to: isAdmin ? "/admin" : "/membro" });
   };
 
   const handleForgot = async () => {
