@@ -170,7 +170,7 @@ function LoginPage() {
               className="web-brand-button"
               onClick={() => goToMode(mode === "register" ? "login" : "register")}
             >
-              {mode === "register" ? "ENTRAR" : "CADASTRAR"}
+              {mode === "register" ? "LOGIN" : "CADASTRAR"}
             </button>
           </motion.aside>
         </motion.div>
