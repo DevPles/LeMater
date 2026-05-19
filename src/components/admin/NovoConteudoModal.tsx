@@ -123,9 +123,9 @@ export default function NovoConteudoModal({
     if (curso.capaVideo) {
       setBusyMsg("Enviando vídeo de capa…");
       const path = `cursos/video/${Date.now()}-${curso.capaVideo.name.replace(/[^\w.-]/g, "_")}`;
-      const { data: up, error } = await supabase.storage.from("materiais-video").upload(path, curso.capaVideo);
+      const { data: up, error } = await supabase.storage.from("materiais-capas").upload(path, curso.capaVideo);
       if (error) throw new Error("Falha vídeo de capa: " + error.message);
-      capa_video_url = supabase.storage.from("materiais-video").getPublicUrl(up.path).data.publicUrl;
+      capa_video_url = supabase.storage.from("materiais-capas").getPublicUrl(up.path).data.publicUrl;
     }
 
     // 2. Upload PDFs grátis (nível do curso)
