@@ -499,13 +499,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           </p>
           <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
             <Link to="/cursos" style={{ textDecoration: "none" }}>
-              <button style={btnPrimary}>CURSOS</button>
-            </Link>
-            <Link to="/conteudos-gratis" style={{ textDecoration: "none" }}>
-              <button style={btnSecondary}>Conteúdos grátis</button>
-            </Link>
-            <Link to="/atlas" style={{ textDecoration: "none" }}>
-              <button style={btnSecondary}>Atlas materno</button>
+              <button style={btnPrimary}>ATLAS MATERNO</button>
             </Link>
           </div>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
