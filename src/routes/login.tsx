@@ -149,7 +149,7 @@ function LoginPage() {
     : { x: desktopSlideOffset, y: "0%" };
   const trackAnim = isMobile
     ? { x: "0%", y: mobileFormOffset }
-    : { x: mode === "register" ? "-50%" : "0%", y: "0%" };
+    : { x: "0%", y: "0%" };
 
   return (
     <main className="web-login-shell">
