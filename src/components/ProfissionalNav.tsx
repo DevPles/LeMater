@@ -1,8 +1,8 @@
 import { Link, useLocation } from "@tanstack/react-router";
 
 const navItems = [
-  { to: "/profissional", label: "Agenda" },
-  { to: "/videos", label: "Vídeos" },
+  { to: "/app/profissional", label: "Agenda" },
+  { to: "/app/videos", label: "Vídeos" },
 ] as const;
 
 export function ProfissionalNav() {

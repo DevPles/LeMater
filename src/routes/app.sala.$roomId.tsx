@@ -204,7 +204,7 @@ function SalaPage() {
     setToken(null);
     setWsUrl(null);
     setTempo(0);
-    navigate({ to: isProfDono ? "/profissional" : "/videochamada" });
+    navigate({ to: isProfDono ? "/app/profissional" : "/app/videochamada" });
   }, [limpar, navigate, isProfDono, finalizarGravacao]);
 
   const entrarSala = useCallback(async () => {
@@ -332,7 +332,7 @@ function SalaPage() {
 
             <button
               onClick={() =>
-                navigate({ to: isProfDono ? "/profissional" : "/videochamada" })
+                navigate({ to: isProfDono ? "/app/profissional" : "/app/videochamada" })
               }
               className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >

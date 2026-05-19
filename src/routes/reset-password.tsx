@@ -68,7 +68,7 @@ function ResetPasswordPage() {
       const { error } = await supabase.auth.updateUser({ password: novaSenha });
       if (error) throw error;
       setMsg({ type: "ok", text: "Senha redefinida com sucesso! Redirecionando..." });
-      setTimeout(() => navigate({ to: "/home" }), 1500);
+      setTimeout(() => navigate({ to: "/app/home" }), 1500);
     } catch (e) {
       setMsg({ type: "err", text: (e as Error).message || "Falha ao redefinir senha." });
     } finally {

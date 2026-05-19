@@ -309,7 +309,7 @@ function CampanhasView({ profiles, alerts }: Props) {
               campaignId: campaign.id,
               title: titulo || "MãeDigital",
               body: corpo,
-              url: "/home",
+              url: "/app/home",
               userIds,
             },
           });
