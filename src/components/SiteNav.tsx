@@ -113,7 +113,7 @@ export function SiteNav() {
             </ul>
           )}
           {!isMobile ? (
-            <Link to="/app" style={{ textDecoration: "none" }}>
+            <Link to="/login" style={{ textDecoration: "none" }}>
               <button style={entrarBtn}>ENTRAR</button>
             </Link>
           ) : (
@@ -173,7 +173,7 @@ export function SiteNav() {
               </ul>
             </div>
             <div style={{ marginTop: "auto", padding: "0 28px 32px" }}>
-              <Link to="/app" style={{ textDecoration: "none" }} onClick={() => setOpen(false)}>
+              <Link to="/login" style={{ textDecoration: "none" }} onClick={() => setOpen(false)}>
                 <button style={{ ...entrarBtn, width: "100%" }}>ENTRAR</button>
               </Link>
               <div style={{ marginTop: 20, fontSize: 11, color: c.muted, letterSpacing: "0.08em", textAlign: "center" }}>
