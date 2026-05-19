@@ -39,7 +39,8 @@ export default function MateriaisTab({
   forcarCategoria,
   titulo = "Materiais",
   ctaNovo = "Novo material",
-}: { forcarCategoria?: string; titulo?: string; ctaNovo?: string } = {}) {
+  esconderNovo = false,
+}: { forcarCategoria?: string; titulo?: string; ctaNovo?: string; esconderNovo?: boolean } = {}) {
   const list = useServerFn(listAllMateriais);
   const upsert = useServerFn(upsertMaterial);
   const del = useServerFn(deleteMaterial);
