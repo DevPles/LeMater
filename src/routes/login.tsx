@@ -1,6 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, type ChangeEvent, type ComponentProps, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type ComponentProps, type FormEvent } from "react";
 import { motion } from "framer-motion";
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
+  return isMobile;
+}
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -103,6 +115,15 @@ function LoginPage() {
     }
   };
 
+  const isMobile = useIsMobile();
+  const slideOffset = mode === "register" ? "-100%" : "0%";
+  const brandAnim = isMobile
+    ? { x: "0%", y: "0%" }
+    : { x: slideOffset, y: "0%" };
+  const trackAnim = isMobile
+    ? { x: "0%", y: slideOffset }
+    : { x: slideOffset, y: "0%" };
+
   return (
     <main className="web-login-shell">
       <section className="web-login-desktop" aria-label="Login web">
@@ -112,9 +133,12 @@ function LoginPage() {
           transition={{ duration: 0.45 }}
           className="web-login-card"
         >
-
           <div className="web-form-side">
-            <div className="web-form-track">
+            <motion.div
+              className="web-form-track"
+              animate={trackAnim}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            >
               <div className="web-form-panel">
                 {isRecover ? (
                   <RecoverForm
@@ -154,12 +178,12 @@ function LoginPage() {
                   onSubmit={handleSignUp}
                 />
               </div>
-            </div>
+            </motion.div>
           </div>
 
           <motion.aside
             className="web-brand-side"
-            animate={{ x: mode === "register" ? "-100%" : "0%" }}
+            animate={brandAnim}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="web-brand-content" key={mode}>
@@ -178,66 +202,11 @@ function LoginPage() {
         </motion.div>
       </section>
 
-      <section className="web-login-mobile" aria-label="Login web mobile">
-        <img className="mobile-logo" src={logoMonograma} alt="Le Mater" />
-        <div className="mobile-card">
-          {mode === "login" && (
-            <LoginForm
-              email={form.loginEmail}
-              password={form.loginPassword}
-              showPassword={showPassword}
-              loading={loading}
-              mobile
-              onEmailChange={update("loginEmail")}
-              onPasswordChange={update("loginPassword")}
-              onTogglePassword={() => setShowPassword((current) => !current)}
-              onRecover={() => goToMode("recover")}
-              onBack={() => navigate({ to: "/" })}
-              onSubmit={handleLogin}
-            />
-          )}
-          {mode === "register" && (
-            <RegisterForm
-              name={form.signName}
-              email={form.signEmail}
-              password={form.signPassword}
-              showPassword={showPassword}
-              mobile
-              onNameChange={update("signName")}
-              onEmailChange={update("signEmail")}
-              onPasswordChange={update("signPassword")}
-              onTogglePassword={() => setShowPassword((current) => !current)}
-              onSubmit={handleSignUp}
-            />
-          )}
-          {mode === "recover" && (
-            <RecoverForm
-              email={form.recoverEmail}
-              loading={loading}
-              mobile
-              onEmailChange={update("recoverEmail")}
-              onSubmit={handleRecover}
-              onBack={() => goToMode("login")}
-            />
-          )}
-
-          <div className="mobile-actions">
-            <Button type="button" variant="outline" onClick={() => navigate({ to: "/" })}>
-              Voltar
-            </Button>
-            {mode !== "recover" && (
-              <Button type="button" variant="outline" onClick={() => goToMode(mode === "login" ? "register" : "login")}>
-                {mode === "login" ? "Cadastrar" : "Entrar"}
-              </Button>
-            )}
-          </div>
-        </div>
-      </section>
-
       <style>{css}</style>
     </main>
   );
 }
+
 
 function LoginForm({
   email,
@@ -664,69 +633,52 @@ const css = `
 
 .web-brand-button:hover { background: ${GOLD}; color: ${GREEN_DEEP}; }
 
-.web-login-mobile { display: none; }
-
 @media (max-width: 767px) {
-  .web-login-desktop { display: none; }
+  .web-login-desktop { padding: 20px 14px; align-items: flex-start; }
 
-  .web-login-mobile {
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 32px 16px 24px;
-    background: ${CREAM};
-  }
-
-  .mobile-logo { width: 72px; height: 72px; object-fit: contain; margin-bottom: 18px; }
-
-  .mobile-card {
+  .web-login-card {
     width: 100%;
-    max-width: 420px;
+    min-height: 0;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
     border-radius: 16px;
-    background: ${CREAM_PANEL};
-    padding: 22px 18px;
-    box-shadow: 0 16px 32px -18px rgba(35, 71, 53, 0.28);
   }
 
-  .mobile-form { display: flex; flex-direction: column; gap: 14px; }
-
-  .mobile-form .form-title { font-size: 26px; }
-  .mobile-form .form-subtitle { font-size: 13px; margin: 4px 0 2px; }
-  .mobile-form .neo-input { height: 42px; font-size: 14px; }
-  .mobile-form .field-label { font-size: 10px; letter-spacing: 0.18em; }
-  .mobile-form .web-primary-button { height: 44px; font-size: 12px; margin-top: 4px; }
-
-  .mobile-link {
-    align-self: flex-start;
-    background: transparent;
-    border: 0;
-    padding: 0;
-    color: ${GREEN};
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    cursor: pointer;
+  .web-form-side {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    height: 420px;
   }
 
-  .mobile-actions {
+  .web-form-track {
+    width: 100%;
+    height: 840px;
+    min-height: 840px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 16px;
+    grid-template-columns: 1fr;
+    grid-template-rows: 420px 420px;
   }
 
-  .mobile-actions button {
-    height: 42px;
-    border-color: ${GREEN};
-    color: ${GREEN};
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+  .web-form-panel { padding: 28px 22px; }
+  .web-form { width: 100%; gap: 12px; }
+  .form-title { font-size: 26px; }
+  .form-subtitle { font-size: 13px; }
+  .neo-input { height: 42px; font-size: 14px; }
+  .web-primary-button { height: 44px; font-size: 12px; }
+  .web-secondary-button { height: 42px; font-size: 11px; }
+
+  .web-brand-side {
+    position: static;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    height: auto;
+    padding: 24px 24px 28px;
   }
+
+  .web-brand-logo { width: 56px; height: 56px; margin-bottom: 10px; }
+  .web-brand-side h2 { font-size: 22px; }
+  .web-brand-side p { font-size: 13px; margin: 8px 0 16px; }
+  .web-brand-button { height: 40px; min-width: 150px; font-size: 11px; }
 }
 `;
