@@ -568,7 +568,9 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             ))}
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
               <div style={{ height: 38, display: "flex", alignItems: "center", gap: 10, justifyContent: isMobile ? "center" : "flex-start" }}>
-                <img src={appIcon} alt="Le Mater App" style={{ width: 36, height: 36, borderRadius: 8, boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }} />
+                <Link to="/app" style={{ lineHeight: 0 }} aria-label="Abrir aplicativo">
+                  <img src={appIcon} alt="Le Mater App" style={{ width: 36, height: 36, borderRadius: 8, boxShadow: "0 2px 6px rgba(0,0,0,0.15)", cursor: "pointer" }} />
+                </Link>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer" style={{ lineHeight: 0 }}>
                     <img src={appStoresBadges} alt="Baixe nas lojas" style={{ height: 44, width: "auto", display: "block" }} />
