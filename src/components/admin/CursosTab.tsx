@@ -48,6 +48,13 @@ export default function CursosTab() {
     materiais_gratis: [],
   });
 
+  // Auto-abrir formulário quando AtlasContentTab dispara evento
+  useEffect(() => {
+    const handler = () => novo();
+    window.addEventListener("atlas-novo-curso", handler);
+    return () => window.removeEventListener("atlas-novo-curso", handler);
+  }, []);
+
   const salvar = async () => {
     if (!edit?.titulo || !edit.slug) { alert("Título e slug são obrigatórios"); return; }
     setBusy(true);
