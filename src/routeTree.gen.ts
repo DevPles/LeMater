@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as CartaoRouteImport } from './routes/cartao'
 import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AppRouteImport } from './routes/app'
@@ -39,6 +40,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartaoRoute = CartaoRouteImport.update({
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
   '/cartao': typeof CartaoRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -164,6 +171,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
   '/cartao': typeof CartaoRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
   '/cartao': typeof CartaoRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -212,6 +221,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/atlas'
     | '/cartao'
+    | '/home'
     | '/login'
     | '/reset-password'
     | '/admin'
@@ -234,6 +244,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/atlas'
     | '/cartao'
+    | '/home'
     | '/login'
     | '/reset-password'
     | '/admin'
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/atlas'
     | '/cartao'
+    | '/home'
     | '/login'
     | '/reset-password'
     | '/_authenticated/admin'
@@ -281,6 +293,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AtlasRoute: typeof AtlasRouteWithChildren
   CartaoRoute: typeof CartaoRoute
+  HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
@@ -300,6 +313,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cartao': {
@@ -496,6 +516,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AtlasRoute: AtlasRouteWithChildren,
   CartaoRoute: CartaoRoute,
+  HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
