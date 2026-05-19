@@ -207,7 +207,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
           <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.sageDark, marginBottom: 10 }}>
             CONTEÚDO PDF PARA DOWNLOAD
           </div>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexWrap: "wrap", gap: 8 }}>
             {data!.materiais_gratis.map((m, i) => (
               <li key={i}>
                 <a
@@ -215,14 +215,16 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                   download={m.nome}
                   target="_blank"
                   rel="noopener noreferrer"
+                  title={m.nome}
+                  aria-label={`Baixar ${m.nome}`}
                   style={{
-                    display: "flex", justifyContent: "space-between", alignItems: "center",
-                    padding: "10px 12px", background: "white", border: `1px solid ${c.border}`,
-                    textDecoration: "none", color: c.ink, fontSize: 13, fontFamily: sans,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    width: 40, height: 40, background: "white", border: `1px solid ${c.border}`,
+                    textDecoration: "none", color: c.sageDark, fontSize: 18, fontFamily: sans,
+                    lineHeight: 1,
                   }}
                 >
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.nome}</span>
-                    <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: c.sageDark, marginLeft: 12 }}>Baixar PDF</span>
+                  ↓
                 </a>
               </li>
             ))}
