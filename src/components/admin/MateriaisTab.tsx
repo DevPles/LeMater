@@ -66,13 +66,8 @@ export default function MateriaisTab({
     ordem: 0, publicado: false,
   });
 
-  // Auto-abrir formulário quando AtlasContentTab dispara evento
-  useEffect(() => {
-    const eventName = forcarCategoria ? "atlas-novo-servico" : "atlas-novo-material";
-    const handler = () => novo();
-    window.addEventListener(eventName, handler);
-    return () => window.removeEventListener(eventName, handler);
-  }, [forcarCategoria]);
+
+
 
   const salvar = async () => {
     if (!edit?.titulo || !edit.tipo || !edit.area) return;
