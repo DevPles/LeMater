@@ -43,7 +43,7 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
     titulo: "", slug: "", descricao_curta: "", descricao_longa: "",
     capa_url: "", capa_video_url: "", trailer_url: "", categoria: "geral", nivel: "iniciante",
     carga_horaria_min: 0, preco_centavos: 0, preco_label: "",
-    link_compra_externo: "", plataforma_venda: "", publicado: false, ordem: 0,
+    link_compra_externo: "", plataforma_venda: "", links_compra: [], publicado: false, ordem: 0,
     instrutor_nome: "", instrutor_bio: "", instrutor_foto: "",
     materiais_gratis: [],
   });
@@ -94,6 +94,9 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
         preco_label: edit.preco_label || null,
         link_compra_externo: edit.link_compra_externo || null,
         plataforma_venda: edit.plataforma_venda || null,
+        links_compra: Array.isArray((edit as any).links_compra)
+          ? (edit as any).links_compra.filter((l: any) => l?.plataforma?.trim() && l?.url?.trim())
+          : [],
         publicado: !!edit.publicado, ordem: Number(edit.ordem) || 0,
         instrutor_nome: edit.instrutor_nome || null,
         instrutor_bio: edit.instrutor_bio || null,
@@ -193,8 +196,63 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
                     <option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option>
                   </select></Field>
                 </div>
-                <Field label="Link de compra externo"><input value={edit.link_compra_externo ?? ""} onChange={(e) => setEdit({ ...edit, link_compra_externo: e.target.value })} style={inp} placeholder="https://..." /></Field>
-              </div>
+                <Field label="Link de compra externo (único, legado — opcional)"><input value={edit.link_compra_externo ?? ""} onChange={(e) => setEdit({ ...edit, link_compra_externo: e.target.value })} style={inp} placeholder="https://..." /></Field>
+
+                <div style={{ marginTop: 14 }}>
+                  <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 8 }}>
+                    Links de compra (vários — aparecem como botões no card e na página do curso)
+                  </div>
+                  {(((edit as any).links_compra ?? []) as { plataforma: string; url: string }[]).map((l, i) => (
+                    <div key={i} style={{ display: "grid", gridTemplateColumns: "180px 1fr auto", gap: 8, marginBottom: 8 }}>
+                      <select
+                        value={l.plataforma}
+                        onChange={(e) => {
+                          const arr = [...((edit as any).links_compra ?? [])];
+                          arr[i] = { ...arr[i], plataforma: e.target.value };
+                          setEdit({ ...edit, links_compra: arr } as any);
+                        }}
+                        style={inp}
+                      >
+                        <option value="">— plataforma —</option>
+                        <option value="Stripe">Stripe (internacional)</option>
+                        <option value="InfinityPay">InfinityPay (Brasil)</option>
+                        <option value="Hotmart">Hotmart</option>
+                        <option value="Kiwify">Kiwify</option>
+                        <option value="Teachable">Teachable</option>
+                        <option value="Eduzz">Eduzz</option>
+                        <option value="Outro">Outro</option>
+                      </select>
+                      <input
+                        value={l.url}
+                        onChange={(e) => {
+                          const arr = [...((edit as any).links_compra ?? [])];
+                          arr[i] = { ...arr[i], url: e.target.value };
+                          setEdit({ ...edit, links_compra: arr } as any);
+                        }}
+                        placeholder="https://..."
+                        style={inp}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const arr = [...((edit as any).links_compra ?? [])];
+                          arr.splice(i, 1);
+                          setEdit({ ...edit, links_compra: arr } as any);
+                        }}
+                        style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "0 12px", cursor: "pointer", fontSize: 12, fontFamily: sans }}
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setEdit({ ...edit, links_compra: [...(((edit as any).links_compra) ?? []), { plataforma: "", url: "" }] } as any)}
+                    style={{ background: c.warm, border: `1px solid ${c.border}`, color: c.sageDark, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontFamily: sans, letterSpacing: "0.08em", textTransform: "uppercase" }}
+                  >
+                    + Adicionar link de compra
+                  </button>
+                </div>
 
               <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 14 }}>
                 <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>Instrutor</div>
