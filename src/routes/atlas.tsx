@@ -41,7 +41,7 @@ function CursosVitrine() {
             FORMAÇÃO
           </div>
           <h2 style={{ fontFamily: serif, fontSize: "clamp(28px, 3vw, 44px)", fontWeight: 300, lineHeight: 1.1, color: c.ink, marginBottom: 20, whiteSpace: "nowrap" }}>
-            Atlas Materno. <em style={{ fontStyle: "italic", color: c.sage }}>Toda a maternidade, do começo ao fim.</em>
+            Atlas Materno. <em style={{ fontStyle: "italic", color: c.sage }}>{"\u200B"}</em>
           </h2>
           <p style={{ fontSize: 15, lineHeight: 1.6, color: c.muted, fontWeight: 300, marginTop: 8 }}>
             Conteúdo profundo, acessível e respeitoso — guiado por médicas, enfermeiras e doulas referência.
