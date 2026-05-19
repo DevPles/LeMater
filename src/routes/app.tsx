@@ -1,10 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
+import { createFileRoute, Outlet, useMatches } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import RegistrationModal from "@/components/RegistrationModal";
-import { useLang, FLAG_TO_LANG, isTranslatable, type Lang } from "@/lib/translate.context";
-import { translateBatch } from "@/lib/translate.functions";
+import { useLang, FLAG_TO_LANG } from "@/lib/translate.context";
 
 export const Route = createFileRoute("/app")({
   head: () => ({
@@ -19,8 +17,16 @@ export const Route = createFileRoute("/app")({
       },
     ],
   }),
-  component: WelcomeScreen,
+  component: AppLayout,
 });
+
+function AppLayout() {
+  const matches = useMatches();
+  // If a child route is matched, render it. Otherwise show the welcome screen.
+  const hasChild = matches.some((m) => m.routeId !== "__root__" && m.routeId !== "/app");
+  if (hasChild) return <Outlet />;
+  return <WelcomeScreen />;
+}
 
 const c = {
   cream: "#FAF5EE",
