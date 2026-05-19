@@ -35,7 +35,7 @@ export function ContentCard(p: ContentCardProps) {
       onMouseLeave={() => setHover(false)}
       style={{
         background: isDark ? c.sageDark : c.warm,
-        padding: 24, transition: "background .3s",
+        padding: 14, transition: "background .3s",
         position: "relative", overflow: "hidden",
         display: "flex", flexDirection: "column",
         cursor: "pointer",
@@ -43,39 +43,39 @@ export function ContentCard(p: ContentCardProps) {
       onClick={p.onAction}
     >
       {p.capa_url && (
-        <div style={{ marginBottom: 14, marginLeft: -24, marginRight: -24, marginTop: -24 }}>
-          <img src={p.capa_url} alt="" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
+        <div style={{ marginBottom: 10, marginLeft: -14, marginRight: -14, marginTop: -14 }}>
+          <img src={p.capa_url} alt="" style={{ width: "100%", height: 80, objectFit: "cover", display: "block" }} />
         </div>
       )}
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
-        <div style={{ fontFamily: serif, fontSize: 40, fontWeight: 300, color: isDark ? "rgba(255,255,255,0.18)" : c.border, lineHeight: 1 }}>{p.numero}</div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 6 }}>
+        <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 300, color: isDark ? "rgba(255,255,255,0.18)" : c.border, lineHeight: 1 }}>{p.numero}</div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
           {p.badge && (
-            <span style={{ fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: "white", background: badgeColor, padding: "3px 8px", fontWeight: 600 }}>
+            <span style={{ fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase", color: "white", background: badgeColor, padding: "2px 6px", fontWeight: 600 }}>
               {p.badge.label}
             </span>
           )}
           {p.categoria && (
-            <div style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? c.sageLight : c.sage, fontWeight: 500 }}>
+            <div style={{ fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? c.sageLight : c.sage, fontWeight: 500 }}>
               {p.categoria}
             </div>
           )}
         </div>
       </div>
-      <div style={{ fontFamily: serif, fontSize: 20, fontWeight: 400, color: isDark ? "white" : c.ink, marginBottom: 8, lineHeight: 1.2 }}>
+      <div style={{ fontFamily: serif, fontSize: 16, fontWeight: 400, color: isDark ? "white" : c.ink, marginBottom: 4, lineHeight: 1.2 }}>
         {p.titulo}
       </div>
       {p.descricao && (
-        <p style={{ fontSize: 13, lineHeight: 1.55, color: isDark ? "rgba(255,255,255,0.75)" : c.muted, marginBottom: 16 }}>
+        <p style={{ fontSize: 11.5, lineHeight: 1.45, color: isDark ? "rgba(255,255,255,0.75)" : c.muted, marginBottom: 10 }}>
           {p.descricao}
         </p>
       )}
       {(p.metaLabel || p.precoLabel) && (
-        <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : c.border}`, paddingTop: 12, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+        <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : c.border}`, paddingTop: 8, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
           {p.metaLabel && (
             <div>
-              <div style={{ fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 3 }}>{p.metaLabel}</div>
-              <div style={{ fontSize: 13, color: isDark ? "white" : c.ink }}>{p.metaValor}</div>
+              <div style={{ fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 2 }}>{p.metaLabel}</div>
+              <div style={{ fontSize: 11.5, color: isDark ? "white" : c.ink }}>{p.metaValor}</div>
             </div>
           )}
           {p.precoLabel && (
