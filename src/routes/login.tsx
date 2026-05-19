@@ -118,7 +118,7 @@ function LoginPage() {
   const isMobile = useIsMobile();
   const slideOffset = mode === "register" ? "-100%" : "0%";
   const brandAnim = isMobile
-    ? { x: "0%", y: slideOffset }
+    ? { x: "0%", y: "0%" }
     : { x: slideOffset, y: "0%" };
   const trackAnim = isMobile
     ? { x: "0%", y: slideOffset }
