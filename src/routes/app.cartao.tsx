@@ -380,7 +380,7 @@ function CartaoPage() {
   // ====== URL pública do cartão (para QR) — sempre aponta para o id da gestante exibida ======
   const ownerUserId = isShared ? shareUserId : session?.user?.id;
   const cartaoUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/cartao?u=${ownerUserId ?? ""}`
+    ? `${window.location.origin}/app/cartao?u=${ownerUserId ?? ""}`
     : "";
 
   const partosClassificacao: { tipo?: string; ano?: number | null }[] = Array.isArray(profile?.partos_classificacao)
