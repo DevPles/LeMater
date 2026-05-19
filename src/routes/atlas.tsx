@@ -5,6 +5,7 @@ import { listCursosVitrine, type CursoVitrine } from "@/lib/cursos.functions";
 import { ContentCard } from "@/components/ContentCard";
 import { CursoModal } from "@/components/CursoModal";
 import { SiteNav } from "@/components/SiteNav";
+import lemateLogo from "@/assets/logo_oficial.png";
 
 export const Route = createFileRoute("/atlas")({
   head: () => ({
