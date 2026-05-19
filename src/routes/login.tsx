@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ function LoginPage() {
   const isRegister = mode === "register";
   const isRecover = mode === "recover";
 
-  const update = (key: keyof typeof form) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const update = (key: keyof typeof form) => (event: ChangeEvent<HTMLInputElement>) => {
     setForm((current) => ({ ...current, [key]: event.target.value }));
   };
 
@@ -48,7 +48,7 @@ function LoginPage() {
     setShowPassword(false);
   };
 
-  const handleLogin = async (event: React.FormEvent) => {
+  const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
     setLoading(true);
     try {
@@ -76,12 +76,12 @@ function LoginPage() {
     }
   };
 
-  const handleSignUp = (event: React.FormEvent) => {
+  const handleSignUp = (event: FormEvent) => {
     event.preventDefault();
     toast.info("O cadastro é feito por convite do administrador.");
   };
 
-  const handleRecover = async (event: React.FormEvent) => {
+  const handleRecover = async (event: FormEvent) => {
     event.preventDefault();
     setLoading(true);
     try {
