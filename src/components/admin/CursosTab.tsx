@@ -63,6 +63,16 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
         const { data: pub } = supabase.storage.from("materiais-capas").getPublicUrl(up.path);
         capa_url = pub.publicUrl;
       }
+      let capa_video_url = (edit as any).capa_video_url || null;
+      const capaVideoInput = document.getElementById("cursoCapaVideo") as HTMLInputElement | null;
+      if (capaVideoInput?.files?.[0]) {
+        const f = capaVideoInput.files[0];
+        if (f.size > 25 * 1024 * 1024) { alert("Vídeo muito grande (máx 25 MB). Comprima antes."); setBusy(false); return; }
+        const path = `cursos/video/${Date.now()}-${f.name.replace(/[^\w.-]/g, "_")}`;
+        const { data: up, error: upErr } = await supabase.storage.from("materiais-capas").upload(path, f, { contentType: f.type });
+        if (upErr) { alert("Falha upload vídeo: " + upErr.message); setBusy(false); return; }
+        capa_video_url = supabase.storage.from("materiais-capas").getPublicUrl(up.path).data.publicUrl;
+      }
       // Upload materiais grátis (PDFs no nível do curso)
       let materiais_gratis: { nome: string; path: string }[] = Array.isArray((edit as any).materiais_gratis) ? [...(edit as any).materiais_gratis] : [];
       const matInput = document.getElementById("cursoMateriais") as HTMLInputElement | null;
