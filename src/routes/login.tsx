@@ -454,7 +454,7 @@ const css = `
 }
 
 .web-form-track {
-  width: 100%;
+  width: 200%;
   min-height: 460px;
   display: grid;
   grid-template-columns: 50% 50%;
