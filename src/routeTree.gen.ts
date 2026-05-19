@@ -13,14 +13,9 @@ import { Route as VideochamadaRouteImport } from './routes/videochamada'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as ProfissionalRouteImport } from './routes/profissional'
-import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as HomeRouteImport } from './routes/home'
-import { Route as GestacaoRouteImport } from './routes/gestacao'
-import { Route as CartaoRouteImport } from './routes/cartao'
 import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AppRouteImport } from './routes/app'
-import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SalaRoomIdRouteImport } from './routes/sala.$roomId'
@@ -60,29 +55,9 @@ const ProfissionalRoute = ProfissionalRouteImport.update({
   path: '/profissional',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PerfilRoute = PerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HomeRoute = HomeRouteImport.update({
-  id: '/home',
-  path: '/home',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GestacaoRoute = GestacaoRouteImport.update({
-  id: '/gestacao',
-  path: '/gestacao',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CartaoRoute = CartaoRouteImport.update({
-  id: '/cartao',
-  path: '/cartao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AtlasRoute = AtlasRouteImport.update({
@@ -93,11 +68,6 @@ const AtlasRoute = AtlasRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AlertasRoute = AlertasRouteImport.update({
-  id: '/alertas',
-  path: '/alertas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -193,14 +163,9 @@ const AuthenticatedAtlasSlugAprenderRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/alertas': typeof AlertasRoute
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
-  '/cartao': typeof CartaoRoute
-  '/gestacao': typeof GestacaoRoute
-  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
-  '/perfil': typeof PerfilRoute
   '/profissional': typeof ProfissionalRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -224,14 +189,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/alertas': typeof AlertasRoute
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
-  '/cartao': typeof CartaoRoute
-  '/gestacao': typeof GestacaoRoute
-  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
-  '/perfil': typeof PerfilRoute
   '/profissional': typeof ProfissionalRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -257,14 +217,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/alertas': typeof AlertasRoute
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
-  '/cartao': typeof CartaoRoute
-  '/gestacao': typeof GestacaoRoute
-  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
-  '/perfil': typeof PerfilRoute
   '/profissional': typeof ProfissionalRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -290,14 +245,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/alertas'
     | '/app'
     | '/atlas'
-    | '/cartao'
-    | '/gestacao'
-    | '/home'
     | '/login'
-    | '/perfil'
     | '/profissional'
     | '/redefinir-senha'
     | '/reset-password'
@@ -321,14 +271,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/alertas'
     | '/app'
     | '/atlas'
-    | '/cartao'
-    | '/gestacao'
-    | '/home'
     | '/login'
-    | '/perfil'
     | '/profissional'
     | '/redefinir-senha'
     | '/reset-password'
@@ -353,14 +298,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/alertas'
     | '/app'
     | '/atlas'
-    | '/cartao'
-    | '/gestacao'
-    | '/home'
     | '/login'
-    | '/perfil'
     | '/profissional'
     | '/redefinir-senha'
     | '/reset-password'
@@ -386,14 +326,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  AlertasRoute: typeof AlertasRoute
   AppRoute: typeof AppRouteWithChildren
   AtlasRoute: typeof AtlasRouteWithChildren
-  CartaoRoute: typeof CartaoRoute
-  GestacaoRoute: typeof GestacaoRoute
-  HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
-  PerfilRoute: typeof PerfilRoute
   ProfissionalRoute: typeof ProfissionalRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -432,39 +367,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfissionalRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/perfil': {
-      id: '/perfil'
-      path: '/perfil'
-      fullPath: '/perfil'
-      preLoaderRoute: typeof PerfilRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gestacao': {
-      id: '/gestacao'
-      path: '/gestacao'
-      fullPath: '/gestacao'
-      preLoaderRoute: typeof GestacaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cartao': {
-      id: '/cartao'
-      path: '/cartao'
-      fullPath: '/cartao'
-      preLoaderRoute: typeof CartaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/atlas': {
@@ -479,13 +386,6 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/alertas': {
-      id: '/alertas'
-      path: '/alertas'
-      fullPath: '/alertas'
-      preLoaderRoute: typeof AlertasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -674,14 +574,9 @@ const AtlasRouteWithChildren = AtlasRoute._addFileChildren(AtlasRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  AlertasRoute: AlertasRoute,
   AppRoute: AppRouteWithChildren,
   AtlasRoute: AtlasRouteWithChildren,
-  CartaoRoute: CartaoRoute,
-  GestacaoRoute: GestacaoRoute,
-  HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
-  PerfilRoute: PerfilRoute,
   ProfissionalRoute: ProfissionalRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   ResetPasswordRoute: ResetPasswordRoute,
@@ -692,13 +587,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
