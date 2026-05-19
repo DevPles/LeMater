@@ -12,10 +12,6 @@ export const Route = createFileRoute("/login")({
       href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap",
     }],
   }),
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) throw redirect({ to: "/atlas" });
-  },
   component: LoginPage,
 });
 
