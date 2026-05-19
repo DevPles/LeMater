@@ -385,11 +385,17 @@ function PasswordField({
   );
 }
 
+const CREAM = "#f5efe2";
+const CREAM_PANEL = "#ebe4d3";
+const GREEN = "#2f5d4a";
+const GREEN_DEEP = "#234735";
+const GOLD = "#c9a24a";
+
 const css = `
 .web-login-shell {
   min-height: 100dvh;
-  background: #dde2e8;
-  color: #1a1557;
+  background: ${CREAM};
+  color: ${GREEN_DEEP};
   font-family: var(--font-body);
 }
 
