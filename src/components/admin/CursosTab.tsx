@@ -170,7 +170,19 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
                 <input id="cursoCapa" type="file" accept="image/*" style={inp} />
                 {edit.capa_url && <img src={edit.capa_url} alt="capa" style={{ marginTop: 8, maxHeight: 120, border: `1px solid ${c.border}` }} />}
               </Field>
+              <Field label={`Vídeo de capa em loop (opcional, mp4/webm, máx 25 MB) ${(edit as any).capa_video_url ? "(atual)" : ""}`}>
+                <input id="cursoCapaVideo" type="file" accept="video/mp4,video/webm" style={inp} />
+                {(edit as any).capa_video_url && (
+                  <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+                    <video src={(edit as any).capa_video_url} autoPlay muted loop playsInline style={{ maxHeight: 120, border: `1px solid ${c.border}` }} />
+                    <button type="button" onClick={() => setEdit({ ...edit, capa_video_url: "" } as any)} style={{ background: "transparent", border: "none", color: c.danger, cursor: "pointer", fontSize: 12, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                      Remover vídeo
+                    </button>
+                  </div>
+                )}
+              </Field>
               <Field label="Trailer (URL YouTube/Vimeo, opcional)"><input value={edit.trailer_url ?? ""} onChange={(e) => setEdit({ ...edit, trailer_url: e.target.value })} style={inp} /></Field>
+
 
               <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 14 }}>
                 <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>Venda</div>
