@@ -88,9 +88,35 @@ function LoginPage() {
     }
   };
 
-  const handleSignUp = (event: FormEvent) => {
+  const handleSignUp = async (event: FormEvent) => {
     event.preventDefault();
-    toast.info("O cadastro é feito por convite do administrador.");
+    setLoading(true);
+    try {
+      const email = form.signEmail.trim();
+      const password = form.signPassword;
+      const name = form.signName.trim();
+      if (!name) throw new Error("Informe seu nome.");
+      if (!email || !email.includes("@")) throw new Error("Informe um e-mail válido.");
+      if (password.length < 6) throw new Error("A senha precisa ter ao menos 6 caracteres.");
+
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/membro`,
+          data: { full_name: name },
+        },
+      });
+      if (error) throw error;
+
+      toast.success("Cadastro realizado! Verifique seu e-mail para confirmar.");
+      goToMode("login");
+      setForm((current) => ({ ...current, loginEmail: email, signName: "", signEmail: "", signPassword: "" }));
+    } catch (error) {
+      toast.error((error as Error).message || "Não foi possível cadastrar.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRecover = async (event: FormEvent) => {
