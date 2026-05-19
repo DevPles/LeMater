@@ -11,16 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as CursosRouteImport } from './routes/cursos'
-import { Route as ConteudosGratisRouteImport } from './routes/conteudos-gratis'
+import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CursosSlugRouteImport } from './routes/cursos.$slug'
+import { Route as AtlasSlugRouteImport } from './routes/atlas.$slug'
 import { Route as AuthenticatedMembroRouteImport } from './routes/_authenticated/membro'
-import { Route as AuthenticatedAtlasRouteImport } from './routes/_authenticated/atlas'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
-import { Route as AuthenticatedCursosSlugAprenderRouteImport } from './routes/_authenticated/cursos.$slug.aprender'
+import { Route as AuthenticatedAtlasSlugAprenderRouteImport } from './routes/_authenticated/atlas.$slug.aprender'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -32,14 +30,9 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CursosRoute = CursosRouteImport.update({
-  id: '/cursos',
-  path: '/cursos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConteudosGratisRoute = ConteudosGratisRouteImport.update({
-  id: '/conteudos-gratis',
-  path: '/conteudos-gratis',
+const AtlasRoute = AtlasRouteImport.update({
+  id: '/atlas',
+  path: '/atlas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -51,19 +44,14 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CursosSlugRoute = CursosSlugRouteImport.update({
+const AtlasSlugRoute = AtlasSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
-  getParentRoute: () => CursosRoute,
+  getParentRoute: () => AtlasRoute,
 } as any)
 const AuthenticatedMembroRoute = AuthenticatedMembroRouteImport.update({
   id: '/membro',
   path: '/membro',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAtlasRoute = AuthenticatedAtlasRouteImport.update({
-  id: '/atlas',
-  path: '/atlas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -76,102 +64,89 @@ const ApiPublicHotmartWebhookRoute = ApiPublicHotmartWebhookRouteImport.update({
   path: '/api/public/hotmart-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedCursosSlugAprenderRoute =
-  AuthenticatedCursosSlugAprenderRouteImport.update({
-    id: '/cursos/$slug/aprender',
-    path: '/cursos/$slug/aprender',
+const AuthenticatedAtlasSlugAprenderRoute =
+  AuthenticatedAtlasSlugAprenderRouteImport.update({
+    id: '/atlas/$slug/aprender',
+    path: '/atlas/$slug/aprender',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/conteudos-gratis': typeof ConteudosGratisRoute
-  '/cursos': typeof CursosRouteWithChildren
+  '/atlas': typeof AtlasRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/atlas': typeof AuthenticatedAtlasRoute
   '/membro': typeof AuthenticatedMembroRoute
-  '/cursos/$slug': typeof CursosSlugRoute
+  '/atlas/$slug': typeof AtlasSlugRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
-  '/cursos/$slug/aprender': typeof AuthenticatedCursosSlugAprenderRoute
+  '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/conteudos-gratis': typeof ConteudosGratisRoute
-  '/cursos': typeof CursosRouteWithChildren
+  '/atlas': typeof AtlasRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/atlas': typeof AuthenticatedAtlasRoute
   '/membro': typeof AuthenticatedMembroRoute
-  '/cursos/$slug': typeof CursosSlugRoute
+  '/atlas/$slug': typeof AtlasSlugRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
-  '/cursos/$slug/aprender': typeof AuthenticatedCursosSlugAprenderRoute
+  '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/conteudos-gratis': typeof ConteudosGratisRoute
-  '/cursos': typeof CursosRouteWithChildren
+  '/atlas': typeof AtlasRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/_authenticated/atlas': typeof AuthenticatedAtlasRoute
   '/_authenticated/membro': typeof AuthenticatedMembroRoute
-  '/cursos/$slug': typeof CursosSlugRoute
+  '/atlas/$slug': typeof AtlasSlugRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
-  '/_authenticated/cursos/$slug/aprender': typeof AuthenticatedCursosSlugAprenderRoute
+  '/_authenticated/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/conteudos-gratis'
-    | '/cursos'
+    | '/atlas'
     | '/login'
     | '/reset-password'
     | '/admin'
-    | '/atlas'
     | '/membro'
-    | '/cursos/$slug'
+    | '/atlas/$slug'
     | '/api/public/hotmart-webhook'
-    | '/cursos/$slug/aprender'
+    | '/atlas/$slug/aprender'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/conteudos-gratis'
-    | '/cursos'
+    | '/atlas'
     | '/login'
     | '/reset-password'
     | '/admin'
-    | '/atlas'
     | '/membro'
-    | '/cursos/$slug'
+    | '/atlas/$slug'
     | '/api/public/hotmart-webhook'
-    | '/cursos/$slug/aprender'
+    | '/atlas/$slug/aprender'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/conteudos-gratis'
-    | '/cursos'
+    | '/atlas'
     | '/login'
     | '/reset-password'
     | '/_authenticated/admin'
-    | '/_authenticated/atlas'
     | '/_authenticated/membro'
-    | '/cursos/$slug'
+    | '/atlas/$slug'
     | '/api/public/hotmart-webhook'
-    | '/_authenticated/cursos/$slug/aprender'
+    | '/_authenticated/atlas/$slug/aprender'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  ConteudosGratisRoute: typeof ConteudosGratisRoute
-  CursosRoute: typeof CursosRouteWithChildren
+  AtlasRoute: typeof AtlasRouteWithChildren
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
@@ -193,18 +168,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cursos': {
-      id: '/cursos'
-      path: '/cursos'
-      fullPath: '/cursos'
-      preLoaderRoute: typeof CursosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/conteudos-gratis': {
-      id: '/conteudos-gratis'
-      path: '/conteudos-gratis'
-      fullPath: '/conteudos-gratis'
-      preLoaderRoute: typeof ConteudosGratisRouteImport
+    '/atlas': {
+      id: '/atlas'
+      path: '/atlas'
+      fullPath: '/atlas'
+      preLoaderRoute: typeof AtlasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -221,25 +189,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cursos/$slug': {
-      id: '/cursos/$slug'
+    '/atlas/$slug': {
+      id: '/atlas/$slug'
       path: '/$slug'
-      fullPath: '/cursos/$slug'
-      preLoaderRoute: typeof CursosSlugRouteImport
-      parentRoute: typeof CursosRoute
+      fullPath: '/atlas/$slug'
+      preLoaderRoute: typeof AtlasSlugRouteImport
+      parentRoute: typeof AtlasRoute
     }
     '/_authenticated/membro': {
       id: '/_authenticated/membro'
       path: '/membro'
       fullPath: '/membro'
       preLoaderRoute: typeof AuthenticatedMembroRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/atlas': {
-      id: '/_authenticated/atlas'
-      path: '/atlas'
-      fullPath: '/atlas'
-      preLoaderRoute: typeof AuthenticatedAtlasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin': {
@@ -256,11 +217,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHotmartWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/cursos/$slug/aprender': {
-      id: '/_authenticated/cursos/$slug/aprender'
-      path: '/cursos/$slug/aprender'
-      fullPath: '/cursos/$slug/aprender'
-      preLoaderRoute: typeof AuthenticatedCursosSlugAprenderRouteImport
+    '/_authenticated/atlas/$slug/aprender': {
+      id: '/_authenticated/atlas/$slug/aprender'
+      path: '/atlas/$slug/aprender'
+      fullPath: '/atlas/$slug/aprender'
+      preLoaderRoute: typeof AuthenticatedAtlasSlugAprenderRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
   }
@@ -268,38 +229,34 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
-  AuthenticatedAtlasRoute: typeof AuthenticatedAtlasRoute
   AuthenticatedMembroRoute: typeof AuthenticatedMembroRoute
-  AuthenticatedCursosSlugAprenderRoute: typeof AuthenticatedCursosSlugAprenderRoute
+  AuthenticatedAtlasSlugAprenderRoute: typeof AuthenticatedAtlasSlugAprenderRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
-  AuthenticatedAtlasRoute: AuthenticatedAtlasRoute,
   AuthenticatedMembroRoute: AuthenticatedMembroRoute,
-  AuthenticatedCursosSlugAprenderRoute: AuthenticatedCursosSlugAprenderRoute,
+  AuthenticatedAtlasSlugAprenderRoute: AuthenticatedAtlasSlugAprenderRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
-interface CursosRouteChildren {
-  CursosSlugRoute: typeof CursosSlugRoute
+interface AtlasRouteChildren {
+  AtlasSlugRoute: typeof AtlasSlugRoute
 }
 
-const CursosRouteChildren: CursosRouteChildren = {
-  CursosSlugRoute: CursosSlugRoute,
+const AtlasRouteChildren: AtlasRouteChildren = {
+  AtlasSlugRoute: AtlasSlugRoute,
 }
 
-const CursosRouteWithChildren =
-  CursosRoute._addFileChildren(CursosRouteChildren)
+const AtlasRouteWithChildren = AtlasRoute._addFileChildren(AtlasRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  ConteudosGratisRoute: ConteudosGratisRoute,
-  CursosRoute: CursosRouteWithChildren,
+  AtlasRoute: AtlasRouteWithChildren,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,

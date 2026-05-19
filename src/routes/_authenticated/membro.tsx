@@ -155,7 +155,7 @@ function UpgradeCard() {
           Acesso completo aos conteúdos, e-books e acompanhamento. Compre nas plataformas parceiras e seu acesso é liberado automaticamente.
         </p>
       </div>
-      <Link to="/cursos" style={{ ...btn(c.sageDark), textDecoration: "none" }}>Ver Atlas Materno</Link>
+      <Link to="/atlas" style={{ ...btn(c.sageDark), textDecoration: "none" }}>Ver Atlas Materno</Link>
     </div>
   );
 }
@@ -205,7 +205,7 @@ function TopBar({ onSair, admin }: { onSair: () => void; admin: boolean }) {
       <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 44 }} /></Link>
       <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
         <Link to="/membro" style={navLink}>Minha área</Link>
-        <Link to="/cursos" style={navLink}>Atlas Materno</Link>
+        <Link to="/atlas" style={navLink}>Atlas Materno</Link>
         {admin && <Link to="/admin" style={navLink}>Admin</Link>}
         <button onClick={onSair} style={{ ...btn(c.sage), padding: "10px 20px" }}>Sair</button>
       </div>

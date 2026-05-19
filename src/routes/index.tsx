@@ -68,7 +68,7 @@ function SitePage() {
     if (typeof window === "undefined") return;
     const s = new URLSearchParams(window.location.search).get("s");
     if (s === "produtos") {
-      window.location.href = "/cursos";
+      window.location.href = "/atlas";
       return;
     }
     if (s === "inicio" || s === "sobre" || s === "produtos" || s === "contato") {
@@ -79,7 +79,7 @@ function SitePage() {
 
   const go = (id: SectionId) => {
     if (id === "produtos") {
-      window.location.href = "/cursos";
+      window.location.href = "/atlas";
       return;
     }
     setActive(id);
@@ -506,7 +506,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             Criada pela Enfermeira Obstetra Rayssa Leslie, a Le Mater é um ecossistema tecnológico de Cuidado Materno que integra Educação, Orientação Profissional, Carteira Digital da Gestante e Acompanhamento da tentativa de engravidar ao Pós-Parto.
           </p>
           <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
-            <Link to="/cursos" style={{ textDecoration: "none" }}>
+            <Link to="/atlas" style={{ textDecoration: "none" }}>
               <button style={btnPrimary}>ATLAS MATERNO</button>
             </Link>
           </div>
@@ -730,7 +730,7 @@ const MOMENTOS: Momento[] = [
     titulo: "Estou tentando engravidar",
     texto: "Entenda seu ciclo, sua janela fértil e os sinais reais do corpo antes de depender apenas de aplicativos.",
     conteudoGratuito: "Guia gratuito: 7 sinais de que você pode estar errando sua janela fértil",
-    rotaGratuita: "/cursos",
+    rotaGratuita: "/atlas",
     caminhoRecomendado: "Ajuda na Concepção Le Mater",
     rotaPrograma: "/programas/concepcao",
   },
@@ -740,7 +740,7 @@ const MOMENTOS: Momento[] = [
     titulo: "Estou grávida",
     texto: "Organize os primeiros passos da gestação, entenda exames, consultas e sinais importantes de acompanhamento.",
     conteudoGratuito: "Mapa gratuito: primeiros passos depois do positivo",
-    rotaGratuita: "/cursos",
+    rotaGratuita: "/atlas",
     caminhoRecomendado: "Programa Gestação Le Mater",
     rotaPrograma: "/programas/gestacao",
   },
@@ -750,7 +750,7 @@ const MOMENTOS: Momento[] = [
     titulo: "Estou no pós-parto",
     texto: "Cuide da recuperação, da saúde emocional, da adaptação materna e dos sinais importantes dessa fase.",
     conteudoGratuito: "Checklist gratuito: cuidados essenciais no puerpério",
-    rotaGratuita: "/cursos",
+    rotaGratuita: "/atlas",
     caminhoRecomendado: "Pós-Parto Le Mater",
     rotaPrograma: "/programas/pos-parto",
   },
@@ -760,7 +760,7 @@ const MOMENTOS: Momento[] = [
     titulo: "Quero cuidar melhor do bebê",
     texto: "Receba orientações simples sobre banho, amamentação, sono, cólicas, rotina e primeiros cuidados neonatais.",
     conteudoGratuito: "Guia gratuito: primeiros cuidados com o recém-nascido",
-    rotaGratuita: "/cursos",
+    rotaGratuita: "/atlas",
     caminhoRecomendado: "Bebê e Primeiros Cuidados Le Mater",
     rotaPrograma: "/programas/bebe-primeiros-cuidados",
     dark: true,

@@ -6,10 +6,12 @@ import { LangProvider } from "@/lib/translate.context";
 
 function NotFoundComponent() {
   useEffect(() => {
-    if (window.location.pathname === "/atlas" || window.location.pathname === "/conteudos-gratis" || window.location.pathname.startsWith("/atlas-materno")) {
-      window.location.replace("/cursos");
+    const p = window.location.pathname;
+    if (p === "/cursos" || p === "/conteudos-gratis" || p.startsWith("/atlas-materno")) {
+      window.location.replace("/atlas");
     }
   }, []);
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">

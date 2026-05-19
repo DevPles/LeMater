@@ -19,7 +19,7 @@ const sans = "'DM Sans', sans-serif";
 const NAV_ITEMS: ReadonlyArray<{ label: string; to: string; search?: Record<string, string> }> = [
   { label: "Início", to: "/" },
   { label: "Sobre", to: "/", search: { s: "sobre" } },
-  { label: "ATLAS MATERNO", to: "/cursos" },
+  { label: "ATLAS MATERNO", to: "/atlas" },
   { label: "Contato", to: "/", search: { s: "contato" } },
 ];
 

@@ -14,7 +14,7 @@ export const Route = createFileRoute("/login")({
   }),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
-    if (data.session) throw redirect({ to: "/cursos" });
+    if (data.session) throw redirect({ to: "/atlas" });
   },
   component: LoginPage,
 });
@@ -95,7 +95,7 @@ function LoginPage() {
       return;
     }
     const { data: roles } = await supabase.from("user_roles").select("role").eq("role", "admin").limit(1);
-    navigate({ to: roles && roles.length > 0 ? "/admin" : "/cursos" });
+    navigate({ to: roles && roles.length > 0 ? "/admin" : "/atlas" });
   };
 
   const handleSignUp = (e: React.FormEvent) => {
