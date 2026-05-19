@@ -2,7 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 
 const navItems = [
   { to: "/app/home", label: "Início" },
-  { to: "/app/videos", label: "Reels" },
+  { to: "/app/videos", label: "Cursos" },
   { to: "/app/videochamada", label: "Consulta" },
   { to: "/app/cartao", label: "Cartão" },
   { to: "/app/alertas", label: "Alertas" },
