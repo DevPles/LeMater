@@ -15,8 +15,15 @@ import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtlasSlugRouteImport } from './routes/atlas.$slug'
+import { Route as AuthenticatedVideosRouteImport } from './routes/_authenticated/videos'
+import { Route as AuthenticatedVideochamadaRouteImport } from './routes/_authenticated/videochamada'
+import { Route as AuthenticatedProfissionalRouteImport } from './routes/_authenticated/profissional'
+import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedMembroRouteImport } from './routes/_authenticated/membro'
+import { Route as AuthenticatedGestacaoRouteImport } from './routes/_authenticated/gestacao'
+import { Route as AuthenticatedCartaoRouteImport } from './routes/_authenticated/cartao'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedAlertasRouteImport } from './routes/_authenticated/alertas'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
@@ -64,14 +71,51 @@ const AtlasSlugRoute = AtlasSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => AtlasRoute,
 } as any)
+const AuthenticatedVideosRoute = AuthenticatedVideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedVideochamadaRoute =
+  AuthenticatedVideochamadaRouteImport.update({
+    id: '/videochamada',
+    path: '/videochamada',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedProfissionalRoute =
+  AuthenticatedProfissionalRouteImport.update({
+    id: '/profissional',
+    path: '/profissional',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPerfilRoute = AuthenticatedPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedMembroRoute = AuthenticatedMembroRouteImport.update({
   id: '/membro',
   path: '/membro',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedGestacaoRoute = AuthenticatedGestacaoRouteImport.update({
+  id: '/gestacao',
+  path: '/gestacao',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedCartaoRoute = AuthenticatedCartaoRouteImport.update({
+  id: '/cartao',
+  path: '/cartao',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAlertasRoute = AuthenticatedAlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -176,8 +220,15 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/alertas': typeof AuthenticatedAlertasRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
+  '/cartao': typeof AuthenticatedCartaoRoute
+  '/gestacao': typeof AuthenticatedGestacaoRoute
   '/membro': typeof AuthenticatedMembroRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
+  '/profissional': typeof AuthenticatedProfissionalRoute
+  '/videochamada': typeof AuthenticatedVideochamadaRoute
+  '/videos': typeof AuthenticatedVideosRoute
   '/atlas/$slug': typeof AtlasSlugRoute
   '/app/alertas': typeof AuthenticatedAppAlertasRoute
   '/app/atlas-materno': typeof AuthenticatedAppAtlasMaternoRouteWithChildren
@@ -202,7 +253,14 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/alertas': typeof AuthenticatedAlertasRoute
+  '/cartao': typeof AuthenticatedCartaoRoute
+  '/gestacao': typeof AuthenticatedGestacaoRoute
   '/membro': typeof AuthenticatedMembroRoute
+  '/perfil': typeof AuthenticatedPerfilRoute
+  '/profissional': typeof AuthenticatedProfissionalRoute
+  '/videochamada': typeof AuthenticatedVideochamadaRoute
+  '/videos': typeof AuthenticatedVideosRoute
   '/atlas/$slug': typeof AtlasSlugRoute
   '/app/alertas': typeof AuthenticatedAppAlertasRoute
   '/app/atlas-materno': typeof AuthenticatedAppAtlasMaternoRouteWithChildren
@@ -229,8 +287,15 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/alertas': typeof AuthenticatedAlertasRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
+  '/_authenticated/cartao': typeof AuthenticatedCartaoRoute
+  '/_authenticated/gestacao': typeof AuthenticatedGestacaoRoute
   '/_authenticated/membro': typeof AuthenticatedMembroRoute
+  '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
+  '/_authenticated/profissional': typeof AuthenticatedProfissionalRoute
+  '/_authenticated/videochamada': typeof AuthenticatedVideochamadaRoute
+  '/_authenticated/videos': typeof AuthenticatedVideosRoute
   '/atlas/$slug': typeof AtlasSlugRoute
   '/_authenticated/app/alertas': typeof AuthenticatedAppAlertasRoute
   '/_authenticated/app/atlas-materno': typeof AuthenticatedAppAtlasMaternoRouteWithChildren
@@ -257,8 +322,15 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/admin'
+    | '/alertas'
     | '/app'
+    | '/cartao'
+    | '/gestacao'
     | '/membro'
+    | '/perfil'
+    | '/profissional'
+    | '/videochamada'
+    | '/videos'
     | '/atlas/$slug'
     | '/app/alertas'
     | '/app/atlas-materno'
@@ -283,7 +355,14 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/admin'
+    | '/alertas'
+    | '/cartao'
+    | '/gestacao'
     | '/membro'
+    | '/perfil'
+    | '/profissional'
+    | '/videochamada'
+    | '/videos'
     | '/atlas/$slug'
     | '/app/alertas'
     | '/app/atlas-materno'
@@ -309,8 +388,15 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/_authenticated/admin'
+    | '/_authenticated/alertas'
     | '/_authenticated/app'
+    | '/_authenticated/cartao'
+    | '/_authenticated/gestacao'
     | '/_authenticated/membro'
+    | '/_authenticated/perfil'
+    | '/_authenticated/profissional'
+    | '/_authenticated/videochamada'
+    | '/_authenticated/videos'
     | '/atlas/$slug'
     | '/_authenticated/app/alertas'
     | '/_authenticated/app/atlas-materno'
@@ -383,6 +469,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AtlasSlugRouteImport
       parentRoute: typeof AtlasRoute
     }
+    '/_authenticated/videos': {
+      id: '/_authenticated/videos'
+      path: '/videos'
+      fullPath: '/videos'
+      preLoaderRoute: typeof AuthenticatedVideosRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/videochamada': {
+      id: '/_authenticated/videochamada'
+      path: '/videochamada'
+      fullPath: '/videochamada'
+      preLoaderRoute: typeof AuthenticatedVideochamadaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/profissional': {
+      id: '/_authenticated/profissional'
+      path: '/profissional'
+      fullPath: '/profissional'
+      preLoaderRoute: typeof AuthenticatedProfissionalRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/perfil': {
+      id: '/_authenticated/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof AuthenticatedPerfilRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/membro': {
       id: '/_authenticated/membro'
       path: '/membro'
@@ -390,11 +504,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMembroRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/gestacao': {
+      id: '/_authenticated/gestacao'
+      path: '/gestacao'
+      fullPath: '/gestacao'
+      preLoaderRoute: typeof AuthenticatedGestacaoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/cartao': {
+      id: '/_authenticated/cartao'
+      path: '/cartao'
+      fullPath: '/cartao'
+      preLoaderRoute: typeof AuthenticatedCartaoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/app': {
       id: '/_authenticated/app'
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/alertas': {
+      id: '/_authenticated/alertas'
+      path: '/alertas'
+      fullPath: '/alertas'
+      preLoaderRoute: typeof AuthenticatedAlertasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin': {
@@ -575,15 +710,29 @@ const AuthenticatedAppRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAlertasRoute: typeof AuthenticatedAlertasRoute
   AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
+  AuthenticatedCartaoRoute: typeof AuthenticatedCartaoRoute
+  AuthenticatedGestacaoRoute: typeof AuthenticatedGestacaoRoute
   AuthenticatedMembroRoute: typeof AuthenticatedMembroRoute
+  AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
+  AuthenticatedProfissionalRoute: typeof AuthenticatedProfissionalRoute
+  AuthenticatedVideochamadaRoute: typeof AuthenticatedVideochamadaRoute
+  AuthenticatedVideosRoute: typeof AuthenticatedVideosRoute
   AuthenticatedAtlasSlugAprenderRoute: typeof AuthenticatedAtlasSlugAprenderRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAlertasRoute: AuthenticatedAlertasRoute,
   AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
+  AuthenticatedCartaoRoute: AuthenticatedCartaoRoute,
+  AuthenticatedGestacaoRoute: AuthenticatedGestacaoRoute,
   AuthenticatedMembroRoute: AuthenticatedMembroRoute,
+  AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
+  AuthenticatedProfissionalRoute: AuthenticatedProfissionalRoute,
+  AuthenticatedVideochamadaRoute: AuthenticatedVideochamadaRoute,
+  AuthenticatedVideosRoute: AuthenticatedVideosRoute,
   AuthenticatedAtlasSlugAprenderRoute: AuthenticatedAtlasSlugAprenderRoute,
 }
 
