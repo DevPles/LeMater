@@ -1,10 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type CSSProperties } from "react";
-import lemateLogo from "@/assets/lemater-logo.png";
+import lemateLogo from "@/assets/logo_oficial.png";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLang, type Lang } from "@/lib/translate.context";
 
 const c = {
   cream: "#FAF5EE",
+  warm: "#F5EDE0",
   sage: "#5C8A6E",
   sageDark: "#2D5A42",
   ink: "#1C1C1A",
@@ -13,8 +15,7 @@ const c = {
 };
 const sans = "'DM Sans', sans-serif";
 
-// Mesmos itens do header da home. "ATLAS MATERNO" agora vai para /cursos
-// (página única de conteúdos).
+// Mesmos itens do header da home. "ATLAS MATERNO" é a página única de conteúdos.
 const NAV_ITEMS: ReadonlyArray<{ label: string; to: string; search?: Record<string, string> }> = [
   { label: "Início", to: "/" },
   { label: "Sobre", to: "/", search: { s: "sobre" } },
@@ -25,6 +26,14 @@ const NAV_ITEMS: ReadonlyArray<{ label: string; to: string; search?: Record<stri
 export function SiteNav() {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const { lang, setLang } = useLang();
+  const LANG_OPTIONS: { code: string; target: Lang; country: string; label: string }[] = [
+    { code: "br", target: "pt", country: "Brasil", label: "Português" },
+    { code: "es", target: "es", country: "España", label: "Español" },
+    { code: "us", target: "en", country: "United States", label: "English" },
+  ];
+  const currentFlag = LANG_OPTIONS.find((o) => o.target === lang) ?? LANG_OPTIONS[0];
 
   const linkStyle: CSSProperties = {
     fontSize: 13,
@@ -68,6 +77,39 @@ export function SiteNav() {
                   <Link to={item.to} search={item.search as any} style={linkStyle}>{item.label}</Link>
                 </li>
               ))}
+              <li data-no-translate style={{ position: "relative" }}>
+                <button
+                  type="button"
+                  onClick={() => setLangOpen((v) => !v)}
+                  aria-label="Selecionar país e idioma"
+                  aria-expanded={langOpen}
+                  style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: `1px solid ${c.border}`, borderRadius: 4, padding: "4px 8px", cursor: "pointer", fontFamily: sans, fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase", color: c.ink }}
+                >
+                  <img src={`https://flagcdn.com/w40/${currentFlag.code}.png`} srcSet={`https://flagcdn.com/w80/${currentFlag.code}.png 2x`} alt={currentFlag.code.toUpperCase()} style={{ width: 22, height: 16, objectFit: "cover", borderRadius: 2, display: "block" }} />
+                  <span>{currentFlag.target.toUpperCase()}</span>
+                </button>
+                {langOpen && (
+                  <>
+                    <div onClick={() => setLangOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 200 }} />
+                    <ul style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 201, listStyle: "none", margin: 0, padding: 6, background: c.cream, border: `1px solid ${c.border}`, borderRadius: 6, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", minWidth: 200 }}>
+                      {LANG_OPTIONS.map((opt) => {
+                        const isActive = opt.target === lang;
+                        return (
+                          <li key={opt.code}>
+                            <button type="button" onClick={() => { setLang(opt.target); setLangOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 10px", background: isActive ? c.warm : "transparent", border: "none", borderRadius: 4, cursor: "pointer", fontFamily: sans, fontSize: 13, color: c.ink, textAlign: "left" }}>
+                              <img src={`https://flagcdn.com/w40/${opt.code}.png`} srcSet={`https://flagcdn.com/w80/${opt.code}.png 2x`} alt={opt.code.toUpperCase()} style={{ width: 24, height: 18, objectFit: "cover", borderRadius: 2, display: "block" }} />
+                              <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
+                                <span style={{ fontWeight: 500 }}>{opt.country}</span>
+                                <span style={{ fontSize: 11, color: c.muted }}>{opt.label}</span>
+                              </span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </>
+                )}
+              </li>
             </ul>
           )}
           {!isMobile ? (
@@ -78,10 +120,10 @@ export function SiteNav() {
             <button
               onClick={() => setOpen((v) => !v)}
               aria-label="Abrir menu"
-              style={{ width: 40, height: 40, background: "transparent", border: `1px solid ${c.border}`, borderRadius: 999, cursor: "pointer", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 5 }}
+              style={{ position: "relative", width: 44, height: 44, background: open ? c.sageDark : "transparent", border: `1px solid ${open ? c.sageDark : c.border}`, borderRadius: 999, cursor: "pointer", transition: "all 300ms ease", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 5 }}
             >
-              <span style={{ width: 18, height: 1.5, background: c.ink, transform: open ? "translateY(3px) rotate(45deg)" : "none", transition: "all 300ms ease" }} />
-              <span style={{ width: 18, height: 1.5, background: c.ink, transform: open ? "translateY(-3px) rotate(-45deg)" : "none", transition: "all 300ms ease" }} />
+              <span style={{ width: 18, height: 1.5, background: open ? "white" : c.ink, transform: open ? "translateY(3px) rotate(45deg)" : "none", transition: "all 300ms ease" }} />
+              <span style={{ width: 18, height: 1.5, background: open ? "white" : c.ink, transform: open ? "translateY(-3px) rotate(-45deg)" : "none", transition: "all 300ms ease" }} />
             </button>
           )}
         </div>

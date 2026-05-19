@@ -9,8 +9,8 @@ import { SiteNav } from "@/components/SiteNav";
 export const Route = createFileRoute("/cursos")({
   head: () => ({
     meta: [
-      { title: "Cursos · Le Mater" },
-      { name: "description", content: "Cursos completos de concepção, gestação, parto e puerpério com a Le Mater." },
+      { title: "Atlas Materno · Le Mater" },
+      { name: "description", content: "Atlas Materno Le Mater com conteúdos de concepção, gestação, parto e puerpério." },
     ],
     links: [{ rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" }],
   }),
@@ -41,7 +41,7 @@ function CursosVitrine() {
             FORMAÇÃO
           </div>
           <h2 style={{ fontFamily: serif, fontSize: "clamp(28px, 3vw, 44px)", fontWeight: 300, lineHeight: 1.1, color: c.ink, marginBottom: 20, whiteSpace: "nowrap" }}>
-            Cursos Le Mater. <em style={{ fontStyle: "italic", color: c.sage }}>Toda a maternidade, do começo ao fim.</em>
+            Atlas Materno. <em style={{ fontStyle: "italic", color: c.sage }}>Toda a maternidade, do começo ao fim.</em>
           </h2>
           <p style={{ fontSize: 15, lineHeight: 1.6, color: c.muted, fontWeight: 300, marginTop: 8 }}>
             Conteúdo profundo, acessível e respeitoso — guiado por médicas, enfermeiras e doulas referência.
@@ -54,17 +54,18 @@ function CursosVitrine() {
           : items.length === 0 ? (
             <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: 60, textAlign: "center" }}>
               <p style={{ fontFamily: serif, fontSize: 22, color: c.muted, fontStyle: "italic" }}>
-                Em breve novos cursos. Cadastre-se para ser avisada.
+                Em breve novos conteúdos. Cadastre-se para ser avisada.
               </p>
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 20 }}>
               {items.map((curso, i) => {
+                const precoGratis = curso.preco_label?.trim().toLowerCase() === "grátis" || curso.preco_label?.trim().toLowerCase() === "gratis";
                 const badge = curso.matriculado
                   ? { label: "Seu acesso", color: c.sageDark }
-                  : curso.preco_label
-                    ? { label: "Curso pago", color: c.gold }
-                    : { label: "Curso", color: c.sage };
+                  : curso.preco_label && !precoGratis
+                    ? { label: "Conteúdo pago", color: c.gold }
+                    : { label: "Atlas Materno", color: c.sage };
                 return (
                   <ContentCard
                     key={curso.id}
@@ -76,8 +77,8 @@ function CursosVitrine() {
                     capa_url={curso.capa_url}
                     metaLabel="Conteúdo"
                     metaValor={`${curso.total_aulas} ${curso.total_aulas === 1 ? "aula" : "aulas"}${curso.carga_horaria_min > 0 ? ` · ${Math.round(curso.carga_horaria_min / 60)}h` : ""}`}
-                    precoLabel={!curso.matriculado ? curso.preco_label : null}
-                    ctaLabel={curso.matriculado ? "Acessar curso" : "Ver conteúdo"}
+                    precoLabel={!curso.matriculado && !precoGratis ? curso.preco_label : null}
+                    ctaLabel={curso.matriculado ? "Acessar conteúdo" : "Ver conteúdo"}
                     onAction={() => setOpenSlug(curso.slug)}
                   />
                 );

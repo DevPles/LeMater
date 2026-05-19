@@ -96,8 +96,8 @@ function MembroPage() {
           </h1>
           <p style={{ color: c.muted, marginTop: 12, maxWidth: 620 }}>
             {status?.pago || status?.admin
-              ? "Aqui ficam todos os conteúdos liberados para você — gratuitos e exclusivos da assinatura."
-              : "Conteúdos gratuitos liberados. Faça upgrade para acessar os cursos completos e materiais exclusivos."}
+              ? "Aqui ficam todos os conteúdos liberados para você no Atlas Materno."
+              : "Conteúdos liberados para você. Entre no Atlas Materno para ver novos materiais."}
           </p>
         </header>
 
@@ -108,12 +108,12 @@ function MembroPage() {
               <UpgradeCard />
             )}
 
-            <Secao titulo="Conteúdos pagos" subtitulo={status?.pago || status?.admin ? "Disponíveis para você" : "Acesso exclusivo de alunas"} itens={grupos.pago} abrir={abrir} vazio={status?.pago || status?.admin ? "Nenhum curso liberado ainda." : null} />
+            <Secao titulo="Atlas Materno" subtitulo={status?.pago || status?.admin ? "Disponíveis para você" : "Acesso exclusivo de alunas"} itens={grupos.pago} abrir={abrir} vazio={status?.pago || status?.admin ? "Nenhum conteúdo liberado ainda." : null} />
 
-            <Secao titulo="Conteúdos gratuitos" itens={grupos.grat} abrir={abrir} vazio="Nenhum conteúdo gratuito publicado." />
+            <Secao titulo="Materiais liberados" itens={grupos.grat} abrir={abrir} vazio="Nenhum conteúdo publicado." />
 
             {grupos.oferta.length > 0 && (
-              <Secao titulo="Disponíveis para compra" subtitulo="Cursos e materiais à venda nas plataformas parceiras" itens={grupos.oferta} abrir={abrir} vazio={null} />
+              <Secao titulo="Disponíveis para compra" subtitulo="Conteúdos à venda nas plataformas parceiras" itens={grupos.oferta} abrir={abrir} vazio={null} />
             )}
           </>
         )}
@@ -150,12 +150,12 @@ function UpgradeCard() {
     <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: 32, marginBottom: 48, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
       <div>
         <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.gold, marginBottom: 8 }}>Upgrade</div>
-        <h2 style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, margin: 0 }}>Desbloqueie todos os cursos Le Mater</h2>
+        <h2 style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, margin: 0 }}>Desbloqueie o Atlas Materno completo</h2>
         <p style={{ color: c.muted, margin: "8px 0 0", maxWidth: 520 }}>
-          Acesso completo a cursos, e-books e acompanhamento. Compre nas plataformas parceiras e seu acesso é liberado automaticamente.
+          Acesso completo aos conteúdos, e-books e acompanhamento. Compre nas plataformas parceiras e seu acesso é liberado automaticamente.
         </p>
       </div>
-      <Link to="/conteudos-gratis" style={{ ...btn(c.sageDark), textDecoration: "none" }}>Ver vitrine</Link>
+      <Link to="/cursos" style={{ ...btn(c.sageDark), textDecoration: "none" }}>Ver Atlas Materno</Link>
     </div>
   );
 }
@@ -205,8 +205,7 @@ function TopBar({ onSair, admin }: { onSair: () => void; admin: boolean }) {
       <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 44 }} /></Link>
       <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
         <Link to="/membro" style={navLink}>Minha área</Link>
-        <Link to="/atlas" style={navLink}>Atlas</Link>
-        <Link to="/conteudos-gratis" style={navLink}>Catálogo</Link>
+        <Link to="/atlas" style={navLink}>Atlas Materno</Link>
         {admin && <Link to="/admin" style={navLink}>Admin</Link>}
         <button onClick={onSair} style={{ ...btn(c.sage), padding: "10px 20px" }}>Sair</button>
       </div>

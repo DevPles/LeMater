@@ -243,8 +243,8 @@ export function AtlasGratuitoPage({ categoria, titulo, intro, aprendizados, slug
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 12 }}>
               <li><Link to="/" search={{ s: "inicio" } as any} style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Início</Link></li>
               <li><Link to="/" search={{ s: "sobre" } as any} style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Rayssa Leslie</Link></li>
-              <li><Link to="/conteudos-gratis" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Conteúdos Grátis</Link></li>
-              <li><Link to="/login" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Acessar Atlas</Link></li>
+              <li><Link to="/cursos" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Atlas Materno</Link></li>
+              <li><Link to="/login" style={{ fontSize: 13, color: c.muted, textDecoration: "none" }}>Entrar</Link></li>
             </ul>
           </div>
           <div>

@@ -8,7 +8,7 @@ import lemateLogo from "@/assets/lemater-logo.png";
 
 export const Route = createFileRoute("/_authenticated/cursos/$slug/aprender")({
   head: () => ({
-    meta: [{ title: "Curso · Le Mater" }],
+    meta: [{ title: "Atlas Materno · Le Mater" }],
     links: [{ rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" }],
   }),
   component: Player,
@@ -59,11 +59,11 @@ function Player() {
 
   if (err) return <Shell><p style={{ color: "#B23A48", padding: 40 }}>{err}</p></Shell>;
   if (curso === undefined) return <Shell><p style={{ color: c.muted, padding: 40 }}>Carregando…</p></Shell>;
-  if (!curso) return <Shell><p style={{ padding: 40 }}>Curso não encontrado. <Link to="/cursos">Ver cursos</Link></p></Shell>;
+  if (!curso) return <Shell><p style={{ padding: 40 }}>Conteúdo não encontrado. <Link to="/cursos">Ver Atlas Materno</Link></p></Shell>;
   if (!curso.matriculado) {
     return <Shell>
       <div style={{ padding: 60, textAlign: "center" }}>
-        <h1 style={{ fontFamily: serif, fontSize: 32 }}>Você ainda não tem acesso a este curso</h1>
+        <h1 style={{ fontFamily: serif, fontSize: 32 }}>Você ainda não tem acesso a este conteúdo</h1>
         <Link to="/cursos/$slug" params={{ slug }} style={{ ...btn(c.sageDark), textDecoration: "none", display: "inline-block", marginTop: 20 }}>Ver detalhes e comprar</Link>
       </div>
     </Shell>;
@@ -75,7 +75,7 @@ function Player() {
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <Link to="/membro"><img src={lemateLogo} alt="Le Mater" style={{ height: 36 }} /></Link>
           <div>
-            <div style={{ fontSize: 10, letterSpacing: "0.18em", color: c.muted }}>CURSO</div>
+            <div style={{ fontSize: 10, letterSpacing: "0.18em", color: c.muted }}>ATLAS MATERNO</div>
             <div style={{ fontFamily: serif, fontSize: 18 }}>{curso.titulo}</div>
           </div>
         </div>

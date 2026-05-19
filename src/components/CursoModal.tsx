@@ -97,11 +97,11 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
           <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.gold, marginBottom: 10 }}>CONTEÚDO EXCLUSIVO</div>
           <h3 style={{ fontFamily: serif, fontSize: isMobile ? 22 : 30, fontWeight: 400, margin: "0 0 10px" }}>{bloqueioInfo.titulo}</h3>
           <p style={{ color: c.muted, fontSize: 14, lineHeight: 1.6, margin: "0 auto 20px", maxWidth: 460 }}>
-            Esta aula faz parte do conteúdo pago. Crie sua conta gratuita para acessar a área de aluna e desbloquear todos os cursos.
+            Esta aula faz parte do conteúdo pago. Entre na área de aluna para acessar o Atlas Materno completo.
           </p>
           <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 10, justifyContent: "center" }}>
             <button onClick={irParaCadastro} style={btnPrimary(c.sageDark)}>
-              {user ? "Ir para minha área" : "Criar conta grátis"}
+              {user ? "Ir para minha área" : "Entrar"}
             </button>
             {data?.link_compra_externo && (
               <button onClick={comprar} style={btnPrimary(c.gold)}>
@@ -205,7 +205,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       {data!.materiais_gratis.length > 0 && (
         <div style={{ background: c.warm, padding: 14, border: `1px solid ${c.border}`, marginBottom: 20 }}>
           <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.sageDark, marginBottom: 10 }}>
-            MATERIAIS GRÁTIS
+            CONTEÚDO PDF PARA DOWNLOAD
           </div>
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
             {data!.materiais_gratis.map((m, i) => (
@@ -222,7 +222,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                   }}
                 >
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.nome}</span>
-                  <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: c.sageDark, marginLeft: 12 }}>Baixar ↓</span>
+                    <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: c.sageDark, marginLeft: 12 }}>Baixar PDF</span>
                 </a>
               </li>
             ))}
@@ -280,7 +280,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
         {data === undefined && !err && <div style={{ padding: 60, color: c.muted }}>Carregando…</div>}
         {data === null && (
           <div style={{ padding: 60 }}>
-            <h2 style={{ fontFamily: serif }}>Curso não encontrado</h2>
+            <h2 style={{ fontFamily: serif }}>Conteúdo não encontrado</h2>
           </div>
         )}
 
