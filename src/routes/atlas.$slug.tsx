@@ -39,10 +39,11 @@ function CursoLanding() {
   );
 
   const totalAulas = data.modulos.reduce((s, m) => s + m.aulas.length, 0);
-  const comprar = () => {
-    if (data.link_compra_externo) window.open(data.link_compra_externo, "_blank", "noopener,noreferrer");
-    else if (!user) navigate({ to: "/login" });
-  };
+  const linksCompra = data.links_compra?.length > 0
+    ? data.links_compra
+    : data.link_compra_externo
+      ? [{ plataforma: data.plataforma_venda || "Comprar", url: data.link_compra_externo }]
+      : [];
   const acessar = () => navigate({ to: "/atlas/$slug/aprender", params: { slug: data.slug } });
 
   return (
