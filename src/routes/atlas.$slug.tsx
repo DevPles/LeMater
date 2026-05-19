@@ -5,7 +5,7 @@ import { getCursoBySlug, type CursoDetalhe } from "@/lib/cursos.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { SiteNav } from "@/components/SiteNav";
 
-export const Route = createFileRoute("/cursos/$slug")({
+export const Route = createFileRoute("/atlas/$slug")({
   head: ({ params }) => ({
     meta: [{ title: `Atlas Materno · Le Mater` }],
     links: [{ rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" }],
