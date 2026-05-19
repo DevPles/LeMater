@@ -137,6 +137,7 @@ function LoginPage() {
                     onPasswordChange={update("loginPassword")}
                     onTogglePassword={() => setShowPassword((current) => !current)}
                     onRecover={() => goToMode("recover")}
+                    onBack={() => navigate({ to: "/" })}
                     onSubmit={handleLogin}
                   />
                 )}
@@ -187,6 +188,7 @@ function LoginPage() {
               onPasswordChange={update("loginPassword")}
               onTogglePassword={() => setShowPassword((current) => !current)}
               onRecover={() => goToMode("recover")}
+              onBack={() => navigate({ to: "/" })}
               onSubmit={handleLogin}
             />
           )}
@@ -243,6 +245,7 @@ function LoginForm({
   onPasswordChange,
   onTogglePassword,
   onRecover,
+  onBack,
   onSubmit,
 }: {
   email: string;
@@ -254,6 +257,7 @@ function LoginForm({
   onPasswordChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onTogglePassword: () => void;
   onRecover: () => void;
+  onBack: () => void;
   onSubmit: (event: FormEvent) => void;
 }) {
   return (
@@ -261,12 +265,17 @@ function LoginForm({
       <FormHeader title="Entrar" subtitle="Acesse seus conteúdos." />
       <Field label="E-mail" type="email" value={email} onChange={onEmailChange} autoComplete="email" required />
       <PasswordField value={password} show={showPassword} onChange={onPasswordChange} onToggle={onTogglePassword} />
-      <button className="forgot-button" type="button" onClick={onRecover}>
+      <button className="web-secondary-button forgot-button" type="button" onClick={onRecover}>
         Esqueci minha senha
       </button>
-      <button className="web-primary-button" type="submit" disabled={loading}>
-        {loading ? "Entrando..." : "Entrar"}
-      </button>
+      <div className="web-form-actions">
+        <button className="web-secondary-button" type="button" onClick={onBack}>
+          Voltar
+        </button>
+        <button className="web-primary-button" type="submit" disabled={loading}>
+          {loading ? "..." : "Entrar"}
+        </button>
+      </div>
     </form>
   );
 }
@@ -408,8 +417,8 @@ const css = `
 }
 
 .web-login-card {
-  width: min(920px, calc(100vw - 64px));
-  min-height: 520px;
+  width: min(760px, calc(100vw - 64px));
+  min-height: 460px;
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -442,7 +451,7 @@ const css = `
 
 .web-form-track {
   width: 100%;
-  min-height: 520px;
+  min-height: 460px;
   display: grid;
   grid-template-columns: 50% 50%;
 }
@@ -452,14 +461,14 @@ const css = `
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 56px 56px 48px;
+  padding: 40px 44px;
 }
 
 .web-form {
-  width: min(320px, 100%);
+  width: min(290px, 100%);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .form-title {
@@ -518,8 +527,8 @@ const css = `
   cursor: pointer;
 }
 
-.forgot-button {
-  align-self: stretch;
+.web-secondary-button {
+  height: 44px;
   border: 1.5px solid ${GREEN};
   background: transparent;
   color: ${GREEN};
@@ -528,8 +537,20 @@ const css = `
   letter-spacing: 0.18em;
   text-transform: uppercase;
   cursor: pointer;
-  padding: 12px 16px;
+  padding: 0 16px;
   border-radius: 6px;
+}
+
+.forgot-button {
+  align-self: stretch;
+  border-radius: 999px;
+  margin-top: 4px;
+}
+
+.web-form-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
   margin-top: 4px;
 }
 
