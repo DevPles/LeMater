@@ -73,6 +73,7 @@ function CursosVitrine() {
                     titulo={curso.titulo}
                     descricao={curso.descricao_curta}
                     capa_url={curso.capa_url}
+                    capa_video_url={curso.capa_video_url}
                     metaLabel="Conteúdo"
                     metaValor={`${curso.total_aulas} ${curso.total_aulas === 1 ? "aula" : "aulas"}${curso.carga_horaria_min > 0 ? ` · ${Math.round(curso.carga_horaria_min / 60)}h` : ""}`}
                     precoLabel={!curso.matriculado && !precoGratis ? curso.preco_label : null}
