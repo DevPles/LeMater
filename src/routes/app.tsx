@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import RegistrationModal from "@/components/RegistrationModal";
 import { useLang, FLAG_TO_LANG } from "@/lib/translate.context";
+import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/app")({
   head: () => ({
@@ -24,7 +25,14 @@ function AppLayout() {
   const matches = useMatches();
   // If a child route is matched, render it. Otherwise show the welcome screen.
   const hasChild = matches.some((m) => m.routeId !== "__root__" && m.routeId !== "/app");
-  if (hasChild) return <Outlet />;
+  if (hasChild) {
+    return (
+      <>
+        <Outlet />
+        <BottomNav />
+      </>
+    );
+  }
   return <WelcomeScreen />;
 }
 
