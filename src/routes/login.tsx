@@ -321,16 +321,22 @@ function RegisterForm({
       <Field label="Nome" value={name} onChange={onNameChange} autoComplete="name" required />
       <Field label="E-mail" type="email" value={email} onChange={onEmailChange} autoComplete="email" required />
       <PasswordField value={password} show={showPassword} onChange={onPasswordChange} onToggle={onTogglePassword} />
-      <div className="web-form-actions">
-        {onBack && (
-          <button className="web-secondary-button" type="button" onClick={onBack}>
-            Voltar
-          </button>
-        )}
+      {mobile ? (
         <button className="web-primary-button" type="submit">
           Solicitar acesso
         </button>
-      </div>
+      ) : (
+        <div className="web-form-actions">
+          {onBack && (
+            <button className="web-secondary-button" type="button" onClick={onBack}>
+              Voltar
+            </button>
+          )}
+          <button className="web-primary-button" type="submit">
+            Solicitar acesso
+          </button>
+        </div>
+      )}
     </form>
   );
 }
