@@ -315,11 +315,11 @@ export const updateMeuPerfil = createServerFn({ method: "POST" })
 
     if (existing) {
       const { error } = await supabaseAdmin
-        .from("profiles").update(payload).eq("user_id", context.userId);
+        .from("profiles").update(payload as never).eq("user_id", context.userId);
       if (error) throw new Error(error.message);
     } else {
       const { error } = await supabaseAdmin
-        .from("profiles").insert({ ...payload, user_id: context.userId });
+        .from("profiles").insert({ ...payload, user_id: context.userId } as never);
       if (error) throw new Error(error.message);
     }
     return { ok: true };
