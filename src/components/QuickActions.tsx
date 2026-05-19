@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 type IconKind = "play" | "stethoscope" | "card" | "bell" | null;
 
 const actions: { to: string; label: string; color: string; icon: IconKind }[] = [
-  { to: "/app/videos", label: "Reels", color: "bg-coral-light text-primary", icon: "play" },
+  { to: "/app/videos", label: "Cursos", color: "bg-coral-light text-primary", icon: "play" },
   { to: "/app/videochamada", label: "Consulta", color: "bg-mint-light text-mint-dark", icon: "stethoscope" },
   { to: "/app/cartao", label: "Cartão", color: "bg-blush text-blush-dark", icon: "card" },
   { to: "/app/alertas", label: "Alertas", color: "bg-warm text-warm-dark", icon: "bell" },
