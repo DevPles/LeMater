@@ -633,69 +633,52 @@ const css = `
 
 .web-brand-button:hover { background: ${GOLD}; color: ${GREEN_DEEP}; }
 
-.web-login-mobile { display: none; }
-
 @media (max-width: 767px) {
-  .web-login-desktop { display: none; }
+  .web-login-desktop { padding: 24px 16px; align-items: flex-start; }
 
-  .web-login-mobile {
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 32px 16px 24px;
-    background: ${CREAM};
-  }
-
-  .mobile-logo { width: 72px; height: 72px; object-fit: contain; margin-bottom: 18px; }
-
-  .mobile-card {
+  .web-login-card {
     width: 100%;
-    max-width: 420px;
+    min-height: 560px;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
     border-radius: 16px;
-    background: ${CREAM_PANEL};
-    padding: 22px 18px;
-    box-shadow: 0 16px 32px -18px rgba(35, 71, 53, 0.28);
   }
 
-  .mobile-form { display: flex; flex-direction: column; gap: 14px; }
-
-  .mobile-form .form-title { font-size: 26px; }
-  .mobile-form .form-subtitle { font-size: 13px; margin: 4px 0 2px; }
-  .mobile-form .neo-input { height: 42px; font-size: 14px; }
-  .mobile-form .field-label { font-size: 10px; letter-spacing: 0.18em; }
-  .mobile-form .web-primary-button { height: 44px; font-size: 12px; margin-top: 4px; }
-
-  .mobile-link {
-    align-self: flex-start;
-    background: transparent;
-    border: 0;
-    padding: 0;
-    color: ${GREEN};
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    cursor: pointer;
+  .web-form-side {
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    height: 560px;
   }
 
-  .mobile-actions {
+  .web-form-track {
+    width: 100%;
+    height: 1120px;
+    min-height: 1120px;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 16px;
+    grid-template-columns: 1fr;
+    grid-template-rows: 560px 560px;
   }
 
-  .mobile-actions button {
-    height: 42px;
-    border-color: ${GREEN};
-    color: ${GREEN};
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+  .web-form-panel { padding: 32px 22px; }
+  .web-form { width: 100%; gap: 12px; }
+  .form-title { font-size: 28px; }
+  .form-subtitle { font-size: 13px; }
+  .neo-input { height: 42px; font-size: 14px; }
+  .web-primary-button { height: 44px; font-size: 12px; }
+  .web-secondary-button { height: 42px; font-size: 11px; }
+
+  .web-brand-side {
+    top: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: 220px;
+    padding: 28px 24px;
   }
+
+  .web-brand-logo { width: 56px; height: 56px; margin-bottom: 10px; }
+  .web-brand-side h2 { font-size: 24px; }
+  .web-brand-side p { font-size: 13px; margin: 8px 0 16px; }
+  .web-brand-button { height: 40px; min-width: 150px; font-size: 11px; }
 }
 `;
