@@ -464,14 +464,26 @@ function PerfilPage() {
             <label className="block text-sm font-medium text-foreground mb-1">
               E-mail
             </label>
-            <input
-              type="email"
-              value={profile?.email ?? ""}
-              disabled
-              className="w-full px-3 py-2 rounded-lg border border-border bg-muted text-muted-foreground text-sm cursor-not-allowed"
-            />
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                placeholder="seu@email.com"
+                autoComplete="email"
+              />
+              <button
+                type="button"
+                onClick={handleAlterarEmail}
+                disabled={salvandoEmail || !email || email === (profile?.email ?? "")}
+                className="px-3 py-2 rounded-full bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition disabled:opacity-50 whitespace-nowrap"
+              >
+                {salvandoEmail ? "..." : "Alterar e-mail"}
+              </button>
+            </div>
             <p className="text-xs text-muted-foreground mt-1">
-              O e-mail não pode ser alterado.
+              Ao alterar, enviaremos um link de confirmação para o novo e-mail.
             </p>
           </div>
 
