@@ -13,6 +13,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as GestacaoRouteImport } from './routes/gestacao'
 import { Route as CartaoRouteImport } from './routes/cartao'
 import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AppRouteImport } from './routes/app'
@@ -52,6 +53,11 @@ const LoginRoute = LoginRouteImport.update({
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GestacaoRoute = GestacaoRouteImport.update({
+  id: '/gestacao',
+  path: '/gestacao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartaoRoute = CartaoRouteImport.update({
@@ -161,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
   '/cartao': typeof CartaoRoute
+  '/gestacao': typeof GestacaoRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
   '/cartao': typeof CartaoRoute
+  '/gestacao': typeof GestacaoRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
   '/cartao': typeof CartaoRoute
+  '/gestacao': typeof GestacaoRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/atlas'
     | '/cartao'
+    | '/gestacao'
     | '/home'
     | '/login'
     | '/perfil'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/atlas'
     | '/cartao'
+    | '/gestacao'
     | '/home'
     | '/login'
     | '/perfil'
@@ -291,6 +302,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/atlas'
     | '/cartao'
+    | '/gestacao'
     | '/home'
     | '/login'
     | '/perfil'
@@ -318,6 +330,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AtlasRoute: typeof AtlasRouteWithChildren
   CartaoRoute: typeof CartaoRoute
+  GestacaoRoute: typeof GestacaoRoute
   HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
   PerfilRoute: typeof PerfilRoute
@@ -353,6 +366,13 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gestacao': {
+      id: '/gestacao'
+      path: '/gestacao'
+      fullPath: '/gestacao'
+      preLoaderRoute: typeof GestacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cartao': {
@@ -557,6 +577,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AtlasRoute: AtlasRouteWithChildren,
   CartaoRoute: CartaoRoute,
+  GestacaoRoute: GestacaoRoute,
   HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
   PerfilRoute: PerfilRoute,
