@@ -267,7 +267,7 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
           </ul>
         )}
         {!isMobile ? (
-          <Link to="/app" style={{ textDecoration: "none" }}>
+          <Link to="/login" style={{ textDecoration: "none" }}>
             <button style={btnPrimary}>
               ENTRAR
             </button>
