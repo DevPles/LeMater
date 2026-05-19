@@ -477,6 +477,7 @@ export type Database = {
       cursos: {
         Row: {
           capa_url: string | null
+          capa_video_url: string | null
           carga_horaria_min: number
           categoria: string
           created_at: string
@@ -501,6 +502,7 @@ export type Database = {
         }
         Insert: {
           capa_url?: string | null
+          capa_video_url?: string | null
           carga_horaria_min?: number
           categoria?: string
           created_at?: string
@@ -525,6 +527,7 @@ export type Database = {
         }
         Update: {
           capa_url?: string | null
+          capa_video_url?: string | null
           carga_horaria_min?: number
           categoria?: string
           created_at?: string
