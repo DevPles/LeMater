@@ -451,7 +451,7 @@ const css = `
 
 .web-form-track {
   width: 100%;
-  min-height: 520px;
+  min-height: 460px;
   display: grid;
   grid-template-columns: 50% 50%;
 }
@@ -461,14 +461,14 @@ const css = `
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 56px 56px 48px;
+  padding: 40px 44px;
 }
 
 .web-form {
-  width: min(320px, 100%);
+  width: min(290px, 100%);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .form-title {
