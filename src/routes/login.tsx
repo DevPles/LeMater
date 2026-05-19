@@ -117,7 +117,11 @@ function LoginPage() {
           </button>
 
           <div className="web-form-side">
-            <div className="web-form-track">
+            <motion.div
+              className="web-form-track"
+              animate={{ x: isRegister ? "-50%" : "0%" }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            >
               <div className="web-form-panel">
                 {isRecover ? (
                   <RecoverForm
@@ -156,7 +160,7 @@ function LoginPage() {
                   onSubmit={handleSignUp}
                 />
               </div>
-            </div>
+            </motion.div>
           </div>
 
           <motion.aside
