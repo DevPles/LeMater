@@ -87,7 +87,7 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
         id: edit.id, titulo: edit.titulo!, slug: edit.slug!,
         descricao_curta: edit.descricao_curta || null,
         descricao_longa: edit.descricao_longa || null,
-        capa_url, trailer_url: edit.trailer_url || null,
+        capa_url, capa_video_url, trailer_url: edit.trailer_url || null,
         categoria: edit.categoria || "geral", nivel: edit.nivel || "iniciante",
         carga_horaria_min: Number(edit.carga_horaria_min) || 0,
         preco_centavos: Number(edit.preco_centavos) || 0,
