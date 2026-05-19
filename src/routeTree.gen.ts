@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VideosRouteImport } from './routes/videos'
 import { Route as VideochamadaRouteImport } from './routes/videochamada'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -19,12 +20,18 @@ import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SalaRoomIdRouteImport } from './routes/sala.$roomId'
 import { Route as AtlasSlugRouteImport } from './routes/atlas.$slug'
 import { Route as AuthenticatedMembroRouteImport } from './routes/_authenticated/membro'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
 import { Route as AuthenticatedAtlasSlugAprenderRouteImport } from './routes/_authenticated/atlas.$slug.aprender'
 
+const VideosRoute = VideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VideochamadaRoute = VideochamadaRouteImport.update({
   id: '/videochamada',
   path: '/videochamada',
@@ -74,6 +81,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SalaRoomIdRoute = SalaRoomIdRouteImport.update({
+  id: '/sala/$roomId',
+  path: '/sala/$roomId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AtlasSlugRoute = AtlasSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -111,9 +123,11 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/videochamada': typeof VideochamadaRoute
+  '/videos': typeof VideosRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
   '/atlas/$slug': typeof AtlasSlugRoute
+  '/sala/$roomId': typeof SalaRoomIdRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
 }
@@ -127,9 +141,11 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/videochamada': typeof VideochamadaRoute
+  '/videos': typeof VideosRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/membro': typeof AuthenticatedMembroRoute
   '/atlas/$slug': typeof AtlasSlugRoute
+  '/sala/$roomId': typeof SalaRoomIdRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
 }
@@ -145,9 +161,11 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/videochamada': typeof VideochamadaRoute
+  '/videos': typeof VideosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/membro': typeof AuthenticatedMembroRoute
   '/atlas/$slug': typeof AtlasSlugRoute
+  '/sala/$roomId': typeof SalaRoomIdRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
   '/_authenticated/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
 }
@@ -163,9 +181,11 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/reset-password'
     | '/videochamada'
+    | '/videos'
     | '/admin'
     | '/membro'
     | '/atlas/$slug'
+    | '/sala/$roomId'
     | '/api/public/hotmart-webhook'
     | '/atlas/$slug/aprender'
   fileRoutesByTo: FileRoutesByTo
@@ -179,9 +199,11 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/reset-password'
     | '/videochamada'
+    | '/videos'
     | '/admin'
     | '/membro'
     | '/atlas/$slug'
+    | '/sala/$roomId'
     | '/api/public/hotmart-webhook'
     | '/atlas/$slug/aprender'
   id:
@@ -196,9 +218,11 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/reset-password'
     | '/videochamada'
+    | '/videos'
     | '/_authenticated/admin'
     | '/_authenticated/membro'
     | '/atlas/$slug'
+    | '/sala/$roomId'
     | '/api/public/hotmart-webhook'
     | '/_authenticated/atlas/$slug/aprender'
   fileRoutesById: FileRoutesById
@@ -214,11 +238,20 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   VideochamadaRoute: typeof VideochamadaRoute
+  VideosRoute: typeof VideosRoute
+  SalaRoomIdRoute: typeof SalaRoomIdRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/videos': {
+      id: '/videos'
+      path: '/videos'
+      fullPath: '/videos'
+      preLoaderRoute: typeof VideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/videochamada': {
       id: '/videochamada'
       path: '/videochamada'
@@ -287,6 +320,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sala/$roomId': {
+      id: '/sala/$roomId'
+      path: '/sala/$roomId'
+      fullPath: '/sala/$roomId'
+      preLoaderRoute: typeof SalaRoomIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/atlas/$slug': {
@@ -364,6 +404,8 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   VideochamadaRoute: VideochamadaRoute,
+  VideosRoute: VideosRoute,
+  SalaRoomIdRoute: SalaRoomIdRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
 }
 export const routeTree = rootRouteImport
