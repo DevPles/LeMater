@@ -70,35 +70,33 @@ export function ContentCard(p: ContentCardProps) {
           {p.descricao}
         </p>
       )}
-      {(p.metaLabel || p.precoLabel) && (
-        <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : c.border}`, paddingTop: 8, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10 }}>
+      {p.extra}
+      <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : c.border}`, paddingTop: 10, marginTop: "auto", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
           {p.metaLabel && (
-            <div>
-              <div style={{ fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 2 }}>{p.metaLabel}</div>
-              <div style={{ fontSize: 11.5, color: isDark ? "white" : c.ink }}>{p.metaValor}</div>
-            </div>
+            <>
+              <div style={{ fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted }}>{p.metaLabel}</div>
+              <div style={{ fontSize: 11.5, color: isDark ? "white" : c.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.metaValor}</div>
+            </>
           )}
           {p.precoLabel && (
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 2 }}>{p.precoTituloLabel ?? "Investimento"}</div>
-              <div style={{ fontFamily: serif, fontSize: 15, color: isDark ? "white" : c.sageDark }}>{p.precoLabel}</div>
-            </div>
+            <div style={{ fontFamily: serif, fontSize: 15, color: isDark ? "white" : c.sageDark, marginTop: p.metaLabel ? 4 : 0 }}>{p.precoLabel}</div>
           )}
         </div>
-      )}
-      {p.extra}
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); p.onAction(); }}
-        style={{
-          background: isDark ? "white" : c.sageDark, color: isDark ? c.sageDark : "white",
-          fontSize: 9, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase",
-          padding: "8px 16px", border: "none", cursor: "pointer", fontFamily: sans,
-          width: "100%", marginTop: "auto",
-        } as CSSProperties}
-      >
-        {p.ctaLabel}
-      </button>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); p.onAction(); }}
+          style={{
+            background: isDark ? "white" : c.sageDark, color: isDark ? c.sageDark : "white",
+            fontSize: 9, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase",
+            padding: "8px 14px", border: "none", cursor: "pointer", fontFamily: sans,
+            whiteSpace: "nowrap", flexShrink: 0,
+          } as CSSProperties}
+        >
+          {p.ctaLabel}
+        </button>
+      </div>
+
     </div>
   );
 }
