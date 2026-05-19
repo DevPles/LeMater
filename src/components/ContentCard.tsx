@@ -80,8 +80,8 @@ export function ContentCard(p: ContentCardProps) {
           )}
           {p.precoLabel && (
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 3 }}>{p.precoTituloLabel ?? "Investimento"}</div>
-              <div style={{ fontFamily: serif, fontSize: 18, color: isDark ? "white" : c.sageDark }}>{p.precoLabel}</div>
+              <div style={{ fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted, marginBottom: 2 }}>{p.precoTituloLabel ?? "Investimento"}</div>
+              <div style={{ fontFamily: serif, fontSize: 15, color: isDark ? "white" : c.sageDark }}>{p.precoLabel}</div>
             </div>
           )}
         </div>
@@ -92,8 +92,8 @@ export function ContentCard(p: ContentCardProps) {
         onClick={(e) => { e.stopPropagation(); p.onAction(); }}
         style={{
           background: isDark ? "white" : c.sageDark, color: isDark ? c.sageDark : "white",
-          fontSize: 10, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase",
-          padding: "11px 20px", border: "none", cursor: "pointer", fontFamily: sans,
+          fontSize: 9, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase",
+          padding: "8px 16px", border: "none", cursor: "pointer", fontFamily: sans,
           width: "100%", marginTop: "auto",
         } as CSSProperties}
       >
