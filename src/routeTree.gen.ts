@@ -16,6 +16,7 @@ import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as GestacaoRouteImport } from './routes/gestacao'
+import { Route as CartaoRouteImport } from './routes/cartao'
 import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -60,6 +61,11 @@ const HomeRoute = HomeRouteImport.update({
 const GestacaoRoute = GestacaoRouteImport.update({
   id: '/gestacao',
   path: '/gestacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartaoRoute = CartaoRouteImport.update({
+  id: '/cartao',
+  path: '/cartao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AtlasRoute = AtlasRouteImport.update({
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/atlas': typeof AtlasRouteWithChildren
+  '/cartao': typeof CartaoRoute
   '/gestacao': typeof GestacaoRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alertas': typeof AlertasRoute
   '/atlas': typeof AtlasRouteWithChildren
+  '/cartao': typeof CartaoRoute
   '/gestacao': typeof GestacaoRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/alertas': typeof AlertasRoute
   '/atlas': typeof AtlasRouteWithChildren
+  '/cartao': typeof CartaoRoute
   '/gestacao': typeof GestacaoRoute
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alertas'
     | '/atlas'
+    | '/cartao'
     | '/gestacao'
     | '/home'
     | '/login'
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/'
     | '/alertas'
     | '/atlas'
+    | '/cartao'
     | '/gestacao'
     | '/home'
     | '/login'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/alertas'
     | '/atlas'
+    | '/cartao'
     | '/gestacao'
     | '/home'
     | '/login'
@@ -232,6 +244,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AlertasRoute: typeof AlertasRoute
   AtlasRoute: typeof AtlasRouteWithChildren
+  CartaoRoute: typeof CartaoRoute
   GestacaoRoute: typeof GestacaoRoute
   HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/gestacao'
       fullPath: '/gestacao'
       preLoaderRoute: typeof GestacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cartao': {
+      id: '/cartao'
+      path: '/cartao'
+      fullPath: '/cartao'
+      preLoaderRoute: typeof CartaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/atlas': {
@@ -398,6 +418,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AlertasRoute: AlertasRoute,
   AtlasRoute: AtlasRouteWithChildren,
+  CartaoRoute: CartaoRoute,
   GestacaoRoute: GestacaoRoute,
   HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
