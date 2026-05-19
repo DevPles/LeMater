@@ -289,7 +289,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
             // MOBILE: uma única coluna, player no topo, lista embaixo
             <div style={{ height: "100dvh", overflow: "auto", background: c.cream }}>
               <div id="curso-modal-top" />
-              <div style={{ padding: "44px 16px 20px", background: "#000" }}>
+              <div style={{ padding: "44px 16px 20px", background: c.cream }}>
                 {renderPlayer()}
               </div>
               <div style={{ padding: "20px 16px 32px", background: c.warm }}>
