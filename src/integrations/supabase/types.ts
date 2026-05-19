@@ -488,6 +488,7 @@ export type Database = {
           instrutor_foto: string | null
           instrutor_nome: string | null
           link_compra_externo: string | null
+          links_compra: Json
           materiais_gratis: Json
           nivel: string
           ordem: number
@@ -513,6 +514,7 @@ export type Database = {
           instrutor_foto?: string | null
           instrutor_nome?: string | null
           link_compra_externo?: string | null
+          links_compra?: Json
           materiais_gratis?: Json
           nivel?: string
           ordem?: number
@@ -538,6 +540,7 @@ export type Database = {
           instrutor_foto?: string | null
           instrutor_nome?: string | null
           link_compra_externo?: string | null
+          links_compra?: Json
           materiais_gratis?: Json
           nivel?: string
           ordem?: number
