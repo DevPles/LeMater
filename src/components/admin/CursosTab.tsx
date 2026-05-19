@@ -41,7 +41,7 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
 
   const novo = () => setEdit({
     titulo: "", slug: "", descricao_curta: "", descricao_longa: "",
-    capa_url: "", trailer_url: "", categoria: "geral", nivel: "iniciante",
+    capa_url: "", capa_video_url: "", trailer_url: "", categoria: "geral", nivel: "iniciante",
     carga_horaria_min: 0, preco_centavos: 0, preco_label: "",
     link_compra_externo: "", plataforma_venda: "", publicado: false, ordem: 0,
     instrutor_nome: "", instrutor_bio: "", instrutor_foto: "",
