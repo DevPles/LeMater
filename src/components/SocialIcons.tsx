@@ -104,3 +104,35 @@ export function LinkIcon({ className, size = 22 }: IconProps) {
     </svg>
   );
 }
+
+// ---- Stubs adicionais para a landing web (texto puro, sem ícones) ----
+function TextBadge({ label, className, size = 22 }: IconProps & { label: string }) {
+  return (
+    <span
+      className={className}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: size,
+        padding: "0 6px",
+        fontSize: Math.max(9, Math.round(size * 0.45)),
+        fontWeight: 700,
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+        borderRadius: 4,
+        border: "1px solid currentColor",
+        lineHeight: 1,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+export function YouTubeIcon(p: IconProps) { return <TextBadge {...p} label="YT" />; }
+export function TikTokIcon(p: IconProps) { return <TextBadge {...p} label="TT" />; }
+export function HotmartIcon(p: IconProps) { return <TextBadge {...p} label="Hot" />; }
+export function KiwifyIcon(p: IconProps) { return <TextBadge {...p} label="Kw" />; }
+export function TeachableIcon(p: IconProps) { return <TextBadge {...p} label="Tc" />; }
+export function SpotifyIcon(p: IconProps) { return <TextBadge {...p} label="Sp" />; }
