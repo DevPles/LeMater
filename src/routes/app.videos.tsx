@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/app/videos")({
   head: () => ({
     meta: [
-      { title: "Vídeos Educativos — MãeDigital" },
+      { title: "App — Vídeos Educativos — MãeDigital" },
       { name: "description", content: "Assista vídeos de enfermeiros e médicos sobre sua gestação." },
     ],
   }),

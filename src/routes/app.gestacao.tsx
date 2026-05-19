@@ -8,7 +8,7 @@ import { GESTACAO_DEFAULT } from "@/lib/screen-defaults";
 export const Route = createFileRoute("/app/gestacao")({
   head: () => ({
     meta: [
-      { title: "Minha Gestação por Trimestre — MãeDigital" },
+      { title: "App — Minha Gestação por Trimestre — MãeDigital" },
       { name: "description", content: "Acompanhe mês a mês as mudanças no seu corpo durante a gestação e dicas para aliviar os sintomas." },
     ],
   }),

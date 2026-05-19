@@ -20,7 +20,7 @@ import { ConsultationNotesPanel } from "@/components/profissional/ConsultationNo
 export const Route = createFileRoute("/app/sala/$roomId")({
   head: () => ({
     meta: [
-      { title: "Sala de Consulta — MãeDigital" },
+      { title: "App — Sala de Consulta — MãeDigital" },
       { name: "description", content: "Sala de videochamada da consulta." },
       { name: "robots", content: "noindex, nofollow" },
     ],

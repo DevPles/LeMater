@@ -9,7 +9,7 @@ import { NotificacoesCard } from "@/components/NotificacoesCard";
 export const Route = createFileRoute("/app/perfil")({
   head: () => ({
     meta: [
-      { title: "Meu Perfil — MãeDigital" },
+      { title: "App — Meu Perfil — MãeDigital" },
       {
         name: "description",
         content:

@@ -11,7 +11,7 @@ import { NotificacoesCard } from "@/components/NotificacoesCard";
 export const Route = createFileRoute("/app/profissional")({
   head: () => ({
     meta: [
-      { title: "Portal do Profissional — MãeDigital" },
+      { title: "App — Portal do Profissional — MãeDigital" },
       { name: "description", content: "Área restrita para profissionais de saúde gerenciarem horários e atendimentos." },
       { name: "robots", content: "noindex, nofollow" },
     ],

@@ -14,7 +14,7 @@ import { LoadingMessage } from "@/components/LoadingMessage";
 export const Route = createFileRoute("/app/home")({
   head: () => ({
     meta: [
-      { title: "MãeDigital — Minha Gestação" },
+      { title: "App — Minha Gestação — MãeDigital" },
       {
         name: "description",
         content:
