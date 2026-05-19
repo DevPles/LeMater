@@ -116,13 +116,14 @@ function LoginPage() {
   };
 
   const isMobile = useIsMobile();
-  const slideOffset = mode === "register" ? "-100%" : "0%";
+  const desktopSlideOffset = mode === "register" ? "-100%" : "0%";
+  const mobileFormOffset = mode === "register" ? "-50%" : "0%";
   const brandAnim = isMobile
     ? { x: "0%", y: "0%" }
-    : { x: slideOffset, y: "0%" };
+    : { x: desktopSlideOffset, y: "0%" };
   const trackAnim = isMobile
-    ? { x: "0%", y: slideOffset }
-    : { x: slideOffset, y: "0%" };
+    ? { x: "0%", y: mobileFormOffset }
+    : { x: desktopSlideOffset, y: "0%" };
 
   return (
     <main className="web-login-shell">
@@ -132,6 +133,7 @@ function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45 }}
           className="web-login-card"
+          data-mode={mode}
         >
           <div className="web-form-side">
             <motion.div
@@ -170,6 +172,7 @@ function LoginPage() {
                   email={form.signEmail}
                   password={form.signPassword}
                   showPassword={showPassword}
+                  mobile={isMobile}
                   onNameChange={update("signName")}
                   onEmailChange={update("signEmail")}
                   onPasswordChange={update("signPassword")}
@@ -189,7 +192,7 @@ function LoginPage() {
             <div className="web-brand-content" key={mode}>
               <img className="web-brand-logo" src={logoMonograma} alt="Le Mater" />
               <h2>{mode === "register" ? "Bem-vinda de volta" : "Olá!"}</h2>
-              <p>{mode === "register" ? "Já tem conta? Entre agora." : "Sem acesso ainda? Solicite seu cadastro."}</p>
+              <p>{mode === "register" ? "Já tem conta? Entre e continue." : "Sem acesso ainda? Solicite seu cadastro."}</p>
               <button
                 type="button"
                 className="web-brand-button"
@@ -634,51 +637,78 @@ const css = `
 .web-brand-button:hover { background: ${GOLD}; color: ${GREEN_DEEP}; }
 
 @media (max-width: 767px) {
-  .web-login-desktop { padding: 20px 14px; align-items: flex-start; }
+  .web-login-desktop {
+    min-height: 100dvh;
+    padding: clamp(34px, 11dvh, 96px) 22px 22px;
+    align-items: flex-start;
+  }
 
   .web-login-card {
-    width: 100%;
+    --mobile-form-h: 374px;
+    width: min(348px, 100%);
     min-height: 0;
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
-    border-radius: 16px;
+    border-radius: 12px;
+    box-shadow: 0 22px 34px -22px rgba(35, 71, 53, 0.45);
   }
+
+  .web-login-card[data-mode="register"] { --mobile-form-h: 356px; }
+  .web-login-card[data-mode="recover"] { --mobile-form-h: 284px; }
 
   .web-form-side {
     grid-column: 1 / -1;
-    grid-row: 1;
-    height: 420px;
+    grid-row: 2;
+    height: var(--mobile-form-h);
+    transition: height 0.45s ease;
   }
 
   .web-form-track {
     width: 100%;
-    height: 840px;
-    min-height: 840px;
+    height: calc(var(--mobile-form-h) * 2);
+    min-height: calc(var(--mobile-form-h) * 2);
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 420px 420px;
+    grid-template-rows: var(--mobile-form-h) var(--mobile-form-h);
   }
 
-  .web-form-panel { padding: 28px 22px; }
-  .web-form { width: 100%; gap: 12px; }
-  .form-title { font-size: 26px; }
-  .form-subtitle { font-size: 13px; }
-  .neo-input { height: 42px; font-size: 14px; }
-  .web-primary-button { height: 44px; font-size: 12px; }
+  .web-form-panel {
+    height: var(--mobile-form-h);
+    align-items: flex-start;
+    padding: 22px 28px 24px;
+  }
+
+  .web-form,
+  .mobile-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .form-title { font-size: 24px; }
+  .form-subtitle { margin: 6px 0 4px; font-size: 13px; }
+  .field-group { gap: 7px; }
+  .field-label { font-size: 10px; letter-spacing: 0.2em; }
+  .neo-input { height: 40px; border-radius: 8px; font-size: 14px; }
+  .forgot-button { margin-top: 2px; border-radius: 6px; }
+  .web-form-actions { gap: 10px; margin-top: 2px; }
+  .web-primary-button { height: 42px; font-size: 11px; }
   .web-secondary-button { height: 42px; font-size: 11px; }
 
   .web-brand-side {
-    position: static;
+    position: relative;
     grid-column: 1 / -1;
-    grid-row: 2;
+    grid-row: 1;
     width: 100%;
-    height: auto;
-    padding: 24px 24px 28px;
+    height: 214px;
+    padding: 16px 24px 18px;
+    border-radius: 0;
   }
 
-  .web-brand-logo { width: 56px; height: 56px; margin-bottom: 10px; }
-  .web-brand-side h2 { font-size: 22px; }
-  .web-brand-side p { font-size: 13px; margin: 8px 0 16px; }
-  .web-brand-button { height: 40px; min-width: 150px; font-size: 11px; }
+  .web-brand-logo { width: 88px; height: 88px; margin-bottom: 12px; }
+  .web-brand-side h2 { font-size: 20px; }
+  .web-brand-side p { width: 100%; font-size: 12px; margin: 8px 0 14px; line-height: 1.35; }
+  .web-brand-button { height: 38px; min-width: 104px; padding: 0 18px; font-size: 10px; }
 }
 `;
