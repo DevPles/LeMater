@@ -583,6 +583,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                   { Icon: InstagramIcon, href: "https://www.instagram.com/aleslierayssa", label: "Instagram" },
                   { Icon: YouTubeIcon, href: "https://youtube.com/@lemateroficial", label: "YouTube" },
                   { Icon: TikTokIcon, href: "https://www.tiktok.com/@lematerbr", label: "TikTok" },
+                  { Icon: SpotifyIcon, href: "https://open.spotify.com", label: "Spotify" },
                   { Icon: HotmartIcon, href: "https://hotmart.com", label: "Hotmart" },
                   { Icon: KiwifyIcon, href: "https://kiwify.com.br", label: "Kiwify" },
                   { Icon: TeachableIcon, href: "https://teachable.com", label: "Teachable" },
