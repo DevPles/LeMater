@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HomeRouteImport } from './routes/home'
+import { Route as CartaoRouteImport } from './routes/cartao'
 import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -38,6 +40,16 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartaoRoute = CartaoRouteImport.update({
+  id: '/cartao',
+  path: '/cartao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AtlasRoute = AtlasRouteImport.update({
@@ -135,6 +147,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
+  '/cartao': typeof CartaoRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -156,6 +170,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
+  '/cartao': typeof CartaoRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -179,6 +195,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
+  '/cartao': typeof CartaoRoute
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -202,6 +220,8 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/atlas'
+    | '/cartao'
+    | '/home'
     | '/login'
     | '/reset-password'
     | '/admin'
@@ -223,6 +243,8 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/atlas'
+    | '/cartao'
+    | '/home'
     | '/login'
     | '/reset-password'
     | '/admin'
@@ -245,6 +267,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/app'
     | '/atlas'
+    | '/cartao'
+    | '/home'
     | '/login'
     | '/reset-password'
     | '/_authenticated/admin'
@@ -268,6 +292,8 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
   AtlasRoute: typeof AtlasRouteWithChildren
+  CartaoRoute: typeof CartaoRoute
+  HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
@@ -287,6 +313,20 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cartao': {
+      id: '/cartao'
+      path: '/cartao'
+      fullPath: '/cartao'
+      preLoaderRoute: typeof CartaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/atlas': {
@@ -475,6 +515,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   AtlasRoute: AtlasRouteWithChildren,
+  CartaoRoute: CartaoRoute,
+  HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
