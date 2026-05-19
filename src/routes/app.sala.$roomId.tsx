@@ -17,7 +17,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { gerarTokenSala } from "@/utils/livekit.functions";
 import { ConsultationNotesPanel } from "@/components/profissional/ConsultationNotesPanel";
 
-export const Route = createFileRoute("/app_/sala/$roomId")({
+export const Route = createFileRoute("/app/sala/$roomId")({
   head: () => ({
     meta: [
       { title: "App — Sala de Consulta — MãeDigital" },
