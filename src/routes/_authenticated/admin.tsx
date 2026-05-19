@@ -30,7 +30,39 @@ const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type Tab = "dash" | "atlas" | "leads" | "alunos" | "compras";
+type Tab =
+  | "dash"
+  | "atlas" | "materiais" | "cursos" | "telas"
+  | "consultas" | "gravacoes" | "profissionais"
+  | "dados" | "parametros" | "relatorios"
+  | "leads" | "alunos" | "usuarios" | "acessos" | "compras";
+
+const TAB_GROUPS: { label: string; tabs: { id: Tab; label: string }[] }[] = [
+  { label: "Painel", tabs: [{ id: "dash", label: "Painel" }] },
+  { label: "Conteúdos", tabs: [
+    { id: "atlas", label: "Atlas" },
+    { id: "materiais", label: "Materiais" },
+    { id: "cursos", label: "Cursos" },
+    { id: "telas", label: "Telas" },
+  ]},
+  { label: "Operação", tabs: [
+    { id: "consultas", label: "Consultas" },
+    { id: "gravacoes", label: "Gravações" },
+    { id: "profissionais", label: "Profissionais" },
+  ]},
+  { label: "Clínica", tabs: [
+    { id: "dados", label: "Dados clínicos" },
+    { id: "parametros", label: "Parâmetros" },
+    { id: "relatorios", label: "Relatórios" },
+  ]},
+  { label: "Pessoas", tabs: [
+    { id: "leads", label: "Leads" },
+    { id: "alunos", label: "Alunos" },
+    { id: "usuarios", label: "Gestantes" },
+    { id: "acessos", label: "Acessos" },
+    { id: "compras", label: "Compras" },
+  ]},
+];
 
 function AdminPage() {
   const { isAdmin, loading } = useAuth();
