@@ -385,11 +385,17 @@ function PasswordField({
   );
 }
 
+const CREAM = "#f5efe2";
+const CREAM_PANEL = "#ebe4d3";
+const GREEN = "#2f5d4a";
+const GREEN_DEEP = "#234735";
+const GOLD = "#c9a24a";
+
 const css = `
 .web-login-shell {
   min-height: 100dvh;
-  background: #dde2e8;
-  color: #1a1557;
+  background: ${CREAM};
+  color: ${GREEN_DEEP};
   font-family: var(--font-body);
 }
 
@@ -408,9 +414,9 @@ const css = `
   display: grid;
   grid-template-columns: 1fr 1fr;
   overflow: hidden;
-  border-radius: 24px;
-  background: #dde2e8;
-  box-shadow: 18px 18px 38px rgba(151, 160, 173, 0.55), -18px -18px 38px rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
+  background: ${CREAM_PANEL};
+  box-shadow: 0 30px 60px -30px rgba(35, 71, 53, 0.35);
 }
 
 .web-back {
@@ -420,7 +426,7 @@ const css = `
   z-index: 8;
   border: 0;
   background: transparent;
-  color: #1a1557;
+  color: ${GREEN_DEEP};
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -446,69 +452,56 @@ const css = `
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 76px 64px 52px;
+  padding: 56px 56px 48px;
 }
 
 .web-form {
   width: min(320px, 100%);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .form-title {
   margin: 0;
-  color: #1a1557;
+  color: ${GREEN_DEEP};
   font-family: var(--font-display);
-  font-size: 34px;
+  font-size: 36px;
   font-weight: 600;
   line-height: 1.08;
 }
 
 .form-subtitle {
-  margin: 8px 0 8px;
-  color: rgba(26, 21, 87, 0.72);
-  font-size: 15px;
+  margin: 6px 0 4px;
+  color: rgba(35, 71, 53, 0.72);
+  font-size: 14px;
 }
 
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+.field-group { display: flex; flex-direction: column; gap: 6px; }
 
 .field-label {
-  color: rgba(26, 21, 87, 0.82);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  color: rgba(35, 71, 53, 0.78);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
 }
 
 .neo-input {
-  height: 52px;
+  height: 44px;
   border: 0;
-  border-radius: 14px;
-  background: #dde2e8;
-  color: #1a1557;
-  padding: 0 18px;
+  border-radius: 10px;
+  background: #f0e9d8;
+  color: ${GREEN_DEEP};
+  padding: 0 16px;
   font-size: 15px;
-  box-shadow: inset 8px 8px 14px rgba(151, 160, 173, 0.35), inset -8px -8px 14px rgba(255, 255, 255, 0.88);
+  box-shadow: inset 4px 4px 8px rgba(168, 154, 120, 0.35), inset -4px -4px 8px rgba(255, 255, 255, 0.85);
 }
 
-.neo-input:focus-visible {
-  outline: 2px solid rgba(240, 192, 64, 0.68);
-  outline-offset: 2px;
-  box-shadow: inset 7px 7px 12px rgba(151, 160, 173, 0.28), inset -7px -7px 12px rgba(255, 255, 255, 0.9), 0 0 0 4px rgba(240, 192, 64, 0.16);
-}
+.neo-input:focus-visible { outline: 2px solid ${GOLD}; outline-offset: 2px; }
 
-.password-wrap {
-  position: relative;
-}
-
-.password-input {
-  padding-right: 94px;
-}
+.password-wrap { position: relative; }
+.password-input { padding-right: 94px; }
 
 .password-toggle {
   position: absolute;
@@ -517,50 +510,46 @@ const css = `
   transform: translateY(-50%);
   border: 0;
   background: transparent;
-  color: #1a1557;
-  font-size: 10px;
+  color: ${GREEN};
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
 }
 
 .forgot-button {
-  border: 0;
+  align-self: stretch;
+  border: 1.5px solid ${GREEN};
   background: transparent;
-  color: rgba(26, 21, 87, 0.78);
-  font-size: 12px;
+  color: ${GREEN};
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  align-self: flex-start;
-  padding: 0;
-}
-
-.web-primary-button {
-  height: 52px;
-  border: 0;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #1a1557 0%, #342a87 100%);
-  color: #f0c040;
-  font-size: 13px;
-  font-weight: 900;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 8px 8px 16px rgba(112, 119, 132, 0.5), -8px -8px 16px rgba(255, 255, 255, 0.7);
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-top: 4px;
 }
 
-.web-primary-button:hover:not(:disabled) {
-  transform: translateY(-1px);
+.web-primary-button {
+  height: 46px;
+  border: 0;
+  border-radius: 6px;
+  background: ${GREEN};
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 6px 14px -6px rgba(35, 71, 53, 0.6);
+  transition: background 180ms ease;
 }
 
-.web-primary-button:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
+.web-primary-button:hover:not(:disabled) { background: ${GREEN_DEEP}; }
+.web-primary-button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .web-brand-side {
   position: absolute;
@@ -575,18 +564,16 @@ const css = `
   justify-content: center;
   text-align: center;
   padding: 52px;
-  border-radius: 24px;
-  background: linear-gradient(145deg, #1a1557 0%, #21176e 48%, #0f0b36 100%);
+  background: linear-gradient(160deg, ${GREEN} 0%, ${GREEN_DEEP} 100%);
   color: #ffffff;
-  box-shadow: -18px 0 42px rgba(26, 21, 87, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 .web-brand-logo {
-  width: 92px;
-  height: 92px;
+  width: 88px;
+  height: 88px;
   object-fit: contain;
-  margin-bottom: 28px;
-  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.22));
+  margin-bottom: 26px;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.2));
 }
 
 .web-brand-side h2 {
@@ -599,35 +586,34 @@ const css = `
 }
 
 .web-brand-side p {
-  width: min(260px, 100%);
-  margin: 18px 0 34px;
-  color: rgba(255, 255, 255, 0.84);
-  font-size: 15px;
+  width: min(280px, 100%);
+  margin: 14px 0 30px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 14px;
   line-height: 1.5;
 }
 
 .web-brand-button {
   min-width: 176px;
-  height: 48px;
-  border: 1.5px solid #f0c040;
+  height: 46px;
+  border: 1.5px solid ${GOLD};
   border-radius: 999px;
   background: transparent;
-  color: #f0c040;
+  color: ${GOLD};
   font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.18em;
+  font-weight: 800;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   cursor: pointer;
+  transition: background 180ms ease, color 180ms ease;
 }
 
-.web-login-mobile {
-  display: none;
-}
+.web-brand-button:hover { background: ${GOLD}; color: ${GREEN_DEEP}; }
+
+.web-login-mobile { display: none; }
 
 @media (max-width: 767px) {
-  .web-login-desktop {
-    display: none;
-  }
+  .web-login-desktop { display: none; }
 
   .web-login-mobile {
     min-height: 100dvh;
@@ -636,29 +622,20 @@ const css = `
     align-items: center;
     justify-content: center;
     padding: 28px 18px;
-    background: #dde2e8;
+    background: ${CREAM};
   }
 
-  .mobile-logo {
-    width: 92px;
-    height: 92px;
-    object-fit: contain;
-    margin-bottom: 22px;
-  }
+  .mobile-logo { width: 88px; height: 88px; object-fit: contain; margin-bottom: 22px; }
 
   .mobile-card {
     width: min(100%, 420px);
-    border-radius: 24px;
-    background: #dde2e8;
+    border-radius: 18px;
+    background: ${CREAM_PANEL};
     padding: 28px 22px;
-    box-shadow: 14px 14px 28px rgba(151, 160, 173, 0.55), -14px -14px 28px rgba(255, 255, 255, 0.88);
+    box-shadow: 0 20px 40px -20px rgba(35, 71, 53, 0.3);
   }
 
-  .mobile-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
+  .mobile-form { display: flex; flex-direction: column; gap: 16px; }
 
   .mobile-actions {
     display: grid;
@@ -667,13 +644,8 @@ const css = `
     margin-top: 18px;
   }
 
-  .mobile-actions button {
-    border-color: rgba(26, 21, 87, 0.24);
-    color: #1a1557;
-  }
+  .mobile-actions button { border-color: ${GREEN}; color: ${GREEN}; }
 
-  .form-title {
-    font-size: 31px;
-  }
+  .form-title { font-size: 30px; }
 }
 `;
