@@ -634,50 +634,50 @@ const css = `
 .web-brand-button:hover { background: ${GOLD}; color: ${GREEN_DEEP}; }
 
 @media (max-width: 767px) {
-  .web-login-desktop { padding: 24px 16px; align-items: flex-start; }
+  .web-login-desktop { padding: 20px 14px; align-items: flex-start; }
 
   .web-login-card {
     width: 100%;
-    min-height: 560px;
+    min-height: 0;
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
+    grid-template-rows: auto auto;
     border-radius: 16px;
   }
 
   .web-form-side {
     grid-column: 1 / -1;
-    grid-row: 1 / -1;
-    height: 560px;
+    grid-row: 1;
+    height: 420px;
   }
 
   .web-form-track {
     width: 100%;
-    height: 1120px;
-    min-height: 1120px;
+    height: 840px;
+    min-height: 840px;
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 560px 560px;
+    grid-template-rows: 420px 420px;
   }
 
-  .web-form-panel { padding: 32px 22px; }
+  .web-form-panel { padding: 28px 22px; }
   .web-form { width: 100%; gap: 12px; }
-  .form-title { font-size: 28px; }
+  .form-title { font-size: 26px; }
   .form-subtitle { font-size: 13px; }
   .neo-input { height: 42px; font-size: 14px; }
   .web-primary-button { height: 44px; font-size: 12px; }
   .web-secondary-button { height: 42px; font-size: 11px; }
 
   .web-brand-side {
-    top: 0;
-    right: 0;
-    left: 0;
+    position: static;
+    grid-column: 1 / -1;
+    grid-row: 2;
     width: 100%;
-    height: 220px;
-    padding: 28px 24px;
+    height: auto;
+    padding: 24px 24px 28px;
   }
 
   .web-brand-logo { width: 56px; height: 56px; margin-bottom: 10px; }
-  .web-brand-side h2 { font-size: 24px; }
+  .web-brand-side h2 { font-size: 22px; }
   .web-brand-side p { font-size: 13px; margin: 8px 0 16px; }
   .web-brand-button { height: 40px; min-width: 150px; font-size: 11px; }
 }
