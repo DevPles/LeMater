@@ -50,13 +50,22 @@ function LoginPage() {
     setError(null);
     setInfo(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
       setError(error.message);
       return;
     }
-    navigate({ to: "/app/home" });
+
+    let destino: "/membro" | "/admin" = "/membro";
+    if (data.user?.id) {
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id);
+      if ((roles ?? []).some((r) => r.role === "admin")) destino = "/admin";
+    }
+    navigate({ to: destino });
   };
 
   const handleForgot = async () => {
