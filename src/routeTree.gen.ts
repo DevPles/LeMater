@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -38,6 +39,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AtlasRoute = AtlasRouteImport.update({
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/atlas': typeof AtlasRouteWithChildren
+  '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/atlas'
+    | '/home'
     | '/login'
     | '/reset-password'
     | '/admin'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/atlas'
+    | '/home'
     | '/login'
     | '/reset-password'
     | '/admin'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/app'
     | '/atlas'
+    | '/home'
     | '/login'
     | '/reset-password'
     | '/_authenticated/admin'
@@ -268,6 +280,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
   AtlasRoute: typeof AtlasRouteWithChildren
+  HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
@@ -287,6 +300,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/atlas': {
@@ -475,6 +495,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   AtlasRoute: AtlasRouteWithChildren,
+  HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
@@ -482,3 +503,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
