@@ -14,6 +14,7 @@ export type ContentCardProps = {
   titulo: string;
   descricao?: string | null;
   capa_url?: string | null;
+  capa_video_url?: string | null;
   metaLabel?: string | null;    // ex: "Formato", "Aulas"
   metaValor?: string | null;    // ex: "PDF", "12 aulas · 3h"
   precoLabel?: string | null;   // ex: "R$ 197"
@@ -42,9 +43,18 @@ export function ContentCard(p: ContentCardProps) {
       }}
       onClick={p.onAction}
     >
-      {p.capa_url && (
-        <div style={{ marginBottom: 10, marginLeft: -14, marginRight: -14, marginTop: -14 }}>
-          <img src={p.capa_url} alt="" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
+      {(p.capa_video_url || p.capa_url) && (
+        <div style={{ marginBottom: 10, marginLeft: -14, marginRight: -14, marginTop: -14, position: "relative", width: "calc(100% + 28px)", height: 130, overflow: "hidden", background: c.warm }}>
+          {p.capa_video_url ? (
+            <video
+              src={p.capa_video_url}
+              poster={p.capa_url ?? undefined}
+              autoPlay muted loop playsInline preload="metadata"
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
+          ) : (
+            <img src={p.capa_url!} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          )}
         </div>
       )}
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 6 }}>
