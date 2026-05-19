@@ -51,6 +51,7 @@ function HomePage() {
     );
   }
 
+  // Sem sessão → manda para tela de boas-vindas/login
   if (!session) {
     return <Navigate to="/" />;
   }
@@ -59,9 +60,11 @@ function HomePage() {
     profile?.nome?.trim() || profile?.email?.split("@")[0] || "Mamãe";
   const primeiroNome = firstName(nomeCompleto) || "Mamãe";
 
+  // Semana = calculada da DUM da gestante (se houver). Senão cai no padrão editável.
   const calculatedWeek = weeksFromDum(profile?.dum ?? null);
   const currentWeek = calculatedWeek ?? content.currentWeek;
 
+  // Filtra dicas pela semana atual (se a dica tiver weekMin/weekMax definidos).
   const tipsAll = (content.weeklyTips ?? []) as Tip[];
   const tipsFiltered = tipsAll.filter((t) => tipMatchesWeek(t, currentWeek));
   const tipsToShow = tipsFiltered.length > 0 ? tipsFiltered : tipsAll;

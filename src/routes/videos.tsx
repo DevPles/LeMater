@@ -364,6 +364,7 @@ function VideosPage() {
                   <span className="absolute bottom-2 left-2 bg-foreground/70 text-primary-foreground text-xs px-2 py-1 rounded-lg">{selected.duration}</span>
                 )}
 
+                {/* Coluna de ações estilo Instagram/TikTok — apenas para Reels */}
                 {selected.category === "Reels" && (
                   <div className="absolute right-2 bottom-3 flex flex-col items-center gap-4">
                     <button
@@ -517,6 +518,7 @@ function VideosPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Sheet de comentários estilo Instagram (apenas para Reels) */}
       <Sheet open={commentsOpen} onOpenChange={setCommentsOpen}>
         <SheetContent
           side="bottom"
@@ -538,6 +540,7 @@ function VideosPage() {
                 const isEditing = editingId === c.id;
                 return (
                   <div key={c.id} className="flex items-start gap-2.5 py-1">
+                    {/* Avatar */}
                     <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xs font-bold overflow-hidden flex-shrink-0">
                       {c.authorAvatar ? (
                         <img src={c.authorAvatar} alt={c.authorName} className="w-full h-full object-cover" />
@@ -546,6 +549,7 @@ function VideosPage() {
                       )}
                     </div>
 
+                    {/* Conteúdo */}
                     <div className="flex-1 min-w-0">
                       <p className="text-xs">
                         <span className="font-semibold text-foreground">{c.authorName}</span>
@@ -594,6 +598,7 @@ function VideosPage() {
                       )}
                     </div>
 
+                    {/* Botão curtir comentário */}
                     {!isEditing && (
                       <button
                         onClick={() => selected && toggleCommentLike(selected.id, c.id)}

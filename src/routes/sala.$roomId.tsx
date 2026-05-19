@@ -75,6 +75,7 @@ function SalaPage() {
 
   const tickRef = useRef<number | null>(null);
 
+  // ----- carrega sessão e dados do slot -----
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -248,12 +249,14 @@ function SalaPage() {
     }
   }, [slot, obterToken]);
 
+  // limpeza ao desmontar
   useEffect(() => {
     return () => {
       limpar();
     };
   }, [limpar]);
 
+  // ----- render -----
   if (loading) {
     return (
       <div className="fixed inset-0 bg-background flex items-center justify-center">
@@ -281,6 +284,7 @@ function SalaPage() {
     );
   }
 
+  // tela pré-entrada
   if (!emSala || !token || !wsUrl) {
     const dt = slot ? new Date(slot.data_hora) : null;
     return (
@@ -340,6 +344,7 @@ function SalaPage() {
     );
   }
 
+  // tela em chamada — LiveKit
   return (
     <div className="fixed inset-0 bg-background flex flex-col overflow-hidden">
       <header className="flex-shrink-0 bg-card border-b border-border px-3 sm:px-4 py-2 flex items-center justify-between gap-2 z-20">
@@ -564,3 +569,4 @@ function AudioRecordingController({
 
   return null;
 }
+
