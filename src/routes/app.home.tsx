@@ -51,9 +51,9 @@ function HomePage() {
     );
   }
 
-  // Sem sessão → manda para tela de boas-vindas/login
+  // Sem sessão → manda para tela de boas-vindas/login do app
   if (!session) {
-    return <Navigate to="/" />;
+    return <Navigate to="/app" />;
   }
 
   const nomeCompleto =

@@ -79,7 +79,7 @@ function CursoLanding() {
                         </a>
                       ))
                     ) : (
-                      <button onClick={() => !user && navigate({ to: "/login" })} style={btn(c.gold)}>Quero me inscrever</button>
+                      <button onClick={() => !user && navigate({ to: "/app" })} style={btn(c.gold)}>Quero me inscrever</button>
                     )}
                   </>
                 )}
@@ -180,7 +180,7 @@ function CursoLanding() {
                   ))}
                 </div>
               ) : (
-                <button onClick={() => !user && navigate({ to: "/login" })} style={btn(c.gold)}>Quero me inscrever</button>
+                <button onClick={() => !user && navigate({ to: "/app" })} style={btn(c.gold)}>Quero me inscrever</button>
               )}
             </div>
           </div>

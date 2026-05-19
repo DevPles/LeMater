@@ -480,7 +480,7 @@ export default function RegistrationModal({
                         setForgotLoading(true);
                         try {
                           const { error } = await supabase.auth.resetPasswordForEmail(em, {
-                            redirectTo: window.location.origin + "/reset-password",
+                            redirectTo: window.location.origin + "/app/reset-password",
                           });
                           if (error) throw error;
                           setForgotMsg({

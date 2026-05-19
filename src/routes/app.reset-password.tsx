@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoadingMessage } from "@/components/LoadingMessage";
 
-export const Route = createFileRoute("/reset-password")({
+export const Route = createFileRoute("/app/reset-password")({
   head: () => ({
     meta: [
-      { title: "Redefinir senha — MãeDigital" },
+      { title: "App — Redefinir senha — MãeDigital" },
       { name: "description", content: "Defina uma nova senha para a sua conta." },
     ],
   }),
@@ -98,7 +98,7 @@ function ResetPasswordPage() {
               Link inválido ou expirado. Solicite um novo link na tela de login.
             </p>
             <button
-              onClick={() => navigate({ to: "/" })}
+              onClick={() => navigate({ to: "/app" })}
               className="bg-[#f0c040] hover:bg-[#e5b535] text-[#1a1557] font-bold text-sm px-6 py-2.5 rounded-full transition-colors"
             >
               Voltar para o login

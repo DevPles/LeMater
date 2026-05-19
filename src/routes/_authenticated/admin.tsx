@@ -43,7 +43,7 @@ function AdminPage() {
             <button key={t} onClick={() => setTab(t)} style={tabBtn(tab === t)}>{tabLabel(t)}</button>
           ))}
         </div>
-        <button onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/login" }); }} style={btn(c.sage)}>Sair</button>
+        <button onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/app" }); }} style={btn(c.sage)}>Sair</button>
       </nav>
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 28px 80px" }}>
         {tab === "dash" && <DashboardTab />}

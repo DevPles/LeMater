@@ -64,7 +64,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   }, []);
 
   const fechar = () => onClose();
-  const irParaCadastro = () => navigate({ to: "/login" });
+  const irParaCadastro = () => navigate({ to: "/app" });
   const linksCompra = (() => {
     const arr = data?.links_compra ?? [];
     if (arr.length > 0) return arr;
