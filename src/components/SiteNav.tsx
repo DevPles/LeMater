@@ -120,10 +120,10 @@ export function SiteNav() {
             <button
               onClick={() => setOpen((v) => !v)}
               aria-label="Abrir menu"
-              style={{ width: 40, height: 40, background: "transparent", border: `1px solid ${c.border}`, borderRadius: 999, cursor: "pointer", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 5 }}
+              style={{ position: "relative", width: 44, height: 44, background: open ? c.sageDark : "transparent", border: `1px solid ${open ? c.sageDark : c.border}`, borderRadius: 999, cursor: "pointer", transition: "all 300ms ease", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 5 }}
             >
-              <span style={{ width: 18, height: 1.5, background: c.ink, transform: open ? "translateY(3px) rotate(45deg)" : "none", transition: "all 300ms ease" }} />
-              <span style={{ width: 18, height: 1.5, background: c.ink, transform: open ? "translateY(-3px) rotate(-45deg)" : "none", transition: "all 300ms ease" }} />
+              <span style={{ width: 18, height: 1.5, background: open ? "white" : c.ink, transform: open ? "translateY(3px) rotate(45deg)" : "none", transition: "all 300ms ease" }} />
+              <span style={{ width: 18, height: 1.5, background: open ? "white" : c.ink, transform: open ? "translateY(-3px) rotate(-45deg)" : "none", transition: "all 300ms ease" }} />
             </button>
           )}
         </div>
