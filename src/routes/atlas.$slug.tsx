@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getCursoBySlug, type CursoDetalhe } from "@/lib/cursos.functions";
+import { getCursoBySlug, type CursoDetalhe } from "@/lib/atlas.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { SiteNav } from "@/components/SiteNav";
 
@@ -34,7 +34,7 @@ function CursoLanding() {
   if (data === null) return (
     <Wrapper>
       <h1 style={{ fontFamily: serif, fontSize: 36 }}>Conteúdo não encontrado</h1>
-      <Link to="/cursos" style={{ color: c.sageDark }}>← Ver Atlas Materno</Link>
+      <Link to="/atlas" style={{ color: c.sageDark }}>← Ver Atlas Materno</Link>
     </Wrapper>
   );
 
@@ -43,7 +43,7 @@ function CursoLanding() {
     if (data.link_compra_externo) window.open(data.link_compra_externo, "_blank", "noopener,noreferrer");
     else if (!user) navigate({ to: "/login" });
   };
-  const acessar = () => navigate({ to: "/cursos/$slug/aprender", params: { slug: data.slug } });
+  const acessar = () => navigate({ to: "/atlas/$slug/aprender", params: { slug: data.slug } });
 
   return (
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
@@ -53,7 +53,7 @@ function CursoLanding() {
         <section style={{ background: `linear-gradient(135deg, ${c.warm}, ${c.cream})`, padding: "60px 32px 80px", borderBottom: `1px solid ${c.border}` }}>
           <div style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 56, alignItems: "center" }}>
             <div>
-              <Link to="/cursos" style={{ fontSize: 12, color: c.muted, textDecoration: "none", letterSpacing: "0.1em" }}>← ATLAS MATERNO</Link>
+              <Link to="/atlas" style={{ fontSize: 12, color: c.muted, textDecoration: "none", letterSpacing: "0.1em" }}>← ATLAS MATERNO</Link>
               <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, margin: "16px 0 10px" }}>
                 {data.categoria} · {data.nivel}
                 {!data.publicado && <> · <span style={{ color: c.gold }}>RASCUNHO (admin)</span></>}

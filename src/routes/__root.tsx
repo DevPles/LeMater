@@ -7,7 +7,7 @@ import { LangProvider } from "@/lib/translate.context";
 function NotFoundComponent() {
   useEffect(() => {
     if (window.location.pathname === "/atlas" || window.location.pathname === "/conteudos-gratis" || window.location.pathname.startsWith("/atlas-materno")) {
-      window.location.replace("/cursos");
+      window.location.replace("/atlas");
     }
   }, []);
 

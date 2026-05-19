@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { listCursosVitrine, type CursoVitrine } from "@/lib/cursos.functions";
+import { listCursosVitrine, type CursoVitrine } from "@/lib/atlas.functions";
 import { ContentCard } from "@/components/ContentCard";
 import { CursoModal } from "@/components/CursoModal";
 import { SiteNav } from "@/components/SiteNav";
