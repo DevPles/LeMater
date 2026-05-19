@@ -76,8 +76,8 @@ function AtlasPage() {
               <p style={{ fontFamily: serif, fontSize: 22, color: c.muted, margin: "0 0 16px" }}>
                 Você ainda não tem conteúdos liberados.
               </p>
-              <Link to="/conteudos-gratis" style={{ ...btn(c.sageDark), textDecoration: "none", display: "inline-block" }}>
-                Ver catálogo
+              <Link to="/cursos" style={{ ...btn(c.sageDark), textDecoration: "none", display: "inline-block" }}>
+                Ver Atlas Materno
               </Link>
             </div>
           ) : (
@@ -135,7 +135,7 @@ function TopBar({ onSair, isAdmin }: { onSair: () => void; isAdmin: boolean }) {
     <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(250,245,238,0.92)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 44 }} /></Link>
       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <Link to="/conteudos-gratis" style={navLink}>Catálogo</Link>
+        <Link to="/cursos" style={navLink}>Atlas Materno</Link>
         {isAdmin && <Link to="/admin" style={navLink}>Admin</Link>}
         <button onClick={onSair} style={{ ...btn(c.sage), padding: "10px 20px" }}>Sair</button>
       </div>
