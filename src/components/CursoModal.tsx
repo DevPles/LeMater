@@ -158,7 +158,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                 {player.anexos.length > 0 && (
                   <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: 14, marginTop: 12 }}>
                     <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.sageDark, marginBottom: 10 }}>MATERIAIS PARA DOWNLOAD</div>
-                    <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 }}>
+                    <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexWrap: "wrap", gap: 8 }}>
                       {player.anexos.map((a, i) => (
                         <li key={i}>
                           <a
@@ -166,14 +166,16 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                             download={a.nome}
                             target="_blank"
                             rel="noopener noreferrer"
+                            title={a.nome}
+                            aria-label={`Baixar ${a.nome}`}
                             style={{
-                              display: "flex", justifyContent: "space-between", alignItems: "center",
-                              padding: "10px 12px", background: "white", border: `1px solid ${c.border}`,
-                              textDecoration: "none", color: c.ink, fontSize: 14, fontFamily: sans,
+                              display: "inline-flex", alignItems: "center", justifyContent: "center",
+                              width: 40, height: 40, background: "white", border: `1px solid ${c.border}`,
+                              textDecoration: "none", color: c.sageDark, fontSize: 18, fontFamily: sans,
+                              lineHeight: 1,
                             }}
                           >
-                            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.nome}</span>
-                            <span style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.sageDark, marginLeft: 12 }}>Baixar ↓</span>
+                            ↓
                           </a>
                         </li>
                       ))}
