@@ -44,7 +44,7 @@ export function ContentCard(p: ContentCardProps) {
     >
       {p.capa_url && (
         <div style={{ marginBottom: 10, marginLeft: -14, marginRight: -14, marginTop: -14 }}>
-          <img src={p.capa_url} alt="" style={{ width: "100%", height: 80, objectFit: "cover", display: "block" }} />
+          <img src={p.capa_url} alt="" style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
         </div>
       )}
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 6 }}>
