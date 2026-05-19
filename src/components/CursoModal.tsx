@@ -205,32 +205,26 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       )}
 
       {data!.materiais_gratis.length > 0 && (
-        <div style={{ background: c.warm, padding: 14, border: `1px solid ${c.border}`, marginBottom: 20 }}>
-          <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.sageDark, marginBottom: 10 }}>
-            CONTEÚDO PDF PARA DOWNLOAD
-          </div>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, letterSpacing: "0.18em", color: c.sageDark }}>
+            PDF PARA DOWNLOAD
+          </span>
+          <div style={{ display: "flex", gap: 10 }}>
             {data!.materiais_gratis.map((m, i) => (
-              <li key={i}>
-                <a
-                  href={m.url}
-                  download={m.nome}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={m.nome}
-                  aria-label={`Baixar ${m.nome}`}
-                  style={{
-                    display: "inline-flex", alignItems: "center", justifyContent: "center",
-                    width: 40, height: 40, background: "white", border: `1px solid ${c.border}`,
-                    textDecoration: "none", color: c.sageDark, fontSize: 18, fontFamily: sans,
-                    lineHeight: 1,
-                  }}
-                >
-                  ↓
-                </a>
-              </li>
+              <a
+                key={i}
+                href={m.url}
+                download={m.nome}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={m.nome}
+                aria-label={`Baixar ${m.nome}`}
+                style={{ textDecoration: "none", color: c.sageDark, fontSize: 16, lineHeight: 1, fontFamily: sans }}
+              >
+                ↓
+              </a>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
