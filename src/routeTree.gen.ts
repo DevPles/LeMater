@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideosRouteImport } from './routes/videos'
 import { Route as VideochamadaRouteImport } from './routes/videochamada'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ProfissionalRouteImport } from './routes/profissional'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HomeRouteImport } from './routes/home'
@@ -41,6 +42,11 @@ const VideochamadaRoute = VideochamadaRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfissionalRoute = ProfissionalRouteImport.update({
+  id: '/profissional',
+  path: '/profissional',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilRoute = PerfilRouteImport.update({
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
+  '/profissional': typeof ProfissionalRoute
   '/reset-password': typeof ResetPasswordRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
+  '/profissional': typeof ProfissionalRoute
   '/reset-password': typeof ResetPasswordRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
@@ -168,6 +176,7 @@ export interface FileRoutesById {
   '/home': typeof HomeRoute
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
+  '/profissional': typeof ProfissionalRoute
   '/reset-password': typeof ResetPasswordRoute
   '/videochamada': typeof VideochamadaRoute
   '/videos': typeof VideosRoute
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/login'
     | '/perfil'
+    | '/profissional'
     | '/reset-password'
     | '/videochamada'
     | '/videos'
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/login'
     | '/perfil'
+    | '/profissional'
     | '/reset-password'
     | '/videochamada'
     | '/videos'
@@ -228,6 +239,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/login'
     | '/perfil'
+    | '/profissional'
     | '/reset-password'
     | '/videochamada'
     | '/videos'
@@ -249,6 +261,7 @@ export interface RootRouteChildren {
   HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
   PerfilRoute: typeof PerfilRoute
+  ProfissionalRoute: typeof ProfissionalRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   VideochamadaRoute: typeof VideochamadaRoute
   VideosRoute: typeof VideosRoute
@@ -277,6 +290,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profissional': {
+      id: '/profissional'
+      path: '/profissional'
+      fullPath: '/profissional'
+      preLoaderRoute: typeof ProfissionalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil': {
@@ -423,6 +443,7 @@ const rootRouteChildren: RootRouteChildren = {
   HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
   PerfilRoute: PerfilRoute,
+  ProfissionalRoute: ProfissionalRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   VideochamadaRoute: VideochamadaRoute,
   VideosRoute: VideosRoute,
@@ -432,3 +453,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
