@@ -7,7 +7,7 @@ import {
   dashboardStats, listLeads, listAlunos, listCompras,
   liberarAcessoManual, revogarAcesso, reativarAcesso, enviarResetSenha,
 } from "@/lib/admin.functions";
-import ConteudosTab from "@/components/admin/ConteudosTab";
+import AtlasContentTab from "@/components/admin/AtlasContentTab";
 import lemateLogo from "@/assets/logo_monograma.png";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -19,7 +19,7 @@ const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type Tab = "dash" | "conteudos" | "atlas" | "leads" | "alunos" | "compras";
+type Tab = "dash" | "atlas" | "leads" | "alunos" | "compras";
 
 function AdminPage() {
   const { isAdmin, loading } = useAuth();
@@ -39,7 +39,7 @@ function AdminPage() {
       <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 40 }} /></Link>
         <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-          {(["dash","conteudos","atlas","leads","alunos","compras"] as Tab[]).map((t) => (
+          {(["dash","atlas","leads","alunos","compras"] as Tab[]).map((t) => (
             <button key={t} onClick={() => setTab(t)} style={tabBtn(tab === t)}>{tabLabel(t)}</button>
           ))}
         </div>
@@ -47,8 +47,7 @@ function AdminPage() {
       </nav>
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 28px 80px" }}>
         {tab === "dash" && <DashboardTab />}
-        {tab === "conteudos" && <ConteudosTab />}
-        {tab === "atlas" && <AtlasCardsTab />}
+        {tab === "atlas" && <AtlasContentTab />}
         {tab === "leads" && <LeadsTab />}
         {tab === "alunos" && <AlunosTab />}
         {tab === "compras" && <ComprasTab />}
@@ -341,7 +340,7 @@ function btnSm(bg: string): CSSProperties {
 function tabBtn(active: boolean): CSSProperties {
   return { background: active ? c.sageDark : "transparent", color: active ? "white" : c.muted, fontSize: 12, fontWeight: 500, letterSpacing: "0.10em", textTransform: "uppercase", padding: "10px 18px", border: "none", cursor: "pointer", fontFamily: sans };
 }
-function tabLabel(t: Tab) { return t === "dash" ? "Painel" : t === "conteudos" ? "Conteúdos" : t === "atlas" ? "Atlas" : t === "leads" ? "Leads" : t === "alunos" ? "Alunos" : "Compras"; }
+function tabLabel(t: Tab) { return t === "dash" ? "Painel" : t === "atlas" ? "Atlas" : t === "leads" ? "Leads" : t === "alunos" ? "Alunos" : "Compras"; }
 
 function Th({ children }: { children: any }) { return <th style={{ textAlign: "left", padding: "12px 14px", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, fontWeight: 500 }}>{children}</th>; }
 function Td({ children, colSpan }: { children: any; colSpan?: number }) { return <td colSpan={colSpan} style={{ padding: "12px 14px", color: c.ink }}>{children}</td>; }
