@@ -9,6 +9,7 @@ export type CursoVitrine = {
   titulo: string;
   descricao_curta: string | null;
   capa_url: string | null;
+  capa_video_url: string | null;
   categoria: string;
   nivel: string;
   carga_horaria_min: number;
@@ -113,7 +114,7 @@ export const listCursosVitrine = createServerFn({ method: "GET" }).handler(async
   const matriculas = await matriculasAtivas(userId);
 
   let q = supabaseAdmin.from("cursos")
-    .select("id, slug, titulo, descricao_curta, capa_url, categoria, nivel, carga_horaria_min, preco_label, publicado, instrutor_nome")
+    .select("id, slug, titulo, descricao_curta, capa_url, capa_video_url, categoria, nivel, carga_horaria_min, preco_label, publicado, instrutor_nome")
     .order("ordem", { ascending: true })
     .order("created_at", { ascending: false });
   if (!admin) q = q.eq("publicado", true);
@@ -337,6 +338,7 @@ const CursoSchema = z.object({
   descricao_curta: z.string().max(400).nullable().optional(),
   descricao_longa: z.string().max(20000).nullable().optional(),
   capa_url: z.string().nullable().optional(),
+  capa_video_url: z.string().nullable().optional(),
   trailer_url: z.string().nullable().optional(),
   categoria: z.string().max(80).default("geral"),
   nivel: z.string().max(40).default("iniciante"),
