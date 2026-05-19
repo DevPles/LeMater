@@ -269,17 +269,23 @@ function LoginForm({
       <FormHeader title="Entrar" subtitle="Acesse seus conteúdos." />
       <Field label="E-mail" type="email" value={email} onChange={onEmailChange} autoComplete="email" required />
       <PasswordField value={password} show={showPassword} onChange={onPasswordChange} onToggle={onTogglePassword} />
-      <button className="web-secondary-button forgot-button" type="button" onClick={onRecover}>
+      <button className={mobile ? "mobile-link" : "web-secondary-button forgot-button"} type="button" onClick={onRecover}>
         Esqueci minha senha
       </button>
-      <div className="web-form-actions">
-        <button className="web-secondary-button" type="button" onClick={onBack}>
-          Voltar
-        </button>
+      {mobile ? (
         <button className="web-primary-button" type="submit" disabled={loading}>
           {loading ? "..." : "Entrar"}
         </button>
-      </div>
+      ) : (
+        <div className="web-form-actions">
+          <button className="web-secondary-button" type="button" onClick={onBack}>
+            Voltar
+          </button>
+          <button className="web-primary-button" type="submit" disabled={loading}>
+            {loading ? "..." : "Entrar"}
+          </button>
+        </div>
+      )}
     </form>
   );
 }
