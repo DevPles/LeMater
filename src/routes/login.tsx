@@ -428,8 +428,8 @@ const css = `
 }
 
 .web-login-card {
-  width: min(760px, calc(100vw - 64px));
-  min-height: 460px;
+  width: min(640px, calc(100vw - 64px));
+  min-height: 400px;
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -462,7 +462,7 @@ const css = `
 
 .web-form-track {
   width: 100%;
-  min-height: 460px;
+  min-height: 400px;
   display: grid;
   grid-template-columns: 50% 50%;
 }
