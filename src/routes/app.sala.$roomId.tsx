@@ -17,7 +17,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { gerarTokenSala } from "@/utils/livekit.functions";
 import { ConsultationNotesPanel } from "@/components/profissional/ConsultationNotesPanel";
 
-export const Route = createFileRoute("/sala/$roomId")({
+export const Route = createFileRoute("/app/sala/$roomId")({
   head: () => ({
     meta: [
       { title: "Sala de Consulta — MãeDigital" },
@@ -204,7 +204,7 @@ function SalaPage() {
     setToken(null);
     setWsUrl(null);
     setTempo(0);
-    navigate({ to: isProfDono ? "/profissional" : "/videochamada" });
+    navigate({ to: isProfDono ? "/app/profissional" : "/app/videochamada" });
   }, [limpar, navigate, isProfDono, finalizarGravacao]);
 
   const entrarSala = useCallback(async () => {
@@ -332,7 +332,7 @@ function SalaPage() {
 
             <button
               onClick={() =>
-                navigate({ to: isProfDono ? "/profissional" : "/videochamada" })
+                navigate({ to: isProfDono ? "/app/profissional" : "/app/videochamada" })
               }
               className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >

@@ -1,11 +1,11 @@
 import { Link, useLocation } from "@tanstack/react-router";
 
 const navItems = [
-  { to: "/home", label: "Início" },
-  { to: "/videos", label: "Reels" },
-  { to: "/videochamada", label: "Consulta" },
-  { to: "/cartao", label: "Cartão" },
-  { to: "/alertas", label: "Alertas" },
+  { to: "/app/home", label: "Início" },
+  { to: "/app/videos", label: "Reels" },
+  { to: "/app/videochamada", label: "Consulta" },
+  { to: "/app/cartao", label: "Cartão" },
+  { to: "/app/alertas", label: "Alertas" },
 ] as const;
 
 export function BottomNav() {

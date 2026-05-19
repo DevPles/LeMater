@@ -271,7 +271,7 @@ export default function RegistrationModal({
         password: senhaCadastro,
         options: {
           data: { nome: nome.trim(), dum: dumIso ?? "", cpf: normalizeCpf(cpf) },
-          emailRedirectTo: window.location.origin + "/home",
+          emailRedirectTo: window.location.origin + "/app/home",
         },
       });
       if (error) {
@@ -306,7 +306,7 @@ export default function RegistrationModal({
           .eq("user_id", sess.session.user.id);
       }
       onOpenChange(false);
-      navigate({ to: "/home" });
+      navigate({ to: "/app/home" });
     } catch (e) {
       setSubmitErro((e as Error).message);
     } finally {
@@ -572,14 +572,14 @@ export default function RegistrationModal({
 
                     // Detecta papel do usuário para direcionar à área correta
                     const userId = signInData.user?.id;
-                    let destino: "/profissional" | "/home" = "/home";
+                    let destino: "/app/profissional" | "/app/home" = "/app/home";
                     if (userId) {
                       const { data: roles } = await supabase
                         .from("user_roles")
                         .select("role")
                         .eq("user_id", userId);
                       const list = (roles ?? []).map((r) => r.role as string);
-                      if (list.includes("profissional")) destino = "/profissional";
+                      if (list.includes("profissional")) destino = "/app/profissional";
                     }
                     navigate({ to: destino });
                   } catch (e) {

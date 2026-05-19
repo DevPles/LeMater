@@ -6,7 +6,7 @@ import { LoadingMessage } from "@/components/LoadingMessage";
 import { supabase } from "@/integrations/supabase/client";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 
-export const Route = createFileRoute("/alertas")({
+export const Route = createFileRoute("/app/alertas")({
   head: () => ({
     meta: [
       { title: "Alertas — MãeDigital" },

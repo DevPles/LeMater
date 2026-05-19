@@ -8,7 +8,7 @@ import { ProntuarioConsultaModal } from "@/components/ProntuarioConsultaModal";
 import { LoadingMessage } from "@/components/LoadingMessage";
 import { NotificacoesCard } from "@/components/NotificacoesCard";
 
-export const Route = createFileRoute("/profissional")({
+export const Route = createFileRoute("/app/profissional")({
   head: () => ({
     meta: [
       { title: "Portal do Profissional — MãeDigital" },
@@ -411,7 +411,7 @@ function Dashboard({ session }: { session: Session }) {
                       </span>
                       {podeEntrarSala(s) && (
                         <button
-                          onClick={() => navigate({ to: "/sala/$roomId", params: { roomId: s.room_id! } })}
+                          onClick={() => navigate({ to: "/app/sala/$roomId", params: { roomId: s.room_id! } })}
                           className="text-[10px] font-bold bg-primary text-primary-foreground px-3 py-1 rounded-full hover:opacity-90"
                         >
                           Entrar na sala

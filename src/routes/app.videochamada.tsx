@@ -9,7 +9,7 @@ import { LoadingMessage } from "@/components/LoadingMessage";
 const SALA_ANTECEDENCIA_MS = 15 * 60 * 1000;
 const SALA_TOLERANCIA_MS = 30 * 60 * 1000;
 
-export const Route = createFileRoute("/videochamada")({
+export const Route = createFileRoute("/app/videochamada")({
   head: () => ({
     meta: [
       { title: "Agendamentos — MãeDigital" },
@@ -242,7 +242,7 @@ function AgendamentosPage() {
                           if (!podeEntrar) return null;
                           return (
                             <button
-                              onClick={() => navigate({ to: "/sala/$roomId", params: { roomId: s.room_id! } })}
+                              onClick={() => navigate({ to: "/app/sala/$roomId", params: { roomId: s.room_id! } })}
                               className="bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-full hover:opacity-90"
                             >
                               Entrar na consulta

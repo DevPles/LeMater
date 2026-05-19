@@ -6,7 +6,7 @@ import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import { LoadingMessage } from "@/components/LoadingMessage";
 import { NotificacoesCard } from "@/components/NotificacoesCard";
 
-export const Route = createFileRoute("/perfil")({
+export const Route = createFileRoute("/app/perfil")({
   head: () => ({
     meta: [
       { title: "Meu Perfil — MãeDigital" },
@@ -267,7 +267,7 @@ function PerfilPage() {
       >
         <div className="flex items-center gap-3">
           <Link
-            to="/home"
+            to="/app/home"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border border-border bg-card text-foreground hover:bg-muted transition-colors shadow-sm"
           >
             Voltar
