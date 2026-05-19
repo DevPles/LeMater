@@ -8,6 +8,17 @@ import {
   liberarAcessoManual, revogarAcesso, reativarAcesso, enviarResetSenha,
 } from "@/lib/admin.functions";
 import AtlasContentTab from "@/components/admin/AtlasContentTab";
+import MateriaisTab from "@/components/admin/MateriaisTab";
+import CursosTab from "@/components/admin/CursosTab";
+import { TelasTab } from "@/components/admin/TelasTab";
+import { ConsultasTab } from "@/components/admin/ConsultasTab";
+import { GravacoesTab } from "@/components/admin/GravacoesTab";
+import { ProfissionaisTab } from "@/components/admin/ProfissionaisTab";
+import { UsuariosTab } from "@/components/admin/UsuariosTab";
+import { AcessosUsuariosTab } from "@/components/admin/AcessosUsuariosTab";
+import { DadosClinicosTab } from "@/components/admin/DadosClinicosTab";
+import { ParametrosTab } from "@/components/admin/ParametrosTab";
+import { RelatoriosEpidemiologicosTab } from "@/components/admin/RelatoriosEpidemiologicosTab";
 import lemateLogo from "@/assets/logo_monograma.png";
 
 export const Route = createFileRoute("/_authenticated/admin")({
