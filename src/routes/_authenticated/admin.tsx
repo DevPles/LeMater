@@ -8,6 +8,17 @@ import {
   liberarAcessoManual, revogarAcesso, reativarAcesso, enviarResetSenha,
 } from "@/lib/admin.functions";
 import AtlasContentTab from "@/components/admin/AtlasContentTab";
+import MateriaisTab from "@/components/admin/MateriaisTab";
+import CursosTab from "@/components/admin/CursosTab";
+import { TelasTab } from "@/components/admin/TelasTab";
+import { ConsultasTab } from "@/components/admin/ConsultasTab";
+import { GravacoesTab } from "@/components/admin/GravacoesTab";
+import { ProfissionaisTab } from "@/components/admin/ProfissionaisTab";
+import { UsuariosTab } from "@/components/admin/UsuariosTab";
+import { AcessosUsuariosTab } from "@/components/admin/AcessosUsuariosTab";
+import { DadosClinicosTab } from "@/components/admin/DadosClinicosTab";
+import { ParametrosTab } from "@/components/admin/ParametrosTab";
+import { RelatoriosEpidemiologicosTab } from "@/components/admin/RelatoriosEpidemiologicosTab";
 import lemateLogo from "@/assets/logo_monograma.png";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -19,7 +30,39 @@ const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type Tab = "dash" | "atlas" | "leads" | "alunos" | "compras";
+type Tab =
+  | "dash"
+  | "atlas" | "materiais" | "cursos" | "telas"
+  | "consultas" | "gravacoes" | "profissionais"
+  | "dados" | "parametros" | "relatorios"
+  | "leads" | "alunos" | "usuarios" | "acessos" | "compras";
+
+const TAB_GROUPS: { label: string; tabs: { id: Tab; label: string }[] }[] = [
+  { label: "Painel", tabs: [{ id: "dash", label: "Painel" }] },
+  { label: "Conteúdos", tabs: [
+    { id: "atlas", label: "Atlas" },
+    { id: "materiais", label: "Materiais" },
+    { id: "cursos", label: "Cursos" },
+    { id: "telas", label: "Telas" },
+  ]},
+  { label: "Operação", tabs: [
+    { id: "consultas", label: "Consultas" },
+    { id: "gravacoes", label: "Gravações" },
+    { id: "profissionais", label: "Profissionais" },
+  ]},
+  { label: "Clínica", tabs: [
+    { id: "dados", label: "Dados clínicos" },
+    { id: "parametros", label: "Parâmetros" },
+    { id: "relatorios", label: "Relatórios" },
+  ]},
+  { label: "Pessoas", tabs: [
+    { id: "leads", label: "Leads" },
+    { id: "alunos", label: "Alunos" },
+    { id: "usuarios", label: "Gestantes" },
+    { id: "acessos", label: "Acessos" },
+    { id: "compras", label: "Compras" },
+  ]},
+];
 
 function AdminPage() {
   const { isAdmin, loading } = useAuth();
@@ -36,11 +79,16 @@ function AdminPage() {
 
   return (
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
-      <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 40 }} /></Link>
-        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-          {(["dash","atlas","leads","alunos","compras"] as Tab[]).map((t) => (
-            <button key={t} onClick={() => setTab(t)} style={tabBtn(tab === t)}>{tabLabel(t)}</button>
+      <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "10px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 36 }} /></Link>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", flex: 1, justifyContent: "center", alignItems: "center" }}>
+          {TAB_GROUPS.map((group) => (
+            <div key={group.label} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, background: "rgba(255,255,255,0.6)", border: `1px solid ${c.border}` }}>
+              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", color: c.muted, marginRight: 4 }}>{group.label}</span>
+              {group.tabs.map((t) => (
+                <button key={t.id} onClick={() => setTab(t.id)} style={tabBtn(tab === t.id)}>{t.label}</button>
+              ))}
+            </div>
           ))}
         </div>
         <button onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/app" }); }} style={btn(c.sage)}>Sair</button>
@@ -48,8 +96,20 @@ function AdminPage() {
       <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 28px 80px" }}>
         {tab === "dash" && <DashboardTab />}
         {tab === "atlas" && <AtlasContentTab />}
+        {tab === "materiais" && <MateriaisTab />}
+        {tab === "cursos" && <CursosTab />}
+        {tab === "telas" && <TelasTab />}
+        {tab === "consultas" && <ConsultasTab />}
+        {tab === "gravacoes" && <GravacoesTab />}
+        {tab === "profissionais" && <ProfissionaisTab />}
+        {tab === "dados" && <DadosClinicosTab />}
+        {tab === "parametros" && <ParametrosTab />}
+        {tab === "relatorios" && <RelatoriosEpidemiologicosTab />}
         {tab === "leads" && <LeadsTab />}
         {tab === "alunos" && <AlunosTab />}
+        {tab === "usuarios" && <UsuariosTab />}
+        {tab === "acessos" && <AcessosUsuariosTab />}
+        {tab === "compras" && <ComprasTab />}
         {tab === "compras" && <ComprasTab />}
       </main>
     </div>
@@ -340,7 +400,7 @@ function btnSm(bg: string): CSSProperties {
 function tabBtn(active: boolean): CSSProperties {
   return { background: active ? c.sageDark : "transparent", color: active ? "white" : c.muted, fontSize: 12, fontWeight: 500, letterSpacing: "0.10em", textTransform: "uppercase", padding: "10px 18px", border: "none", cursor: "pointer", fontFamily: sans };
 }
-function tabLabel(t: Tab) { return t === "dash" ? "Painel" : t === "atlas" ? "Atlas" : t === "leads" ? "Leads" : t === "alunos" ? "Alunos" : "Compras"; }
+
 
 function Th({ children }: { children: any }) { return <th style={{ textAlign: "left", padding: "12px 14px", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, fontWeight: 500 }}>{children}</th>; }
 function Td({ children, colSpan }: { children: any; colSpan?: number }) { return <td colSpan={colSpan} style={{ padding: "12px 14px", color: c.ink }}>{children}</td>; }
