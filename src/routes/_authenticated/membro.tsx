@@ -11,7 +11,7 @@ import {
 } from "@/lib/membro.functions";
 import lemateLogo from "@/assets/lemater-logo.png";
 
-export const Route = createFileRoute("/_authenticated/membro")({
+export const Route = createFileRoute("/_authenticated/app/membro")({
   head: () => ({
     meta: [{ title: "Minha Área · Le Mater" }],
     links: [{
@@ -404,9 +404,9 @@ function TopBar({ onSair, admin }: { onSair: () => void; admin: boolean }) {
     <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "rgba(250,245,238,0.92)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "16px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 44 }} /></Link>
       <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-        <Link to="/membro" style={navLink}>Minha área</Link>
+        <Link to="/app/membro" style={navLink}>Minha área</Link>
         <Link to="/atlas" style={navLink}>Atlas Materno</Link>
-        {admin && <Link to="/admin" style={navLink}>Admin</Link>}
+        {admin && <Link to="/app/admin" style={navLink}>Admin</Link>}
         <button onClick={onSair} style={{ ...btn(c.sage), padding: "10px 20px" }}>Sair</button>
       </div>
     </nav>
