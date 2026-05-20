@@ -1,10 +1,28 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, Navigate, createRootRoute, HeadContent, Scripts, useLocation } from "@tanstack/react-router";
 import { useAutoTranslate } from "@/hooks/useAutoTranslate";
 import appCss from "../styles.css?url";
 import { LangProvider } from "@/lib/translate.context";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
+  const location = useLocation();
+  const legacyAppRoutes: Record<string, string> = {
+    "/home": "/app/home",
+    "/gestacao": "/app/gestacao",
+    "/cartao": "/app/cartao",
+    "/alertas": "/app/alertas",
+    "/perfil": "/app/perfil",
+    "/profissional": "/app/profissional",
+    "/videos": "/app/videos",
+    "/videochamada": "/app/videochamada",
+    "/reset-password": "/app/reset-password",
+    "/admin": "/app/admin",
+    "/membro": "/app/membro",
+  };
+  const redirectTo = legacyAppRoutes[location.pathname];
+
+  if (redirectTo) return <Navigate to={redirectTo} replace />;
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
