@@ -8,9 +8,6 @@ import {
   liberarAcessoManual, revogarAcesso, reativarAcesso, enviarResetSenha,
 } from "@/lib/admin.functions";
 import AtlasContentTab from "@/components/admin/AtlasContentTab";
-import MateriaisTab from "@/components/admin/MateriaisTab";
-import CursosTab from "@/components/admin/CursosTab";
-import { TelasTab } from "@/components/admin/TelasTab";
 import { ConsultasTab } from "@/components/admin/ConsultasTab";
 import { GravacoesTab } from "@/components/admin/GravacoesTab";
 import { ProfissionaisTab } from "@/components/admin/ProfissionaisTab";
@@ -32,7 +29,7 @@ const sans = "'DM Sans', sans-serif";
 
 type Tab =
   | "dash"
-  | "atlas" | "materiais" | "cursos" | "telas"
+  | "atlas"
   | "consultas" | "gravacoes" | "profissionais"
   | "dados" | "parametros" | "relatorios"
   | "leads" | "alunos" | "usuarios" | "acessos" | "compras";
@@ -41,9 +38,6 @@ const TAB_GROUPS: { label: string; tabs: { id: Tab; label: string }[] }[] = [
   { label: "Painel", tabs: [{ id: "dash", label: "Painel" }] },
   { label: "Conteúdos", tabs: [
     { id: "atlas", label: "Atlas" },
-    { id: "materiais", label: "Materiais" },
-    { id: "cursos", label: "Cursos" },
-    { id: "telas", label: "Telas" },
   ]},
   { label: "Operação", tabs: [
     { id: "consultas", label: "Consultas" },
@@ -165,9 +159,6 @@ function AdminPage() {
         <main style={{ maxWidth: 1280, width: "100%", margin: "0 auto", padding: "28px 24px 80px", flex: 1 }}>
           {tab === "dash" && <DashboardTab />}
           {tab === "atlas" && <AtlasContentTab />}
-          {tab === "materiais" && <MateriaisTab />}
-          {tab === "cursos" && <CursosTab />}
-          {tab === "telas" && <TelasTab />}
           {tab === "consultas" && <ConsultasTab />}
           {tab === "gravacoes" && <GravacoesTab />}
           {tab === "profissionais" && <ProfissionaisTab />}
