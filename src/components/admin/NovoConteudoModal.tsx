@@ -5,22 +5,95 @@ import { adminUpsertCurso, adminUpsertModulo, adminUpsertAula } from "@/lib/curs
 import { upsertMaterial } from "@/lib/admin.functions";
 import { ContentCard } from "@/components/ContentCard";
 
-const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48", gold: "#B8923A" };
+const c = {
+  cream: "#FAF5EE",
+  warm: "#F5EDE0",
+  sage: "#5C8A6E",
+  sageDark: "#2D5A42",
+  ink: "#1C1C1A",
+  muted: "#6B6560",
+  border: "#E8DDD2",
+  danger: "#B23A48",
+  gold: "#B8923A",
+};
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-const inp: CSSProperties = { width: "100%", background: "white", border: `1px solid ${c.border}`, padding: "10px 12px", fontSize: 14, fontFamily: sans, color: c.ink, outline: "none" };
-const noAuto = { autoComplete: "off", autoCorrect: "off", autoCapitalize: "off", spellCheck: false } as const;
-const modalBg: CSSProperties = { position: "fixed", inset: 0, background: "rgba(28,28,26,0.65)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 };
-const btn = (bg: string): CSSProperties => ({ background: bg, color: "white", fontSize: 12, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", padding: "12px 22px", border: "none", cursor: "pointer", fontFamily: sans });
-const btnSm = (bg: string): CSSProperties => ({ background: bg, color: "white", fontSize: 11, fontWeight: 500, letterSpacing: "0.08em", padding: "6px 12px", border: "none", cursor: "pointer", fontFamily: sans });
+const inp: CSSProperties = {
+  width: "100%",
+  background: "white",
+  border: `1px solid ${c.border}`,
+  padding: "10px 12px",
+  fontSize: 14,
+  fontFamily: sans,
+  color: c.ink,
+  outline: "none",
+};
+const noAuto = {
+  autoComplete: "off",
+  autoCorrect: "off",
+  autoCapitalize: "off",
+  spellCheck: false,
+} as const;
+const modalBg: CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(28,28,26,0.65)",
+  zIndex: 300,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 16,
+};
+const btn = (bg: string): CSSProperties => ({
+  background: bg,
+  color: "white",
+  fontSize: 12,
+  fontWeight: 500,
+  letterSpacing: "0.12em",
+  textTransform: "uppercase",
+  padding: "12px 22px",
+  border: "none",
+  cursor: "pointer",
+  fontFamily: sans,
+});
+const btnSm = (bg: string): CSSProperties => ({
+  background: bg,
+  color: "white",
+  fontSize: 11,
+  fontWeight: 500,
+  letterSpacing: "0.08em",
+  padding: "6px 12px",
+  border: "none",
+  cursor: "pointer",
+  fontFamily: sans,
+});
 const Field = ({ label, children }: any) => (
   <label style={{ display: "block" }}>
-    <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6 }}>{label}</div>
+    <div
+      style={{
+        fontSize: 11,
+        letterSpacing: "0.1em",
+        textTransform: "uppercase",
+        color: c.muted,
+        marginBottom: 6,
+      }}
+    >
+      {label}
+    </div>
     {children}
   </label>
 );
-const sectionTitle: CSSProperties = { fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 12, borderTop: `1px solid ${c.border}`, paddingTop: 16 };
+const sectionTitle: CSSProperties = {
+  fontSize: 11,
+  letterSpacing: "0.16em",
+  textTransform: "uppercase",
+  color: c.sage,
+  fontWeight: 600,
+  marginBottom: 12,
+  borderTop: `1px solid ${c.border}`,
+  paddingTop: 16,
+};
 
 type Tipo = "curso" | "material" | "servico";
 
@@ -28,19 +101,26 @@ type AulaLocal = {
   titulo: string;
   descricao: string;
   tipo: "video" | "pdf" | "texto";
-  video_url: string;            // URL externa
-  videoFile: File | null;       // upload
+  video_url: string; // URL externa
+  videoFile: File | null; // upload
   pdfFile: File | null;
   conteudo_html: string;
   duracao_min: number;
   previa_gratis: boolean;
-  anexos: File[];               // múltiplos PDFs/arquivos para download
+  anexos: File[]; // múltiplos PDFs/arquivos para download
 };
 
 const aulaVazia = (): AulaLocal => ({
-  titulo: "", descricao: "", tipo: "video",
-  video_url: "", videoFile: null, pdfFile: null, conteudo_html: "",
-  duracao_min: 0, previa_gratis: false, anexos: [],
+  titulo: "",
+  descricao: "",
+  tipo: "video",
+  video_url: "",
+  videoFile: null,
+  pdfFile: null,
+  conteudo_html: "",
+  duracao_min: 0,
+  previa_gratis: false,
+  anexos: [],
 });
 
 export default function NovoConteudoModal({
@@ -62,36 +142,57 @@ export default function NovoConteudoModal({
   const upAula = useServerFn(adminUpsertAula);
 
   const [curso, setCurso] = useState({
-    titulo: "", slug: "", descricao_curta: "", descricao_longa: "",
+    titulo: "",
+    slug: "",
+    descricao_curta: "",
+    descricao_longa: "",
     capa: null as File | null,
     capaVideo: null as File | null,
     trailer_url: "",
-    categoria: "geral", nivel: "iniciante", carga_horaria_min: 0,
+    categoria: "geral",
+    nivel: "iniciante",
+    carga_horaria_min: 0,
     area: "gratis" as "gratis" | "pago",
-    preco_centavos: 0, preco_label: "", link_compra_externo: "", plataforma_venda: "",
-    instrutor_nome: "", instrutor_bio: "", instrutor_foto: "",
+    preco_centavos: 0,
+    preco_label: "",
+    link_compra_externo: "",
+    plataforma_venda: "",
+    instrutor_nome: "",
+    instrutor_bio: "",
+    instrutor_foto: "",
     pdfsGratis: [] as File[],
-    publicado: false, ordem: 0,
+    publicado: false,
+    ordem: 0,
   });
   const [aulas, setAulas] = useState<AulaLocal[]>([aulaVazia()]);
 
   // ---- MATERIAL / SERVIÇO ----
   const upMaterial = useServerFn(upsertMaterial);
   const [material, setMaterial] = useState({
-    titulo: "", descricao: "",
+    titulo: "",
+    descricao: "",
     categoria: "Concepção",
     tipo: "pdf" as "pdf" | "video_externo" | "video_upload" | "artigo",
     area: "gratis" as "gratis" | "pago",
-    conteudo_url: "", conteudo_html: "",
+    conteudo_url: "",
+    conteudo_html: "",
     arquivo: null as File | null,
     capa: null as File | null,
-    link_compra: "", plataforma_venda: "", preco_label: "", cta_label: "",
-    publicado: false, ordem: 0,
+    link_compra: "",
+    plataforma_venda: "",
+    preco_label: "",
+    cta_label: "",
+    publicado: false,
+    ordem: 0,
   });
 
   const syncPreviewFromForm = (form: HTMLFormElement) => {
     const value = (name: string) => {
-      const field = form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+      const field = form.elements.namedItem(name) as
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | HTMLSelectElement
+        | null;
       return field?.value ?? "";
     };
 
@@ -124,9 +225,11 @@ export default function NovoConteudoModal({
       ...prev,
       titulo: value(`${prefix}-titulo`),
       descricao: value(`${prefix}-descricao`),
-      categoria: tipo === "servico" ? prev.categoria : value("material-categoria") || prev.categoria,
+      categoria:
+        tipo === "servico" ? prev.categoria : value("material-categoria") || prev.categoria,
       tipo: (value(`${prefix}-formato`) || prev.tipo) as typeof prev.tipo,
-      area: tipo === "servico" ? "pago" : ((value("material-area") || prev.area) as "gratis" | "pago"),
+      area:
+        tipo === "servico" ? "pago" : ((value("material-area") || prev.area) as "gratis" | "pago"),
       conteudo_url: value(`${prefix}-video-url`),
       conteudo_html: value(`${prefix}-conteudo-html`),
       link_compra: value(`${prefix}-link`),
@@ -144,7 +247,10 @@ export default function NovoConteudoModal({
       if (tipo === "curso") {
         await salvarCurso();
       } else {
-        await salvarMaterial(tipo === "servico" ? "Serviço" : material.categoria, tipo === "servico");
+        await salvarMaterial(
+          tipo === "servico" ? "Serviço" : material.categoria,
+          tipo === "servico",
+        );
       }
       onSaved();
       onClose();
@@ -157,26 +263,39 @@ export default function NovoConteudoModal({
   };
 
   const salvarCurso = async () => {
-    if (!curso.titulo || !curso.slug) { throw new Error("Título e slug são obrigatórios"); }
+    if (!curso.titulo || !curso.slug) {
+      throw new Error("Título e slug são obrigatórios");
+    }
 
-    // 1. Upload capa
+    // 1. Upload capa / vídeo selecionado no campo de capa
     setBusyMsg("Enviando capa…");
     let capa_url: string | null = null;
+    let capa_video_url: string | null = null;
     if (curso.capa) {
       const path = `cursos/${Date.now()}-${curso.capa.name.replace(/[^\w.-]/g, "_")}`;
-      const { data: up, error } = await supabase.storage.from("materiais-capas").upload(path, curso.capa);
+      const { data: up, error } = await supabase.storage
+        .from("materiais-capas")
+        .upload(path, curso.capa);
       if (error) throw new Error("Falha capa: " + error.message);
-      capa_url = supabase.storage.from("materiais-capas").getPublicUrl(up.path).data.publicUrl;
+      const publicUrl = supabase.storage.from("materiais-capas").getPublicUrl(up.path)
+        .data.publicUrl;
+      if (isVideoFile(curso.capa)) {
+        capa_video_url = publicUrl;
+      } else {
+        capa_url = publicUrl;
+      }
     }
 
     // 1b. Upload vídeo de capa (loop)
-    let capa_video_url: string | null = null;
     if (curso.capaVideo) {
       setBusyMsg("Enviando vídeo de capa…");
       const path = `cursos/video/${Date.now()}-${curso.capaVideo.name.replace(/[^\w.-]/g, "_")}`;
-      const { data: up, error } = await supabase.storage.from("materiais-capas").upload(path, curso.capaVideo);
+      const { data: up, error } = await supabase.storage
+        .from("materiais-capas")
+        .upload(path, curso.capaVideo);
       if (error) throw new Error("Falha vídeo de capa: " + error.message);
-      capa_video_url = supabase.storage.from("materiais-capas").getPublicUrl(up.path).data.publicUrl;
+      capa_video_url = supabase.storage.from("materiais-capas").getPublicUrl(up.path)
+        .data.publicUrl;
     }
 
     // 2. Upload PDFs grátis (nível do curso)
@@ -192,31 +311,43 @@ export default function NovoConteudoModal({
     // 3. Upsert curso
     setBusyMsg("Criando curso…");
     const ehGratis = curso.area === "gratis";
-    const cursoRow = await upCurso({ data: {
-      titulo: curso.titulo, slug: curso.slug,
-      descricao_curta: curso.descricao_curta || null,
-      descricao_longa: curso.descricao_longa || null,
-      capa_url, capa_video_url, trailer_url: curso.trailer_url || null,
-      categoria: curso.categoria, nivel: curso.nivel,
-      carga_horaria_min: Number(curso.carga_horaria_min) || 0,
-      preco_centavos: ehGratis ? 0 : (Number(curso.preco_centavos) || 0),
-      preco_label: ehGratis ? "Grátis" : (curso.preco_label || null),
-      link_compra_externo: ehGratis ? null : (curso.link_compra_externo || null),
-      plataforma_venda: ehGratis ? null : (curso.plataforma_venda || null),
-      publicado: curso.publicado, ordem: Number(curso.ordem) || 0,
-      instrutor_nome: curso.instrutor_nome || null,
-      instrutor_bio: curso.instrutor_bio || null,
-      instrutor_foto: curso.instrutor_foto || null,
-      materiais_gratis,
-    } });
+    const cursoRow = await upCurso({
+      data: {
+        titulo: curso.titulo,
+        slug: curso.slug,
+        descricao_curta: curso.descricao_curta || null,
+        descricao_longa: curso.descricao_longa || null,
+        capa_url,
+        capa_video_url,
+        trailer_url: curso.trailer_url || null,
+        categoria: curso.categoria,
+        nivel: curso.nivel,
+        carga_horaria_min: Number(curso.carga_horaria_min) || 0,
+        preco_centavos: ehGratis ? 0 : Number(curso.preco_centavos) || 0,
+        preco_label: ehGratis ? "Grátis" : curso.preco_label || null,
+        link_compra_externo: ehGratis ? null : curso.link_compra_externo || null,
+        plataforma_venda: ehGratis ? null : curso.plataforma_venda || null,
+        publicado: curso.publicado,
+        ordem: Number(curso.ordem) || 0,
+        instrutor_nome: curso.instrutor_nome || null,
+        instrutor_bio: curso.instrutor_bio || null,
+        instrutor_foto: curso.instrutor_foto || null,
+        materiais_gratis,
+      },
+    });
 
     // 4. Criar módulo padrão "Conteúdo" se houver aulas
     const aulasValidas = aulas.filter((a) => a.titulo.trim());
     if (aulasValidas.length === 0) return;
     setBusyMsg("Criando módulo…");
-    const moduloRow = await upModulo({ data: {
-      curso_id: cursoRow.id, titulo: "Conteúdo", descricao: null, ordem: 0,
-    } });
+    const moduloRow = await upModulo({
+      data: {
+        curso_id: cursoRow.id,
+        titulo: "Conteúdo",
+        descricao: null,
+        ordem: 0,
+      },
+    });
 
     // 5. Para cada aula: upload + criação
     for (let i = 0; i < aulasValidas.length; i++) {
@@ -228,7 +359,9 @@ export default function NovoConteudoModal({
       if (a.tipo === "video") {
         if (a.videoFile) {
           const path = `${Date.now()}-${a.videoFile.name.replace(/[^\w.-]/g, "_")}`;
-          const { error } = await supabase.storage.from("materiais-video").upload(path, a.videoFile);
+          const { error } = await supabase.storage
+            .from("materiais-video")
+            .upload(path, a.videoFile);
           if (error) throw new Error(`Falha vídeo aula "${a.titulo}": ` + error.message);
           video_url = path;
         } else if (a.video_url.trim()) {
@@ -249,15 +382,21 @@ export default function NovoConteudoModal({
         materiais_extras.push({ nome: f.name, path });
       }
 
-      await upAula({ data: {
-        modulo_id: moduloRow.id,
-        titulo: a.titulo, descricao: a.descricao || null,
-        tipo: a.tipo, video_url, pdf_url,
-        conteudo_html: a.tipo === "texto" ? (a.conteudo_html || null) : null,
-        duracao_min: Number(a.duracao_min) || 0,
-        ordem: i, previa_gratis: ehGratis ? true : a.previa_gratis,
-        materiais_extras,
-      } });
+      await upAula({
+        data: {
+          modulo_id: moduloRow.id,
+          titulo: a.titulo,
+          descricao: a.descricao || null,
+          tipo: a.tipo,
+          video_url,
+          pdf_url,
+          conteudo_html: a.tipo === "texto" ? a.conteudo_html || null : null,
+          duracao_min: Number(a.duracao_min) || 0,
+          ordem: i,
+          previa_gratis: ehGratis ? true : a.previa_gratis,
+          materiais_extras,
+        },
+      });
     }
   };
 
@@ -277,34 +416,77 @@ export default function NovoConteudoModal({
     let capa_url: string | null = null;
     if (material.capa) {
       const path = `${Date.now()}-${material.capa.name.replace(/[^\w.-]/g, "_")}`;
-      const { data: up, error } = await supabase.storage.from("materiais-capas").upload(path, material.capa);
+      const { data: up, error } = await supabase.storage
+        .from("materiais-capas")
+        .upload(path, material.capa);
       if (error) throw new Error("Falha capa: " + error.message);
       capa_url = supabase.storage.from("materiais-capas").getPublicUrl(up.path).data.publicUrl;
     }
 
     setBusyMsg("Salvando…");
-    await upMaterial({ data: {
-      titulo: material.titulo, descricao: material.descricao || null,
-      categoria, tipo: material.tipo,
-      area: isServico ? "pago" : material.area,
-      acesso: "publico",
-      conteudo_url, conteudo_html: material.conteudo_html || null, capa_url,
-      link_compra: material.link_compra || null,
-      plataforma_venda: material.plataforma_venda || null,
-      preco_label: material.preco_label || null,
-      cta_label: material.cta_label || (isServico ? "Agendar" : null),
-      ordem: Number(material.ordem) || 0, publicado: material.publicado,
-    } });
+    await upMaterial({
+      data: {
+        titulo: material.titulo,
+        descricao: material.descricao || null,
+        categoria,
+        tipo: material.tipo,
+        area: isServico ? "pago" : material.area,
+        acesso: "publico",
+        conteudo_url,
+        conteudo_html: material.conteudo_html || null,
+        capa_url,
+        link_compra: material.link_compra || null,
+        plataforma_venda: material.plataforma_venda || null,
+        preco_label: material.preco_label || null,
+        cta_label: material.cta_label || (isServico ? "Agendar" : null),
+        ordem: Number(material.ordem) || 0,
+        publicado: material.publicado,
+      },
+    });
   };
 
   // ===== UI =====
   return (
     <div onClick={busy ? undefined : onClose} style={modalBg}>
-      <form autoComplete="off" onSubmit={(e) => e.preventDefault()} onInputCapture={(e) => syncPreviewFromForm(e.currentTarget)} onChangeCapture={(e) => syncPreviewFromForm(e.currentTarget)} onClick={(e) => e.stopPropagation()} style={{ background: c.cream, maxWidth: 1280, width: "100%", maxHeight: "94vh", overflow: "hidden", border: `1px solid ${c.border}`, display: "flex", flexDirection: "column" }}>
+      <form
+        autoComplete="off"
+        onSubmit={(e) => e.preventDefault()}
+        onInputCapture={(e) => syncPreviewFromForm(e.currentTarget)}
+        onChangeCapture={(e) => syncPreviewFromForm(e.currentTarget)}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: c.cream,
+          maxWidth: 1280,
+          width: "100%",
+          maxHeight: "94vh",
+          overflow: "hidden",
+          border: `1px solid ${c.border}`,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         {/* Header com seletor de tipo */}
-        <div style={{ padding: "24px 32px 0", background: c.cream, borderBottom: `1px solid ${c.border}` }}>
-          <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, marginBottom: 6 }}>Novo conteúdo</div>
-          <h2 style={{ fontFamily: serif, fontSize: 30, fontWeight: 400, margin: "0 0 18px" }}>Criar novo item do Atlas</h2>
+        <div
+          style={{
+            padding: "24px 32px 0",
+            background: c.cream,
+            borderBottom: `1px solid ${c.border}`,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              color: c.sage,
+              marginBottom: 6,
+            }}
+          >
+            Novo conteúdo
+          </div>
+          <h2 style={{ fontFamily: serif, fontSize: 30, fontWeight: 400, margin: "0 0 18px" }}>
+            Criar novo item do Atlas
+          </h2>
 
           <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
             {(["curso", "material", "servico"] as Tipo[]).map((t) => {
@@ -319,8 +501,11 @@ export default function NovoConteudoModal({
                     color: ativo ? "white" : c.ink,
                     border: `1px solid ${ativo ? c.sageDark : c.border}`,
                     padding: "10px 22px",
-                    fontSize: 12, fontFamily: sans, fontWeight: 500,
-                    letterSpacing: "0.12em", textTransform: "uppercase",
+                    fontSize: 12,
+                    fontFamily: sans,
+                    fontWeight: 500,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
                     cursor: "pointer",
                   }}
                 >
@@ -331,7 +516,15 @@ export default function NovoConteudoModal({
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 320px", flex: 1, minHeight: 0, overflow: "hidden" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) 320px",
+            flex: 1,
+            minHeight: 0,
+            overflow: "hidden",
+          }}
+        >
           <div style={{ padding: "20px 32px 24px", overflow: "auto" }}>
             {tipo === "curso" && (
               <FormCurso curso={curso} setCurso={setCurso} aulas={aulas} setAulas={setAulas} />
@@ -340,25 +533,77 @@ export default function NovoConteudoModal({
               <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria />
             )}
             {tipo === "servico" && (
-              <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria={false} isServico />
+              <FormMaterial
+                material={material}
+                setMaterial={setMaterial}
+                mostrarCategoria={false}
+                isServico
+              />
             )}
           </div>
 
-          <aside style={{ borderLeft: `1px solid ${c.border}`, background: c.warm, padding: "20px 18px", overflow: "auto" }}>
-            <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600 }}>Prévia do card</div>
-            {tipo === "curso"
-              ? <CursoPreview curso={curso} aulas={aulas} />
-              : <MaterialPreview material={material} isServico={tipo === "servico"} />}
+          <aside
+            style={{
+              borderLeft: `1px solid ${c.border}`,
+              background: c.warm,
+              padding: "20px 18px",
+              overflow: "auto",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: c.muted,
+                marginBottom: 12,
+                fontWeight: 600,
+              }}
+            >
+              Prévia do card
+            </div>
+            {tipo === "curso" ? (
+              <CursoPreview curso={curso} aulas={aulas} />
+            ) : (
+              <MaterialPreview material={material} isServico={tipo === "servico"} />
+            )}
             <p style={{ fontSize: 10.5, color: c.muted, marginTop: 14, lineHeight: 1.5 }}>
               É assim que o card aparece na vitrine do Atlas.
             </p>
           </aside>
         </div>
 
-        <div style={{ padding: "16px 32px 20px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${c.border}`, background: c.cream }}>
-          {busy && <span style={{ alignSelf: "center", fontSize: 12, color: c.muted, marginRight: "auto" }}>{busyMsg}</span>}
-          <button type="button" onClick={onClose} disabled={busy} style={{ ...btn(c.muted), opacity: busy ? 0.5 : 1 }}>Cancelar</button>
-          <button type="button" onClick={salvar} disabled={busy} style={{ ...btn(c.sageDark), opacity: busy ? 0.6 : 1 }}>
+        <div
+          style={{
+            padding: "16px 32px 20px",
+            display: "flex",
+            gap: 10,
+            justifyContent: "flex-end",
+            borderTop: `1px solid ${c.border}`,
+            background: c.cream,
+          }}
+        >
+          {busy && (
+            <span
+              style={{ alignSelf: "center", fontSize: 12, color: c.muted, marginRight: "auto" }}
+            >
+              {busyMsg}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            style={{ ...btn(c.muted), opacity: busy ? 0.5 : 1 }}
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={salvar}
+            disabled={busy}
+            style={{ ...btn(c.sageDark), opacity: busy ? 0.6 : 1 }}
+          >
             {busy ? "Salvando…" : "Salvar"}
           </button>
         </div>
@@ -369,68 +614,281 @@ export default function NovoConteudoModal({
 
 // ================= FORM CURSO =================
 function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
-  const updateCurso = (patch: Record<string, unknown>) => setCurso((prev: any) => ({ ...prev, ...patch }));
+  const updateCurso = (patch: Record<string, unknown>) =>
+    setCurso((prev: any) => ({ ...prev, ...patch }));
   const handleCursoInput = (patch: Record<string, unknown>) => {
     updateCurso(patch);
   };
   const addAula = () => setAulas((prev: AulaLocal[]) => [...prev, aulaVazia()]);
-  const removeAula = (i: number) => setAulas((prev: AulaLocal[]) => prev.filter((_: any, j: number) => j !== i));
+  const removeAula = (i: number) =>
+    setAulas((prev: AulaLocal[]) => prev.filter((_: any, j: number) => j !== i));
   const updateAula = (i: number, patch: Partial<AulaLocal>) =>
-    setAulas((prev: AulaLocal[]) => prev.map((a: AulaLocal, j: number) => (j === i ? { ...a, ...patch } : a)));
+    setAulas((prev: AulaLocal[]) =>
+      prev.map((a: AulaLocal, j: number) => (j === i ? { ...a, ...patch } : a)),
+    );
 
   return (
     <div style={{ display: "grid", gap: 14 }}>
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
-        <Field label="Título do curso"><input {...noAuto} name="curso-titulo" value={curso.titulo} onInput={(e) => handleCursoInput({ titulo: e.currentTarget.value })} onChange={(e) => handleCursoInput({ titulo: e.currentTarget.value })} style={inp} placeholder="Ex.: Preparação para o parto" /></Field>
-        <Field label="Slug (URL)"><input {...noAuto} name="curso-slug" value={curso.slug} onInput={(e) => handleCursoInput({ slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} onChange={(e) => handleCursoInput({ slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} style={inp} placeholder="meu-curso" /></Field>
+        <Field label="Título do curso">
+          <input
+            {...noAuto}
+            name="curso-titulo"
+            value={curso.titulo}
+            onInput={(e) => handleCursoInput({ titulo: e.currentTarget.value })}
+            onChange={(e) => handleCursoInput({ titulo: e.currentTarget.value })}
+            style={inp}
+            placeholder="Ex.: Preparação para o parto"
+          />
+        </Field>
+        <Field label="Slug (URL)">
+          <input
+            {...noAuto}
+            name="curso-slug"
+            value={curso.slug}
+            onInput={(e) =>
+              handleCursoInput({
+                slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+              })
+            }
+            onChange={(e) =>
+              handleCursoInput({
+                slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+              })
+            }
+            style={inp}
+            placeholder="meu-curso"
+          />
+        </Field>
       </div>
-      <Field label="Descrição curta (vitrine)"><textarea {...noAuto} name="curso-desc-curta" value={curso.descricao_curta} onInput={(e) => handleCursoInput({ descricao_curta: e.currentTarget.value })} onChange={(e) => handleCursoInput({ descricao_curta: e.currentTarget.value })} style={{ ...inp, minHeight: 60 }} placeholder="Aparece no card da vitrine (1-2 linhas)" /></Field>
-      <Field label="Descrição longa (página de vendas)"><textarea {...noAuto} name="curso-desc-longa" value={curso.descricao_longa} onInput={(e) => handleCursoInput({ descricao_longa: e.currentTarget.value })} onChange={(e) => handleCursoInput({ descricao_longa: e.currentTarget.value })} style={{ ...inp, minHeight: 110 }} placeholder="Texto completo exibido na página do curso" /></Field>
+      <Field label="Descrição curta (vitrine)">
+        <textarea
+          {...noAuto}
+          name="curso-desc-curta"
+          value={curso.descricao_curta}
+          onInput={(e) => handleCursoInput({ descricao_curta: e.currentTarget.value })}
+          onChange={(e) => handleCursoInput({ descricao_curta: e.currentTarget.value })}
+          style={{ ...inp, minHeight: 60 }}
+          placeholder="Aparece no card da vitrine (1-2 linhas)"
+        />
+      </Field>
+      <Field label="Descrição longa (página de vendas)">
+        <textarea
+          {...noAuto}
+          name="curso-desc-longa"
+          value={curso.descricao_longa}
+          onInput={(e) => handleCursoInput({ descricao_longa: e.currentTarget.value })}
+          onChange={(e) => handleCursoInput({ descricao_longa: e.currentTarget.value })}
+          style={{ ...inp, minHeight: 110 }}
+          placeholder="Texto completo exibido na página do curso"
+        />
+      </Field>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14 }}>
-        <Field label="Categoria"><input {...noAuto} name="curso-categoria" value={curso.categoria} onInput={(e) => handleCursoInput({ categoria: e.currentTarget.value })} onChange={(e) => handleCursoInput({ categoria: e.currentTarget.value })} style={inp} /></Field>
-        <Field label="Nível"><select {...noAuto} name="curso-nivel" value={curso.nivel} onInput={(e) => handleCursoInput({ nivel: e.currentTarget.value })} onChange={(e) => handleCursoInput({ nivel: e.currentTarget.value })} style={inp}><option value="iniciante">Iniciante</option><option value="intermediario">Intermediário</option><option value="avancado">Avançado</option></select></Field>
-        <Field label="Carga (min)"><input {...noAuto} name="curso-carga-min" type="number" value={curso.carga_horaria_min} onInput={(e) => handleCursoInput({ carga_horaria_min: parseInt(e.currentTarget.value) || 0 })} onChange={(e) => handleCursoInput({ carga_horaria_min: parseInt(e.currentTarget.value) || 0 })} style={inp} /></Field>
+        <Field label="Categoria">
+          <input
+            {...noAuto}
+            name="curso-categoria"
+            value={curso.categoria}
+            onInput={(e) => handleCursoInput({ categoria: e.currentTarget.value })}
+            onChange={(e) => handleCursoInput({ categoria: e.currentTarget.value })}
+            style={inp}
+          />
+        </Field>
+        <Field label="Nível">
+          <select
+            {...noAuto}
+            name="curso-nivel"
+            value={curso.nivel}
+            onInput={(e) => handleCursoInput({ nivel: e.currentTarget.value })}
+            onChange={(e) => handleCursoInput({ nivel: e.currentTarget.value })}
+            style={inp}
+          >
+            <option value="iniciante">Iniciante</option>
+            <option value="intermediario">Intermediário</option>
+            <option value="avancado">Avançado</option>
+          </select>
+        </Field>
+        <Field label="Carga (min)">
+          <input
+            {...noAuto}
+            name="curso-carga-min"
+            type="number"
+            value={curso.carga_horaria_min}
+            onInput={(e) =>
+              handleCursoInput({ carga_horaria_min: parseInt(e.currentTarget.value) || 0 })
+            }
+            onChange={(e) =>
+              handleCursoInput({ carga_horaria_min: parseInt(e.currentTarget.value) || 0 })
+            }
+            style={inp}
+          />
+        </Field>
         <Field label="Acesso">
-          <select {...noAuto} name="curso-acesso" value={curso.area} onInput={(e) => handleCursoInput({ area: e.currentTarget.value as "gratis" | "pago" })} onChange={(e) => handleCursoInput({ area: e.currentTarget.value as "gratis" | "pago" })} style={inp}>
+          <select
+            {...noAuto}
+            name="curso-acesso"
+            value={curso.area}
+            onInput={(e) => handleCursoInput({ area: e.currentTarget.value as "gratis" | "pago" })}
+            onChange={(e) => handleCursoInput({ area: e.currentTarget.value as "gratis" | "pago" })}
+            style={inp}
+          >
             <option value="gratis">Grátis (livre para todos)</option>
             <option value="pago">Pago</option>
           </select>
         </Field>
       </div>
 
-      <Field label="Capa (imagem — fallback / poster do vídeo)"><input {...noAuto} name="curso-capa" type="file" accept="image/*" onChange={(e) => updateCurso({ capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
-      <Field label="Vídeo de capa (loop curto 3–6s, opcional — substitui a imagem na vitrine)">
-        <input {...noAuto} name="curso-capa-video" type="file" accept="video/mp4,video/webm" onChange={(e) => updateCurso({ capaVideo: e.target.files?.[0] ?? null })} style={inp} />
-        {curso.capaVideo && <div style={{ fontSize: 11, color: c.muted, marginTop: 6 }}>{curso.capaVideo.name} · {(curso.capaVideo.size / 1024 / 1024).toFixed(1)} MB</div>}
+      <Field label="Capa (imagem ou vídeo — fallback / poster do vídeo)">
+        <input
+          {...noAuto}
+          name="curso-capa"
+          type="file"
+          accept="image/*,video/mp4,video/webm,video/*"
+          onChange={(e) => updateCurso({ capa: e.target.files?.[0] ?? null })}
+          style={inp}
+        />
       </Field>
-      <Field label="Trailer (URL YouTube/Vimeo, opcional)"><input {...noAuto} name="curso-trailer" value={curso.trailer_url} onInput={(e) => handleCursoInput({ trailer_url: e.currentTarget.value })} onChange={(e) => handleCursoInput({ trailer_url: e.currentTarget.value })} style={inp} /></Field>
+      <Field label="Vídeo de capa (loop curto 3–6s, opcional — substitui a imagem na vitrine)">
+        <input
+          {...noAuto}
+          name="curso-capa-video"
+          type="file"
+          accept="video/mp4,video/webm"
+          onChange={(e) => updateCurso({ capaVideo: e.target.files?.[0] ?? null })}
+          style={inp}
+        />
+        {curso.capaVideo && (
+          <div style={{ fontSize: 11, color: c.muted, marginTop: 6 }}>
+            {curso.capaVideo.name} · {(curso.capaVideo.size / 1024 / 1024).toFixed(1)} MB
+          </div>
+        )}
+      </Field>
+      <Field label="Trailer (URL YouTube/Vimeo, opcional)">
+        <input
+          {...noAuto}
+          name="curso-trailer"
+          value={curso.trailer_url}
+          onInput={(e) => handleCursoInput({ trailer_url: e.currentTarget.value })}
+          onChange={(e) => handleCursoInput({ trailer_url: e.currentTarget.value })}
+          style={inp}
+        />
+      </Field>
 
       {curso.area === "pago" && (
         <>
           <div style={sectionTitle}>Venda</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-            <Field label="Preço (centavos)"><input {...noAuto} name="curso-preco-centavos" type="number" value={curso.preco_centavos} onInput={(e) => handleCursoInput({ preco_centavos: parseInt(e.currentTarget.value) || 0 })} onChange={(e) => handleCursoInput({ preco_centavos: parseInt(e.currentTarget.value) || 0 })} style={inp} /></Field>
-            <Field label="Preço (texto)"><input {...noAuto} name="curso-preco-label" value={curso.preco_label} onInput={(e) => handleCursoInput({ preco_label: e.currentTarget.value })} onChange={(e) => handleCursoInput({ preco_label: e.currentTarget.value })} style={inp} placeholder="R$ 297" /></Field>
-            <Field label="Plataforma"><select {...noAuto} name="curso-plataforma" value={curso.plataforma_venda} onInput={(e) => handleCursoInput({ plataforma_venda: e.currentTarget.value })} onChange={(e) => handleCursoInput({ plataforma_venda: e.currentTarget.value })} style={inp}><option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option></select></Field>
+            <Field label="Preço (centavos)">
+              <input
+                {...noAuto}
+                name="curso-preco-centavos"
+                type="number"
+                value={curso.preco_centavos}
+                onInput={(e) =>
+                  handleCursoInput({ preco_centavos: parseInt(e.currentTarget.value) || 0 })
+                }
+                onChange={(e) =>
+                  handleCursoInput({ preco_centavos: parseInt(e.currentTarget.value) || 0 })
+                }
+                style={inp}
+              />
+            </Field>
+            <Field label="Preço (texto)">
+              <input
+                {...noAuto}
+                name="curso-preco-label"
+                value={curso.preco_label}
+                onInput={(e) => handleCursoInput({ preco_label: e.currentTarget.value })}
+                onChange={(e) => handleCursoInput({ preco_label: e.currentTarget.value })}
+                style={inp}
+                placeholder="R$ 297"
+              />
+            </Field>
+            <Field label="Plataforma">
+              <select
+                {...noAuto}
+                name="curso-plataforma"
+                value={curso.plataforma_venda}
+                onInput={(e) => handleCursoInput({ plataforma_venda: e.currentTarget.value })}
+                onChange={(e) => handleCursoInput({ plataforma_venda: e.currentTarget.value })}
+                style={inp}
+              >
+                <option value="">—</option>
+                <option value="hotmart">Hotmart</option>
+                <option value="kiwify">Kiwify</option>
+                <option value="eduzz">Eduzz</option>
+                <option value="outro">Outro</option>
+              </select>
+            </Field>
           </div>
-          <Field label="Link de compra externo"><input {...noAuto} name="curso-link-compra" value={curso.link_compra_externo} onInput={(e) => handleCursoInput({ link_compra_externo: e.currentTarget.value })} onChange={(e) => handleCursoInput({ link_compra_externo: e.currentTarget.value })} style={inp} placeholder="https://…" /></Field>
+          <Field label="Link de compra externo">
+            <input
+              {...noAuto}
+              name="curso-link-compra"
+              value={curso.link_compra_externo}
+              onInput={(e) => handleCursoInput({ link_compra_externo: e.currentTarget.value })}
+              onChange={(e) => handleCursoInput({ link_compra_externo: e.currentTarget.value })}
+              style={inp}
+              placeholder="https://…"
+            />
+          </Field>
         </>
       )}
 
       <div style={sectionTitle}>Instrutor</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <Field label="Nome"><input {...noAuto} name="curso-instrutor-nome" value={curso.instrutor_nome} onInput={(e) => handleCursoInput({ instrutor_nome: e.currentTarget.value })} onChange={(e) => handleCursoInput({ instrutor_nome: e.currentTarget.value })} style={inp} /></Field>
-        <Field label="Foto (URL)"><input {...noAuto} name="curso-instrutor-foto" value={curso.instrutor_foto} onInput={(e) => handleCursoInput({ instrutor_foto: e.currentTarget.value })} onChange={(e) => handleCursoInput({ instrutor_foto: e.currentTarget.value })} style={inp} /></Field>
+        <Field label="Nome">
+          <input
+            {...noAuto}
+            name="curso-instrutor-nome"
+            value={curso.instrutor_nome}
+            onInput={(e) => handleCursoInput({ instrutor_nome: e.currentTarget.value })}
+            onChange={(e) => handleCursoInput({ instrutor_nome: e.currentTarget.value })}
+            style={inp}
+          />
+        </Field>
+        <Field label="Foto (URL)">
+          <input
+            {...noAuto}
+            name="curso-instrutor-foto"
+            value={curso.instrutor_foto}
+            onInput={(e) => handleCursoInput({ instrutor_foto: e.currentTarget.value })}
+            onChange={(e) => handleCursoInput({ instrutor_foto: e.currentTarget.value })}
+            style={inp}
+          />
+        </Field>
       </div>
-      <Field label="Bio"><textarea {...noAuto} name="curso-instrutor-bio" value={curso.instrutor_bio} onInput={(e) => handleCursoInput({ instrutor_bio: e.currentTarget.value })} onChange={(e) => handleCursoInput({ instrutor_bio: e.currentTarget.value })} style={{ ...inp, minHeight: 60 }} /></Field>
+      <Field label="Bio">
+        <textarea
+          {...noAuto}
+          name="curso-instrutor-bio"
+          value={curso.instrutor_bio}
+          onInput={(e) => handleCursoInput({ instrutor_bio: e.currentTarget.value })}
+          onChange={(e) => handleCursoInput({ instrutor_bio: e.currentTarget.value })}
+          style={{ ...inp, minHeight: 60 }}
+        />
+      </Field>
 
       <div style={sectionTitle}>PDFs grátis do curso (download na página)</div>
-      <input {...noAuto} name="curso-pdfs-gratis" type="file" accept="application/pdf,.pdf" multiple onChange={(e) => updateCurso({ pdfsGratis: Array.from(e.target.files ?? []) })} style={inp} />
+      <input
+        {...noAuto}
+        name="curso-pdfs-gratis"
+        type="file"
+        accept="application/pdf,.pdf"
+        multiple
+        onChange={(e) => updateCurso({ pdfsGratis: Array.from(e.target.files ?? []) })}
+        style={inp}
+      />
       {curso.pdfsGratis.length > 0 && (
         <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 4 }}>
           {curso.pdfsGratis.map((f: File, i: number) => (
-            <li key={i} style={{ fontSize: 12, color: c.muted, padding: "4px 8px", background: c.warm }}>{f.name}</li>
+            <li
+              key={i}
+              style={{ fontSize: 12, color: c.muted, padding: "4px 8px", background: c.warm }}
+            >
+              {f.name}
+            </li>
           ))}
         </ul>
       )}
@@ -438,25 +896,62 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
       <div style={sectionTitle}>Aulas — adicione quantas precisar</div>
       <div style={{ display: "grid", gap: 14 }}>
         {aulas.map((a: AulaLocal, i: number) => (
-          <div key={i} style={{ background: "white", border: `1px solid ${c.border}`, padding: 16 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <strong style={{ fontFamily: serif, fontSize: 18, fontWeight: 400 }}>Aula {i + 1}</strong>
+          <div
+            key={i}
+            style={{ background: "white", border: `1px solid ${c.border}`, padding: 16 }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 12,
+              }}
+            >
+              <strong style={{ fontFamily: serif, fontSize: 18, fontWeight: 400 }}>
+                Aula {i + 1}
+              </strong>
               {aulas.length > 1 && (
-                <button type="button" onClick={() => removeAula(i)} style={btnSm(c.danger)}>Remover</button>
+                <button type="button" onClick={() => removeAula(i)} style={btnSm(c.danger)}>
+                  Remover
+                </button>
               )}
             </div>
             <div style={{ display: "grid", gap: 10 }}>
-              <Field label="Título"><input value={a.titulo} onChange={(e) => updateAula(i, { titulo: e.target.value })} style={inp} /></Field>
-              <Field label="Descrição"><textarea value={a.descricao} onChange={(e) => updateAula(i, { descricao: e.target.value })} style={{ ...inp, minHeight: 50 }} /></Field>
+              <Field label="Título">
+                <input
+                  value={a.titulo}
+                  onChange={(e) => updateAula(i, { titulo: e.target.value })}
+                  style={inp}
+                />
+              </Field>
+              <Field label="Descrição">
+                <textarea
+                  value={a.descricao}
+                  onChange={(e) => updateAula(i, { descricao: e.target.value })}
+                  style={{ ...inp, minHeight: 50 }}
+                />
+              </Field>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
                 <Field label="Tipo">
-                  <select value={a.tipo} onChange={(e) => updateAula(i, { tipo: e.target.value as any })} style={inp}>
+                  <select
+                    value={a.tipo}
+                    onChange={(e) => updateAula(i, { tipo: e.target.value as any })}
+                    style={inp}
+                  >
                     <option value="video">Vídeo</option>
                     <option value="pdf">PDF</option>
                     <option value="texto">Texto</option>
                   </select>
                 </Field>
-                <Field label="Duração (min)"><input type="number" value={a.duracao_min} onChange={(e) => updateAula(i, { duracao_min: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+                <Field label="Duração (min)">
+                  <input
+                    type="number"
+                    value={a.duracao_min}
+                    onChange={(e) => updateAula(i, { duracao_min: parseInt(e.target.value) || 0 })}
+                    style={inp}
+                  />
+                </Field>
                 <Field label="Acesso">
                   <select
                     value={a.previa_gratis ? "gratis" : "pago"}
@@ -471,23 +966,73 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
 
               {a.tipo === "video" && (
                 <>
-                  <Field label="URL do vídeo (YouTube/Vimeo)"><input value={a.video_url} onChange={(e) => updateAula(i, { video_url: e.target.value })} style={inp} placeholder="https://youtube.com/…" /></Field>
-                  <Field label="Ou enviar arquivo de vídeo"><input type="file" accept="video/*" onChange={(e) => updateAula(i, { videoFile: e.target.files?.[0] ?? null })} style={inp} /></Field>
+                  <Field label="URL do vídeo (YouTube/Vimeo)">
+                    <input
+                      value={a.video_url}
+                      onChange={(e) => updateAula(i, { video_url: e.target.value })}
+                      style={inp}
+                      placeholder="https://youtube.com/…"
+                    />
+                  </Field>
+                  <Field label="Ou enviar arquivo de vídeo">
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => updateAula(i, { videoFile: e.target.files?.[0] ?? null })}
+                      style={inp}
+                    />
+                  </Field>
                 </>
               )}
               {a.tipo === "pdf" && (
-                <Field label="Arquivo PDF da aula"><input type="file" accept="application/pdf" onChange={(e) => updateAula(i, { pdfFile: e.target.files?.[0] ?? null })} style={inp} /></Field>
+                <Field label="Arquivo PDF da aula">
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => updateAula(i, { pdfFile: e.target.files?.[0] ?? null })}
+                    style={inp}
+                  />
+                </Field>
               )}
               {a.tipo === "texto" && (
-                <Field label="Conteúdo (HTML)"><textarea value={a.conteudo_html} onChange={(e) => updateAula(i, { conteudo_html: e.target.value })} style={{ ...inp, minHeight: 160, fontFamily: "monospace", fontSize: 13 }} /></Field>
+                <Field label="Conteúdo (HTML)">
+                  <textarea
+                    value={a.conteudo_html}
+                    onChange={(e) => updateAula(i, { conteudo_html: e.target.value })}
+                    style={{ ...inp, minHeight: 160, fontFamily: "monospace", fontSize: 13 }}
+                  />
+                </Field>
               )}
 
               <Field label="Anexos para download (PDFs, imagens, etc — múltiplos)">
-                <input type="file" multiple onChange={(e) => updateAula(i, { anexos: Array.from(e.target.files ?? []) })} style={inp} />
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) => updateAula(i, { anexos: Array.from(e.target.files ?? []) })}
+                  style={inp}
+                />
                 {a.anexos.length > 0 && (
-                  <ul style={{ margin: "8px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 4 }}>
+                  <ul
+                    style={{
+                      margin: "8px 0 0",
+                      padding: 0,
+                      listStyle: "none",
+                      display: "grid",
+                      gap: 4,
+                    }}
+                  >
                     {a.anexos.map((f, k) => (
-                      <li key={k} style={{ fontSize: 12, color: c.muted, padding: "4px 8px", background: c.warm }}>{f.name}</li>
+                      <li
+                        key={k}
+                        style={{
+                          fontSize: 12,
+                          color: c.muted,
+                          padding: "4px 8px",
+                          background: c.warm,
+                        }}
+                      >
+                        {f.name}
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -495,14 +1040,33 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
             </div>
           </div>
         ))}
-        <button type="button" onClick={addAula} style={{ ...btn(c.sage), alignSelf: "flex-start" }}>+ Adicionar aula</button>
+        <button type="button" onClick={addAula} style={{ ...btn(c.sage), alignSelf: "flex-start" }}>
+          + Adicionar aula
+        </button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 8 }}>
-        <Field label="Ordem"><input {...noAuto} name="curso-ordem" type="number" value={curso.ordem} onInput={(e) => handleCursoInput({ ordem: parseInt(e.currentTarget.value) || 0 })} onChange={(e) => handleCursoInput({ ordem: parseInt(e.currentTarget.value) || 0 })} style={inp} /></Field>
+        <Field label="Ordem">
+          <input
+            {...noAuto}
+            name="curso-ordem"
+            type="number"
+            value={curso.ordem}
+            onInput={(e) => handleCursoInput({ ordem: parseInt(e.currentTarget.value) || 0 })}
+            onChange={(e) => handleCursoInput({ ordem: parseInt(e.currentTarget.value) || 0 })}
+            style={inp}
+          />
+        </Field>
         <Field label="Publicado">
           <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
-            <input {...noAuto} name="curso-publicado" type="checkbox" checked={curso.publicado} onChange={(e) => updateCurso({ publicado: e.target.checked })} /> Visível ao público
+            <input
+              {...noAuto}
+              name="curso-publicado"
+              type="checkbox"
+              checked={curso.publicado}
+              onChange={(e) => updateCurso({ publicado: e.target.checked })}
+            />{" "}
+            Visível ao público
           </label>
         </Field>
       </div>
@@ -512,21 +1076,62 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
 
 // ================= FORM MATERIAL / SERVIÇO =================
 function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = false }: any) {
-  const updateMaterial = (patch: Record<string, unknown>) => setMaterial((prev: any) => ({ ...prev, ...patch }));
+  const updateMaterial = (patch: Record<string, unknown>) =>
+    setMaterial((prev: any) => ({ ...prev, ...patch }));
   return (
     <div style={{ display: "grid", gap: 14 }}>
       {isServico && (
-        <div style={{ background: c.warm, padding: 12, fontSize: 12, color: c.muted, border: `1px solid ${c.border}` }}>
-          Categoria fixa: <strong style={{ color: c.ink }}>Serviço</strong>. Adicione um link de agendamento ou compra.
+        <div
+          style={{
+            background: c.warm,
+            padding: 12,
+            fontSize: 12,
+            color: c.muted,
+            border: `1px solid ${c.border}`,
+          }}
+        >
+          Categoria fixa: <strong style={{ color: c.ink }}>Serviço</strong>. Adicione um link de
+          agendamento ou compra.
         </div>
       )}
-      <Field label="Título"><input {...noAuto} name={isServico ? "servico-titulo" : "material-titulo"} value={material.titulo} onInput={(e) => updateMaterial({ titulo: e.currentTarget.value })} onChange={(e) => updateMaterial({ titulo: e.currentTarget.value })} style={inp} /></Field>
-      <Field label="Descrição"><textarea {...noAuto} name={isServico ? "servico-descricao" : "material-descricao"} value={material.descricao} onInput={(e) => updateMaterial({ descricao: e.currentTarget.value })} onChange={(e) => updateMaterial({ descricao: e.currentTarget.value })} style={{ ...inp, minHeight: 70 }} /></Field>
+      <Field label="Título">
+        <input
+          {...noAuto}
+          name={isServico ? "servico-titulo" : "material-titulo"}
+          value={material.titulo}
+          onInput={(e) => updateMaterial({ titulo: e.currentTarget.value })}
+          onChange={(e) => updateMaterial({ titulo: e.currentTarget.value })}
+          style={inp}
+        />
+      </Field>
+      <Field label="Descrição">
+        <textarea
+          {...noAuto}
+          name={isServico ? "servico-descricao" : "material-descricao"}
+          value={material.descricao}
+          onInput={(e) => updateMaterial({ descricao: e.currentTarget.value })}
+          onChange={(e) => updateMaterial({ descricao: e.currentTarget.value })}
+          style={{ ...inp, minHeight: 70 }}
+        />
+      </Field>
 
-      <div style={{ display: "grid", gridTemplateColumns: mostrarCategoria ? "1fr 1fr 1fr" : "1fr 1fr", gap: 14 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: mostrarCategoria ? "1fr 1fr 1fr" : "1fr 1fr",
+          gap: 14,
+        }}
+      >
         {mostrarCategoria && (
           <Field label="Categoria">
-            <select {...noAuto} name="material-categoria" value={material.categoria} onInput={(e) => updateMaterial({ categoria: e.currentTarget.value })} onChange={(e) => updateMaterial({ categoria: e.currentTarget.value })} style={inp}>
+            <select
+              {...noAuto}
+              name="material-categoria"
+              value={material.categoria}
+              onInput={(e) => updateMaterial({ categoria: e.currentTarget.value })}
+              onChange={(e) => updateMaterial({ categoria: e.currentTarget.value })}
+              style={inp}
+            >
               <option>Concepção</option>
               <option>Gestação</option>
               <option>Parto</option>
@@ -537,7 +1142,14 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
           </Field>
         )}
         <Field label="Formato">
-          <select {...noAuto} name={isServico ? "servico-formato" : "material-formato"} value={material.tipo} onInput={(e) => updateMaterial({ tipo: e.currentTarget.value as any })} onChange={(e) => updateMaterial({ tipo: e.currentTarget.value as any })} style={inp}>
+          <select
+            {...noAuto}
+            name={isServico ? "servico-formato" : "material-formato"}
+            value={material.tipo}
+            onInput={(e) => updateMaterial({ tipo: e.currentTarget.value as any })}
+            onChange={(e) => updateMaterial({ tipo: e.currentTarget.value as any })}
+            style={inp}
+          >
             <option value="pdf">PDF</option>
             <option value="video_externo">Vídeo externo (URL)</option>
             <option value="video_upload">Vídeo upload</option>
@@ -546,7 +1158,14 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
         </Field>
         {!isServico && (
           <Field label="Área">
-            <select {...noAuto} name="material-area" value={material.area} onInput={(e) => updateMaterial({ area: e.currentTarget.value as any })} onChange={(e) => updateMaterial({ area: e.currentTarget.value as any })} style={inp}>
+            <select
+              {...noAuto}
+              name="material-area"
+              value={material.area}
+              onInput={(e) => updateMaterial({ area: e.currentTarget.value as any })}
+              onChange={(e) => updateMaterial({ area: e.currentTarget.value as any })}
+              style={inp}
+            >
               <option value="gratis">Grátis (captura lead)</option>
               <option value="pago">Pago (assinantes)</option>
             </select>
@@ -556,35 +1175,130 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
 
       {(material.tipo === "pdf" || material.tipo === "video_upload") && (
         <Field label={`Arquivo (${material.tipo === "pdf" ? "PDF" : "Vídeo"})`}>
-          <input {...noAuto} name={isServico ? "servico-arquivo" : "material-arquivo"} type="file" accept={material.tipo === "pdf" ? "application/pdf" : "video/*"} onChange={(e) => updateMaterial({ arquivo: e.target.files?.[0] ?? null })} style={inp} />
+          <input
+            {...noAuto}
+            name={isServico ? "servico-arquivo" : "material-arquivo"}
+            type="file"
+            accept={material.tipo === "pdf" ? "application/pdf" : "video/*"}
+            onChange={(e) => updateMaterial({ arquivo: e.target.files?.[0] ?? null })}
+            style={inp}
+          />
         </Field>
       )}
       {material.tipo === "video_externo" && (
-        <Field label="URL do vídeo"><input {...noAuto} name={isServico ? "servico-video-url" : "material-video-url"} value={material.conteudo_url} onInput={(e) => updateMaterial({ conteudo_url: e.currentTarget.value })} onChange={(e) => updateMaterial({ conteudo_url: e.currentTarget.value })} style={inp} placeholder="https://youtube.com/…" /></Field>
+        <Field label="URL do vídeo">
+          <input
+            {...noAuto}
+            name={isServico ? "servico-video-url" : "material-video-url"}
+            value={material.conteudo_url}
+            onInput={(e) => updateMaterial({ conteudo_url: e.currentTarget.value })}
+            onChange={(e) => updateMaterial({ conteudo_url: e.currentTarget.value })}
+            style={inp}
+            placeholder="https://youtube.com/…"
+          />
+        </Field>
       )}
       {material.tipo === "artigo" && (
-        <Field label="Conteúdo HTML"><textarea {...noAuto} name={isServico ? "servico-conteudo-html" : "material-conteudo-html"} value={material.conteudo_html} onInput={(e) => updateMaterial({ conteudo_html: e.currentTarget.value })} onChange={(e) => updateMaterial({ conteudo_html: e.currentTarget.value })} style={{ ...inp, minHeight: 200, fontFamily: "monospace", fontSize: 13 }} /></Field>
+        <Field label="Conteúdo HTML">
+          <textarea
+            {...noAuto}
+            name={isServico ? "servico-conteudo-html" : "material-conteudo-html"}
+            value={material.conteudo_html}
+            onInput={(e) => updateMaterial({ conteudo_html: e.currentTarget.value })}
+            onChange={(e) => updateMaterial({ conteudo_html: e.currentTarget.value })}
+            style={{ ...inp, minHeight: 200, fontFamily: "monospace", fontSize: 13 }}
+          />
+        </Field>
       )}
 
-      <Field label="Capa (imagem opcional)"><input {...noAuto} name={isServico ? "servico-capa" : "material-capa"} type="file" accept="image/*" onChange={(e) => updateMaterial({ capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
+      <Field label="Capa (imagem opcional)">
+        <input
+          {...noAuto}
+          name={isServico ? "servico-capa" : "material-capa"}
+          type="file"
+          accept="image/*"
+          onChange={(e) => updateMaterial({ capa: e.target.files?.[0] ?? null })}
+          style={inp}
+        />
+      </Field>
 
-      <div style={sectionTitle}>{isServico ? "Compra / agendamento" : "Venda externa (opcional)"}</div>
-      <Field label="Link"><input {...noAuto} name={isServico ? "servico-link" : "material-link"} value={material.link_compra} onInput={(e) => updateMaterial({ link_compra: e.currentTarget.value })} onChange={(e) => updateMaterial({ link_compra: e.currentTarget.value })} style={inp} placeholder="https://…" /></Field>
+      <div style={sectionTitle}>
+        {isServico ? "Compra / agendamento" : "Venda externa (opcional)"}
+      </div>
+      <Field label="Link">
+        <input
+          {...noAuto}
+          name={isServico ? "servico-link" : "material-link"}
+          value={material.link_compra}
+          onInput={(e) => updateMaterial({ link_compra: e.currentTarget.value })}
+          onChange={(e) => updateMaterial({ link_compra: e.currentTarget.value })}
+          style={inp}
+          placeholder="https://…"
+        />
+      </Field>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
         <Field label="Plataforma">
-          <select {...noAuto} name={isServico ? "servico-plataforma" : "material-plataforma"} value={material.plataforma_venda} onInput={(e) => updateMaterial({ plataforma_venda: e.currentTarget.value })} onChange={(e) => updateMaterial({ plataforma_venda: e.currentTarget.value })} style={inp}>
-            <option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option>
+          <select
+            {...noAuto}
+            name={isServico ? "servico-plataforma" : "material-plataforma"}
+            value={material.plataforma_venda}
+            onInput={(e) => updateMaterial({ plataforma_venda: e.currentTarget.value })}
+            onChange={(e) => updateMaterial({ plataforma_venda: e.currentTarget.value })}
+            style={inp}
+          >
+            <option value="">—</option>
+            <option value="hotmart">Hotmart</option>
+            <option value="kiwify">Kiwify</option>
+            <option value="eduzz">Eduzz</option>
+            <option value="outro">Outro</option>
           </select>
         </Field>
-        <Field label="Preço (texto)"><input {...noAuto} name={isServico ? "servico-preco" : "material-preco"} value={material.preco_label} onInput={(e) => updateMaterial({ preco_label: e.currentTarget.value })} onChange={(e) => updateMaterial({ preco_label: e.currentTarget.value })} style={inp} placeholder="R$ 47" /></Field>
-        <Field label="Texto do botão"><input {...noAuto} name={isServico ? "servico-cta" : "material-cta"} value={material.cta_label} onInput={(e) => updateMaterial({ cta_label: e.currentTarget.value })} onChange={(e) => updateMaterial({ cta_label: e.currentTarget.value })} style={inp} placeholder={isServico ? "Agendar" : "Comprar agora"} /></Field>
+        <Field label="Preço (texto)">
+          <input
+            {...noAuto}
+            name={isServico ? "servico-preco" : "material-preco"}
+            value={material.preco_label}
+            onInput={(e) => updateMaterial({ preco_label: e.currentTarget.value })}
+            onChange={(e) => updateMaterial({ preco_label: e.currentTarget.value })}
+            style={inp}
+            placeholder="R$ 47"
+          />
+        </Field>
+        <Field label="Texto do botão">
+          <input
+            {...noAuto}
+            name={isServico ? "servico-cta" : "material-cta"}
+            value={material.cta_label}
+            onInput={(e) => updateMaterial({ cta_label: e.currentTarget.value })}
+            onChange={(e) => updateMaterial({ cta_label: e.currentTarget.value })}
+            style={inp}
+            placeholder={isServico ? "Agendar" : "Comprar agora"}
+          />
+        </Field>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <Field label="Ordem"><input {...noAuto} name={isServico ? "servico-ordem" : "material-ordem"} type="number" value={material.ordem} onInput={(e) => updateMaterial({ ordem: parseInt(e.currentTarget.value) || 0 })} onChange={(e) => updateMaterial({ ordem: parseInt(e.currentTarget.value) || 0 })} style={inp} /></Field>
+        <Field label="Ordem">
+          <input
+            {...noAuto}
+            name={isServico ? "servico-ordem" : "material-ordem"}
+            type="number"
+            value={material.ordem}
+            onInput={(e) => updateMaterial({ ordem: parseInt(e.currentTarget.value) || 0 })}
+            onChange={(e) => updateMaterial({ ordem: parseInt(e.currentTarget.value) || 0 })}
+            style={inp}
+          />
+        </Field>
         <Field label="Publicado">
           <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
-            <input {...noAuto} name={isServico ? "servico-publicado" : "material-publicado"} type="checkbox" checked={material.publicado} onChange={(e) => updateMaterial({ publicado: e.target.checked })} /> Visível ao público
+            <input
+              {...noAuto}
+              name={isServico ? "servico-publicado" : "material-publicado"}
+              type="checkbox"
+              checked={material.publicado}
+              onChange={(e) => updateMaterial({ publicado: e.target.checked })}
+            />{" "}
+            Visível ao público
           </label>
         </Field>
       </div>
@@ -597,12 +1311,23 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
 function useObjectUrl(file: File | null): string | null {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {
-    if (!file) { setUrl(null); return; }
+    if (!file) {
+      setUrl(null);
+      return;
+    }
     const u = URL.createObjectURL(file);
     setUrl(u);
     return () => URL.revokeObjectURL(u);
   }, [file]);
   return url;
+}
+
+function isVideoFile(file: File | null | undefined) {
+  return !!file && file.type.startsWith("video/");
+}
+
+function isImageFile(file: File | null | undefined) {
+  return !!file && file.type.startsWith("image/");
 }
 
 function CursoPreview({ curso, aulas }: { curso: any; aulas: AulaLocal[] }) {
@@ -613,24 +1338,91 @@ function CursoPreview({ curso, aulas }: { curso: any; aulas: AulaLocal[] }) {
   const badge = ehGratis
     ? { label: "Conteúdo grátis", color: c.sage }
     : { label: "Conteúdo pago", color: c.gold };
-  const precoLabel = ehGratis ? null : (curso.preco_label || (curso.preco_centavos ? `R$ ${(curso.preco_centavos / 100).toFixed(2).replace(".", ",")}` : null));
-  const descricaoPreview = curso.descricao_curta || curso.descricao_longa || "Descrição curta aparece aqui.";
+  const precoLabel = ehGratis
+    ? null
+    : curso.preco_label ||
+      (curso.preco_centavos
+        ? `R$ ${(curso.preco_centavos / 100).toFixed(2).replace(".", ",")}`
+        : null);
+  const descricaoPreview =
+    curso.descricao_curta || curso.descricao_longa || "Descrição curta aparece aqui.";
+  const capaEhVideo = isVideoFile(curso.capa);
+  const videoPreviewUrl = capaVideoUrl || (capaEhVideo ? capaUrl : null);
+  const imagemPreviewUrl = isImageFile(curso.capa) ? capaUrl : null;
   return (
-    <ContentCard
-      key={`${curso.area}-${curso.titulo}-${descricaoPreview}-${curso.categoria}-${curso.nivel}-${totalAulas}`}
-      numero="01"
-      categoria={`${curso.categoria || "—"} · ${curso.nivel || ""}`}
-      badge={badge}
-      titulo={curso.titulo || "Título do curso"}
-      descricao={descricaoPreview}
-      capa_url={capaUrl}
-      capa_video_url={capaVideoUrl}
-      metaLabel="Conteúdo"
-      metaValor={`${totalAulas} ${totalAulas === 1 ? "aula" : "aulas"}${curso.carga_horaria_min > 0 ? ` · ${Math.round(curso.carga_horaria_min / 60)}h` : ""}`}
-      precoLabel={precoLabel}
-      ctaLabel={ehGratis ? "Acessar grátis" : "Ver conteúdo"}
-      onAction={() => {}}
-    />
+    <div style={{ display: "grid", gap: 14 }}>
+      <ContentCard
+        key={`${curso.area}-${curso.titulo}-${descricaoPreview}-${curso.descricao_longa}-${curso.categoria}-${curso.nivel}-${totalAulas}-${videoPreviewUrl}`}
+        numero="01"
+        categoria={`${curso.categoria || "—"} · ${curso.nivel || ""}`}
+        badge={badge}
+        titulo={curso.titulo || "Título do curso"}
+        descricao={descricaoPreview}
+        capa_url={imagemPreviewUrl}
+        capa_video_url={videoPreviewUrl}
+        metaLabel="Conteúdo"
+        metaValor={`${totalAulas} ${totalAulas === 1 ? "aula" : "aulas"}${curso.carga_horaria_min > 0 ? ` · ${Math.round(curso.carga_horaria_min / 60)}h` : ""}`}
+        precoLabel={precoLabel}
+        ctaLabel={ehGratis ? "Acessar grátis" : "Ver conteúdo"}
+        onAction={() => {}}
+      />
+      <div
+        style={{
+          background: "rgba(255,255,255,0.52)",
+          border: `1px solid ${c.border}`,
+          padding: 12,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 9,
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+            color: c.muted,
+            marginBottom: 8,
+          }}
+        >
+          Prévia da página de vendas
+        </div>
+        {videoPreviewUrl && (
+          <video
+            src={videoPreviewUrl}
+            controls
+            muted
+            playsInline
+            style={{
+              width: "100%",
+              maxHeight: 160,
+              objectFit: "cover",
+              background: c.ink,
+              marginBottom: 10,
+            }}
+          />
+        )}
+        <h3
+          style={{
+            fontFamily: serif,
+            fontSize: 20,
+            fontWeight: 400,
+            margin: "0 0 6px",
+            color: c.ink,
+          }}
+        >
+          {curso.titulo || "Título do curso"}
+        </h3>
+        <p
+          style={{
+            margin: 0,
+            color: c.muted,
+            fontSize: 11.5,
+            lineHeight: 1.55,
+            whiteSpace: "pre-wrap",
+          }}
+        >
+          {curso.descricao_longa || curso.descricao_curta || "A descrição longa aparecerá aqui."}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -642,14 +1434,20 @@ function MaterialPreview({ material, isServico }: { material: any; isServico: bo
     : ehGratis
       ? { label: "Conteúdo grátis", color: c.sage }
       : { label: "Conteúdo pago", color: c.gold };
-  const precoLabel = ehGratis ? null : (material.preco_label || null);
-  const tipoLabel: Record<string, string> = { pdf: "PDF", video_externo: "Vídeo", video_upload: "Vídeo", artigo: "Artigo" };
-  const descricaoPreview = material.descricao || material.conteudo_html || "Descrição aparece aqui.";
+  const precoLabel = ehGratis ? null : material.preco_label || null;
+  const tipoLabel: Record<string, string> = {
+    pdf: "PDF",
+    video_externo: "Vídeo",
+    video_upload: "Vídeo",
+    artigo: "Artigo",
+  };
+  const descricaoPreview =
+    material.descricao || material.conteudo_html || "Descrição aparece aqui.";
   return (
     <ContentCard
       key={`${isServico}-${material.area}-${material.titulo}-${descricaoPreview}-${material.categoria}-${material.tipo}`}
       numero="01"
-      categoria={isServico ? "Serviço" : (material.categoria || "—")}
+      categoria={isServico ? "Serviço" : material.categoria || "—"}
       badge={badge}
       titulo={material.titulo || (isServico ? "Nome do serviço" : "Título do material")}
       descricao={descricaoPreview}
@@ -657,9 +1455,10 @@ function MaterialPreview({ material, isServico }: { material: any; isServico: bo
       metaLabel="Formato"
       metaValor={tipoLabel[material.tipo] ?? "—"}
       precoLabel={precoLabel}
-      ctaLabel={material.cta_label || (isServico ? "Agendar" : ehGratis ? "Baixar grátis" : "Comprar")}
+      ctaLabel={
+        material.cta_label || (isServico ? "Agendar" : ehGratis ? "Baixar grátis" : "Comprar")
+      }
       onAction={() => {}}
     />
   );
 }
-
