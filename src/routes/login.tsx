@@ -97,7 +97,7 @@ function LoginPage() {
       const name = form.signName.trim();
       if (!name) throw new Error("Informe seu nome.");
       if (!email || !email.includes("@")) throw new Error("Informe um e-mail válido.");
-      if (password.length < 6) throw new Error("A senha precisa ter ao menos 6 caracteres.");
+      if (password.length < 4) throw new Error("A senha precisa ter ao menos 4 caracteres.");
 
       const { error } = await supabase.auth.signUp({
         email,
