@@ -68,6 +68,8 @@ function AdminPage() {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("dash");
+  const [openGroup, setOpenGroup] = useState<string>("Painel");
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   if (loading) return <div style={{ padding: 40, fontFamily: sans, background: c.cream, minHeight: "100vh" }}>Carregando…</div>;
   if (!isAdmin) return (
@@ -77,41 +79,116 @@ function AdminPage() {
     </div>
   );
 
+  const currentLabel = TAB_GROUPS.flatMap((g) => g.tabs).find((t) => t.id === tab)?.label ?? "";
+
+  const select = (groupLabel: string, id: Tab) => {
+    setOpenGroup(groupLabel);
+    setTab(id);
+    setMobileOpen(false);
+  };
+
   return (
-    <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
-      <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "10px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-        <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 36 }} /></Link>
-        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", flex: 1, justifyContent: "center", alignItems: "center" }}>
-          {TAB_GROUPS.map((group) => (
-            <div key={group.label} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, background: "rgba(255,255,255,0.6)", border: `1px solid ${c.border}` }}>
-              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", color: c.muted, marginRight: 4 }}>{group.label}</span>
-              {group.tabs.map((t) => (
-                <button key={t.id} onClick={() => setTab(t.id)} style={tabBtn(tab === t.id)}>{t.label}</button>
-              ))}
-            </div>
-          ))}
+    <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh", display: "flex" }}>
+      <aside
+        className={mobileOpen ? "admin-sidebar admin-sidebar-open" : "admin-sidebar"}
+        style={{ width: 240, background: "#1a1557", color: "white", minHeight: "100vh", position: "sticky", top: 0, alignSelf: "flex-start", display: "flex", flexDirection: "column" }}
+      >
+        <div style={{ padding: "20px 18px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 10 }}>
+          <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 32 }} /></Link>
+          <div>
+            <div style={{ fontFamily: serif, fontSize: 16, lineHeight: 1 }}>Admin</div>
+            <div style={{ fontSize: 9, letterSpacing: "0.18em", color: "#f0c040", marginTop: 4 }}>LE MATER</div>
+          </div>
         </div>
-        <button onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/app" }); }} style={btn(c.sage)}>Sair</button>
-      </nav>
-      <main style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 28px 80px" }}>
-        {tab === "dash" && <DashboardTab />}
-        {tab === "atlas" && <AtlasContentTab />}
-        {tab === "materiais" && <MateriaisTab />}
-        {tab === "cursos" && <CursosTab />}
-        {tab === "telas" && <TelasTab />}
-        {tab === "consultas" && <ConsultasTab />}
-        {tab === "gravacoes" && <GravacoesTab />}
-        {tab === "profissionais" && <ProfissionaisTab />}
-        {tab === "dados" && <DadosClinicosTab />}
-        {tab === "parametros" && <ParametrosTab />}
-        {tab === "relatorios" && <RelatoriosEpidemiologicosTab />}
-        {tab === "leads" && <LeadsTab />}
-        {tab === "alunos" && <AlunosTab />}
-        {tab === "usuarios" && <UsuariosTab />}
-        {tab === "acessos" && <AcessosUsuariosTab />}
-        {tab === "compras" && <ComprasTab />}
-        {tab === "compras" && <ComprasTab />}
-      </main>
+
+        <nav style={{ flex: 1, padding: "12px 8px", overflowY: "auto" }}>
+          {TAB_GROUPS.map((group) => {
+            const isOpen = openGroup === group.label;
+            const hasActive = group.tabs.some((t) => t.id === tab);
+            return (
+              <div key={group.label} style={{ marginBottom: 2 }}>
+                <button
+                  onClick={() => setOpenGroup(isOpen ? "" : group.label)}
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "none", color: hasActive ? "#f0c040" : "rgba(255,255,255,0.75)", padding: "9px 12px", fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer", borderRadius: 6, fontFamily: sans }}
+                >
+                  <span>{group.label}</span>
+                  <span style={{ fontSize: 10, opacity: 0.6, transform: isOpen ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>›</span>
+                </button>
+                {isOpen && (
+                  <div style={{ paddingLeft: 6, paddingTop: 2, paddingBottom: 6 }}>
+                    {group.tabs.map((t) => {
+                      const active = tab === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => select(group.label, t.id)}
+                          style={{ width: "100%", textAlign: "left", background: active ? "rgba(240,192,64,0.15)" : "transparent", border: "none", color: active ? "#f0c040" : "rgba(255,255,255,0.7)", padding: "7px 14px", fontSize: 13, cursor: "pointer", borderRadius: 6, borderLeft: active ? "2px solid #f0c040" : "2px solid transparent", fontFamily: sans, marginBottom: 1 }}
+                        >
+                          {t.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+
+        <div style={{ padding: 12, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/app" }); }}
+            style={{ width: "100%", background: "rgba(255,255,255,0.06)", color: "white", border: "1px solid rgba(255,255,255,0.12)", padding: "10px", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer", borderRadius: 8, fontFamily: sans }}
+          >
+            Sair
+          </button>
+        </div>
+      </aside>
+
+      {mobileOpen && (
+        <button aria-label="Fechar" onClick={() => setMobileOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", border: 0, zIndex: 40 }} />
+      )}
+
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+        <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 24px", borderBottom: `1px solid ${c.border}`, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(10px)", position: "sticky", top: 0, zIndex: 30 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="admin-burger"
+              style={{ display: "none", background: c.sageDark, color: "white", border: 0, padding: "8px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+            >
+              Menu
+            </button>
+            <h2 style={{ fontFamily: serif, fontSize: 22, fontWeight: 400, margin: 0 }}>{currentLabel}</h2>
+          </div>
+        </header>
+        <main style={{ maxWidth: 1280, width: "100%", margin: "0 auto", padding: "28px 24px 80px", flex: 1 }}>
+          {tab === "dash" && <DashboardTab />}
+          {tab === "atlas" && <AtlasContentTab />}
+          {tab === "materiais" && <MateriaisTab />}
+          {tab === "cursos" && <CursosTab />}
+          {tab === "telas" && <TelasTab />}
+          {tab === "consultas" && <ConsultasTab />}
+          {tab === "gravacoes" && <GravacoesTab />}
+          {tab === "profissionais" && <ProfissionaisTab />}
+          {tab === "dados" && <DadosClinicosTab />}
+          {tab === "parametros" && <ParametrosTab />}
+          {tab === "relatorios" && <RelatoriosEpidemiologicosTab />}
+          {tab === "leads" && <LeadsTab />}
+          {tab === "alunos" && <AlunosTab />}
+          {tab === "usuarios" && <UsuariosTab />}
+          {tab === "acessos" && <AcessosUsuariosTab />}
+          {tab === "compras" && <ComprasTab />}
+        </main>
+      </div>
+
+      <style>{`
+        @media (max-width: 900px) {
+          .admin-sidebar { position: fixed !important; top: 0; left: 0; z-index: 50; transform: translateX(-100%); transition: transform 0.25s; }
+          .admin-sidebar-open { transform: translateX(0) !important; }
+          .admin-burger { display: inline-flex !important; }
+        }
+      `}</style>
     </div>
   );
 }
