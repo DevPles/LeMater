@@ -945,7 +945,7 @@ export default function RegistrationModal({
               </div>
 
               <div>
-                <Label className={labelClass}>Senha (mín. 6 caracteres)</Label>
+                <Label className={labelClass}>Senha (mín. 4 caracteres)</Label>
                 <Input
                   type="password"
                   value={senhaCadastro}
