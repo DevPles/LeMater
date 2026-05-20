@@ -252,7 +252,7 @@ export default function NovoConteudoModal({
   // ===== UI =====
   return (
     <div onClick={busy ? undefined : onClose} style={modalBg}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: c.cream, maxWidth: 1280, width: "100%", maxHeight: "94vh", overflow: "hidden", border: `1px solid ${c.border}`, display: "flex", flexDirection: "column" }}>
+      <form autoComplete="off" onSubmit={(e) => e.preventDefault()} onClick={(e) => e.stopPropagation()} style={{ background: c.cream, maxWidth: 1280, width: "100%", maxHeight: "94vh", overflow: "hidden", border: `1px solid ${c.border}`, display: "flex", flexDirection: "column" }}>
         {/* Header com seletor de tipo */}
         <div style={{ padding: "24px 32px 0", background: c.cream, borderBottom: `1px solid ${c.border}` }}>
           <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, marginBottom: 6 }}>Novo conteúdo</div>
