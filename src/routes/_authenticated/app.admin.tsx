@@ -29,7 +29,7 @@ const sans = "'DM Sans', sans-serif";
 
 type Tab =
   | "dash"
-  | "atlas" | "materiais" | "cursos" | "telas"
+  | "atlas"
   | "consultas" | "gravacoes" | "profissionais"
   | "dados" | "parametros" | "relatorios"
   | "leads" | "alunos" | "usuarios" | "acessos" | "compras";
