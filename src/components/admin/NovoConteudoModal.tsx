@@ -251,9 +251,9 @@ export default function NovoConteudoModal({
   // ===== UI =====
   return (
     <div onClick={busy ? undefined : onClose} style={modalBg}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: c.cream, maxWidth: 900, width: "100%", maxHeight: "94vh", overflow: "auto", border: `1px solid ${c.border}` }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: c.cream, maxWidth: 1280, width: "100%", maxHeight: "94vh", overflow: "hidden", border: `1px solid ${c.border}`, display: "flex", flexDirection: "column" }}>
         {/* Header com seletor de tipo */}
-        <div style={{ padding: "24px 32px 0", position: "sticky", top: 0, background: c.cream, zIndex: 2 }}>
+        <div style={{ padding: "24px 32px 0", background: c.cream, borderBottom: `1px solid ${c.border}` }}>
           <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, marginBottom: 6 }}>Novo conteúdo</div>
           <h2 style={{ fontFamily: serif, fontSize: 30, fontWeight: 400, margin: "0 0 18px" }}>Criar novo item do Atlas</h2>
 
@@ -282,19 +282,31 @@ export default function NovoConteudoModal({
           </div>
         </div>
 
-        <div style={{ padding: "0 32px 24px" }}>
-          {tipo === "curso" && (
-            <FormCurso curso={curso} setCurso={setCurso} aulas={aulas} setAulas={setAulas} />
-          )}
-          {tipo === "material" && (
-            <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria />
-          )}
-          {tipo === "servico" && (
-            <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria={false} isServico />
-          )}
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 320px", flex: 1, minHeight: 0, overflow: "hidden" }}>
+          <div style={{ padding: "20px 32px 24px", overflow: "auto" }}>
+            {tipo === "curso" && (
+              <FormCurso curso={curso} setCurso={setCurso} aulas={aulas} setAulas={setAulas} />
+            )}
+            {tipo === "material" && (
+              <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria />
+            )}
+            {tipo === "servico" && (
+              <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria={false} isServico />
+            )}
+          </div>
+
+          <aside style={{ borderLeft: `1px solid ${c.border}`, background: c.warm, padding: "20px 18px", overflow: "auto" }}>
+            <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600 }}>Prévia do card</div>
+            {tipo === "curso"
+              ? <CursoPreview curso={curso} aulas={aulas} />
+              : <MaterialPreview material={material} isServico={tipo === "servico"} />}
+            <p style={{ fontSize: 10.5, color: c.muted, marginTop: 14, lineHeight: 1.5 }}>
+              É assim que o card aparece na vitrine do Atlas.
+            </p>
+          </aside>
         </div>
 
-        <div style={{ padding: "16px 32px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${c.border}`, position: "sticky", bottom: 0, background: c.cream }}>
+        <div style={{ padding: "16px 32px 20px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${c.border}`, background: c.cream }}>
           {busy && <span style={{ alignSelf: "center", fontSize: 12, color: c.muted, marginRight: "auto" }}>{busyMsg}</span>}
           <button type="button" onClick={onClose} disabled={busy} style={{ ...btn(c.muted), opacity: busy ? 0.5 : 1 }}>Cancelar</button>
           <button type="button" onClick={salvar} disabled={busy} style={{ ...btn(c.sageDark), opacity: busy ? 0.6 : 1 }}>
