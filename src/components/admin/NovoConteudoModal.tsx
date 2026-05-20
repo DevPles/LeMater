@@ -321,38 +321,42 @@ export default function NovoConteudoModal({
 
 // ================= FORM CURSO =================
 function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
-  const addAula = () => setAulas([...aulas, aulaVazia()]);
-  const removeAula = (i: number) => setAulas(aulas.filter((_: any, j: number) => j !== i));
+  const updateCurso = (patch: Record<string, unknown>) => setCurso((prev: any) => ({ ...prev, ...patch }));
+  const handleCursoInput = (patch: Record<string, unknown>) => {
+    updateCurso(patch);
+  };
+  const addAula = () => setAulas((prev: AulaLocal[]) => [...prev, aulaVazia()]);
+  const removeAula = (i: number) => setAulas((prev: AulaLocal[]) => prev.filter((_: any, j: number) => j !== i));
   const updateAula = (i: number, patch: Partial<AulaLocal>) =>
-    setAulas(aulas.map((a: AulaLocal, j: number) => (j === i ? { ...a, ...patch } : a)));
+    setAulas((prev: AulaLocal[]) => prev.map((a: AulaLocal, j: number) => (j === i ? { ...a, ...patch } : a)));
 
   return (
     <div style={{ display: "grid", gap: 14 }}>
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
-        <Field label="Título do curso"><input {...noAuto} name="curso-titulo" value={curso.titulo} onChange={(e) => setCurso({ ...curso, titulo: e.target.value })} style={inp} placeholder="Ex.: Preparação para o parto" /></Field>
-        <Field label="Slug (URL)"><input {...noAuto} name="curso-slug" value={curso.slug} onChange={(e) => setCurso({ ...curso, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} style={inp} placeholder="meu-curso" /></Field>
+        <Field label="Título do curso"><input {...noAuto} name="curso-titulo" value={curso.titulo} onInput={(e) => handleCursoInput({ titulo: e.currentTarget.value })} onChange={(e) => handleCursoInput({ titulo: e.currentTarget.value })} style={inp} placeholder="Ex.: Preparação para o parto" /></Field>
+        <Field label="Slug (URL)"><input {...noAuto} name="curso-slug" value={curso.slug} onInput={(e) => handleCursoInput({ slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} onChange={(e) => handleCursoInput({ slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} style={inp} placeholder="meu-curso" /></Field>
       </div>
-      <Field label="Descrição curta (vitrine)"><textarea {...noAuto} name="curso-desc-curta" value={curso.descricao_curta} onChange={(e) => setCurso({ ...curso, descricao_curta: e.target.value })} style={{ ...inp, minHeight: 60 }} placeholder="Aparece no card da vitrine (1-2 linhas)" /></Field>
-      <Field label="Descrição longa (página de vendas)"><textarea {...noAuto} name="curso-desc-longa" value={curso.descricao_longa} onChange={(e) => setCurso({ ...curso, descricao_longa: e.target.value })} style={{ ...inp, minHeight: 110 }} placeholder="Texto completo exibido na página do curso" /></Field>
+      <Field label="Descrição curta (vitrine)"><textarea {...noAuto} name="curso-desc-curta" value={curso.descricao_curta} onInput={(e) => handleCursoInput({ descricao_curta: e.currentTarget.value })} onChange={(e) => handleCursoInput({ descricao_curta: e.currentTarget.value })} style={{ ...inp, minHeight: 60 }} placeholder="Aparece no card da vitrine (1-2 linhas)" /></Field>
+      <Field label="Descrição longa (página de vendas)"><textarea {...noAuto} name="curso-desc-longa" value={curso.descricao_longa} onInput={(e) => handleCursoInput({ descricao_longa: e.currentTarget.value })} onChange={(e) => handleCursoInput({ descricao_longa: e.currentTarget.value })} style={{ ...inp, minHeight: 110 }} placeholder="Texto completo exibido na página do curso" /></Field>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14 }}>
-        <Field label="Categoria"><input value={curso.categoria} onChange={(e) => setCurso({ ...curso, categoria: e.target.value })} style={inp} /></Field>
-        <Field label="Nível"><select value={curso.nivel} onChange={(e) => setCurso({ ...curso, nivel: e.target.value })} style={inp}><option value="iniciante">Iniciante</option><option value="intermediario">Intermediário</option><option value="avancado">Avançado</option></select></Field>
-        <Field label="Carga (min)"><input type="number" value={curso.carga_horaria_min} onChange={(e) => setCurso({ ...curso, carga_horaria_min: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+        <Field label="Categoria"><input {...noAuto} name="curso-categoria" value={curso.categoria} onInput={(e) => handleCursoInput({ categoria: e.currentTarget.value })} onChange={(e) => handleCursoInput({ categoria: e.currentTarget.value })} style={inp} /></Field>
+        <Field label="Nível"><select {...noAuto} name="curso-nivel" value={curso.nivel} onInput={(e) => handleCursoInput({ nivel: e.currentTarget.value })} onChange={(e) => handleCursoInput({ nivel: e.currentTarget.value })} style={inp}><option value="iniciante">Iniciante</option><option value="intermediario">Intermediário</option><option value="avancado">Avançado</option></select></Field>
+        <Field label="Carga (min)"><input {...noAuto} name="curso-carga-min" type="number" value={curso.carga_horaria_min} onInput={(e) => handleCursoInput({ carga_horaria_min: parseInt(e.currentTarget.value) || 0 })} onChange={(e) => handleCursoInput({ carga_horaria_min: parseInt(e.currentTarget.value) || 0 })} style={inp} /></Field>
         <Field label="Acesso">
-          <select value={curso.area} onChange={(e) => setCurso({ ...curso, area: e.target.value as "gratis" | "pago" })} style={inp}>
+          <select {...noAuto} name="curso-acesso" value={curso.area} onInput={(e) => handleCursoInput({ area: e.currentTarget.value as "gratis" | "pago" })} onChange={(e) => handleCursoInput({ area: e.currentTarget.value as "gratis" | "pago" })} style={inp}>
             <option value="gratis">Grátis (livre para todos)</option>
             <option value="pago">Pago</option>
           </select>
         </Field>
       </div>
 
-      <Field label="Capa (imagem — fallback / poster do vídeo)"><input type="file" accept="image/*" onChange={(e) => setCurso({ ...curso, capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
+      <Field label="Capa (imagem — fallback / poster do vídeo)"><input {...noAuto} name="curso-capa" type="file" accept="image/*" onChange={(e) => updateCurso({ capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
       <Field label="Vídeo de capa (loop curto 3–6s, opcional — substitui a imagem na vitrine)">
-        <input type="file" accept="video/mp4,video/webm" onChange={(e) => setCurso({ ...curso, capaVideo: e.target.files?.[0] ?? null })} style={inp} />
+        <input {...noAuto} name="curso-capa-video" type="file" accept="video/mp4,video/webm" onChange={(e) => updateCurso({ capaVideo: e.target.files?.[0] ?? null })} style={inp} />
         {curso.capaVideo && <div style={{ fontSize: 11, color: c.muted, marginTop: 6 }}>{curso.capaVideo.name} · {(curso.capaVideo.size / 1024 / 1024).toFixed(1)} MB</div>}
       </Field>
-      <Field label="Trailer (URL YouTube/Vimeo, opcional)"><input value={curso.trailer_url} onChange={(e) => setCurso({ ...curso, trailer_url: e.target.value })} style={inp} /></Field>
+      <Field label="Trailer (URL YouTube/Vimeo, opcional)"><input {...noAuto} name="curso-trailer" value={curso.trailer_url} onInput={(e) => handleCursoInput({ trailer_url: e.currentTarget.value })} onChange={(e) => handleCursoInput({ trailer_url: e.currentTarget.value })} style={inp} /></Field>
 
       {curso.area === "pago" && (
         <>
