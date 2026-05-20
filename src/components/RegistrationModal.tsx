@@ -246,7 +246,7 @@ export default function RegistrationModal({
     if (gestante === true) {
       // Validações para criar conta no Supabase já no step1 → 2
       if (!email.trim()) return setSubmitErro("Informe um e-mail.");
-      if (senhaCadastro.length < 6) return setSubmitErro("Senha precisa ter ao menos 6 caracteres.");
+      if (senhaCadastro.length < 4) return setSubmitErro("Senha precisa ter ao menos 4 caracteres.");
       setShowCelebration(true);
       setTimeout(() => {
         setShowCelebration(false);
@@ -256,8 +256,8 @@ export default function RegistrationModal({
     }
 
     // Não-gestante: cria conta simples e leva para home
-    if (!email.trim() || senhaCadastro.length < 6) {
-      return setSubmitErro("Informe e-mail e senha (mínimo 6 caracteres) para criar sua conta.");
+    if (!email.trim() || senhaCadastro.length < 4) {
+      return setSubmitErro("Informe e-mail e senha (mínimo 4 caracteres) para criar sua conta.");
     }
     await criarContaENavegar(null);
   };
@@ -286,24 +286,33 @@ export default function RegistrationModal({
           throw error;
         }
       }
-      // Atualiza profile com todos os dados demográficos coletados no cadastro
+      // Cria ou atualiza o perfil com todos os dados demográficos coletados no cadastro
       const { data: sess } = await supabase.auth.getSession();
       if (sess.session) {
-        await supabase
+        const profilePayload = {
+          nome: nome.trim(),
+          email: email.trim(),
+          cpf: normalizeCpf(cpf) || null,
+          telefone: whatsapp || null,
+          bairro: bairro || null,
+          cidade: cidade || "Ribeirão Preto",
+          unidade_saude: ubs || null,
+          district_id: districtId,
+          health_unit_id: healthUnitId,
+          data_nascimento: dataNasc || null,
+          ...(dumIso ? { dum: dumIso } : {}),
+        };
+        const { data: existingProfile, error: findProfileError } = await supabase
           .from("profiles")
-          .update({
-            nome: nome.trim(),
-            cpf: normalizeCpf(cpf) || null,
-            telefone: whatsapp || null,
-            bairro: bairro || null,
-            cidade: cidade || "Ribeirão Preto",
-            unidade_saude: ubs || null,
-            district_id: districtId,
-            health_unit_id: healthUnitId,
-            data_nascimento: dataNasc || null,
-            ...(dumIso ? { dum: dumIso } : {}),
-          })
-          .eq("user_id", sess.session.user.id);
+          .select("id")
+          .eq("user_id", sess.session.user.id)
+          .maybeSingle();
+        if (findProfileError) throw findProfileError;
+
+        const profileResult = existingProfile
+          ? await supabase.from("profiles").update(profilePayload).eq("user_id", sess.session.user.id)
+          : await supabase.from("profiles").insert({ ...profilePayload, user_id: sess.session.user.id });
+        if (profileResult.error) throw profileResult.error;
       }
       onOpenChange(false);
       navigate({ to: "/app/home" });
