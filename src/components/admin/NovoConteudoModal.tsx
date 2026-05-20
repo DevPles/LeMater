@@ -89,6 +89,54 @@ export default function NovoConteudoModal({
     publicado: false, ordem: 0,
   });
 
+  const syncPreviewFromForm = (form: HTMLFormElement) => {
+    const value = (name: string) => {
+      const field = form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+      return field?.value ?? "";
+    };
+
+    if (tipo === "curso") {
+      setCurso((prev) => ({
+        ...prev,
+        titulo: value("curso-titulo"),
+        slug: value("curso-slug"),
+        descricao_curta: value("curso-desc-curta"),
+        descricao_longa: value("curso-desc-longa"),
+        categoria: value("curso-categoria") || prev.categoria,
+        nivel: value("curso-nivel") || prev.nivel,
+        carga_horaria_min: parseInt(value("curso-carga-min")) || 0,
+        area: (value("curso-acesso") || prev.area) as "gratis" | "pago",
+        preco_centavos: parseInt(value("curso-preco-centavos")) || prev.preco_centavos,
+        preco_label: value("curso-preco-label"),
+        link_compra_externo: value("curso-link-compra"),
+        plataforma_venda: value("curso-plataforma"),
+        trailer_url: value("curso-trailer"),
+        instrutor_nome: value("curso-instrutor-nome"),
+        instrutor_foto: value("curso-instrutor-foto"),
+        instrutor_bio: value("curso-instrutor-bio"),
+        ordem: parseInt(value("curso-ordem")) || 0,
+      }));
+      return;
+    }
+
+    const prefix = tipo === "servico" ? "servico" : "material";
+    setMaterial((prev) => ({
+      ...prev,
+      titulo: value(`${prefix}-titulo`),
+      descricao: value(`${prefix}-descricao`),
+      categoria: tipo === "servico" ? prev.categoria : value("material-categoria") || prev.categoria,
+      tipo: (value(`${prefix}-formato`) || prev.tipo) as typeof prev.tipo,
+      area: tipo === "servico" ? "pago" : ((value("material-area") || prev.area) as "gratis" | "pago"),
+      conteudo_url: value(`${prefix}-video-url`),
+      conteudo_html: value(`${prefix}-conteudo-html`),
+      link_compra: value(`${prefix}-link`),
+      plataforma_venda: value(`${prefix}-plataforma`),
+      preco_label: value(`${prefix}-preco`),
+      cta_label: value(`${prefix}-cta`),
+      ordem: parseInt(value(`${prefix}-ordem`)) || 0,
+    }));
+  };
+
   // ===== SALVAR =====
   const salvar = async () => {
     setBusy(true);
@@ -252,7 +300,7 @@ export default function NovoConteudoModal({
   // ===== UI =====
   return (
     <div onClick={busy ? undefined : onClose} style={modalBg}>
-      <form autoComplete="off" onSubmit={(e) => e.preventDefault()} onClick={(e) => e.stopPropagation()} style={{ background: c.cream, maxWidth: 1280, width: "100%", maxHeight: "94vh", overflow: "hidden", border: `1px solid ${c.border}`, display: "flex", flexDirection: "column" }}>
+      <form autoComplete="off" onSubmit={(e) => e.preventDefault()} onInputCapture={(e) => syncPreviewFromForm(e.currentTarget)} onChangeCapture={(e) => syncPreviewFromForm(e.currentTarget)} onClick={(e) => e.stopPropagation()} style={{ background: c.cream, maxWidth: 1280, width: "100%", maxHeight: "94vh", overflow: "hidden", border: `1px solid ${c.border}`, display: "flex", flexDirection: "column" }}>
         {/* Header com seletor de tipo */}
         <div style={{ padding: "24px 32px 0", background: c.cream, borderBottom: `1px solid ${c.border}` }}>
           <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, marginBottom: 6 }}>Novo conteúdo</div>
