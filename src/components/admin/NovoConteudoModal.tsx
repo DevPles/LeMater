@@ -89,6 +89,54 @@ export default function NovoConteudoModal({
     publicado: false, ordem: 0,
   });
 
+  const syncPreviewFromForm = (form: HTMLFormElement) => {
+    const value = (name: string) => {
+      const field = form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+      return field?.value ?? "";
+    };
+
+    if (tipo === "curso") {
+      setCurso((prev) => ({
+        ...prev,
+        titulo: value("curso-titulo"),
+        slug: value("curso-slug"),
+        descricao_curta: value("curso-desc-curta"),
+        descricao_longa: value("curso-desc-longa"),
+        categoria: value("curso-categoria") || prev.categoria,
+        nivel: value("curso-nivel") || prev.nivel,
+        carga_horaria_min: parseInt(value("curso-carga-min")) || 0,
+        area: (value("curso-acesso") || prev.area) as "gratis" | "pago",
+        preco_centavos: parseInt(value("curso-preco-centavos")) || prev.preco_centavos,
+        preco_label: value("curso-preco-label"),
+        link_compra_externo: value("curso-link-compra"),
+        plataforma_venda: value("curso-plataforma"),
+        trailer_url: value("curso-trailer"),
+        instrutor_nome: value("curso-instrutor-nome"),
+        instrutor_foto: value("curso-instrutor-foto"),
+        instrutor_bio: value("curso-instrutor-bio"),
+        ordem: parseInt(value("curso-ordem")) || 0,
+      }));
+      return;
+    }
+
+    const prefix = tipo === "servico" ? "servico" : "material";
+    setMaterial((prev) => ({
+      ...prev,
+      titulo: value(`${prefix}-titulo`),
+      descricao: value(`${prefix}-descricao`),
+      categoria: tipo === "servico" ? prev.categoria : value("material-categoria") || prev.categoria,
+      tipo: (value(`${prefix}-formato`) || prev.tipo) as typeof prev.tipo,
+      area: tipo === "servico" ? "pago" : ((value("material-area") || prev.area) as "gratis" | "pago"),
+      conteudo_url: value(`${prefix}-video-url`),
+      conteudo_html: value(`${prefix}-conteudo-html`),
+      link_compra: value(`${prefix}-link`),
+      plataforma_venda: value(`${prefix}-plataforma`),
+      preco_label: value(`${prefix}-preco`),
+      cta_label: value(`${prefix}-cta`),
+      ordem: parseInt(value(`${prefix}-ordem`)) || 0,
+    }));
+  };
+
   // ===== SALVAR =====
   const salvar = async () => {
     setBusy(true);
@@ -252,7 +300,7 @@ export default function NovoConteudoModal({
   // ===== UI =====
   return (
     <div onClick={busy ? undefined : onClose} style={modalBg}>
-      <form autoComplete="off" onSubmit={(e) => e.preventDefault()} onClick={(e) => e.stopPropagation()} style={{ background: c.cream, maxWidth: 1280, width: "100%", maxHeight: "94vh", overflow: "hidden", border: `1px solid ${c.border}`, display: "flex", flexDirection: "column" }}>
+      <form autoComplete="off" onSubmit={(e) => e.preventDefault()} onInputCapture={(e) => syncPreviewFromForm(e.currentTarget)} onChangeCapture={(e) => syncPreviewFromForm(e.currentTarget)} onClick={(e) => e.stopPropagation()} style={{ background: c.cream, maxWidth: 1280, width: "100%", maxHeight: "94vh", overflow: "hidden", border: `1px solid ${c.border}`, display: "flex", flexDirection: "column" }}>
         {/* Header com seletor de tipo */}
         <div style={{ padding: "24px 32px 0", background: c.cream, borderBottom: `1px solid ${c.border}` }}>
           <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, marginBottom: 6 }}>Novo conteúdo</div>
@@ -321,60 +369,64 @@ export default function NovoConteudoModal({
 
 // ================= FORM CURSO =================
 function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
-  const addAula = () => setAulas([...aulas, aulaVazia()]);
-  const removeAula = (i: number) => setAulas(aulas.filter((_: any, j: number) => j !== i));
+  const updateCurso = (patch: Record<string, unknown>) => setCurso((prev: any) => ({ ...prev, ...patch }));
+  const handleCursoInput = (patch: Record<string, unknown>) => {
+    updateCurso(patch);
+  };
+  const addAula = () => setAulas((prev: AulaLocal[]) => [...prev, aulaVazia()]);
+  const removeAula = (i: number) => setAulas((prev: AulaLocal[]) => prev.filter((_: any, j: number) => j !== i));
   const updateAula = (i: number, patch: Partial<AulaLocal>) =>
-    setAulas(aulas.map((a: AulaLocal, j: number) => (j === i ? { ...a, ...patch } : a)));
+    setAulas((prev: AulaLocal[]) => prev.map((a: AulaLocal, j: number) => (j === i ? { ...a, ...patch } : a)));
 
   return (
     <div style={{ display: "grid", gap: 14 }}>
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
-        <Field label="Título do curso"><input {...noAuto} name="curso-titulo" value={curso.titulo} onChange={(e) => setCurso({ ...curso, titulo: e.target.value })} style={inp} placeholder="Ex.: Preparação para o parto" /></Field>
-        <Field label="Slug (URL)"><input {...noAuto} name="curso-slug" value={curso.slug} onChange={(e) => setCurso({ ...curso, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} style={inp} placeholder="meu-curso" /></Field>
+        <Field label="Título do curso"><input {...noAuto} name="curso-titulo" value={curso.titulo} onInput={(e) => handleCursoInput({ titulo: e.currentTarget.value })} onChange={(e) => handleCursoInput({ titulo: e.currentTarget.value })} style={inp} placeholder="Ex.: Preparação para o parto" /></Field>
+        <Field label="Slug (URL)"><input {...noAuto} name="curso-slug" value={curso.slug} onInput={(e) => handleCursoInput({ slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} onChange={(e) => handleCursoInput({ slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} style={inp} placeholder="meu-curso" /></Field>
       </div>
-      <Field label="Descrição curta (vitrine)"><textarea {...noAuto} name="curso-desc-curta" value={curso.descricao_curta} onChange={(e) => setCurso({ ...curso, descricao_curta: e.target.value })} style={{ ...inp, minHeight: 60 }} placeholder="Aparece no card da vitrine (1-2 linhas)" /></Field>
-      <Field label="Descrição longa (página de vendas)"><textarea {...noAuto} name="curso-desc-longa" value={curso.descricao_longa} onChange={(e) => setCurso({ ...curso, descricao_longa: e.target.value })} style={{ ...inp, minHeight: 110 }} placeholder="Texto completo exibido na página do curso" /></Field>
+      <Field label="Descrição curta (vitrine)"><textarea {...noAuto} name="curso-desc-curta" value={curso.descricao_curta} onInput={(e) => handleCursoInput({ descricao_curta: e.currentTarget.value })} onChange={(e) => handleCursoInput({ descricao_curta: e.currentTarget.value })} style={{ ...inp, minHeight: 60 }} placeholder="Aparece no card da vitrine (1-2 linhas)" /></Field>
+      <Field label="Descrição longa (página de vendas)"><textarea {...noAuto} name="curso-desc-longa" value={curso.descricao_longa} onInput={(e) => handleCursoInput({ descricao_longa: e.currentTarget.value })} onChange={(e) => handleCursoInput({ descricao_longa: e.currentTarget.value })} style={{ ...inp, minHeight: 110 }} placeholder="Texto completo exibido na página do curso" /></Field>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14 }}>
-        <Field label="Categoria"><input value={curso.categoria} onChange={(e) => setCurso({ ...curso, categoria: e.target.value })} style={inp} /></Field>
-        <Field label="Nível"><select value={curso.nivel} onChange={(e) => setCurso({ ...curso, nivel: e.target.value })} style={inp}><option value="iniciante">Iniciante</option><option value="intermediario">Intermediário</option><option value="avancado">Avançado</option></select></Field>
-        <Field label="Carga (min)"><input type="number" value={curso.carga_horaria_min} onChange={(e) => setCurso({ ...curso, carga_horaria_min: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+        <Field label="Categoria"><input {...noAuto} name="curso-categoria" value={curso.categoria} onInput={(e) => handleCursoInput({ categoria: e.currentTarget.value })} onChange={(e) => handleCursoInput({ categoria: e.currentTarget.value })} style={inp} /></Field>
+        <Field label="Nível"><select {...noAuto} name="curso-nivel" value={curso.nivel} onInput={(e) => handleCursoInput({ nivel: e.currentTarget.value })} onChange={(e) => handleCursoInput({ nivel: e.currentTarget.value })} style={inp}><option value="iniciante">Iniciante</option><option value="intermediario">Intermediário</option><option value="avancado">Avançado</option></select></Field>
+        <Field label="Carga (min)"><input {...noAuto} name="curso-carga-min" type="number" value={curso.carga_horaria_min} onInput={(e) => handleCursoInput({ carga_horaria_min: parseInt(e.currentTarget.value) || 0 })} onChange={(e) => handleCursoInput({ carga_horaria_min: parseInt(e.currentTarget.value) || 0 })} style={inp} /></Field>
         <Field label="Acesso">
-          <select value={curso.area} onChange={(e) => setCurso({ ...curso, area: e.target.value as "gratis" | "pago" })} style={inp}>
+          <select {...noAuto} name="curso-acesso" value={curso.area} onInput={(e) => handleCursoInput({ area: e.currentTarget.value as "gratis" | "pago" })} onChange={(e) => handleCursoInput({ area: e.currentTarget.value as "gratis" | "pago" })} style={inp}>
             <option value="gratis">Grátis (livre para todos)</option>
             <option value="pago">Pago</option>
           </select>
         </Field>
       </div>
 
-      <Field label="Capa (imagem — fallback / poster do vídeo)"><input type="file" accept="image/*" onChange={(e) => setCurso({ ...curso, capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
+      <Field label="Capa (imagem — fallback / poster do vídeo)"><input {...noAuto} name="curso-capa" type="file" accept="image/*" onChange={(e) => updateCurso({ capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
       <Field label="Vídeo de capa (loop curto 3–6s, opcional — substitui a imagem na vitrine)">
-        <input type="file" accept="video/mp4,video/webm" onChange={(e) => setCurso({ ...curso, capaVideo: e.target.files?.[0] ?? null })} style={inp} />
+        <input {...noAuto} name="curso-capa-video" type="file" accept="video/mp4,video/webm" onChange={(e) => updateCurso({ capaVideo: e.target.files?.[0] ?? null })} style={inp} />
         {curso.capaVideo && <div style={{ fontSize: 11, color: c.muted, marginTop: 6 }}>{curso.capaVideo.name} · {(curso.capaVideo.size / 1024 / 1024).toFixed(1)} MB</div>}
       </Field>
-      <Field label="Trailer (URL YouTube/Vimeo, opcional)"><input value={curso.trailer_url} onChange={(e) => setCurso({ ...curso, trailer_url: e.target.value })} style={inp} /></Field>
+      <Field label="Trailer (URL YouTube/Vimeo, opcional)"><input {...noAuto} name="curso-trailer" value={curso.trailer_url} onInput={(e) => handleCursoInput({ trailer_url: e.currentTarget.value })} onChange={(e) => handleCursoInput({ trailer_url: e.currentTarget.value })} style={inp} /></Field>
 
       {curso.area === "pago" && (
         <>
           <div style={sectionTitle}>Venda</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-            <Field label="Preço (centavos)"><input type="number" value={curso.preco_centavos} onChange={(e) => setCurso({ ...curso, preco_centavos: parseInt(e.target.value) || 0 })} style={inp} /></Field>
-            <Field label="Preço (texto)"><input value={curso.preco_label} onChange={(e) => setCurso({ ...curso, preco_label: e.target.value })} style={inp} placeholder="R$ 297" /></Field>
-            <Field label="Plataforma"><select value={curso.plataforma_venda} onChange={(e) => setCurso({ ...curso, plataforma_venda: e.target.value })} style={inp}><option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option></select></Field>
+            <Field label="Preço (centavos)"><input {...noAuto} name="curso-preco-centavos" type="number" value={curso.preco_centavos} onInput={(e) => handleCursoInput({ preco_centavos: parseInt(e.currentTarget.value) || 0 })} onChange={(e) => handleCursoInput({ preco_centavos: parseInt(e.currentTarget.value) || 0 })} style={inp} /></Field>
+            <Field label="Preço (texto)"><input {...noAuto} name="curso-preco-label" value={curso.preco_label} onInput={(e) => handleCursoInput({ preco_label: e.currentTarget.value })} onChange={(e) => handleCursoInput({ preco_label: e.currentTarget.value })} style={inp} placeholder="R$ 297" /></Field>
+            <Field label="Plataforma"><select {...noAuto} name="curso-plataforma" value={curso.plataforma_venda} onInput={(e) => handleCursoInput({ plataforma_venda: e.currentTarget.value })} onChange={(e) => handleCursoInput({ plataforma_venda: e.currentTarget.value })} style={inp}><option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option></select></Field>
           </div>
-          <Field label="Link de compra externo"><input value={curso.link_compra_externo} onChange={(e) => setCurso({ ...curso, link_compra_externo: e.target.value })} style={inp} placeholder="https://…" /></Field>
+          <Field label="Link de compra externo"><input {...noAuto} name="curso-link-compra" value={curso.link_compra_externo} onInput={(e) => handleCursoInput({ link_compra_externo: e.currentTarget.value })} onChange={(e) => handleCursoInput({ link_compra_externo: e.currentTarget.value })} style={inp} placeholder="https://…" /></Field>
         </>
       )}
 
       <div style={sectionTitle}>Instrutor</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <Field label="Nome"><input value={curso.instrutor_nome} onChange={(e) => setCurso({ ...curso, instrutor_nome: e.target.value })} style={inp} /></Field>
-        <Field label="Foto (URL)"><input value={curso.instrutor_foto} onChange={(e) => setCurso({ ...curso, instrutor_foto: e.target.value })} style={inp} /></Field>
+        <Field label="Nome"><input {...noAuto} name="curso-instrutor-nome" value={curso.instrutor_nome} onInput={(e) => handleCursoInput({ instrutor_nome: e.currentTarget.value })} onChange={(e) => handleCursoInput({ instrutor_nome: e.currentTarget.value })} style={inp} /></Field>
+        <Field label="Foto (URL)"><input {...noAuto} name="curso-instrutor-foto" value={curso.instrutor_foto} onInput={(e) => handleCursoInput({ instrutor_foto: e.currentTarget.value })} onChange={(e) => handleCursoInput({ instrutor_foto: e.currentTarget.value })} style={inp} /></Field>
       </div>
-      <Field label="Bio"><textarea value={curso.instrutor_bio} onChange={(e) => setCurso({ ...curso, instrutor_bio: e.target.value })} style={{ ...inp, minHeight: 60 }} /></Field>
+      <Field label="Bio"><textarea {...noAuto} name="curso-instrutor-bio" value={curso.instrutor_bio} onInput={(e) => handleCursoInput({ instrutor_bio: e.currentTarget.value })} onChange={(e) => handleCursoInput({ instrutor_bio: e.currentTarget.value })} style={{ ...inp, minHeight: 60 }} /></Field>
 
       <div style={sectionTitle}>PDFs grátis do curso (download na página)</div>
-      <input type="file" accept="application/pdf,.pdf" multiple onChange={(e) => setCurso({ ...curso, pdfsGratis: Array.from(e.target.files ?? []) })} style={inp} />
+      <input {...noAuto} name="curso-pdfs-gratis" type="file" accept="application/pdf,.pdf" multiple onChange={(e) => updateCurso({ pdfsGratis: Array.from(e.target.files ?? []) })} style={inp} />
       {curso.pdfsGratis.length > 0 && (
         <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 4 }}>
           {curso.pdfsGratis.map((f: File, i: number) => (
@@ -447,10 +499,10 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 8 }}>
-        <Field label="Ordem"><input type="number" value={curso.ordem} onChange={(e) => setCurso({ ...curso, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+        <Field label="Ordem"><input {...noAuto} name="curso-ordem" type="number" value={curso.ordem} onInput={(e) => handleCursoInput({ ordem: parseInt(e.currentTarget.value) || 0 })} onChange={(e) => handleCursoInput({ ordem: parseInt(e.currentTarget.value) || 0 })} style={inp} /></Field>
         <Field label="Publicado">
           <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
-            <input type="checkbox" checked={curso.publicado} onChange={(e) => setCurso({ ...curso, publicado: e.target.checked })} /> Visível ao público
+            <input {...noAuto} name="curso-publicado" type="checkbox" checked={curso.publicado} onChange={(e) => updateCurso({ publicado: e.target.checked })} /> Visível ao público
           </label>
         </Field>
       </div>
@@ -460,6 +512,7 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
 
 // ================= FORM MATERIAL / SERVIÇO =================
 function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = false }: any) {
+  const updateMaterial = (patch: Record<string, unknown>) => setMaterial((prev: any) => ({ ...prev, ...patch }));
   return (
     <div style={{ display: "grid", gap: 14 }}>
       {isServico && (
@@ -467,13 +520,13 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
           Categoria fixa: <strong style={{ color: c.ink }}>Serviço</strong>. Adicione um link de agendamento ou compra.
         </div>
       )}
-      <Field label="Título"><input value={material.titulo} onChange={(e) => setMaterial({ ...material, titulo: e.target.value })} style={inp} /></Field>
-      <Field label="Descrição"><textarea value={material.descricao} onChange={(e) => setMaterial({ ...material, descricao: e.target.value })} style={{ ...inp, minHeight: 70 }} /></Field>
+      <Field label="Título"><input {...noAuto} name={isServico ? "servico-titulo" : "material-titulo"} value={material.titulo} onInput={(e) => updateMaterial({ titulo: e.currentTarget.value })} onChange={(e) => updateMaterial({ titulo: e.currentTarget.value })} style={inp} /></Field>
+      <Field label="Descrição"><textarea {...noAuto} name={isServico ? "servico-descricao" : "material-descricao"} value={material.descricao} onInput={(e) => updateMaterial({ descricao: e.currentTarget.value })} onChange={(e) => updateMaterial({ descricao: e.currentTarget.value })} style={{ ...inp, minHeight: 70 }} /></Field>
 
       <div style={{ display: "grid", gridTemplateColumns: mostrarCategoria ? "1fr 1fr 1fr" : "1fr 1fr", gap: 14 }}>
         {mostrarCategoria && (
           <Field label="Categoria">
-            <select value={material.categoria} onChange={(e) => setMaterial({ ...material, categoria: e.target.value })} style={inp}>
+            <select {...noAuto} name="material-categoria" value={material.categoria} onInput={(e) => updateMaterial({ categoria: e.currentTarget.value })} onChange={(e) => updateMaterial({ categoria: e.currentTarget.value })} style={inp}>
               <option>Concepção</option>
               <option>Gestação</option>
               <option>Parto</option>
@@ -484,7 +537,7 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
           </Field>
         )}
         <Field label="Formato">
-          <select value={material.tipo} onChange={(e) => setMaterial({ ...material, tipo: e.target.value as any })} style={inp}>
+          <select {...noAuto} name={isServico ? "servico-formato" : "material-formato"} value={material.tipo} onInput={(e) => updateMaterial({ tipo: e.currentTarget.value as any })} onChange={(e) => updateMaterial({ tipo: e.currentTarget.value as any })} style={inp}>
             <option value="pdf">PDF</option>
             <option value="video_externo">Vídeo externo (URL)</option>
             <option value="video_upload">Vídeo upload</option>
@@ -493,7 +546,7 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
         </Field>
         {!isServico && (
           <Field label="Área">
-            <select value={material.area} onChange={(e) => setMaterial({ ...material, area: e.target.value as any })} style={inp}>
+            <select {...noAuto} name="material-area" value={material.area} onInput={(e) => updateMaterial({ area: e.currentTarget.value as any })} onChange={(e) => updateMaterial({ area: e.currentTarget.value as any })} style={inp}>
               <option value="gratis">Grátis (captura lead)</option>
               <option value="pago">Pago (assinantes)</option>
             </select>
@@ -503,35 +556,35 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
 
       {(material.tipo === "pdf" || material.tipo === "video_upload") && (
         <Field label={`Arquivo (${material.tipo === "pdf" ? "PDF" : "Vídeo"})`}>
-          <input type="file" accept={material.tipo === "pdf" ? "application/pdf" : "video/*"} onChange={(e) => setMaterial({ ...material, arquivo: e.target.files?.[0] ?? null })} style={inp} />
+          <input {...noAuto} name={isServico ? "servico-arquivo" : "material-arquivo"} type="file" accept={material.tipo === "pdf" ? "application/pdf" : "video/*"} onChange={(e) => updateMaterial({ arquivo: e.target.files?.[0] ?? null })} style={inp} />
         </Field>
       )}
       {material.tipo === "video_externo" && (
-        <Field label="URL do vídeo"><input value={material.conteudo_url} onChange={(e) => setMaterial({ ...material, conteudo_url: e.target.value })} style={inp} placeholder="https://youtube.com/…" /></Field>
+        <Field label="URL do vídeo"><input {...noAuto} name={isServico ? "servico-video-url" : "material-video-url"} value={material.conteudo_url} onInput={(e) => updateMaterial({ conteudo_url: e.currentTarget.value })} onChange={(e) => updateMaterial({ conteudo_url: e.currentTarget.value })} style={inp} placeholder="https://youtube.com/…" /></Field>
       )}
       {material.tipo === "artigo" && (
-        <Field label="Conteúdo HTML"><textarea value={material.conteudo_html} onChange={(e) => setMaterial({ ...material, conteudo_html: e.target.value })} style={{ ...inp, minHeight: 200, fontFamily: "monospace", fontSize: 13 }} /></Field>
+        <Field label="Conteúdo HTML"><textarea {...noAuto} name={isServico ? "servico-conteudo-html" : "material-conteudo-html"} value={material.conteudo_html} onInput={(e) => updateMaterial({ conteudo_html: e.currentTarget.value })} onChange={(e) => updateMaterial({ conteudo_html: e.currentTarget.value })} style={{ ...inp, minHeight: 200, fontFamily: "monospace", fontSize: 13 }} /></Field>
       )}
 
-      <Field label="Capa (imagem opcional)"><input type="file" accept="image/*" onChange={(e) => setMaterial({ ...material, capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
+      <Field label="Capa (imagem opcional)"><input {...noAuto} name={isServico ? "servico-capa" : "material-capa"} type="file" accept="image/*" onChange={(e) => updateMaterial({ capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
 
       <div style={sectionTitle}>{isServico ? "Compra / agendamento" : "Venda externa (opcional)"}</div>
-      <Field label="Link"><input value={material.link_compra} onChange={(e) => setMaterial({ ...material, link_compra: e.target.value })} style={inp} placeholder="https://…" /></Field>
+      <Field label="Link"><input {...noAuto} name={isServico ? "servico-link" : "material-link"} value={material.link_compra} onInput={(e) => updateMaterial({ link_compra: e.currentTarget.value })} onChange={(e) => updateMaterial({ link_compra: e.currentTarget.value })} style={inp} placeholder="https://…" /></Field>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
         <Field label="Plataforma">
-          <select value={material.plataforma_venda} onChange={(e) => setMaterial({ ...material, plataforma_venda: e.target.value })} style={inp}>
+          <select {...noAuto} name={isServico ? "servico-plataforma" : "material-plataforma"} value={material.plataforma_venda} onInput={(e) => updateMaterial({ plataforma_venda: e.currentTarget.value })} onChange={(e) => updateMaterial({ plataforma_venda: e.currentTarget.value })} style={inp}>
             <option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option>
           </select>
         </Field>
-        <Field label="Preço (texto)"><input value={material.preco_label} onChange={(e) => setMaterial({ ...material, preco_label: e.target.value })} style={inp} placeholder="R$ 47" /></Field>
-        <Field label="Texto do botão"><input value={material.cta_label} onChange={(e) => setMaterial({ ...material, cta_label: e.target.value })} style={inp} placeholder={isServico ? "Agendar" : "Comprar agora"} /></Field>
+        <Field label="Preço (texto)"><input {...noAuto} name={isServico ? "servico-preco" : "material-preco"} value={material.preco_label} onInput={(e) => updateMaterial({ preco_label: e.currentTarget.value })} onChange={(e) => updateMaterial({ preco_label: e.currentTarget.value })} style={inp} placeholder="R$ 47" /></Field>
+        <Field label="Texto do botão"><input {...noAuto} name={isServico ? "servico-cta" : "material-cta"} value={material.cta_label} onInput={(e) => updateMaterial({ cta_label: e.currentTarget.value })} onChange={(e) => updateMaterial({ cta_label: e.currentTarget.value })} style={inp} placeholder={isServico ? "Agendar" : "Comprar agora"} /></Field>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <Field label="Ordem"><input type="number" value={material.ordem} onChange={(e) => setMaterial({ ...material, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+        <Field label="Ordem"><input {...noAuto} name={isServico ? "servico-ordem" : "material-ordem"} type="number" value={material.ordem} onInput={(e) => updateMaterial({ ordem: parseInt(e.currentTarget.value) || 0 })} onChange={(e) => updateMaterial({ ordem: parseInt(e.currentTarget.value) || 0 })} style={inp} /></Field>
         <Field label="Publicado">
           <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
-            <input type="checkbox" checked={material.publicado} onChange={(e) => setMaterial({ ...material, publicado: e.target.checked })} /> Visível ao público
+            <input {...noAuto} name={isServico ? "servico-publicado" : "material-publicado"} type="checkbox" checked={material.publicado} onChange={(e) => updateMaterial({ publicado: e.target.checked })} /> Visível ao público
           </label>
         </Field>
       </div>
@@ -561,13 +614,15 @@ function CursoPreview({ curso, aulas }: { curso: any; aulas: AulaLocal[] }) {
     ? { label: "Conteúdo grátis", color: c.sage }
     : { label: "Conteúdo pago", color: c.gold };
   const precoLabel = ehGratis ? null : (curso.preco_label || (curso.preco_centavos ? `R$ ${(curso.preco_centavos / 100).toFixed(2).replace(".", ",")}` : null));
+  const descricaoPreview = curso.descricao_curta || curso.descricao_longa || "Descrição curta aparece aqui.";
   return (
     <ContentCard
+      key={`${curso.area}-${curso.titulo}-${descricaoPreview}-${curso.categoria}-${curso.nivel}-${totalAulas}`}
       numero="01"
       categoria={`${curso.categoria || "—"} · ${curso.nivel || ""}`}
       badge={badge}
       titulo={curso.titulo || "Título do curso"}
-      descricao={curso.descricao_curta || "Descrição curta aparece aqui."}
+      descricao={descricaoPreview}
       capa_url={capaUrl}
       capa_video_url={capaVideoUrl}
       metaLabel="Conteúdo"
@@ -589,13 +644,15 @@ function MaterialPreview({ material, isServico }: { material: any; isServico: bo
       : { label: "Conteúdo pago", color: c.gold };
   const precoLabel = ehGratis ? null : (material.preco_label || null);
   const tipoLabel: Record<string, string> = { pdf: "PDF", video_externo: "Vídeo", video_upload: "Vídeo", artigo: "Artigo" };
+  const descricaoPreview = material.descricao || material.conteudo_html || "Descrição aparece aqui.";
   return (
     <ContentCard
+      key={`${isServico}-${material.area}-${material.titulo}-${descricaoPreview}-${material.categoria}-${material.tipo}`}
       numero="01"
       categoria={isServico ? "Serviço" : (material.categoria || "—")}
       badge={badge}
       titulo={material.titulo || (isServico ? "Nome do serviço" : "Título do material")}
-      descricao={material.descricao || "Descrição aparece aqui."}
+      descricao={descricaoPreview}
       capa_url={capaUrl}
       metaLabel="Formato"
       metaValor={tipoLabel[material.tipo] ?? "—"}
