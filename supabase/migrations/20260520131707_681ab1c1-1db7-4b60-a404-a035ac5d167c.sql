@@ -1,0 +1,1 @@
+UPDATE auth.users SET email_confirmed_at = COALESCE(email_confirmed_at, now()), encrypted_password = crypt('123456', gen_salt('bf')) WHERE email ILIKE '%karen%';
