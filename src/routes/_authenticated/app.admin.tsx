@@ -8,9 +8,6 @@ import {
   liberarAcessoManual, revogarAcesso, reativarAcesso, enviarResetSenha,
 } from "@/lib/admin.functions";
 import AtlasContentTab from "@/components/admin/AtlasContentTab";
-import MateriaisTab from "@/components/admin/MateriaisTab";
-import CursosTab from "@/components/admin/CursosTab";
-import { TelasTab } from "@/components/admin/TelasTab";
 import { ConsultasTab } from "@/components/admin/ConsultasTab";
 import { GravacoesTab } from "@/components/admin/GravacoesTab";
 import { ProfissionaisTab } from "@/components/admin/ProfissionaisTab";
