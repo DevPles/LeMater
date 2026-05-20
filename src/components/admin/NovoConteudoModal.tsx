@@ -1,10 +1,11 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { adminUpsertCurso, adminUpsertModulo, adminUpsertAula } from "@/lib/cursos.functions";
 import { upsertMaterial } from "@/lib/admin.functions";
+import { ContentCard } from "@/components/ContentCard";
 
-const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48" };
+const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48", gold: "#B8923A" };
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
