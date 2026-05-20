@@ -566,13 +566,15 @@ function CursoPreview({ curso, aulas }: { curso: any; aulas: AulaLocal[] }) {
     ? { label: "Conteúdo grátis", color: c.sage }
     : { label: "Conteúdo pago", color: c.gold };
   const precoLabel = ehGratis ? null : (curso.preco_label || (curso.preco_centavos ? `R$ ${(curso.preco_centavos / 100).toFixed(2).replace(".", ",")}` : null));
+  const descricaoPreview = curso.descricao_curta || curso.descricao_longa || "Descrição curta aparece aqui.";
   return (
     <ContentCard
+      key={`${curso.area}-${curso.titulo}-${descricaoPreview}-${curso.categoria}-${curso.nivel}-${totalAulas}`}
       numero="01"
       categoria={`${curso.categoria || "—"} · ${curso.nivel || ""}`}
       badge={badge}
       titulo={curso.titulo || "Título do curso"}
-      descricao={curso.descricao_curta || "Descrição curta aparece aqui."}
+      descricao={descricaoPreview}
       capa_url={capaUrl}
       capa_video_url={capaVideoUrl}
       metaLabel="Conteúdo"
@@ -594,13 +596,15 @@ function MaterialPreview({ material, isServico }: { material: any; isServico: bo
       : { label: "Conteúdo pago", color: c.gold };
   const precoLabel = ehGratis ? null : (material.preco_label || null);
   const tipoLabel: Record<string, string> = { pdf: "PDF", video_externo: "Vídeo", video_upload: "Vídeo", artigo: "Artigo" };
+  const descricaoPreview = material.descricao || material.conteudo_html || "Descrição aparece aqui.";
   return (
     <ContentCard
+      key={`${isServico}-${material.area}-${material.titulo}-${descricaoPreview}-${material.categoria}-${material.tipo}`}
       numero="01"
       categoria={isServico ? "Serviço" : (material.categoria || "—")}
       badge={badge}
       titulo={material.titulo || (isServico ? "Nome do serviço" : "Título do material")}
-      descricao={material.descricao || "Descrição aparece aqui."}
+      descricao={descricaoPreview}
       capa_url={capaUrl}
       metaLabel="Formato"
       metaValor={tipoLabel[material.tipo] ?? "—"}
