@@ -92,49 +92,9 @@ type Field =
 
 const SCREENS: Screen[] = [
   {
-    key: "videos",
-    label: "Vídeos",
-    description: "Vídeos educativos exibidos na biblioteca.",
-    defaults: VIDEOS_DEFAULT,
-    fields: [
-      {
-        kind: "list", path: "videos", label: "Vídeos",
-        itemFields: [
-          { key: "title", label: "Título", kind: "text" },
-          { key: "author", label: "Autor", kind: "text" },
-          { key: "role", label: "Cargo", kind: "text" },
-          { key: "duration", label: "Duração", kind: "text" },
-          { key: "category", label: "Categoria", kind: "text" },
-        ],
-      },
-    ],
-  },
-  {
-    key: "cartao",
-    label: "Cartão da Gestante",
-    description: "Dados da paciente e sinais vitais exibidos no cartão.",
-    defaults: CARTAO_DEFAULT,
-    fields: [
-      { kind: "text", path: "patientName", label: "Nome da paciente" },
-      { kind: "number", path: "patientAge", label: "Idade" },
-      { kind: "text", path: "bloodType", label: "Tipo sanguíneo" },
-      { kind: "text", path: "dum", label: "DUM (dd/mm/aaaa)" },
-      { kind: "text", path: "dpp", label: "DPP (dd/mm/aaaa)" },
-      { kind: "number", path: "weeks", label: "Semanas" },
-      {
-        kind: "list", path: "vitals", label: "Sinais vitais",
-        itemFields: [
-          { key: "label", label: "Indicador", kind: "text" },
-          { key: "value", label: "Valor", kind: "text" },
-          { key: "change", label: "Status / variação", kind: "text" },
-        ],
-      },
-    ],
-  },
-  {
     key: "gestacao",
     label: "Gestação",
-    description: "Cabeçalho da tela de evolução por trimestre.",
+    description: "Cabeçalho da tela de evolução por trimestre exibida no app.",
     defaults: GESTACAO_DEFAULT,
     fields: [
       { kind: "text", path: "pageTitle", label: "Título da página" },
@@ -142,6 +102,12 @@ const SCREENS: Screen[] = [
     ],
   },
 ];
+// Observação:
+// - Os vídeos educativos agora são gerenciados em "Atlas" (não há mais
+//   conteúdo estático aqui).
+// - O Cartão da Gestante consome dados reais do banco (profiles +
+//   clinical_measurements / exam_results / vaccinations) e não precisa
+//   de edição manual nesta tela.
 
 /* ============ Componente ============ */
 
