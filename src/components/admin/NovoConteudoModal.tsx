@@ -1,10 +1,11 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { adminUpsertCurso, adminUpsertModulo, adminUpsertAula } from "@/lib/cursos.functions";
 import { upsertMaterial } from "@/lib/admin.functions";
+import { ContentCard } from "@/components/ContentCard";
 
-const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48" };
+const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48", gold: "#B8923A" };
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
@@ -65,6 +66,7 @@ export default function NovoConteudoModal({
     capaVideo: null as File | null,
     trailer_url: "",
     categoria: "geral", nivel: "iniciante", carga_horaria_min: 0,
+    area: "gratis" as "gratis" | "pago",
     preco_centavos: 0, preco_label: "", link_compra_externo: "", plataforma_venda: "",
     instrutor_nome: "", instrutor_bio: "", instrutor_foto: "",
     pdfsGratis: [] as File[],
@@ -140,6 +142,7 @@ export default function NovoConteudoModal({
 
     // 3. Upsert curso
     setBusyMsg("Criando curso…");
+    const ehGratis = curso.area === "gratis";
     const cursoRow = await upCurso({ data: {
       titulo: curso.titulo, slug: curso.slug,
       descricao_curta: curso.descricao_curta || null,
@@ -147,10 +150,10 @@ export default function NovoConteudoModal({
       capa_url, capa_video_url, trailer_url: curso.trailer_url || null,
       categoria: curso.categoria, nivel: curso.nivel,
       carga_horaria_min: Number(curso.carga_horaria_min) || 0,
-      preco_centavos: Number(curso.preco_centavos) || 0,
-      preco_label: curso.preco_label || null,
-      link_compra_externo: curso.link_compra_externo || null,
-      plataforma_venda: curso.plataforma_venda || null,
+      preco_centavos: ehGratis ? 0 : (Number(curso.preco_centavos) || 0),
+      preco_label: ehGratis ? "Grátis" : (curso.preco_label || null),
+      link_compra_externo: ehGratis ? null : (curso.link_compra_externo || null),
+      plataforma_venda: ehGratis ? null : (curso.plataforma_venda || null),
       publicado: curso.publicado, ordem: Number(curso.ordem) || 0,
       instrutor_nome: curso.instrutor_nome || null,
       instrutor_bio: curso.instrutor_bio || null,
@@ -203,7 +206,7 @@ export default function NovoConteudoModal({
         tipo: a.tipo, video_url, pdf_url,
         conteudo_html: a.tipo === "texto" ? (a.conteudo_html || null) : null,
         duracao_min: Number(a.duracao_min) || 0,
-        ordem: i, previa_gratis: a.previa_gratis,
+        ordem: i, previa_gratis: ehGratis ? true : a.previa_gratis,
         materiais_extras,
       } });
     }
@@ -248,9 +251,9 @@ export default function NovoConteudoModal({
   // ===== UI =====
   return (
     <div onClick={busy ? undefined : onClose} style={modalBg}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: c.cream, maxWidth: 900, width: "100%", maxHeight: "94vh", overflow: "auto", border: `1px solid ${c.border}` }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: c.cream, maxWidth: 1280, width: "100%", maxHeight: "94vh", overflow: "hidden", border: `1px solid ${c.border}`, display: "flex", flexDirection: "column" }}>
         {/* Header com seletor de tipo */}
-        <div style={{ padding: "24px 32px 0", position: "sticky", top: 0, background: c.cream, zIndex: 2 }}>
+        <div style={{ padding: "24px 32px 0", background: c.cream, borderBottom: `1px solid ${c.border}` }}>
           <div style={{ fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, marginBottom: 6 }}>Novo conteúdo</div>
           <h2 style={{ fontFamily: serif, fontSize: 30, fontWeight: 400, margin: "0 0 18px" }}>Criar novo item do Atlas</h2>
 
@@ -279,19 +282,31 @@ export default function NovoConteudoModal({
           </div>
         </div>
 
-        <div style={{ padding: "0 32px 24px" }}>
-          {tipo === "curso" && (
-            <FormCurso curso={curso} setCurso={setCurso} aulas={aulas} setAulas={setAulas} />
-          )}
-          {tipo === "material" && (
-            <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria />
-          )}
-          {tipo === "servico" && (
-            <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria={false} isServico />
-          )}
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 320px", flex: 1, minHeight: 0, overflow: "hidden" }}>
+          <div style={{ padding: "20px 32px 24px", overflow: "auto" }}>
+            {tipo === "curso" && (
+              <FormCurso curso={curso} setCurso={setCurso} aulas={aulas} setAulas={setAulas} />
+            )}
+            {tipo === "material" && (
+              <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria />
+            )}
+            {tipo === "servico" && (
+              <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria={false} isServico />
+            )}
+          </div>
+
+          <aside style={{ borderLeft: `1px solid ${c.border}`, background: c.warm, padding: "20px 18px", overflow: "auto" }}>
+            <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600 }}>Prévia do card</div>
+            {tipo === "curso"
+              ? <CursoPreview curso={curso} aulas={aulas} />
+              : <MaterialPreview material={material} isServico={tipo === "servico"} />}
+            <p style={{ fontSize: 10.5, color: c.muted, marginTop: 14, lineHeight: 1.5 }}>
+              É assim que o card aparece na vitrine do Atlas.
+            </p>
+          </aside>
         </div>
 
-        <div style={{ padding: "16px 32px 24px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${c.border}`, position: "sticky", bottom: 0, background: c.cream }}>
+        <div style={{ padding: "16px 32px 20px", display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${c.border}`, background: c.cream }}>
           {busy && <span style={{ alignSelf: "center", fontSize: 12, color: c.muted, marginRight: "auto" }}>{busyMsg}</span>}
           <button type="button" onClick={onClose} disabled={busy} style={{ ...btn(c.muted), opacity: busy ? 0.5 : 1 }}>Cancelar</button>
           <button type="button" onClick={salvar} disabled={busy} style={{ ...btn(c.sageDark), opacity: busy ? 0.6 : 1 }}>
@@ -319,10 +334,16 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
       <Field label="Descrição curta (vitrine)"><textarea value={curso.descricao_curta} onChange={(e) => setCurso({ ...curso, descricao_curta: e.target.value })} style={{ ...inp, minHeight: 60 }} /></Field>
       <Field label="Descrição longa (página de vendas)"><textarea value={curso.descricao_longa} onChange={(e) => setCurso({ ...curso, descricao_longa: e.target.value })} style={{ ...inp, minHeight: 110 }} /></Field>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14 }}>
         <Field label="Categoria"><input value={curso.categoria} onChange={(e) => setCurso({ ...curso, categoria: e.target.value })} style={inp} /></Field>
         <Field label="Nível"><select value={curso.nivel} onChange={(e) => setCurso({ ...curso, nivel: e.target.value })} style={inp}><option value="iniciante">Iniciante</option><option value="intermediario">Intermediário</option><option value="avancado">Avançado</option></select></Field>
-        <Field label="Carga horária (min)"><input type="number" value={curso.carga_horaria_min} onChange={(e) => setCurso({ ...curso, carga_horaria_min: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+        <Field label="Carga (min)"><input type="number" value={curso.carga_horaria_min} onChange={(e) => setCurso({ ...curso, carga_horaria_min: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+        <Field label="Acesso">
+          <select value={curso.area} onChange={(e) => setCurso({ ...curso, area: e.target.value as "gratis" | "pago" })} style={inp}>
+            <option value="gratis">Grátis (livre para todos)</option>
+            <option value="pago">Pago</option>
+          </select>
+        </Field>
       </div>
 
       <Field label="Capa (imagem — fallback / poster do vídeo)"><input type="file" accept="image/*" onChange={(e) => setCurso({ ...curso, capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
@@ -332,13 +353,17 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
       </Field>
       <Field label="Trailer (URL YouTube/Vimeo, opcional)"><input value={curso.trailer_url} onChange={(e) => setCurso({ ...curso, trailer_url: e.target.value })} style={inp} /></Field>
 
-      <div style={sectionTitle}>Venda</div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-        <Field label="Preço (centavos)"><input type="number" value={curso.preco_centavos} onChange={(e) => setCurso({ ...curso, preco_centavos: parseInt(e.target.value) || 0 })} style={inp} /></Field>
-        <Field label="Preço (texto)"><input value={curso.preco_label} onChange={(e) => setCurso({ ...curso, preco_label: e.target.value })} style={inp} placeholder="R$ 297" /></Field>
-        <Field label="Plataforma"><select value={curso.plataforma_venda} onChange={(e) => setCurso({ ...curso, plataforma_venda: e.target.value })} style={inp}><option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option></select></Field>
-      </div>
-      <Field label="Link de compra externo"><input value={curso.link_compra_externo} onChange={(e) => setCurso({ ...curso, link_compra_externo: e.target.value })} style={inp} placeholder="https://…" /></Field>
+      {curso.area === "pago" && (
+        <>
+          <div style={sectionTitle}>Venda</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+            <Field label="Preço (centavos)"><input type="number" value={curso.preco_centavos} onChange={(e) => setCurso({ ...curso, preco_centavos: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+            <Field label="Preço (texto)"><input value={curso.preco_label} onChange={(e) => setCurso({ ...curso, preco_label: e.target.value })} style={inp} placeholder="R$ 297" /></Field>
+            <Field label="Plataforma"><select value={curso.plataforma_venda} onChange={(e) => setCurso({ ...curso, plataforma_venda: e.target.value })} style={inp}><option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option></select></Field>
+          </div>
+          <Field label="Link de compra externo"><input value={curso.link_compra_externo} onChange={(e) => setCurso({ ...curso, link_compra_externo: e.target.value })} style={inp} placeholder="https://…" /></Field>
+        </>
+      )}
 
       <div style={sectionTitle}>Instrutor</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
@@ -379,10 +404,15 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
                   </select>
                 </Field>
                 <Field label="Duração (min)"><input type="number" value={a.duracao_min} onChange={(e) => updateAula(i, { duracao_min: parseInt(e.target.value) || 0 })} style={inp} /></Field>
-                <Field label="Prévia grátis">
-                  <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
-                    <input type="checkbox" checked={a.previa_gratis} onChange={(e) => updateAula(i, { previa_gratis: e.target.checked })} /> Liberar
-                  </label>
+                <Field label="Acesso">
+                  <select
+                    value={a.previa_gratis ? "gratis" : "pago"}
+                    onChange={(e) => updateAula(i, { previa_gratis: e.target.value === "gratis" })}
+                    style={inp}
+                  >
+                    <option value="gratis">Grátis</option>
+                    <option value="pago">Pago</option>
+                  </select>
                 </Field>
               </div>
 
@@ -507,3 +537,71 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
     </div>
   );
 }
+
+// ================= PRÉVIA AO VIVO =================
+
+function useObjectUrl(file: File | null): string | null {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!file) { setUrl(null); return; }
+    const u = URL.createObjectURL(file);
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [file]);
+  return url;
+}
+
+function CursoPreview({ curso, aulas }: { curso: any; aulas: AulaLocal[] }) {
+  const capaUrl = useObjectUrl(curso.capa);
+  const capaVideoUrl = useObjectUrl(curso.capaVideo);
+  const totalAulas = useMemo(() => aulas.filter((a) => a.titulo.trim()).length, [aulas]);
+  const ehGratis = curso.area === "gratis";
+  const badge = ehGratis
+    ? { label: "Conteúdo grátis", color: c.sage }
+    : { label: "Conteúdo pago", color: c.gold };
+  const precoLabel = ehGratis ? null : (curso.preco_label || (curso.preco_centavos ? `R$ ${(curso.preco_centavos / 100).toFixed(2).replace(".", ",")}` : null));
+  return (
+    <ContentCard
+      numero="01"
+      categoria={`${curso.categoria || "—"} · ${curso.nivel || ""}`}
+      badge={badge}
+      titulo={curso.titulo || "Título do curso"}
+      descricao={curso.descricao_curta || "Descrição curta aparece aqui."}
+      capa_url={capaUrl}
+      capa_video_url={capaVideoUrl}
+      metaLabel="Conteúdo"
+      metaValor={`${totalAulas} ${totalAulas === 1 ? "aula" : "aulas"}${curso.carga_horaria_min > 0 ? ` · ${Math.round(curso.carga_horaria_min / 60)}h` : ""}`}
+      precoLabel={precoLabel}
+      ctaLabel={ehGratis ? "Acessar grátis" : "Ver conteúdo"}
+      onAction={() => {}}
+    />
+  );
+}
+
+function MaterialPreview({ material, isServico }: { material: any; isServico: boolean }) {
+  const capaUrl = useObjectUrl(material.capa);
+  const ehGratis = !isServico && material.area === "gratis";
+  const badge = isServico
+    ? { label: "Serviço", color: c.gold }
+    : ehGratis
+      ? { label: "Conteúdo grátis", color: c.sage }
+      : { label: "Conteúdo pago", color: c.gold };
+  const precoLabel = ehGratis ? null : (material.preco_label || null);
+  const tipoLabel: Record<string, string> = { pdf: "PDF", video_externo: "Vídeo", video_upload: "Vídeo", artigo: "Artigo" };
+  return (
+    <ContentCard
+      numero="01"
+      categoria={isServico ? "Serviço" : (material.categoria || "—")}
+      badge={badge}
+      titulo={material.titulo || (isServico ? "Nome do serviço" : "Título do material")}
+      descricao={material.descricao || "Descrição aparece aqui."}
+      capa_url={capaUrl}
+      metaLabel="Formato"
+      metaValor={tipoLabel[material.tipo] ?? "—"}
+      precoLabel={precoLabel}
+      ctaLabel={material.cta_label || (isServico ? "Agendar" : ehGratis ? "Baixar grátis" : "Comprar")}
+      onAction={() => {}}
+    />
+  );
+}
+
