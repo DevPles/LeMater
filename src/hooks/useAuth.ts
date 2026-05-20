@@ -19,19 +19,24 @@ export function useAuth(): AuthState {
   const [rolesLoaded, setRolesLoaded] = useState(false);
   const [roles, setRoles] = useState<Role[]>([]);
   const [hasPaidAccess, setHasPaidAccess] = useState(false);
+  const userId = session?.user?.id;
 
   useEffect(() => {
     let mounted = true;
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
-      if (!mounted) return;
-      setSession(s);
-      setSessionLoaded(true);
-    });
+    let restored = false;
 
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
+      restored = true;
       setSession(data.session);
+      setSessionLoaded(true);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      if (!mounted) return;
+      if (event === "INITIAL_SESSION" && !restored) return;
+      restored = true;
+      setSession(s);
       setSessionLoaded(true);
     });
 
@@ -43,7 +48,7 @@ export function useAuth(): AuthState {
 
   useEffect(() => {
     let mounted = true;
-    if (!session?.user) {
+    if (!userId) {
       setRoles([]);
       setHasPaidAccess(false);
       // If session resolved as null, roles are "loaded" (none).
@@ -51,15 +56,10 @@ export function useAuth(): AuthState {
       return;
     }
     setRolesLoaded(false);
-    const uid = session.user.id;
 
     Promise.all([
-      supabase.from("user_roles").select("role").eq("user_id", uid),
-      supabase
-        .from("app_acesso_pago")
-        .select("ativo")
-        .eq("user_id", uid)
-        .maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", userId),
+      supabase.from("app_acesso_pago").select("ativo").eq("user_id", userId).maybeSingle(),
     ]).then(([rolesRes, accessRes]) => {
       if (!mounted) return;
       setRoles(((rolesRes.data ?? []) as { role: Role }[]).map((r) => r.role));
@@ -70,7 +70,7 @@ export function useAuth(): AuthState {
     return () => {
       mounted = false;
     };
-  }, [session?.user?.id, sessionLoaded]);
+  }, [userId, sessionLoaded]);
 
   return {
     session,
