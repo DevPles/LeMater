@@ -362,23 +362,23 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
         <>
           <div style={sectionTitle}>Venda</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-            <Field label="Preço (centavos)"><input type="number" value={curso.preco_centavos} onChange={(e) => setCurso({ ...curso, preco_centavos: parseInt(e.target.value) || 0 })} style={inp} /></Field>
-            <Field label="Preço (texto)"><input value={curso.preco_label} onChange={(e) => setCurso({ ...curso, preco_label: e.target.value })} style={inp} placeholder="R$ 297" /></Field>
-            <Field label="Plataforma"><select value={curso.plataforma_venda} onChange={(e) => setCurso({ ...curso, plataforma_venda: e.target.value })} style={inp}><option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option></select></Field>
+            <Field label="Preço (centavos)"><input {...noAuto} name="curso-preco-centavos" type="number" value={curso.preco_centavos} onInput={(e) => handleCursoInput({ preco_centavos: parseInt(e.currentTarget.value) || 0 })} onChange={(e) => handleCursoInput({ preco_centavos: parseInt(e.currentTarget.value) || 0 })} style={inp} /></Field>
+            <Field label="Preço (texto)"><input {...noAuto} name="curso-preco-label" value={curso.preco_label} onInput={(e) => handleCursoInput({ preco_label: e.currentTarget.value })} onChange={(e) => handleCursoInput({ preco_label: e.currentTarget.value })} style={inp} placeholder="R$ 297" /></Field>
+            <Field label="Plataforma"><select {...noAuto} name="curso-plataforma" value={curso.plataforma_venda} onInput={(e) => handleCursoInput({ plataforma_venda: e.currentTarget.value })} onChange={(e) => handleCursoInput({ plataforma_venda: e.currentTarget.value })} style={inp}><option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option></select></Field>
           </div>
-          <Field label="Link de compra externo"><input value={curso.link_compra_externo} onChange={(e) => setCurso({ ...curso, link_compra_externo: e.target.value })} style={inp} placeholder="https://…" /></Field>
+          <Field label="Link de compra externo"><input {...noAuto} name="curso-link-compra" value={curso.link_compra_externo} onInput={(e) => handleCursoInput({ link_compra_externo: e.currentTarget.value })} onChange={(e) => handleCursoInput({ link_compra_externo: e.currentTarget.value })} style={inp} placeholder="https://…" /></Field>
         </>
       )}
 
       <div style={sectionTitle}>Instrutor</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <Field label="Nome"><input value={curso.instrutor_nome} onChange={(e) => setCurso({ ...curso, instrutor_nome: e.target.value })} style={inp} /></Field>
-        <Field label="Foto (URL)"><input value={curso.instrutor_foto} onChange={(e) => setCurso({ ...curso, instrutor_foto: e.target.value })} style={inp} /></Field>
+        <Field label="Nome"><input {...noAuto} name="curso-instrutor-nome" value={curso.instrutor_nome} onInput={(e) => handleCursoInput({ instrutor_nome: e.currentTarget.value })} onChange={(e) => handleCursoInput({ instrutor_nome: e.currentTarget.value })} style={inp} /></Field>
+        <Field label="Foto (URL)"><input {...noAuto} name="curso-instrutor-foto" value={curso.instrutor_foto} onInput={(e) => handleCursoInput({ instrutor_foto: e.currentTarget.value })} onChange={(e) => handleCursoInput({ instrutor_foto: e.currentTarget.value })} style={inp} /></Field>
       </div>
-      <Field label="Bio"><textarea value={curso.instrutor_bio} onChange={(e) => setCurso({ ...curso, instrutor_bio: e.target.value })} style={{ ...inp, minHeight: 60 }} /></Field>
+      <Field label="Bio"><textarea {...noAuto} name="curso-instrutor-bio" value={curso.instrutor_bio} onInput={(e) => handleCursoInput({ instrutor_bio: e.currentTarget.value })} onChange={(e) => handleCursoInput({ instrutor_bio: e.currentTarget.value })} style={{ ...inp, minHeight: 60 }} /></Field>
 
       <div style={sectionTitle}>PDFs grátis do curso (download na página)</div>
-      <input type="file" accept="application/pdf,.pdf" multiple onChange={(e) => setCurso({ ...curso, pdfsGratis: Array.from(e.target.files ?? []) })} style={inp} />
+      <input {...noAuto} name="curso-pdfs-gratis" type="file" accept="application/pdf,.pdf" multiple onChange={(e) => updateCurso({ pdfsGratis: Array.from(e.target.files ?? []) })} style={inp} />
       {curso.pdfsGratis.length > 0 && (
         <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 4 }}>
           {curso.pdfsGratis.map((f: File, i: number) => (
@@ -451,10 +451,10 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 8 }}>
-        <Field label="Ordem"><input type="number" value={curso.ordem} onChange={(e) => setCurso({ ...curso, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+        <Field label="Ordem"><input {...noAuto} name="curso-ordem" type="number" value={curso.ordem} onInput={(e) => handleCursoInput({ ordem: parseInt(e.currentTarget.value) || 0 })} onChange={(e) => handleCursoInput({ ordem: parseInt(e.currentTarget.value) || 0 })} style={inp} /></Field>
         <Field label="Publicado">
           <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
-            <input type="checkbox" checked={curso.publicado} onChange={(e) => setCurso({ ...curso, publicado: e.target.checked })} /> Visível ao público
+            <input {...noAuto} name="curso-publicado" type="checkbox" checked={curso.publicado} onChange={(e) => updateCurso({ publicado: e.target.checked })} /> Visível ao público
           </label>
         </Field>
       </div>
