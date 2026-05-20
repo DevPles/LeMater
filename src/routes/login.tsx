@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import logoMonograma from "@/assets/logo_monograma.png";
+import { resolvePostLoginPath, waitForActiveSession } from "@/lib/auth-routing";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -70,17 +71,12 @@ function LoginPage() {
       });
       if (error) throw error;
 
-      let isAdmin = false;
-      if (data.user?.id) {
-        const { data: roles } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.user.id);
-        isAdmin = (roles ?? []).some((role) => role.role === "admin");
-      }
+      const session = await waitForActiveSession(data.user?.id);
+      if (!session) throw new Error("Sessão não foi confirmada. Tente entrar novamente.");
+      const destino = await resolvePostLoginPath(session.user.id, "/app/membro");
 
       toast.success("Login realizado com sucesso.");
-      navigate({ to: isAdmin ? "/app/admin" : "/app/membro" });
+      navigate({ to: destino });
     } catch (error) {
       toast.error((error as Error).message || "Não foi possível entrar.");
     } finally {

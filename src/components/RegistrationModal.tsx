@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistritos, useBairros, useUbs } from "@/hooks/useLocalidades";
+import { resolvePostLoginPath, waitForActiveSession } from "@/lib/auth-routing";
 
 const c = {
   cream: "#FAF5EE",
@@ -588,20 +589,10 @@ export default function RegistrationModal({
                       password: p,
                     });
                     if (error) throw error;
+                    const session = await waitForActiveSession(signInData.user?.id);
+                    if (!session) throw new Error("Sessão não foi confirmada. Tente entrar novamente.");
+                    const destino = await resolvePostLoginPath(session.user.id, "/app/home");
                     onOpenChange(false);
-
-                    // Detecta papel do usuário para direcionar à área correta
-                    const userId = signInData.user?.id;
-                    let destino: "/app/admin" | "/app/profissional" | "/app/home" = "/app/home";
-                    if (userId) {
-                      const { data: roles } = await supabase
-                        .from("user_roles")
-                        .select("role")
-                        .eq("user_id", userId);
-                      const list = (roles ?? []).map((r) => r.role as string);
-                      if (list.includes("admin")) destino = "/app/admin";
-                      else if (list.includes("profissional")) destino = "/app/profissional";
-                    }
                     navigate({ to: destino });
                   } catch (e) {
                     setLoginErro((e as Error).message || "Falha no login");
