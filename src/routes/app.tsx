@@ -205,10 +205,7 @@ function WelcomeScreen() {
                 whiteSpace: "nowrap",
               }}
             >
-              <span style={{ fontFamily: serif, fontSize: 14, fontWeight: 700, letterSpacing: 0, textTransform: "none", color: c.sageDark }}>
-                Mãe Digital
-              </span>
-              Ir para o site
+              Site Le Mater
             </a>
           </div>
 
