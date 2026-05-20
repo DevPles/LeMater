@@ -1366,62 +1366,6 @@ function CursoPreview({ curso, aulas }: { curso: any; aulas: AulaLocal[] }) {
         ctaLabel={ehGratis ? "Acessar grátis" : "Ver conteúdo"}
         onAction={() => {}}
       />
-      <div
-        style={{
-          background: "rgba(255,255,255,0.52)",
-          border: `1px solid ${c.border}`,
-          padding: 12,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 9,
-            letterSpacing: "0.16em",
-            textTransform: "uppercase",
-            color: c.muted,
-            marginBottom: 8,
-          }}
-        >
-          Prévia da página de vendas
-        </div>
-        {videoPreviewUrl && (
-          <video
-            src={videoPreviewUrl}
-            controls
-            muted
-            playsInline
-            style={{
-              width: "100%",
-              maxHeight: 160,
-              objectFit: "cover",
-              background: c.ink,
-              marginBottom: 10,
-            }}
-          />
-        )}
-        <h3
-          style={{
-            fontFamily: serif,
-            fontSize: 20,
-            fontWeight: 400,
-            margin: "0 0 6px",
-            color: c.ink,
-          }}
-        >
-          {curso.titulo || "Título do curso"}
-        </h3>
-        <p
-          style={{
-            margin: 0,
-            color: c.muted,
-            fontSize: 11.5,
-            lineHeight: 1.55,
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          {curso.descricao_longa || curso.descricao_curta || "A descrição longa aparecerá aqui."}
-        </p>
-      </div>
     </div>
   );
 }
