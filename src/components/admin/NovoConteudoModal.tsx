@@ -605,6 +605,14 @@ function useObjectUrl(file: File | null): string | null {
   return url;
 }
 
+function isVideoFile(file: File | null | undefined) {
+  return !!file && file.type.startsWith("video/");
+}
+
+function isImageFile(file: File | null | undefined) {
+  return !!file && file.type.startsWith("image/");
+}
+
 function CursoPreview({ curso, aulas }: { curso: any; aulas: AulaLocal[] }) {
   const capaUrl = useObjectUrl(curso.capa);
   const capaVideoUrl = useObjectUrl(curso.capaVideo);
@@ -615,22 +623,37 @@ function CursoPreview({ curso, aulas }: { curso: any; aulas: AulaLocal[] }) {
     : { label: "Conteúdo pago", color: c.gold };
   const precoLabel = ehGratis ? null : (curso.preco_label || (curso.preco_centavos ? `R$ ${(curso.preco_centavos / 100).toFixed(2).replace(".", ",")}` : null));
   const descricaoPreview = curso.descricao_curta || curso.descricao_longa || "Descrição curta aparece aqui.";
+  const capaEhVideo = isVideoFile(curso.capa);
+  const videoPreviewUrl = capaVideoUrl || (capaEhVideo ? capaUrl : null);
+  const imagemPreviewUrl = isImageFile(curso.capa) ? capaUrl : null;
   return (
-    <ContentCard
-      key={`${curso.area}-${curso.titulo}-${descricaoPreview}-${curso.categoria}-${curso.nivel}-${totalAulas}`}
-      numero="01"
-      categoria={`${curso.categoria || "—"} · ${curso.nivel || ""}`}
-      badge={badge}
-      titulo={curso.titulo || "Título do curso"}
-      descricao={descricaoPreview}
-      capa_url={capaUrl}
-      capa_video_url={capaVideoUrl}
-      metaLabel="Conteúdo"
-      metaValor={`${totalAulas} ${totalAulas === 1 ? "aula" : "aulas"}${curso.carga_horaria_min > 0 ? ` · ${Math.round(curso.carga_horaria_min / 60)}h` : ""}`}
-      precoLabel={precoLabel}
-      ctaLabel={ehGratis ? "Acessar grátis" : "Ver conteúdo"}
-      onAction={() => {}}
-    />
+    <div style={{ display: "grid", gap: 14 }}>
+      <ContentCard
+        key={`${curso.area}-${curso.titulo}-${descricaoPreview}-${curso.descricao_longa}-${curso.categoria}-${curso.nivel}-${totalAulas}-${videoPreviewUrl}`}
+        numero="01"
+        categoria={`${curso.categoria || "—"} · ${curso.nivel || ""}`}
+        badge={badge}
+        titulo={curso.titulo || "Título do curso"}
+        descricao={descricaoPreview}
+        capa_url={imagemPreviewUrl}
+        capa_video_url={videoPreviewUrl}
+        metaLabel="Conteúdo"
+        metaValor={`${totalAulas} ${totalAulas === 1 ? "aula" : "aulas"}${curso.carga_horaria_min > 0 ? ` · ${Math.round(curso.carga_horaria_min / 60)}h` : ""}`}
+        precoLabel={precoLabel}
+        ctaLabel={ehGratis ? "Acessar grátis" : "Ver conteúdo"}
+        onAction={() => {}}
+      />
+      <div style={{ background: "rgba(255,255,255,0.52)", border: `1px solid ${c.border}`, padding: 12 }}>
+        <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", color: c.muted, marginBottom: 8 }}>Prévia da página de vendas</div>
+        {videoPreviewUrl && (
+          <video src={videoPreviewUrl} controls muted playsInline style={{ width: "100%", maxHeight: 160, objectFit: "cover", background: c.ink, marginBottom: 10 }} />
+        )}
+        <h3 style={{ fontFamily: serif, fontSize: 20, fontWeight: 400, margin: "0 0 6px", color: c.ink }}>{curso.titulo || "Título do curso"}</h3>
+        <p style={{ margin: 0, color: c.muted, fontSize: 11.5, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>
+          {curso.descricao_longa || curso.descricao_curta || "A descrição longa aparecerá aqui."}
+        </p>
+      </div>
+    </div>
   );
 }
 
