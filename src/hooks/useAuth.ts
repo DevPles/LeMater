@@ -22,16 +22,20 @@ export function useAuth(): AuthState {
 
   useEffect(() => {
     let mounted = true;
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
-      if (!mounted) return;
-      setSession(s);
-      setSessionLoaded(true);
-    });
+    let restored = false;
 
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
+      restored = true;
       setSession(data.session);
+      setSessionLoaded(true);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      if (!mounted) return;
+      if (event === "INITIAL_SESSION" && !restored) return;
+      restored = true;
+      setSession(s);
       setSessionLoaded(true);
     });
 
