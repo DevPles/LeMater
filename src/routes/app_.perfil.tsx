@@ -200,11 +200,25 @@ function PerfilPage() {
     setMsg(null);
     try {
       const telefoneDigits = telefone.replace(/\D/g, "");
+      const cpfDigits = cpf.replace(/\D/g, "");
+      const toIntOrNull = (s: string) => {
+        const n = parseInt(s, 10);
+        return Number.isFinite(n) && n >= 0 ? n : null;
+      };
       const { error } = await supabase
         .from("profiles")
         .update({
           nome: nome.trim() || null,
           telefone: telefoneDigits || null,
+          cpf: cpfDigits || null,
+          data_nascimento: dataNasc || null,
+          cidade: cidade.trim() || null,
+          bairro: bairro.trim() || null,
+          unidade_saude: ubs.trim() || null,
+          dum: dum || null,
+          numero_gestacoes: toIntOrNull(numeroGestacoes),
+          numero_partos: toIntOrNull(numeroPartos),
+          numero_abortos: toIntOrNull(numeroAbortos),
         })
         .eq("user_id", session.user.id);
       if (error) throw error;
