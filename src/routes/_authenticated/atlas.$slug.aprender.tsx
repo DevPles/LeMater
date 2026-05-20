@@ -73,7 +73,7 @@ function Player() {
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
       <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${c.border}`, padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <Link to="/membro"><img src={lemateLogo} alt="Le Mater" style={{ height: 36 }} /></Link>
+          <Link to="/app/membro"><img src={lemateLogo} alt="Le Mater" style={{ height: 36 }} /></Link>
           <div>
             <div style={{ fontSize: 10, letterSpacing: "0.18em", color: c.muted }}>ATLAS MATERNO</div>
             <div style={{ fontFamily: serif, fontSize: 18 }}>{curso.titulo}</div>
@@ -84,7 +84,7 @@ function Player() {
           <div style={{ width: 140, height: 6, background: c.border, position: "relative" }}>
             <div style={{ width: `${pct}%`, height: "100%", background: c.sageDark }} />
           </div>
-          <button onClick={() => navigate({ to: "/membro" })} style={btnSm(c.sage)}>Minha área</button>
+          <button onClick={() => navigate({ to: "/app/membro" })} style={btnSm(c.sage)}>Minha área</button>
         </div>
       </nav>
 
@@ -161,7 +161,7 @@ function Shell({ children }: { children: any }) {
   return (
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
       <nav style={{ background: c.cream, borderBottom: `1px solid ${c.border}`, padding: "14px 28px" }}>
-        <Link to="/membro"><img src={lemateLogo} alt="Le Mater" style={{ height: 36 }} /></Link>
+        <Link to="/app/membro"><img src={lemateLogo} alt="Le Mater" style={{ height: 36 }} /></Link>
       </nav>
       {children}
     </div>
