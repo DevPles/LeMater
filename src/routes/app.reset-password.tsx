@@ -55,8 +55,8 @@ function ResetPasswordPage() {
 
   const handleSalvar = async () => {
     setMsg(null);
-    if (novaSenha.length < 6) {
-      setMsg({ type: "err", text: "A senha precisa ter ao menos 6 caracteres." });
+    if (novaSenha.length < 4) {
+      setMsg({ type: "err", text: "A senha precisa ter ao menos 4 caracteres." });
       return;
     }
     if (novaSenha !== confirmar) {
