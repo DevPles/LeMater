@@ -399,7 +399,7 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
         </Field>
       </div>
 
-      <Field label="Capa (imagem — fallback / poster do vídeo)"><input {...noAuto} name="curso-capa" type="file" accept="image/*" onChange={(e) => updateCurso({ capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
+      <Field label="Capa (imagem ou vídeo — fallback / poster do vídeo)"><input {...noAuto} name="curso-capa" type="file" accept="image/*,video/mp4,video/webm,video/*" onChange={(e) => updateCurso({ capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
       <Field label="Vídeo de capa (loop curto 3–6s, opcional — substitui a imagem na vitrine)">
         <input {...noAuto} name="curso-capa-video" type="file" accept="video/mp4,video/webm" onChange={(e) => updateCurso({ capaVideo: e.target.files?.[0] ?? null })} style={inp} />
         {curso.capaVideo && <div style={{ fontSize: 11, color: c.muted, marginTop: 6 }}>{curso.capaVideo.name} · {(curso.capaVideo.size / 1024 / 1024).toFixed(1)} MB</div>}
