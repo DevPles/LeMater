@@ -16,6 +16,7 @@ export type GestanteProfile = {
   user_id: string;
   nome: string | null;
   email: string | null;
+  cpf: string | null;
   dum: string | null; // ISO date
   telefone: string | null;
   foto_url: string | null;
@@ -24,6 +25,8 @@ export type GestanteProfile = {
   cidade: string | null;
   bairro: string | null;
   unidade_saude: string | null;
+  district_id: string | null;
+  health_unit_id: string | null;
   numero_gestacoes: number | null;
   numero_partos: number | null;
   numero_abortos: number | null;
