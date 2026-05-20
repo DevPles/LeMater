@@ -404,10 +404,15 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
                   </select>
                 </Field>
                 <Field label="Duração (min)"><input type="number" value={a.duracao_min} onChange={(e) => updateAula(i, { duracao_min: parseInt(e.target.value) || 0 })} style={inp} /></Field>
-                <Field label="Prévia grátis">
-                  <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
-                    <input type="checkbox" checked={a.previa_gratis} onChange={(e) => updateAula(i, { previa_gratis: e.target.checked })} /> Liberar
-                  </label>
+                <Field label="Acesso">
+                  <select
+                    value={a.previa_gratis ? "gratis" : "pago"}
+                    onChange={(e) => updateAula(i, { previa_gratis: e.target.value === "gratis" })}
+                    style={inp}
+                  >
+                    <option value="gratis">Grátis</option>
+                    <option value="pago">Pago</option>
+                  </select>
                 </Field>
               </div>
 
