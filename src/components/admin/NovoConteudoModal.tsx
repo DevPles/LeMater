@@ -10,6 +10,7 @@ const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
 const inp: CSSProperties = { width: "100%", background: "white", border: `1px solid ${c.border}`, padding: "10px 12px", fontSize: 14, fontFamily: sans, color: c.ink, outline: "none" };
+const noAuto = { autoComplete: "off", autoCorrect: "off", autoCapitalize: "off", spellCheck: false } as const;
 const modalBg: CSSProperties = { position: "fixed", inset: 0, background: "rgba(28,28,26,0.65)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 };
 const btn = (bg: string): CSSProperties => ({ background: bg, color: "white", fontSize: 12, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase", padding: "12px 22px", border: "none", cursor: "pointer", fontFamily: sans });
 const btnSm = (bg: string): CSSProperties => ({ background: bg, color: "white", fontSize: 11, fontWeight: 500, letterSpacing: "0.08em", padding: "6px 12px", border: "none", cursor: "pointer", fontFamily: sans });
