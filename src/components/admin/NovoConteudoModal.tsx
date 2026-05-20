@@ -66,6 +66,7 @@ export default function NovoConteudoModal({
     capaVideo: null as File | null,
     trailer_url: "",
     categoria: "geral", nivel: "iniciante", carga_horaria_min: 0,
+    area: "gratis" as "gratis" | "pago",
     preco_centavos: 0, preco_label: "", link_compra_externo: "", plataforma_venda: "",
     instrutor_nome: "", instrutor_bio: "", instrutor_foto: "",
     pdfsGratis: [] as File[],
