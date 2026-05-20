@@ -11,11 +11,12 @@ export async function waitForActiveSession(expectedUserId?: string, timeoutMs = 
 
   return new Promise((resolve) => {
     let resolved = false;
+    let unsubscribe: (() => void) | null = null;
     const finish = (session: Session | null) => {
       if (resolved) return;
       resolved = true;
       window.clearTimeout(timer);
-      subscription.unsubscribe();
+      unsubscribe?.();
       resolve(session);
     };
 
@@ -23,6 +24,7 @@ export async function waitForActiveSession(expectedUserId?: string, timeoutMs = 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session && (!expectedUserId || session.user.id === expectedUserId)) finish(session);
     });
+    unsubscribe = () => subscription.unsubscribe();
   });
 }
 
