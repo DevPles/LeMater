@@ -6,7 +6,7 @@ import { listCursosVitrine, type CursoVitrine } from "@/lib/cursos.functions";
 import { ContentCard } from "@/components/ContentCard";
 import { CursoModal } from "@/components/CursoModal";
 
-export const Route = createFileRoute("/app/videos")({
+export const Route = createFileRoute("/app_/videos")({
   head: () => ({
     meta: [
       { title: "App — Atlas Materno — MãeDigital" },

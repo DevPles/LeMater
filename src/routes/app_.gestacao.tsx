@@ -5,7 +5,7 @@ import { LiquidCard } from "@/components/LiquidCard";
 import { useScreenContent } from "@/hooks/useScreenContent";
 import { GESTACAO_DEFAULT } from "@/lib/screen-defaults";
 
-export const Route = createFileRoute("/app/gestacao")({
+export const Route = createFileRoute("/app_/gestacao")({
   head: () => ({
     meta: [
       { title: "App — Minha Gestação por Trimestre — MãeDigital" },

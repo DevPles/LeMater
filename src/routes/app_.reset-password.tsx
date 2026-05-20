@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoadingMessage } from "@/components/LoadingMessage";
 
-export const Route = createFileRoute("/app/reset-password")({
+export const Route = createFileRoute("/app_/reset-password")({
   head: () => ({
     meta: [
       { title: "App — Redefinir senha — MãeDigital" },
