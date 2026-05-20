@@ -447,7 +447,7 @@ export default function NovoConteudoModal({
 
   // ===== UI =====
   return (
-    <div onClick={busy ? undefined : onClose} style={modalBg}>
+    <div style={modalBg}>
       <form
         autoComplete="off"
         onSubmit={(e) => e.preventDefault()}
