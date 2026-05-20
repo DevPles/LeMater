@@ -26,7 +26,6 @@ export function useAuth(): AuthState {
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       if (!mounted) return;
-      if (event === "INITIAL_SESSION") return;
       setSession(s);
       setSessionLoaded(true);
     });
