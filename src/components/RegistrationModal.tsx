@@ -270,7 +270,18 @@ export default function RegistrationModal({
         email: email.trim(),
         password: senhaCadastro,
         options: {
-          data: { nome: nome.trim(), dum: dumIso ?? "", cpf: normalizeCpf(cpf) },
+          data: {
+            nome: nome.trim(),
+            dum: dumIso ?? "",
+            cpf: normalizeCpf(cpf),
+            telefone: whatsapp || "",
+            data_nascimento: dataNasc || "",
+            bairro: bairro || "",
+            cidade: cidade || "Ribeirão Preto",
+            unidade_saude: ubs || "",
+            district_id: districtId || "",
+            health_unit_id: healthUnitId || "",
+          },
           emailRedirectTo: window.location.origin + "/app/home",
         },
       });
