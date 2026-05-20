@@ -159,18 +159,23 @@ export default function NovoConteudoModal({
   const salvarCurso = async () => {
     if (!curso.titulo || !curso.slug) { throw new Error("Título e slug são obrigatórios"); }
 
-    // 1. Upload capa
+    // 1. Upload capa / vídeo selecionado no campo de capa
     setBusyMsg("Enviando capa…");
     let capa_url: string | null = null;
+    let capa_video_url: string | null = null;
     if (curso.capa) {
       const path = `cursos/${Date.now()}-${curso.capa.name.replace(/[^\w.-]/g, "_")}`;
       const { data: up, error } = await supabase.storage.from("materiais-capas").upload(path, curso.capa);
       if (error) throw new Error("Falha capa: " + error.message);
-      capa_url = supabase.storage.from("materiais-capas").getPublicUrl(up.path).data.publicUrl;
+      const publicUrl = supabase.storage.from("materiais-capas").getPublicUrl(up.path).data.publicUrl;
+      if (isVideoFile(curso.capa)) {
+        capa_video_url = publicUrl;
+      } else {
+        capa_url = publicUrl;
+      }
     }
 
     // 1b. Upload vídeo de capa (loop)
-    let capa_video_url: string | null = null;
     if (curso.capaVideo) {
       setBusyMsg("Enviando vídeo de capa…");
       const path = `cursos/video/${Date.now()}-${curso.capaVideo.name.replace(/[^\w.-]/g, "_")}`;
