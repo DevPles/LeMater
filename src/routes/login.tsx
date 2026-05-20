@@ -66,7 +66,7 @@ function LoginPage() {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: form.loginEmail.trim(),
-        password: form.loginPassword,
+        password: form.loginPassword.trim(),
       });
       if (error) throw error;
 
