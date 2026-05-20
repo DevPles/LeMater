@@ -142,6 +142,7 @@ export default function NovoConteudoModal({
 
     // 3. Upsert curso
     setBusyMsg("Criando curso…");
+    const ehGratis = curso.area === "gratis";
     const cursoRow = await upCurso({ data: {
       titulo: curso.titulo, slug: curso.slug,
       descricao_curta: curso.descricao_curta || null,
@@ -149,10 +150,10 @@ export default function NovoConteudoModal({
       capa_url, capa_video_url, trailer_url: curso.trailer_url || null,
       categoria: curso.categoria, nivel: curso.nivel,
       carga_horaria_min: Number(curso.carga_horaria_min) || 0,
-      preco_centavos: Number(curso.preco_centavos) || 0,
-      preco_label: curso.preco_label || null,
-      link_compra_externo: curso.link_compra_externo || null,
-      plataforma_venda: curso.plataforma_venda || null,
+      preco_centavos: ehGratis ? 0 : (Number(curso.preco_centavos) || 0),
+      preco_label: ehGratis ? "Grátis" : (curso.preco_label || null),
+      link_compra_externo: ehGratis ? null : (curso.link_compra_externo || null),
+      plataforma_venda: ehGratis ? null : (curso.plataforma_venda || null),
       publicado: curso.publicado, ordem: Number(curso.ordem) || 0,
       instrutor_nome: curso.instrutor_nome || null,
       instrutor_bio: curso.instrutor_bio || null,
