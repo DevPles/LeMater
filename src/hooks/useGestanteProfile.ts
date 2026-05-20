@@ -16,6 +16,7 @@ export type GestanteProfile = {
   user_id: string;
   nome: string | null;
   email: string | null;
+  cpf: string | null;
   dum: string | null; // ISO date
   telefone: string | null;
   foto_url: string | null;
@@ -24,6 +25,8 @@ export type GestanteProfile = {
   cidade: string | null;
   bairro: string | null;
   unidade_saude: string | null;
+  district_id: string | null;
+  health_unit_id: string | null;
   numero_gestacoes: number | null;
   numero_partos: number | null;
   numero_abortos: number | null;
@@ -81,7 +84,7 @@ export function useGestanteProfile() {
     async function fetchProfile(userId: string) {
       const { data } = await supabase
         .from("profiles")
-        .select("id,user_id,nome,email,dum,telefone,foto_url,bebe_sexo,data_nascimento,cidade,bairro,unidade_saude,numero_gestacoes,numero_partos,numero_abortos,partos_classificacao")
+        .select("id,user_id,nome,email,cpf,dum,telefone,foto_url,bebe_sexo,data_nascimento,cidade,bairro,unidade_saude,district_id,health_unit_id,numero_gestacoes,numero_partos,numero_abortos,partos_classificacao")
         .eq("user_id", userId)
         .maybeSingle();
       if (active) setProfile((data as GestanteProfile | null) ?? null);

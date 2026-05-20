@@ -38,6 +38,15 @@ function PerfilPage() {
   const [email, setEmail] = useState("");
   const [salvandoEmail, setSalvandoEmail] = useState(false);
   const [telefone, setTelefone] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [dataNasc, setDataNasc] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [ubs, setUbs] = useState("");
+  const [dum, setDum] = useState("");
+  const [numeroGestacoes, setNumeroGestacoes] = useState<string>("");
+  const [numeroPartos, setNumeroPartos] = useState<string>("");
+  const [numeroAbortos, setNumeroAbortos] = useState<string>("");
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [bebeSexo, setBebeSexo] = useState<"masculino" | "feminino" | "neutro">("neutro");
   const [saving, setSaving] = useState(false);
@@ -57,6 +66,15 @@ function PerfilPage() {
       setNome(profile.nome ?? "");
       setEmail(profile.email ?? "");
       setTelefone(profile.telefone ? formatPhone(profile.telefone) : "");
+      setCpf(profile.cpf ?? "");
+      setDataNasc(profile.data_nascimento ?? "");
+      setCidade(profile.cidade ?? "");
+      setBairro(profile.bairro ?? "");
+      setUbs(profile.unidade_saude ?? "");
+      setDum(profile.dum ?? "");
+      setNumeroGestacoes(profile.numero_gestacoes != null ? String(profile.numero_gestacoes) : "");
+      setNumeroPartos(profile.numero_partos != null ? String(profile.numero_partos) : "");
+      setNumeroAbortos(profile.numero_abortos != null ? String(profile.numero_abortos) : "");
       setFotoUrl(profile.foto_url ?? null);
       setBebeSexo((profile.bebe_sexo as "masculino" | "feminino" | "neutro") ?? "neutro");
     }
@@ -182,11 +200,25 @@ function PerfilPage() {
     setMsg(null);
     try {
       const telefoneDigits = telefone.replace(/\D/g, "");
+      const cpfDigits = cpf.replace(/\D/g, "");
+      const toIntOrNull = (s: string) => {
+        const n = parseInt(s, 10);
+        return Number.isFinite(n) && n >= 0 ? n : null;
+      };
       const { error } = await supabase
         .from("profiles")
         .update({
           nome: nome.trim() || null,
           telefone: telefoneDigits || null,
+          cpf: cpfDigits || null,
+          data_nascimento: dataNasc || null,
+          cidade: cidade.trim() || null,
+          bairro: bairro.trim() || null,
+          unidade_saude: ubs.trim() || null,
+          dum: dum || null,
+          numero_gestacoes: toIntOrNull(numeroGestacoes),
+          numero_partos: toIntOrNull(numeroPartos),
+          numero_abortos: toIntOrNull(numeroAbortos),
         })
         .eq("user_id", session.user.id);
       if (error) throw error;
@@ -498,6 +530,121 @@ function PerfilPage() {
                 onChange={(e) => setTelefone(formatPhone(e.target.value))}
                 className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                 placeholder="(00) 00000-0000"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                CPF
+              </label>
+              <input
+                type="text"
+                value={cpf}
+                onChange={(e) => setCpf(e.target.value.replace(/\D/g, "").slice(0, 11))}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                placeholder="000.000.000-00"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Data de nascimento
+              </label>
+              <input
+                type="date"
+                value={dataNasc}
+                onChange={(e) => setDataNasc(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                DUM (data da última menstruação)
+              </label>
+              <input
+                type="date"
+                value={dum}
+                onChange={(e) => setDum(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Cidade
+              </label>
+              <input
+                type="text"
+                value={cidade}
+                onChange={(e) => setCidade(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                placeholder="Ribeirão Preto"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Bairro
+              </label>
+              <input
+                type="text"
+                value={bairro}
+                onChange={(e) => setBairro(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                placeholder="Bairro"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Unidade Básica de Saúde (UBS)
+              </label>
+              <input
+                type="text"
+                value={ubs}
+                onChange={(e) => setUbs(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                placeholder="Nome da UBS"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Nº de gestações
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={numeroGestacoes}
+                onChange={(e) => setNumeroGestacoes(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Nº de partos
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={numeroPartos}
+                onChange={(e) => setNumeroPartos(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Nº de abortos
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={numeroAbortos}
+                onChange={(e) => setNumeroAbortos(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
             </div>
 
