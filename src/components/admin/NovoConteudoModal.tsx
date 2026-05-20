@@ -314,7 +314,7 @@ export default function NovoConteudoModal({
             {busy ? "Salvando…" : "Salvar"}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
