@@ -329,11 +329,11 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
   return (
     <div style={{ display: "grid", gap: 14 }}>
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
-        <Field label="Título do curso"><input value={curso.titulo} onChange={(e) => setCurso({ ...curso, titulo: e.target.value })} style={inp} /></Field>
-        <Field label="Slug (URL)"><input value={curso.slug} onChange={(e) => setCurso({ ...curso, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} style={inp} placeholder="meu-curso" /></Field>
+        <Field label="Título do curso"><input {...noAuto} name="curso-titulo" value={curso.titulo} onChange={(e) => setCurso({ ...curso, titulo: e.target.value })} style={inp} placeholder="Ex.: Preparação para o parto" /></Field>
+        <Field label="Slug (URL)"><input {...noAuto} name="curso-slug" value={curso.slug} onChange={(e) => setCurso({ ...curso, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} style={inp} placeholder="meu-curso" /></Field>
       </div>
-      <Field label="Descrição curta (vitrine)"><textarea value={curso.descricao_curta} onChange={(e) => setCurso({ ...curso, descricao_curta: e.target.value })} style={{ ...inp, minHeight: 60 }} /></Field>
-      <Field label="Descrição longa (página de vendas)"><textarea value={curso.descricao_longa} onChange={(e) => setCurso({ ...curso, descricao_longa: e.target.value })} style={{ ...inp, minHeight: 110 }} /></Field>
+      <Field label="Descrição curta (vitrine)"><textarea {...noAuto} name="curso-desc-curta" value={curso.descricao_curta} onChange={(e) => setCurso({ ...curso, descricao_curta: e.target.value })} style={{ ...inp, minHeight: 60 }} placeholder="Aparece no card da vitrine (1-2 linhas)" /></Field>
+      <Field label="Descrição longa (página de vendas)"><textarea {...noAuto} name="curso-desc-longa" value={curso.descricao_longa} onChange={(e) => setCurso({ ...curso, descricao_longa: e.target.value })} style={{ ...inp, minHeight: 110 }} placeholder="Texto completo exibido na página do curso" /></Field>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14 }}>
         <Field label="Categoria"><input value={curso.categoria} onChange={(e) => setCurso({ ...curso, categoria: e.target.value })} style={inp} /></Field>
