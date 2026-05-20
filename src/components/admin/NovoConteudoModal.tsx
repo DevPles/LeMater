@@ -464,6 +464,7 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
 
 // ================= FORM MATERIAL / SERVIÇO =================
 function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = false }: any) {
+  const updateMaterial = (patch: Record<string, unknown>) => setMaterial((prev: any) => ({ ...prev, ...patch }));
   return (
     <div style={{ display: "grid", gap: 14 }}>
       {isServico && (
@@ -471,13 +472,13 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
           Categoria fixa: <strong style={{ color: c.ink }}>Serviço</strong>. Adicione um link de agendamento ou compra.
         </div>
       )}
-      <Field label="Título"><input value={material.titulo} onChange={(e) => setMaterial({ ...material, titulo: e.target.value })} style={inp} /></Field>
-      <Field label="Descrição"><textarea value={material.descricao} onChange={(e) => setMaterial({ ...material, descricao: e.target.value })} style={{ ...inp, minHeight: 70 }} /></Field>
+      <Field label="Título"><input {...noAuto} name={isServico ? "servico-titulo" : "material-titulo"} value={material.titulo} onInput={(e) => updateMaterial({ titulo: e.currentTarget.value })} onChange={(e) => updateMaterial({ titulo: e.currentTarget.value })} style={inp} /></Field>
+      <Field label="Descrição"><textarea {...noAuto} name={isServico ? "servico-descricao" : "material-descricao"} value={material.descricao} onInput={(e) => updateMaterial({ descricao: e.currentTarget.value })} onChange={(e) => updateMaterial({ descricao: e.currentTarget.value })} style={{ ...inp, minHeight: 70 }} /></Field>
 
       <div style={{ display: "grid", gridTemplateColumns: mostrarCategoria ? "1fr 1fr 1fr" : "1fr 1fr", gap: 14 }}>
         {mostrarCategoria && (
           <Field label="Categoria">
-            <select value={material.categoria} onChange={(e) => setMaterial({ ...material, categoria: e.target.value })} style={inp}>
+            <select {...noAuto} name="material-categoria" value={material.categoria} onInput={(e) => updateMaterial({ categoria: e.currentTarget.value })} onChange={(e) => updateMaterial({ categoria: e.currentTarget.value })} style={inp}>
               <option>Concepção</option>
               <option>Gestação</option>
               <option>Parto</option>
@@ -488,7 +489,7 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
           </Field>
         )}
         <Field label="Formato">
-          <select value={material.tipo} onChange={(e) => setMaterial({ ...material, tipo: e.target.value as any })} style={inp}>
+          <select {...noAuto} name={isServico ? "servico-formato" : "material-formato"} value={material.tipo} onInput={(e) => updateMaterial({ tipo: e.currentTarget.value as any })} onChange={(e) => updateMaterial({ tipo: e.currentTarget.value as any })} style={inp}>
             <option value="pdf">PDF</option>
             <option value="video_externo">Vídeo externo (URL)</option>
             <option value="video_upload">Vídeo upload</option>
@@ -497,7 +498,7 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
         </Field>
         {!isServico && (
           <Field label="Área">
-            <select value={material.area} onChange={(e) => setMaterial({ ...material, area: e.target.value as any })} style={inp}>
+            <select {...noAuto} name="material-area" value={material.area} onInput={(e) => updateMaterial({ area: e.currentTarget.value as any })} onChange={(e) => updateMaterial({ area: e.currentTarget.value as any })} style={inp}>
               <option value="gratis">Grátis (captura lead)</option>
               <option value="pago">Pago (assinantes)</option>
             </select>
@@ -507,35 +508,35 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
 
       {(material.tipo === "pdf" || material.tipo === "video_upload") && (
         <Field label={`Arquivo (${material.tipo === "pdf" ? "PDF" : "Vídeo"})`}>
-          <input type="file" accept={material.tipo === "pdf" ? "application/pdf" : "video/*"} onChange={(e) => setMaterial({ ...material, arquivo: e.target.files?.[0] ?? null })} style={inp} />
+          <input {...noAuto} name={isServico ? "servico-arquivo" : "material-arquivo"} type="file" accept={material.tipo === "pdf" ? "application/pdf" : "video/*"} onChange={(e) => updateMaterial({ arquivo: e.target.files?.[0] ?? null })} style={inp} />
         </Field>
       )}
       {material.tipo === "video_externo" && (
-        <Field label="URL do vídeo"><input value={material.conteudo_url} onChange={(e) => setMaterial({ ...material, conteudo_url: e.target.value })} style={inp} placeholder="https://youtube.com/…" /></Field>
+        <Field label="URL do vídeo"><input {...noAuto} name={isServico ? "servico-video-url" : "material-video-url"} value={material.conteudo_url} onInput={(e) => updateMaterial({ conteudo_url: e.currentTarget.value })} onChange={(e) => updateMaterial({ conteudo_url: e.currentTarget.value })} style={inp} placeholder="https://youtube.com/…" /></Field>
       )}
       {material.tipo === "artigo" && (
-        <Field label="Conteúdo HTML"><textarea value={material.conteudo_html} onChange={(e) => setMaterial({ ...material, conteudo_html: e.target.value })} style={{ ...inp, minHeight: 200, fontFamily: "monospace", fontSize: 13 }} /></Field>
+        <Field label="Conteúdo HTML"><textarea {...noAuto} name={isServico ? "servico-conteudo-html" : "material-conteudo-html"} value={material.conteudo_html} onInput={(e) => updateMaterial({ conteudo_html: e.currentTarget.value })} onChange={(e) => updateMaterial({ conteudo_html: e.currentTarget.value })} style={{ ...inp, minHeight: 200, fontFamily: "monospace", fontSize: 13 }} /></Field>
       )}
 
-      <Field label="Capa (imagem opcional)"><input type="file" accept="image/*" onChange={(e) => setMaterial({ ...material, capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
+      <Field label="Capa (imagem opcional)"><input {...noAuto} name={isServico ? "servico-capa" : "material-capa"} type="file" accept="image/*" onChange={(e) => updateMaterial({ capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
 
       <div style={sectionTitle}>{isServico ? "Compra / agendamento" : "Venda externa (opcional)"}</div>
-      <Field label="Link"><input value={material.link_compra} onChange={(e) => setMaterial({ ...material, link_compra: e.target.value })} style={inp} placeholder="https://…" /></Field>
+      <Field label="Link"><input {...noAuto} name={isServico ? "servico-link" : "material-link"} value={material.link_compra} onInput={(e) => updateMaterial({ link_compra: e.currentTarget.value })} onChange={(e) => updateMaterial({ link_compra: e.currentTarget.value })} style={inp} placeholder="https://…" /></Field>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
         <Field label="Plataforma">
-          <select value={material.plataforma_venda} onChange={(e) => setMaterial({ ...material, plataforma_venda: e.target.value })} style={inp}>
+          <select {...noAuto} name={isServico ? "servico-plataforma" : "material-plataforma"} value={material.plataforma_venda} onInput={(e) => updateMaterial({ plataforma_venda: e.currentTarget.value })} onChange={(e) => updateMaterial({ plataforma_venda: e.currentTarget.value })} style={inp}>
             <option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option>
           </select>
         </Field>
-        <Field label="Preço (texto)"><input value={material.preco_label} onChange={(e) => setMaterial({ ...material, preco_label: e.target.value })} style={inp} placeholder="R$ 47" /></Field>
-        <Field label="Texto do botão"><input value={material.cta_label} onChange={(e) => setMaterial({ ...material, cta_label: e.target.value })} style={inp} placeholder={isServico ? "Agendar" : "Comprar agora"} /></Field>
+        <Field label="Preço (texto)"><input {...noAuto} name={isServico ? "servico-preco" : "material-preco"} value={material.preco_label} onInput={(e) => updateMaterial({ preco_label: e.currentTarget.value })} onChange={(e) => updateMaterial({ preco_label: e.currentTarget.value })} style={inp} placeholder="R$ 47" /></Field>
+        <Field label="Texto do botão"><input {...noAuto} name={isServico ? "servico-cta" : "material-cta"} value={material.cta_label} onInput={(e) => updateMaterial({ cta_label: e.currentTarget.value })} onChange={(e) => updateMaterial({ cta_label: e.currentTarget.value })} style={inp} placeholder={isServico ? "Agendar" : "Comprar agora"} /></Field>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <Field label="Ordem"><input type="number" value={material.ordem} onChange={(e) => setMaterial({ ...material, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+        <Field label="Ordem"><input {...noAuto} name={isServico ? "servico-ordem" : "material-ordem"} type="number" value={material.ordem} onInput={(e) => updateMaterial({ ordem: parseInt(e.currentTarget.value) || 0 })} onChange={(e) => updateMaterial({ ordem: parseInt(e.currentTarget.value) || 0 })} style={inp} /></Field>
         <Field label="Publicado">
           <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
-            <input type="checkbox" checked={material.publicado} onChange={(e) => setMaterial({ ...material, publicado: e.target.checked })} /> Visível ao público
+            <input {...noAuto} name={isServico ? "servico-publicado" : "material-publicado"} type="checkbox" checked={material.publicado} onChange={(e) => updateMaterial({ publicado: e.target.checked })} /> Visível ao público
           </label>
         </Field>
       </div>
