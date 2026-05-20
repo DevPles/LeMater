@@ -537,3 +537,71 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
     </div>
   );
 }
+
+// ================= PRÉVIA AO VIVO =================
+
+function useObjectUrl(file: File | null): string | null {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!file) { setUrl(null); return; }
+    const u = URL.createObjectURL(file);
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [file]);
+  return url;
+}
+
+function CursoPreview({ curso, aulas }: { curso: any; aulas: AulaLocal[] }) {
+  const capaUrl = useObjectUrl(curso.capa);
+  const capaVideoUrl = useObjectUrl(curso.capaVideo);
+  const totalAulas = useMemo(() => aulas.filter((a) => a.titulo.trim()).length, [aulas]);
+  const ehGratis = curso.area === "gratis";
+  const badge = ehGratis
+    ? { label: "Conteúdo grátis", color: c.sage }
+    : { label: "Conteúdo pago", color: c.gold };
+  const precoLabel = ehGratis ? null : (curso.preco_label || (curso.preco_centavos ? `R$ ${(curso.preco_centavos / 100).toFixed(2).replace(".", ",")}` : null));
+  return (
+    <ContentCard
+      numero="01"
+      categoria={`${curso.categoria || "—"} · ${curso.nivel || ""}`}
+      badge={badge}
+      titulo={curso.titulo || "Título do curso"}
+      descricao={curso.descricao_curta || "Descrição curta aparece aqui."}
+      capa_url={capaUrl}
+      capa_video_url={capaVideoUrl}
+      metaLabel="Conteúdo"
+      metaValor={`${totalAulas} ${totalAulas === 1 ? "aula" : "aulas"}${curso.carga_horaria_min > 0 ? ` · ${Math.round(curso.carga_horaria_min / 60)}h` : ""}`}
+      precoLabel={precoLabel}
+      ctaLabel={ehGratis ? "Acessar grátis" : "Ver conteúdo"}
+      onAction={() => {}}
+    />
+  );
+}
+
+function MaterialPreview({ material, isServico }: { material: any; isServico: boolean }) {
+  const capaUrl = useObjectUrl(material.capa);
+  const ehGratis = !isServico && material.area === "gratis";
+  const badge = isServico
+    ? { label: "Serviço", color: c.gold }
+    : ehGratis
+      ? { label: "Conteúdo grátis", color: c.sage }
+      : { label: "Conteúdo pago", color: c.gold };
+  const precoLabel = ehGratis ? null : (material.preco_label || null);
+  const tipoLabel: Record<string, string> = { pdf: "PDF", video_externo: "Vídeo", video_upload: "Vídeo", artigo: "Artigo" };
+  return (
+    <ContentCard
+      numero="01"
+      categoria={isServico ? "Serviço" : (material.categoria || "—")}
+      badge={badge}
+      titulo={material.titulo || (isServico ? "Nome do serviço" : "Título do material")}
+      descricao={material.descricao || "Descrição aparece aqui."}
+      capa_url={capaUrl}
+      metaLabel="Formato"
+      metaValor={tipoLabel[material.tipo] ?? "—"}
+      precoLabel={precoLabel}
+      ctaLabel={material.cta_label || (isServico ? "Agendar" : ehGratis ? "Baixar grátis" : "Comprar")}
+      onAction={() => {}}
+    />
+  );
+}
+
