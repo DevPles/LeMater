@@ -31,9 +31,21 @@ export function DadosClinicosTab() {
   useEffect(() => {
     (async () => {
       setLoadingList(true);
+      // Filtra somente perfis com papel de gestante (exclui admin / profissional)
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "gestante");
+      const ids = (roles ?? []).map((r) => r.user_id as string);
+      if (ids.length === 0) {
+        setGestantes([]);
+        setLoadingList(false);
+        return;
+      }
       const { data } = await supabase
         .from("profiles")
         .select("user_id, nome, email, cidade, bairro, unidade_saude")
+        .in("user_id", ids)
         .order("nome", { ascending: true })
         .limit(500);
       if (data) {
