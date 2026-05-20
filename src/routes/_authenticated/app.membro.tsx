@@ -11,7 +11,7 @@ import {
 } from "@/lib/membro.functions";
 import lemateLogo from "@/assets/lemater-logo.png";
 
-export const Route = createFileRoute("/_authenticated/membro")({
+export const Route = createFileRoute("/_authenticated/app/membro")({
   head: () => ({
     meta: [{ title: "Minha Área · Le Mater" }],
     links: [{
