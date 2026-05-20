@@ -4,9 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 export type PostLoginPath = "/app/admin" | "/app/profissional" | "/app/home" | "/app/membro";
 
 export async function waitForActiveSession(expectedUserId?: string, timeoutMs = 2500): Promise<Session | null> {
-  const { data } = await supabase.auth.getSession();
-  if (data.session && (!expectedUserId || data.session.user.id === expectedUserId)) return data.session;
-
   if (typeof window === "undefined") return null;
 
   return new Promise((resolve) => {
@@ -25,6 +22,10 @@ export async function waitForActiveSession(expectedUserId?: string, timeoutMs = 
       if (session && (!expectedUserId || session.user.id === expectedUserId)) finish(session);
     });
     unsubscribe = () => subscription.unsubscribe();
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session && (!expectedUserId || data.session.user.id === expectedUserId)) finish(data.session);
+    });
   });
 }
 
