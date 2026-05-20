@@ -19,6 +19,7 @@ export function useAuth(): AuthState {
   const [rolesLoaded, setRolesLoaded] = useState(false);
   const [roles, setRoles] = useState<Role[]>([]);
   const [hasPaidAccess, setHasPaidAccess] = useState(false);
+  const userId = session?.user?.id;
 
   useEffect(() => {
     let mounted = true;
@@ -47,7 +48,7 @@ export function useAuth(): AuthState {
 
   useEffect(() => {
     let mounted = true;
-    if (!session?.user) {
+    if (!userId) {
       setRoles([]);
       setHasPaidAccess(false);
       // If session resolved as null, roles are "loaded" (none).
@@ -55,15 +56,10 @@ export function useAuth(): AuthState {
       return;
     }
     setRolesLoaded(false);
-    const uid = session.user.id;
 
     Promise.all([
-      supabase.from("user_roles").select("role").eq("user_id", uid),
-      supabase
-        .from("app_acesso_pago")
-        .select("ativo")
-        .eq("user_id", uid)
-        .maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", userId),
+      supabase.from("app_acesso_pago").select("ativo").eq("user_id", userId).maybeSingle(),
     ]).then(([rolesRes, accessRes]) => {
       if (!mounted) return;
       setRoles(((rolesRes.data ?? []) as { role: Role }[]).map((r) => r.role));
@@ -74,7 +70,7 @@ export function useAuth(): AuthState {
     return () => {
       mounted = false;
     };
-  }, [session?.user?.id, sessionLoaded]);
+  }, [userId, sessionLoaded]);
 
   return {
     session,
