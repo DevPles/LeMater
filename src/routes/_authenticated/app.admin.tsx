@@ -41,9 +41,6 @@ const TAB_GROUPS: { label: string; tabs: { id: Tab; label: string }[] }[] = [
   { label: "Painel", tabs: [{ id: "dash", label: "Painel" }] },
   { label: "Conteúdos", tabs: [
     { id: "atlas", label: "Atlas" },
-    { id: "materiais", label: "Materiais" },
-    { id: "cursos", label: "Cursos" },
-    { id: "telas", label: "Telas" },
   ]},
   { label: "Operação", tabs: [
     { id: "consultas", label: "Consultas" },
