@@ -158,7 +158,7 @@ function WelcomeScreen() {
           <div style={{ marginTop: "auto", paddingTop: 40, fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: c.muted, fontWeight: 500, textAlign: "center", marginBottom: 12 }}>
             Selecione seu idioma
           </div>
-          <div style={{ display: "flex", justifyContent: "center", gap: 16 }}>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
             {Object.entries(FLAG_TO_LANG).map(([code, targetLang]) => {
               const isActive = lang === targetLang;
               return (
@@ -185,7 +185,33 @@ function WelcomeScreen() {
                 </button>
               );
             })}
+            <a
+              href="/"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "6px 14px",
+                border: `1.5px solid ${c.sage}`,
+                borderRadius: 999,
+                color: c.ink,
+                background: "transparent",
+                fontFamily: sans,
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <span style={{ fontFamily: serif, fontSize: 14, fontWeight: 700, letterSpacing: 0, textTransform: "none", color: c.sageDark }}>
+                Mãe Digital
+              </span>
+              Ir para o site
+            </a>
           </div>
+
         </div>
       </motion.div>
 
