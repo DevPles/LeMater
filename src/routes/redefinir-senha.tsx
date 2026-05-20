@@ -113,7 +113,7 @@ function ResetPasswordPage() {
                   type={mostrar ? "text" : "password"}
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 4 caracteres"
                   className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-[#f0c040] focus:ring-[#f0c040]/30 h-10 text-sm pr-16"
                 />
                 <button
