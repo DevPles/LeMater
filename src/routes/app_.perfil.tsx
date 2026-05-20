@@ -38,6 +38,15 @@ function PerfilPage() {
   const [email, setEmail] = useState("");
   const [salvandoEmail, setSalvandoEmail] = useState(false);
   const [telefone, setTelefone] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [dataNasc, setDataNasc] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [ubs, setUbs] = useState("");
+  const [dum, setDum] = useState("");
+  const [numeroGestacoes, setNumeroGestacoes] = useState<string>("");
+  const [numeroPartos, setNumeroPartos] = useState<string>("");
+  const [numeroAbortos, setNumeroAbortos] = useState<string>("");
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [bebeSexo, setBebeSexo] = useState<"masculino" | "feminino" | "neutro">("neutro");
   const [saving, setSaving] = useState(false);
@@ -57,6 +66,15 @@ function PerfilPage() {
       setNome(profile.nome ?? "");
       setEmail(profile.email ?? "");
       setTelefone(profile.telefone ? formatPhone(profile.telefone) : "");
+      setCpf(profile.cpf ?? "");
+      setDataNasc(profile.data_nascimento ?? "");
+      setCidade(profile.cidade ?? "");
+      setBairro(profile.bairro ?? "");
+      setUbs(profile.unidade_saude ?? "");
+      setDum(profile.dum ?? "");
+      setNumeroGestacoes(profile.numero_gestacoes != null ? String(profile.numero_gestacoes) : "");
+      setNumeroPartos(profile.numero_partos != null ? String(profile.numero_partos) : "");
+      setNumeroAbortos(profile.numero_abortos != null ? String(profile.numero_abortos) : "");
       setFotoUrl(profile.foto_url ?? null);
       setBebeSexo((profile.bebe_sexo as "masculino" | "feminino" | "neutro") ?? "neutro");
     }
