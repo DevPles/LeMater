@@ -206,7 +206,7 @@ export default function NovoConteudoModal({
         tipo: a.tipo, video_url, pdf_url,
         conteudo_html: a.tipo === "texto" ? (a.conteudo_html || null) : null,
         duracao_min: Number(a.duracao_min) || 0,
-        ordem: i, previa_gratis: a.previa_gratis,
+        ordem: i, previa_gratis: ehGratis ? true : a.previa_gratis,
         materiais_extras,
       } });
     }
