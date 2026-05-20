@@ -16,27 +16,24 @@ export interface AuthState {
 export function useAuth(): AuthState {
   const [session, setSession] = useState<Session | null>(null);
   const [sessionLoaded, setSessionLoaded] = useState(false);
-  const [rolesLoaded, setRolesLoaded] = useState(false);
+  const [rolesLoaded, setRolesLoaded] = useState(true);
   const [roles, setRoles] = useState<Role[]>([]);
   const [hasPaidAccess, setHasPaidAccess] = useState(false);
   const userId = session?.user?.id;
 
   useEffect(() => {
     let mounted = true;
-    let restored = false;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      restored = true;
-      setSession(data.session);
-      setSessionLoaded(true);
-    });
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       if (!mounted) return;
-      if (event === "INITIAL_SESSION" && !restored) return;
-      restored = true;
+      if (event === "INITIAL_SESSION") return;
       setSession(s);
+      setSessionLoaded(true);
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setSession(data.session);
       setSessionLoaded(true);
     });
 
@@ -51,8 +48,7 @@ export function useAuth(): AuthState {
     if (!userId) {
       setRoles([]);
       setHasPaidAccess(false);
-      // If session resolved as null, roles are "loaded" (none).
-      if (sessionLoaded) setRolesLoaded(true);
+      setRolesLoaded(true);
       return;
     }
     setRolesLoaded(false);
