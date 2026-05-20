@@ -11,7 +11,7 @@ import { HOME_DEFAULT } from "@/lib/screen-defaults";
 import { useGestanteProfile, weeksFromDum } from "@/hooks/useGestanteProfile";
 import { LoadingMessage } from "@/components/LoadingMessage";
 
-export const Route = createFileRoute("/app/home")({
+export const Route = createFileRoute("/app_/home")({
   head: () => ({
     meta: [
       { title: "App — Minha Gestação — MãeDigital" },

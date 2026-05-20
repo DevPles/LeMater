@@ -3,6 +3,7 @@ import { useAutoTranslate } from "@/hooks/useAutoTranslate";
 import appCss from "../styles.css?url";
 import { LangProvider } from "@/lib/translate.context";
 import { Toaster } from "@/components/ui/sonner";
+import { BottomNav } from "@/components/BottomNav";
 
 function NotFoundComponent() {
   const location = useLocation();
@@ -89,10 +90,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { translating } = useAutoTranslate();
+  const location = useLocation();
+  const showAppNav = /^\/app\/(home|videos|videochamada|cartao|alertas)(\/|$)/.test(location.pathname);
 
   return (
     <>
       <Outlet />
+      {showAppNav && <BottomNav />}
       <Toaster />
       {translating && (
         <div style={{
