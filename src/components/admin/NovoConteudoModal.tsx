@@ -334,10 +334,16 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
       <Field label="Descrição curta (vitrine)"><textarea value={curso.descricao_curta} onChange={(e) => setCurso({ ...curso, descricao_curta: e.target.value })} style={{ ...inp, minHeight: 60 }} /></Field>
       <Field label="Descrição longa (página de vendas)"><textarea value={curso.descricao_longa} onChange={(e) => setCurso({ ...curso, descricao_longa: e.target.value })} style={{ ...inp, minHeight: 110 }} /></Field>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14 }}>
         <Field label="Categoria"><input value={curso.categoria} onChange={(e) => setCurso({ ...curso, categoria: e.target.value })} style={inp} /></Field>
         <Field label="Nível"><select value={curso.nivel} onChange={(e) => setCurso({ ...curso, nivel: e.target.value })} style={inp}><option value="iniciante">Iniciante</option><option value="intermediario">Intermediário</option><option value="avancado">Avançado</option></select></Field>
-        <Field label="Carga horária (min)"><input type="number" value={curso.carga_horaria_min} onChange={(e) => setCurso({ ...curso, carga_horaria_min: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+        <Field label="Carga (min)"><input type="number" value={curso.carga_horaria_min} onChange={(e) => setCurso({ ...curso, carga_horaria_min: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+        <Field label="Acesso">
+          <select value={curso.area} onChange={(e) => setCurso({ ...curso, area: e.target.value as "gratis" | "pago" })} style={inp}>
+            <option value="gratis">Grátis (livre para todos)</option>
+            <option value="pago">Pago</option>
+          </select>
+        </Field>
       </div>
 
       <Field label="Capa (imagem — fallback / poster do vídeo)"><input type="file" accept="image/*" onChange={(e) => setCurso({ ...curso, capa: e.target.files?.[0] ?? null })} style={inp} /></Field>
@@ -347,13 +353,17 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
       </Field>
       <Field label="Trailer (URL YouTube/Vimeo, opcional)"><input value={curso.trailer_url} onChange={(e) => setCurso({ ...curso, trailer_url: e.target.value })} style={inp} /></Field>
 
-      <div style={sectionTitle}>Venda</div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-        <Field label="Preço (centavos)"><input type="number" value={curso.preco_centavos} onChange={(e) => setCurso({ ...curso, preco_centavos: parseInt(e.target.value) || 0 })} style={inp} /></Field>
-        <Field label="Preço (texto)"><input value={curso.preco_label} onChange={(e) => setCurso({ ...curso, preco_label: e.target.value })} style={inp} placeholder="R$ 297" /></Field>
-        <Field label="Plataforma"><select value={curso.plataforma_venda} onChange={(e) => setCurso({ ...curso, plataforma_venda: e.target.value })} style={inp}><option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option></select></Field>
-      </div>
-      <Field label="Link de compra externo"><input value={curso.link_compra_externo} onChange={(e) => setCurso({ ...curso, link_compra_externo: e.target.value })} style={inp} placeholder="https://…" /></Field>
+      {curso.area === "pago" && (
+        <>
+          <div style={sectionTitle}>Venda</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+            <Field label="Preço (centavos)"><input type="number" value={curso.preco_centavos} onChange={(e) => setCurso({ ...curso, preco_centavos: parseInt(e.target.value) || 0 })} style={inp} /></Field>
+            <Field label="Preço (texto)"><input value={curso.preco_label} onChange={(e) => setCurso({ ...curso, preco_label: e.target.value })} style={inp} placeholder="R$ 297" /></Field>
+            <Field label="Plataforma"><select value={curso.plataforma_venda} onChange={(e) => setCurso({ ...curso, plataforma_venda: e.target.value })} style={inp}><option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option></select></Field>
+          </div>
+          <Field label="Link de compra externo"><input value={curso.link_compra_externo} onChange={(e) => setCurso({ ...curso, link_compra_externo: e.target.value })} style={inp} placeholder="https://…" /></Field>
+        </>
+      )}
 
       <div style={sectionTitle}>Instrutor</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
