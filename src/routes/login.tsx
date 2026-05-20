@@ -80,7 +80,7 @@ function LoginPage() {
       }
 
       toast.success("Login realizado com sucesso.");
-      navigate({ to: isAdmin ? "/admin" : "/membro" });
+      navigate({ to: isAdmin ? "/app/admin" : "/app/membro" });
     } catch (error) {
       toast.error((error as Error).message || "Não foi possível entrar.");
     } finally {
@@ -103,7 +103,7 @@ function LoginPage() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/membro`,
+          emailRedirectTo: `${window.location.origin}/app/membro`,
           data: { full_name: name },
         },
       });
