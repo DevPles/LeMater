@@ -6,8 +6,6 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { FlyingStork } from "@/components/FlyingStork";
 import { PregnancyTimeline } from "@/components/PregnancyTimeline";
 import { motion } from "framer-motion";
-import { useScreenContent } from "@/hooks/useScreenContent";
-import { HOME_DEFAULT } from "@/lib/screen-defaults";
 import { useGestanteProfile, weeksFromDum } from "@/hooks/useGestanteProfile";
 import { LoadingMessage } from "@/components/LoadingMessage";
 
