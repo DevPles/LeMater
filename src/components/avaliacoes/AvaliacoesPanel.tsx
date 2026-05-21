@@ -292,6 +292,14 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
                             >
                               Enviar
                             </button>
+                            <button
+                              onClick={() => excluir(p.id, p.token)}
+                              aria-label="Excluir link"
+                              title="Excluir link"
+                              className="text-xs font-bold w-6 h-6 rounded-full bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
+                            >
+                              ×
+                            </button>
                           </div>
                         </div>
                       </LiquidCard>
