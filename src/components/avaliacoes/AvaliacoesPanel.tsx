@@ -348,3 +348,104 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
     </div>
   );
 }
+
+function DetalhesModal({
+  pedido,
+  resposta,
+  label,
+  onClose,
+}: {
+  pedido: Pedido;
+  resposta: Resposta;
+  label: string;
+  onClose: () => void;
+}) {
+  const [urls, setUrls] = useState<Array<{ nome: string; url: string }>>([]);
+  const respostas = resposta.respostas as Record<string, unknown>;
+  const evidencias = (respostas._evidencias as Array<{ path: string; nome: string }> | undefined) ?? [];
+  const camposClinicos = Object.entries(respostas).filter(([k]) => !k.startsWith("_") && respostas[k] != null && respostas[k] !== "");
+
+  useEffect(() => {
+    (async () => {
+      if (!evidencias.length) return;
+      const out: Array<{ nome: string; url: string }> = [];
+      for (const e of evidencias) {
+        const { data } = await supabase.storage
+          .from("evaluation-evidence")
+          .createSignedUrl(e.path, 60 * 60);
+        if (data?.signedUrl) out.push({ nome: e.nome, url: data.signedUrl });
+      }
+      setUrls(out);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resposta.id]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-background rounded-2xl max-w-md w-full max-h-[85vh] overflow-y-auto p-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-lg font-bold font-display text-foreground mb-1">
+          Avaliação — {label}
+        </h3>
+        <p className="text-xs text-muted-foreground mb-3">
+          {resposta.professional_nome} — {resposta.professional_registro_tipo}{" "}
+          {resposta.professional_registro_numero}/{resposta.professional_registro_uf}
+        </p>
+        <div className="space-y-2 mb-4">
+          {camposClinicos.map(([k, v]) => (
+            <div key={k} className="border-b border-border pb-2">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                {k.replace(/_/g, " ")}
+              </p>
+              <p className="text-sm text-foreground whitespace-pre-wrap">{String(v ?? "—")}</p>
+            </div>
+          ))}
+        </div>
+
+        {evidencias.length > 0 && (
+          <div className="mb-4">
+            <p className="text-xs font-bold text-foreground mb-2">Evidências anexadas</p>
+            <ul className="space-y-1">
+              {evidencias.map((e) => {
+                const u = urls.find((x) => x.nome === e.nome);
+                return (
+                  <li key={e.path} className="text-xs bg-muted rounded-lg px-3 py-2">
+                    {u ? (
+                      <a
+                        href={u.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary font-semibold underline break-all"
+                      >
+                        {e.nome}
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">{e.nome} (gerando link...)</span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+
+        <p className="text-[10px] text-muted-foreground mb-3">
+          Pedido criado em {new Date(pedido.created_at).toLocaleDateString("pt-BR")}
+        </p>
+
+        <button
+          onClick={onClose}
+          className="w-full bg-primary text-primary-foreground text-xs font-bold py-2.5 rounded-full"
+        >
+          Fechar
+        </button>
+      </div>
+    </div>
+  );
+}
+
