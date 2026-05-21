@@ -2,12 +2,10 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { WeekProgress } from "@/components/WeekProgress";
 import { BabySize } from "@/components/BabySize";
 import { QuickActions } from "@/components/QuickActions";
-import { TipCard } from "@/components/TipCard";
 import { UserAvatar } from "@/components/UserAvatar";
 import { FlyingStork } from "@/components/FlyingStork";
+import { PregnancyTimeline } from "@/components/PregnancyTimeline";
 import { motion } from "framer-motion";
-import { useScreenContent } from "@/hooks/useScreenContent";
-import { HOME_DEFAULT } from "@/lib/screen-defaults";
 import { useGestanteProfile, weeksFromDum } from "@/hooks/useGestanteProfile";
 import { LoadingMessage } from "@/components/LoadingMessage";
 
@@ -26,21 +24,12 @@ export const Route = createFileRoute("/app_/home")({
   component: HomePage,
 });
 
-type Tip = { title: string; description: string; weekMin?: number; weekMax?: number };
-
-function tipMatchesWeek(tip: Tip, week: number) {
-  const min = typeof tip.weekMin === "number" ? tip.weekMin : 0;
-  const max = typeof tip.weekMax === "number" ? tip.weekMax : 42;
-  return week >= min && week <= max;
-}
-
 function firstName(name: string | null | undefined) {
   if (!name) return "";
   return name.trim().split(/\s+/)[0];
 }
 
 function HomePage() {
-  const { content } = useScreenContent("home", HOME_DEFAULT);
   const { profile, loading, session } = useGestanteProfile();
 
   if (loading) {
@@ -60,14 +49,11 @@ function HomePage() {
     profile?.nome?.trim() || profile?.email?.split("@")[0] || "Mamãe";
   const primeiroNome = firstName(nomeCompleto) || "Mamãe";
 
-  // Semana = calculada da DUM da gestante (se houver). Senão cai no padrão editável.
+  // Semana = calculada da DUM da gestante (se houver). Senão 1.
   const calculatedWeek = weeksFromDum(profile?.dum ?? null);
-  const currentWeek = calculatedWeek ?? content.currentWeek;
+  const currentWeek = calculatedWeek ?? 1;
 
-  // Filtra dicas pela semana atual (se a dica tiver weekMin/weekMax definidos).
-  const tipsAll = (content.weeklyTips ?? []) as Tip[];
-  const tipsFiltered = tipsAll.filter((t) => tipMatchesWeek(t, currentWeek));
-  const tipsToShow = tipsFiltered.length > 0 ? tipsFiltered : tipsAll;
+
 
   return (
     <>
@@ -96,16 +82,12 @@ function HomePage() {
           <BabySize week={currentWeek} />
           <QuickActions />
 
-          <div>
-            <h3 className="font-display font-semibold text-lg text-foreground mb-3">
-              {content.tipsHeading}
-            </h3>
-            <div className="space-y-3">
-              {tipsToShow.map((tip, i) => (
-                <TipCard key={`${tip.title}-${i}`} {...tip} />
-              ))}
-            </div>
-          </div>
+          <PregnancyTimeline
+            userId={profile!.user_id}
+            dum={profile?.dum}
+            cadastroISO={(profile as { created_at?: string } | null)?.created_at ?? null}
+          />
+
         </div>
       </div>
     </>
