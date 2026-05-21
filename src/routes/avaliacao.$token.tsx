@@ -1050,10 +1050,18 @@ function ChartCard({ titulo, children }: { titulo: string; children: React.React
 }
 
 // ============= Modal com cartão completo =============
-function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void }) {
+function CartaoModal({
+  cartao,
+  resumo,
+  series,
+  onClose,
+}: {
+  cartao: Cartao;
+  resumo: ResumoCartao;
+  series: ReturnType<typeof buildSeries>;
+  onClose: () => void;
+}) {
   const profile = (cartao.profile ?? {}) as Record<string, unknown>;
-  const semanasAtuais = semanas(profile.dum as string | null | undefined);
-  const idade = idadeAnos(profile.data_nascimento);
 
   return (
     <div
@@ -1061,14 +1069,14 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
       onClick={onClose}
     >
       <div
-        className="bg-background rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5"
+        className="bg-background rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-5"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between mb-4 sticky top-0 bg-background pb-2 z-10">
           <div>
             <h3 className="text-lg font-bold font-display text-foreground">Cartão da gestante</h3>
             <p className="text-xs text-muted-foreground">
-              Dados clínicos completos disponíveis para esta avaliação.
+              Visão completa: dados clínicos, antropometria, gráficos de evolução, exames e vacinas.
             </p>
           </div>
           <button
@@ -1080,39 +1088,146 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 text-xs mb-4">
-          <div className="bg-muted rounded-lg px-3 py-2">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Nascimento</p>
-            <p className="font-semibold text-foreground">
-              {fmtData(profile.data_nascimento)} {idade != null ? `• ${idade}a` : ""}
-            </p>
-          </div>
-          <div className="bg-muted rounded-lg px-3 py-2">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">DUM</p>
-            <p className="font-semibold text-foreground">{fmtData(profile.dum)}</p>
-          </div>
-          <div className="bg-muted rounded-lg px-3 py-2">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Idade gestacional</p>
-            <p className="font-semibold text-foreground">
-              {semanasAtuais != null ? `${semanasAtuais} semanas` : "—"}
-            </p>
-          </div>
-          <div className="bg-muted rounded-lg px-3 py-2">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">G / P / A</p>
-            <p className="font-semibold text-foreground">
-              {(profile.numero_gestacoes ?? 0) as number} / {(profile.numero_partos ?? 0) as number} / {(profile.numero_abortos ?? 0) as number}
-            </p>
-          </div>
-          <div className="bg-muted rounded-lg px-3 py-2 col-span-2">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Unidade de saúde</p>
-            <p className="font-semibold text-foreground">
-              {(profile.unidade_saude as string) || "—"} — {(profile.bairro as string) || ""} {profile.cidade ? `/ ${profile.cidade}` : ""}
-            </p>
-          </div>
-        </div>
+        <div className="space-y-5">
+          {/* Identificação */}
+          <section>
+            <p className="text-xs font-bold text-foreground mb-2">Identificação</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
+              <Chip titulo="Nascimento" valor={`${fmtData(profile.data_nascimento)}${resumo.idade != null ? ` • ${resumo.idade}a` : ""}`} />
+              <Chip titulo="Telefone" valor={(profile.telefone as string) || "—"} />
+              <Chip titulo="Unidade de saúde" valor={(profile.unidade_saude as string) || "—"} />
+              <Chip
+                titulo="Bairro / Cidade"
+                valor={`${(profile.bairro as string) || "—"}${profile.cidade ? ` / ${profile.cidade}` : ""}`}
+              />
+            </div>
+          </section>
 
-        <div className="space-y-4">
-          <div>
+          {/* Obstétrico */}
+          <section>
+            <p className="text-xs font-bold text-foreground mb-2">Obstétrico</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+              <Chip titulo="DUM" valor={fmtData(resumo.dum)} />
+              <Chip titulo="DPP (calculada)" valor={fmtData(resumo.dpp)} />
+              <Chip titulo="DPP (eco)" valor={resumo.dppEco ? fmtData(resumo.dppEco) : "—"} />
+              <Chip titulo="IG hoje" valor={resumo.ig != null ? `${resumo.ig} sem.` : "—"} />
+              <Chip titulo="G / P / A" valor={resumo.gpa} />
+              <Chip titulo="Tipo de gestação" valor={resumo.tipoGestacao ?? "—"} />
+              <Chip titulo="Risco" valor={resumo.risco ?? "—"} />
+            </div>
+          </section>
+
+          {/* Antropometria */}
+          <section>
+            <p className="text-xs font-bold text-foreground mb-2">Antropometria</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
+              <Chip titulo="Peso pré-gest." valor={resumo.pesoAnterior != null ? `${resumo.pesoAnterior} kg` : "—"} />
+              <Chip titulo="Altura" valor={resumo.altura != null ? `${resumo.altura}${resumo.altura > 3 ? " cm" : " m"}` : "—"} />
+              <Chip titulo="IMC pré-gest." valor={resumo.imcAnterior != null ? String(resumo.imcAnterior) : "—"} />
+              <Chip titulo="Peso atual" valor={resumo.pesoAtual != null ? `${resumo.pesoAtual} kg` : "—"} />
+              <Chip titulo="IMC atual" valor={resumo.imcAtual != null ? String(resumo.imcAtual) : "—"} />
+              <Chip
+                titulo="Ganho ponderal"
+                valor={resumo.ganhoPeso != null ? `${resumo.ganhoPeso > 0 ? "+" : ""}${resumo.ganhoPeso} kg` : "—"}
+              />
+            </div>
+          </section>
+
+          {/* Listas clínicas */}
+          <section>
+            <p className="text-xs font-bold text-foreground mb-2">Antecedentes e hábitos</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <ChipList titulo="Comorbidades" itens={resumo.comorbidades} />
+              <ChipList titulo="Hist. familiar" itens={resumo.familiares} />
+              <ChipList titulo="Hábitos" itens={resumo.habitos} />
+              <ChipList titulo="Intercorrências registradas" itens={resumo.intercorrencias} />
+            </div>
+          </section>
+
+          {/* Gráficos */}
+          <section>
+            <p className="text-xs font-bold text-foreground mb-2">Evolução da gestação</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {series.pressao.length > 0 ? (
+                <ChartCard titulo="Pressão arterial (× semana)">
+                  <ComposedChart data={series.pressao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} domain={[40, 180]} />
+                    <Tooltip />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    <ReferenceLine y={140} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                    <ReferenceLine y={90} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                    <Line type="monotone" dataKey="sistolica" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} name="Sistólica" />
+                    <Line type="monotone" dataKey="diastolica" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} name="Diastólica" />
+                  </ComposedChart>
+                </ChartCard>
+              ) : (
+                <ChartCardEmpty titulo="Pressão arterial (× semana)" mensagem="Sem registros de PA — aparecerá aqui quando a gestante registrar no cartão." />
+              )}
+
+              {series.peso.length > 0 ? (
+                <ChartCard titulo="Peso (× semana)">
+                  <LineChart data={series.peso} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="peso" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ChartCard>
+              ) : (
+                <ChartCardEmpty titulo="Peso (× semana)" mensagem="Sem registros de peso ainda." />
+              )}
+
+              {series.au.length > 0 ? (
+                <ChartCard titulo="Altura uterina (× semana)">
+                  <LineChart data={series.au} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="au" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ChartCard>
+              ) : (
+                <ChartCardEmpty titulo="Altura uterina (× semana)" mensagem="Sem registros de AU ainda." />
+              )}
+
+              {series.bcf.length > 0 ? (
+                <ChartCard titulo="BCF (× semana)">
+                  <ComposedChart data={series.bcf} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} domain={[80, 200]} />
+                    <Tooltip />
+                    <ReferenceLine y={110} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                    <ReferenceLine y={160} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                    <Line type="monotone" dataKey="bcf" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                  </ComposedChart>
+                </ChartCard>
+              ) : (
+                <ChartCardEmpty titulo="BCF (× semana)" mensagem="Sem registros de BCF ainda." />
+              )}
+
+              {series.glic.length > 0 ? (
+                <ChartCard titulo="Glicemia (× semana)">
+                  <LineChart data={series.glic} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="glicemia" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ChartCard>
+              ) : (
+                <ChartCardEmpty titulo="Glicemia (× semana)" mensagem="Sem registros de glicemia ainda." />
+              )}
+            </div>
+          </section>
+
+          {/* Medições detalhadas */}
+          <section>
             <p className="text-xs font-bold text-foreground mb-1">Últimas medições</p>
             {cartao.medicoes.length === 0 ? (
               <p className="text-[11px] text-muted-foreground">Sem medições registradas.</p>
@@ -1128,9 +1243,9 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
                 ))}
               </ul>
             )}
-          </div>
+          </section>
 
-          <div>
+          <section>
             <p className="text-xs font-bold text-foreground mb-1">Exames laboratoriais</p>
             {cartao.exames.length === 0 ? (
               <p className="text-[11px] text-muted-foreground">Sem exames registrados.</p>
@@ -1147,9 +1262,9 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
                 ))}
               </ul>
             )}
-          </div>
+          </section>
 
-          <div>
+          <section>
             <p className="text-xs font-bold text-foreground mb-1">Exames de imagem</p>
             {cartao.imagens.length === 0 ? (
               <p className="text-[11px] text-muted-foreground">Sem exames de imagem registrados.</p>
@@ -1164,9 +1279,9 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
                 ))}
               </ul>
             )}
-          </div>
+          </section>
 
-          <div>
+          <section>
             <p className="text-xs font-bold text-foreground mb-1">Vacinas</p>
             {cartao.vacinas.length === 0 ? (
               <p className="text-[11px] text-muted-foreground">Sem vacinas registradas.</p>
@@ -1184,7 +1299,7 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
                 ))}
               </ul>
             )}
-          </div>
+          </section>
         </div>
 
         <button
@@ -1194,6 +1309,15 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
           Fechar e continuar avaliação
         </button>
       </div>
+    </div>
+  );
+}
+
+function ChartCardEmpty({ titulo, mensagem }: { titulo: string; mensagem: string }) {
+  return (
+    <div className="bg-background border border-dashed border-border rounded-lg p-3 flex flex-col justify-center" style={{ minHeight: 180 }}>
+      <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1 font-bold">{titulo}</p>
+      <p className="text-[11px] text-muted-foreground">{mensagem}</p>
     </div>
   );
 }
