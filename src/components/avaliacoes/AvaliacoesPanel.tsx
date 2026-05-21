@@ -37,10 +37,8 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
   const [sub, setSub] = useState<"solicitar" | "recebidas">("solicitar");
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [respostas, setRespostas] = useState<Resposta[]>([]);
-  const [appointments, setAppointments] = useState<Array<{ id: string; data_hora: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [especialidade, setEspecialidade] = useState<Especialidade>("medico");
-  const [appointmentId, setAppointmentId] = useState<string>("");
   const [gerando, setGerando] = useState(false);
   const [novoLink, setNovoLink] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -52,21 +50,13 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
       return;
     }
     setLoading(true);
-    const [{ data: peds }, { data: appts }] = await Promise.all([
-      supabase
-        .from("evaluation_requests")
-        .select("*")
-        .eq("gestante_id", userId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("appointment_slots")
-        .select("id, data_hora")
-        .eq("gestante_id", userId)
-        .order("data_hora", { ascending: false }),
-    ]);
+    const { data: peds } = await supabase
+      .from("evaluation_requests")
+      .select("*")
+      .eq("gestante_id", userId)
+      .order("created_at", { ascending: false });
     const pedList = (peds ?? []) as Pedido[];
     setPedidos(pedList);
-    setAppointments((appts ?? []) as Array<{ id: string; data_hora: string }>);
     const ids = pedList.map((p) => p.id);
     if (ids.length) {
       const { data: resps } = await supabase
@@ -104,7 +94,7 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
       .insert({
         gestante_id: userId,
         especialidade,
-        appointment_id: appointmentId || null,
+        appointment_id: null,
       })
       .select("token")
       .single();
@@ -202,29 +192,6 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
                   </button>
                 ))}
               </div>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-foreground block mb-1.5">
-                Vincular a uma consulta (opcional)
-              </label>
-              <select
-                value={appointmentId}
-                onChange={(e) => setAppointmentId(e.target.value)}
-                className="w-full text-xs border border-border rounded-lg px-3 py-2 bg-background"
-              >
-                <option value="">Sem vínculo</option>
-                {appointments.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {new Date(a.data_hora).toLocaleString("pt-BR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </option>
-                ))}
-              </select>
             </div>
             <button
               onClick={gerarLink}
