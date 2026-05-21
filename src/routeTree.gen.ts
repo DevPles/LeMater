@@ -24,6 +24,7 @@ import { Route as AppProfissionalRouteImport } from './routes/app_.profissional'
 import { Route as AppPerfilRouteImport } from './routes/app_.perfil'
 import { Route as AppHomeRouteImport } from './routes/app_.home'
 import { Route as AppGestacaoRouteImport } from './routes/app_.gestacao'
+import { Route as AppCronogramaRouteImport } from './routes/app_.cronograma'
 import { Route as AppCartaoRouteImport } from './routes/app_.cartao'
 import { Route as AppAlertasRouteImport } from './routes/app_.alertas'
 import { Route as AppSalaRoomIdRouteImport } from './routes/app_.sala.$roomId'
@@ -106,6 +107,11 @@ const AppGestacaoRoute = AppGestacaoRouteImport.update({
   path: '/app/gestacao',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppCronogramaRoute = AppCronogramaRouteImport.update({
+  id: '/app_/cronograma',
+  path: '/app/cronograma',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppCartaoRoute = AppCartaoRouteImport.update({
   id: '/app_/cartao',
   path: '/app/cartao',
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/app/alertas': typeof AppAlertasRoute
   '/app/cartao': typeof AppCartaoRoute
+  '/app/cronograma': typeof AppCronogramaRoute
   '/app/gestacao': typeof AppGestacaoRoute
   '/app/home': typeof AppHomeRoute
   '/app/perfil': typeof AppPerfilRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/app/alertas': typeof AppAlertasRoute
   '/app/cartao': typeof AppCartaoRoute
+  '/app/cronograma': typeof AppCronogramaRoute
   '/app/gestacao': typeof AppGestacaoRoute
   '/app/home': typeof AppHomeRoute
   '/app/perfil': typeof AppPerfilRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/app_/alertas': typeof AppAlertasRoute
   '/app_/cartao': typeof AppCartaoRoute
+  '/app_/cronograma': typeof AppCronogramaRoute
   '/app_/gestacao': typeof AppGestacaoRoute
   '/app_/home': typeof AppHomeRoute
   '/app_/perfil': typeof AppPerfilRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/app/alertas'
     | '/app/cartao'
+    | '/app/cronograma'
     | '/app/gestacao'
     | '/app/home'
     | '/app/perfil'
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/app/alertas'
     | '/app/cartao'
+    | '/app/cronograma'
     | '/app/gestacao'
     | '/app/home'
     | '/app/perfil'
@@ -271,6 +282,7 @@ export interface FileRouteTypes {
     | '/redefinir-senha'
     | '/app_/alertas'
     | '/app_/cartao'
+    | '/app_/cronograma'
     | '/app_/gestacao'
     | '/app_/home'
     | '/app_/perfil'
@@ -296,6 +308,7 @@ export interface RootRouteChildren {
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   AppAlertasRoute: typeof AppAlertasRoute
   AppCartaoRoute: typeof AppCartaoRoute
+  AppCronogramaRoute: typeof AppCronogramaRoute
   AppGestacaoRoute: typeof AppGestacaoRoute
   AppHomeRoute: typeof AppHomeRoute
   AppPerfilRoute: typeof AppPerfilRoute
@@ -415,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGestacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app_/cronograma': {
+      id: '/app_/cronograma'
+      path: '/app/cronograma'
+      fullPath: '/app/cronograma'
+      preLoaderRoute: typeof AppCronogramaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app_/cartao': {
       id: '/app_/cartao'
       path: '/app/cartao'
@@ -502,6 +522,7 @@ const rootRouteChildren: RootRouteChildren = {
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   AppAlertasRoute: AppAlertasRoute,
   AppCartaoRoute: AppCartaoRoute,
+  AppCronogramaRoute: AppCronogramaRoute,
   AppGestacaoRoute: AppGestacaoRoute,
   AppHomeRoute: AppHomeRoute,
   AppPerfilRoute: AppPerfilRoute,
