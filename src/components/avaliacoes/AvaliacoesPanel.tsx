@@ -337,46 +337,14 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
       )}
 
       {detalhes && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4"
-          onClick={() => setDetalhes(null)}
-        >
-          <div
-            className="bg-background rounded-2xl max-w-md w-full max-h-[85vh] overflow-y-auto p-5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-bold font-display text-foreground mb-1">
-              Avaliação — {LABEL[detalhes.pedido.especialidade]}
-            </h3>
-            <p className="text-xs text-muted-foreground mb-3">
-              {detalhes.resposta.professional_nome} —{" "}
-              {detalhes.resposta.professional_registro_tipo}{" "}
-              {detalhes.resposta.professional_registro_numero}/
-              {detalhes.resposta.professional_registro_uf}
-            </p>
-            <div className="space-y-2 mb-4">
-              {Object.entries(detalhes.resposta.respostas as Record<string, unknown>).map(
-                ([k, v]) => (
-                  <div key={k} className="border-b border-border pb-2">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                      {k.replace(/_/g, " ")}
-                    </p>
-                    <p className="text-sm text-foreground whitespace-pre-wrap">
-                      {String(v ?? "—")}
-                    </p>
-                  </div>
-                ),
-              )}
-            </div>
-            <button
-              onClick={() => setDetalhes(null)}
-              className="w-full bg-primary text-primary-foreground text-xs font-bold py-2.5 rounded-full"
-            >
-              Fechar
-            </button>
-          </div>
-        </div>
+        <DetalhesModal
+          pedido={detalhes.pedido}
+          resposta={detalhes.resposta}
+          label={LABEL[detalhes.pedido.especialidade]}
+          onClose={() => setDetalhes(null)}
+        />
       )}
+
     </div>
   );
 }
