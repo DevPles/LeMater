@@ -237,7 +237,22 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
 
           {novoLink && (
             <LiquidCard className="p-4 space-y-2">
-              <p className="text-xs font-semibold text-foreground">Link gerado</p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-foreground">Link gerado</p>
+                {(() => {
+                  const ped = pedidos.find((p) => novoLink.endsWith(p.token));
+                  return ped ? (
+                    <button
+                      onClick={() => excluir(ped.id, ped.token)}
+                      aria-label="Excluir link"
+                      title="Excluir link"
+                      className="text-xs font-bold w-6 h-6 rounded-full bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
+                    >
+                      ×
+                    </button>
+                  ) : null;
+                })()}
+              </div>
               <p className="text-[11px] text-muted-foreground break-all bg-muted rounded-lg px-2 py-2">
                 {novoLink}
               </p>
