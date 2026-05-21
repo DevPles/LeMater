@@ -186,7 +186,7 @@ const SECOES: Record<Especialidade, Secao[]> = {
     {
       titulo: "Conduta nutricional",
       campos: [
-        { key: "diagnostico_nutricional", label: "Diagnóstico nutricional", type: "textarea", full: true },
+        { key: "diagnostico_nutricional", label: "Avaliação nutricional", type: "textarea", full: true },
         { key: "necessidades_caloricas", label: "Necessidades calóricas (kcal/dia)", type: "number" },
         { key: "distribuicao_macros", label: "Distribuição de macronutrientes (CHO/PTN/LIP %)", type: "text" },
         { key: "suplementacao", label: "Suplementação (ácido fólico, ferro, cálcio, DHA...)", type: "textarea", full: true },
