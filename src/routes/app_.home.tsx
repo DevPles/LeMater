@@ -96,16 +96,12 @@ function HomePage() {
           <BabySize week={currentWeek} />
           <QuickActions />
 
-          <div>
-            <h3 className="font-display font-semibold text-lg text-foreground mb-3">
-              {content.tipsHeading}
-            </h3>
-            <div className="space-y-3">
-              {tipsToShow.map((tip, i) => (
-                <TipCard key={`${tip.title}-${i}`} {...tip} />
-              ))}
-            </div>
-          </div>
+          <PregnancyTimeline
+            userId={profile!.user_id}
+            dum={profile?.dum}
+            cadastroISO={(profile as { created_at?: string } | null)?.created_at ?? null}
+          />
+
         </div>
       </div>
     </>
