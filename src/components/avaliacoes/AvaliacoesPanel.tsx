@@ -142,6 +142,19 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
     window.open(wa, "_blank", "noopener,noreferrer");
   };
 
+  const excluir = async (id: string, token: string) => {
+    if (!confirm("Excluir este link de avaliação? Esta ação não pode ser desfeita.")) return;
+    const { error } = await supabase.from("evaluation_requests").delete().eq("id", id);
+    if (error) {
+      setMsg("Não foi possível excluir: " + error.message);
+      return;
+    }
+    setPedidos((prev) => prev.filter((p) => p.id !== id));
+    if (novoLink && novoLink.endsWith(token)) setNovoLink(null);
+    setMsg("Link excluído.");
+    setTimeout(() => setMsg(null), 2000);
+  };
+
   return (
     <div>
       <div className="flex gap-1 bg-muted rounded-full p-1 mb-4">
@@ -224,7 +237,22 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
 
           {novoLink && (
             <LiquidCard className="p-4 space-y-2">
-              <p className="text-xs font-semibold text-foreground">Link gerado</p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold text-foreground">Link gerado</p>
+                {(() => {
+                  const ped = pedidos.find((p) => novoLink.endsWith(p.token));
+                  return ped ? (
+                    <button
+                      onClick={() => excluir(ped.id, ped.token)}
+                      aria-label="Excluir link"
+                      title="Excluir link"
+                      className="text-xs font-bold w-6 h-6 rounded-full bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
+                    >
+                      ×
+                    </button>
+                  ) : null;
+                })()}
+              </div>
               <p className="text-[11px] text-muted-foreground break-all bg-muted rounded-lg px-2 py-2">
                 {novoLink}
               </p>
@@ -278,6 +306,14 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
                               className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-primary text-primary-foreground"
                             >
                               Enviar
+                            </button>
+                            <button
+                              onClick={() => excluir(p.id, p.token)}
+                              aria-label="Excluir link"
+                              title="Excluir link"
+                              className="text-xs font-bold w-6 h-6 rounded-full bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground"
+                            >
+                              ×
                             </button>
                           </div>
                         </div>
