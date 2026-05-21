@@ -50,21 +50,13 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
       return;
     }
     setLoading(true);
-    const [{ data: peds }, { data: appts }] = await Promise.all([
-      supabase
-        .from("evaluation_requests")
-        .select("*")
-        .eq("gestante_id", userId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("appointment_slots")
-        .select("id, data_hora")
-        .eq("gestante_id", userId)
-        .order("data_hora", { ascending: false }),
-    ]);
+    const { data: peds } = await supabase
+      .from("evaluation_requests")
+      .select("*")
+      .eq("gestante_id", userId)
+      .order("created_at", { ascending: false });
     const pedList = (peds ?? []) as Pedido[];
     setPedidos(pedList);
-    setAppointments((appts ?? []) as Array<{ id: string; data_hora: string }>);
     const ids = pedList.map((p) => p.id);
     if (ids.length) {
       const { data: resps } = await supabase
