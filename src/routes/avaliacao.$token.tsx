@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { LoadingMessage } from "@/components/LoadingMessage";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,6 +52,8 @@ type Campo = {
   type: "text" | "number" | "textarea" | "select" | "date";
   options?: string[];
   full?: boolean;
+  /** Dica visível abaixo do campo (ex.: orientação clínica). */
+  hint?: string;
 };
 
 type Secao = { titulo: string; campos: Campo[] };
@@ -59,16 +61,27 @@ type Secao = { titulo: string; campos: Campo[] };
 const SECOES: Record<Especialidade, Secao[]> = {
   medico: [
     {
+      titulo: "Identificação clínica",
+      campos: [
+        { key: "idade_materna_anos", label: "Idade materna (anos)", type: "number" },
+        { key: "tipo_sanguineo", label: "Tipo sanguíneo / Rh", type: "select", options: ["A+","A-","B+","B-","AB+","AB-","O+","O-","Não informado"] },
+        { key: "gestacao_atual_tipo", label: "Gestação atual", type: "select", options: ["Única","Gemelar dicoriônica","Gemelar monocoriônica","Múltipla","Indeterminada"] },
+        { key: "classificacao_risco", label: "Classificação de risco gestacional", type: "select", options: ["Habitual / baixo","Alto risco","Muito alto risco"] },
+      ],
+    },
+    {
       titulo: "Anamnese",
       campos: [
         { key: "queixa_principal", label: "Queixa principal", type: "textarea", full: true },
         { key: "historia_doenca_atual", label: "História da doença atual", type: "textarea", full: true },
         { key: "antecedentes_pessoais", label: "Antecedentes pessoais e comorbidades", type: "textarea", full: true },
         { key: "antecedentes_obstetricos", label: "Antecedentes obstétricos (G/P/A)", type: "text" },
+        { key: "antecedentes_familiares", label: "Antecedentes familiares relevantes", type: "textarea", full: true },
         { key: "alergias", label: "Alergias", type: "text" },
         { key: "medicamentos_uso", label: "Medicamentos em uso", type: "textarea", full: true },
         { key: "tabagismo", label: "Tabagismo", type: "select", options: ["Não", "Sim", "Ex-tabagista"] },
         { key: "etilismo", label: "Etilismo", type: "select", options: ["Não", "Sim", "Ex-etilista"] },
+        { key: "drogas_ilicitas", label: "Uso de drogas ilícitas", type: "select", options: ["Não", "Sim", "Ex-usuária"] },
       ],
     },
     {
@@ -97,6 +110,15 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "edema", label: "Edema", type: "select", options: ["Ausente", "MMII +/4", "MMII ++/4", "MMII +++/4", "Anasarca"] },
         { key: "dinamica_uterina", label: "Dinâmica uterina", type: "text" },
         { key: "perdas_vaginais", label: "Perdas vaginais", type: "text" },
+        { key: "toque_vaginal", label: "Toque vaginal (se realizado)", type: "text" },
+      ],
+    },
+    {
+      titulo: "Avaliação de exames disponíveis",
+      campos: [
+        { key: "analise_laboratoriais", label: "Análise dos exames laboratoriais", type: "textarea", full: true, hint: "Revise os exames listados no cartão da gestante." },
+        { key: "analise_imagem", label: "Análise dos exames de imagem", type: "textarea", full: true, hint: "Inclui USG, doppler, ecocardio fetal etc." },
+        { key: "situacao_vacinal", label: "Situação vacinal", type: "select", options: ["Em dia","Pendências","Esquema desconhecido"] },
       ],
     },
     {
@@ -105,8 +127,10 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "hipoteses_diagnosticas", label: "Hipóteses diagnósticas / CID", type: "textarea", full: true },
         { key: "exames_solicitados", label: "Exames solicitados", type: "textarea", full: true },
         { key: "prescricoes", label: "Prescrições", type: "textarea", full: true },
+        { key: "suplementacao", label: "Suplementação (ácido fólico, ferro, cálcio, DHA...)", type: "textarea", full: true },
         { key: "orientacoes", label: "Orientações", type: "textarea", full: true },
         { key: "encaminhamentos", label: "Encaminhamentos", type: "textarea", full: true },
+        { key: "sinais_alarme_orientados", label: "Sinais de alarme orientados", type: "textarea", full: true, hint: "Sangramento, cefaleia, edema súbito, redução de movimentação fetal, etc." },
         { key: "data_retorno", label: "Data sugerida de retorno", type: "date" },
       ],
     },
@@ -121,8 +145,9 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "imc_pregestacional", label: "IMC pré-gestacional", type: "number" },
         { key: "imc_atual", label: "IMC atual", type: "number" },
         { key: "ganho_ponderal_kg", label: "Ganho ponderal total (kg)", type: "number" },
-        { key: "ganho_esperado", label: "Ganho esperado (kg)", type: "text" },
+        { key: "ganho_esperado", label: "Ganho esperado (kg)", type: "text", hint: "Conforme IMC pré-gestacional (IOM)." },
         { key: "circunferencia_braco", label: "Circunferência do braço (cm)", type: "number" },
+        { key: "classificacao_nutricional", label: "Classificação nutricional", type: "select", options: ["Baixo peso","Eutrofia","Sobrepeso","Obesidade"] },
       ],
     },
     {
@@ -133,9 +158,13 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "numero_refeicoes", label: "Nº de refeições/dia", type: "number" },
         { key: "apetite", label: "Apetite", type: "select", options: ["Normal", "Aumentado", "Diminuído"] },
         { key: "nauseas_vomitos", label: "Náuseas / vômitos", type: "text" },
+        { key: "pirose_refluxo", label: "Pirose / refluxo", type: "select", options: ["Não","Leve","Moderado","Intenso"] },
         { key: "intolerancias_alergias", label: "Intolerâncias e alergias alimentares", type: "textarea", full: true },
         { key: "aversoes_desejos", label: "Aversões e desejos", type: "textarea", full: true },
         { key: "preferencias_culturais", label: "Preferências culturais/religiosas", type: "textarea", full: true },
+        { key: "padrao_alimentar", label: "Padrão alimentar (onívora, vegetariana, vegana...)", type: "text" },
+        { key: "consumo_ultraprocessados", label: "Consumo de ultraprocessados", type: "select", options: ["Baixo","Moderado","Alto"] },
+        { key: "atividade_fisica", label: "Atividade física (tipo e frequência)", type: "text" },
       ],
     },
     {
@@ -150,13 +179,22 @@ const SECOES: Record<Especialidade, Secao[]> = {
       ],
     },
     {
+      titulo: "Exames bioquímicos relevantes",
+      campos: [
+        { key: "exames_bioquimicos", label: "Análise dos exames laboratoriais (Hb, Ht, ferritina, glicemia, TOTG, vit D...)", type: "textarea", full: true, hint: "Use o cartão da gestante como referência." },
+        { key: "deficiencias_identificadas", label: "Deficiências identificadas", type: "textarea", full: true },
+      ],
+    },
+    {
       titulo: "Conduta nutricional",
       campos: [
         { key: "diagnostico_nutricional", label: "Diagnóstico nutricional", type: "textarea", full: true },
         { key: "necessidades_caloricas", label: "Necessidades calóricas (kcal/dia)", type: "number" },
+        { key: "distribuicao_macros", label: "Distribuição de macronutrientes (CHO/PTN/LIP %)", type: "text" },
         { key: "suplementacao", label: "Suplementação (ácido fólico, ferro, cálcio, DHA...)", type: "textarea", full: true },
         { key: "plano_alimentar", label: "Plano alimentar prescrito", type: "textarea", full: true },
         { key: "orientacoes", label: "Orientações gerais", type: "textarea", full: true },
+        { key: "metas", label: "Metas para o próximo retorno", type: "textarea", full: true },
         { key: "data_retorno", label: "Data sugerida de retorno", type: "date" },
       ],
     },
@@ -171,7 +209,9 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "historico_psiquiatrico", label: "Histórico psiquiátrico pessoal", type: "textarea", full: true },
         { key: "historico_familiar", label: "Histórico psiquiátrico familiar", type: "textarea", full: true },
         { key: "uso_medicacao_psi", label: "Uso de psicofármacos", type: "text" },
+        { key: "uso_substancias", label: "Uso de álcool / tabaco / outras substâncias", type: "text" },
         { key: "acompanhamento_anterior", label: "Acompanhamento psicológico anterior", type: "text" },
+        { key: "lutos_perdas", label: "Lutos / perdas gestacionais anteriores", type: "textarea", full: true },
       ],
     },
     {
@@ -185,6 +225,7 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "apetite", label: "Apetite", type: "select", options: ["Normal", "Aumentado", "Diminuído"] },
         { key: "libido", label: "Libido", type: "select", options: ["Normal", "Aumentada", "Diminuída"] },
         { key: "ideacao_suicida", label: "Ideação suicida / autolesão", type: "select", options: ["Negada", "Presente — leve", "Presente — moderada", "Presente — grave"] },
+        { key: "sintomas_dissociativos", label: "Sintomas dissociativos / pânico", type: "text" },
       ],
     },
     {
@@ -195,17 +236,20 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "rede_apoio", label: "Rede de apoio (amigos, comunidade)", type: "textarea", full: true },
         { key: "vinculo_bebe", label: "Vínculo com o bebê", type: "textarea", full: true },
         { key: "expectativa_parto", label: "Expectativa em relação ao parto", type: "textarea", full: true },
-        { key: "violencia", label: "Indícios de violência (psicológica, física, sexual)", type: "textarea", full: true },
+        { key: "violencia", label: "Indícios de violência (psicológica, física, sexual)", type: "textarea", full: true, hint: "Em caso positivo, encaminhar conforme protocolo." },
+        { key: "condicoes_socioeconomicas", label: "Condições socioeconômicas / moradia", type: "textarea", full: true },
       ],
     },
     {
       titulo: "Triagem e conduta",
       campos: [
         { key: "phq2", label: "PHQ-2 (sintomas depressivos)", type: "textarea", full: true },
-        { key: "epds", label: "EPDS — Escala de Edimburgo", type: "textarea", full: true },
+        { key: "epds", label: "EPDS — Escala de Edimburgo (pontuação e itens)", type: "textarea", full: true },
+        { key: "gad7", label: "GAD-7 (ansiedade)", type: "textarea", full: true },
         { key: "impressao_diagnostica", label: "Impressão diagnóstica", type: "textarea", full: true },
         { key: "conduta", label: "Conduta", type: "textarea", full: true },
         { key: "encaminhamentos", label: "Encaminhamentos", type: "textarea", full: true },
+        { key: "frequencia_acompanhamento", label: "Frequência sugerida de acompanhamento", type: "text" },
         { key: "data_retorno", label: "Data sugerida de retorno", type: "date" },
       ],
     },
@@ -231,20 +275,85 @@ function fmtData(s: unknown): string {
   return d.toLocaleDateString("pt-BR");
 }
 
+function idadeAnos(nascimento: unknown): number | null {
+  if (!nascimento) return null;
+  const d = new Date(String(nascimento));
+  if (isNaN(d.getTime())) return null;
+  const diff = Date.now() - d.getTime();
+  return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+}
+
+/** Acha a última medição cujo parâmetro contenha qualquer um dos termos (case insensitive). */
+function ultimaMedicao(medicoes: Array<Record<string, unknown>>, termos: string[]): string | null {
+  const norm = (s: string) => s.toLowerCase();
+  const matched = medicoes.find((m) => {
+    const p = norm(String(m.parametro ?? ""));
+    return termos.some((t) => p.includes(norm(t)));
+  });
+  return matched ? String(matched.valor ?? "") : null;
+}
+
+/** Monta valores pré-preenchidos a partir do cartão. Retorna mapa + conjunto de chaves preenchidas. */
+function montarPrefill(cartao: Cartao): { valores: Record<string, string>; preenchidos: Set<string> } {
+  const valores: Record<string, string> = {};
+  const profile = (cartao.profile ?? {}) as Record<string, unknown>;
+  const medicoes = cartao.medicoes ?? [];
+
+  // Demografia / obstétrico básico
+  const idade = idadeAnos(profile.data_nascimento);
+  if (idade != null) valores.idade_materna_anos = String(idade);
+
+  const ig = semanas(profile.dum as string | null | undefined);
+  if (ig != null) valores.idade_gestacional_sem = String(ig);
+
+  const g = (profile.numero_gestacoes ?? null) as number | null;
+  const p = (profile.numero_partos ?? null) as number | null;
+  const a = (profile.numero_abortos ?? null) as number | null;
+  if (g != null || p != null || a != null) {
+    valores.antecedentes_obstetricos = `G${g ?? 0} P${p ?? 0} A${a ?? 0}`;
+  }
+
+  // Medições clínicas mais recentes
+  const map: Array<[string, string[]]> = [
+    ["pa_sistolica", ["sistólica", "sistolica"]],
+    ["pa_diastolica", ["diastólica", "diastolica"]],
+    ["frequencia_cardiaca", ["frequência cardíaca", "frequencia cardiaca", "fc"]],
+    ["bcf", ["bcf", "batimento"]],
+    ["temperatura", ["temperatura"]],
+    ["saturacao_o2", ["satura"]],
+    ["peso_kg", ["peso"]],
+    ["peso_atual_kg", ["peso"]],
+    ["altura_cm", ["altura "]], // espaço para não casar com 'altura uterina'
+    ["altura_uterina_cm", ["altura uterina"]],
+    ["imc", ["imc"]],
+    ["imc_atual", ["imc"]],
+    ["circunferencia_braco", ["circunferência do braço", "circunferencia do braco"]],
+  ];
+  for (const [k, termos] of map) {
+    const v = ultimaMedicao(medicoes, termos);
+    if (v != null && v !== "") valores[k] = v;
+  }
+
+  const preenchidos = new Set(Object.keys(valores));
+  return { valores, preenchidos };
+}
+
 function AvaliacaoPublicaPage() {
   const { token } = Route.useParams();
   const [info, setInfo] = useState<Info | null>(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
-  const [etapa, setEtapa] = useState<"identificacao" | "cartao" | "formulario" | "sucesso">("identificacao");
+  const [etapa, setEtapa] = useState<"identificacao" | "formulario" | "sucesso">("identificacao");
   const [nome, setNome] = useState("");
   const [registroNumero, setRegistroNumero] = useState("");
   const [registroUf, setRegistroUf] = useState("SP");
   const [respostas, setRespostas] = useState<Record<string, string>>({});
+  const [preenchidos, setPreenchidos] = useState<Set<string>>(new Set());
   const [evidencias, setEvidencias] = useState<Array<{ path: string; nome: string }>>([]);
   const [uploadando, setUploadando] = useState(false);
   const [enviando, setEnviando] = useState(false);
-  const [verCartao, setVerCartao] = useState(true);
+  const [cartaoAberto, setCartaoAberto] = useState(false);
+  const [jaAbriuCartao, setJaAbriuCartao] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -254,6 +363,21 @@ function AvaliacaoPublicaPage() {
       setLoading(false);
     })();
   }, [token]);
+
+  const prefill = useMemo(() => (info ? montarPrefill(info.cartao) : null), [info]);
+
+  const irParaFormulario = () => {
+    if (prefill) {
+      // Mescla pré-preenchidos sem sobrescrever o que o profissional já digitou.
+      setRespostas((prev) => ({ ...prefill.valores, ...prev }));
+      setPreenchidos(prefill.preenchidos);
+    }
+    setEtapa("formulario");
+    if (!jaAbriuCartao) {
+      setCartaoAberto(true);
+      setJaAbriuCartao(true);
+    }
+  };
 
   const uploadEvidencia = async (file: File) => {
     setUploadando(true);
@@ -363,9 +487,6 @@ function AvaliacaoPublicaPage() {
     );
   }
 
-  const profile = (info.cartao?.profile ?? {}) as Record<string, unknown>;
-  const semanasAtuais = semanas(profile.dum as string | null | undefined);
-
   return (
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-2xl mx-auto">
@@ -428,7 +549,7 @@ function AvaliacaoPublicaPage() {
                   return;
                 }
                 setErro(null);
-                setEtapa("cartao");
+                irParaFormulario();
               }}
               className="w-full bg-primary text-primary-foreground text-sm font-bold py-2.5 rounded-full hover:opacity-90"
             >
@@ -437,177 +558,77 @@ function AvaliacaoPublicaPage() {
           </LiquidCard>
         )}
 
-        {etapa === "cartao" && (
-          <LiquidCard className="p-5 space-y-4">
-            <div>
-              <h2 className="text-base font-bold font-display text-foreground">Cartão da gestante</h2>
-              <p className="text-xs text-muted-foreground">
-                Dados clínicos disponíveis para sua avaliação. Revise antes de preencher.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-muted rounded-lg px-3 py-2">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Nascimento</p>
-                <p className="font-semibold text-foreground">{fmtData(profile.data_nascimento)}</p>
-              </div>
-              <div className="bg-muted rounded-lg px-3 py-2">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">DUM</p>
-                <p className="font-semibold text-foreground">{fmtData(profile.dum)}</p>
-              </div>
-              <div className="bg-muted rounded-lg px-3 py-2">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Idade gestacional</p>
-                <p className="font-semibold text-foreground">{semanasAtuais != null ? `${semanasAtuais} semanas` : "—"}</p>
-              </div>
-              <div className="bg-muted rounded-lg px-3 py-2">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">G / P / A</p>
-                <p className="font-semibold text-foreground">
-                  {(profile.numero_gestacoes ?? 0) as number} / {(profile.numero_partos ?? 0) as number} / {(profile.numero_abortos ?? 0) as number}
+        {etapa === "formulario" && (
+          <div className="space-y-4">
+            <LiquidCard className="p-4 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground">Dados da gestante disponíveis</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Reabra a qualquer momento para revisar o cartão e histórico clínico.
                 </p>
               </div>
-              <div className="bg-muted rounded-lg px-3 py-2 col-span-2">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Unidade de saúde</p>
-                <p className="font-semibold text-foreground">
-                  {(profile.unidade_saude as string) || "—"} — {(profile.bairro as string) || ""} {profile.cidade ? `/ ${profile.cidade}` : ""}
-                </p>
-              </div>
-            </div>
+              <button
+                onClick={() => setCartaoAberto(true)}
+                className="bg-primary text-primary-foreground text-xs font-bold px-3 py-2 rounded-full shrink-0"
+              >
+                Ver dados da gestante
+              </button>
+            </LiquidCard>
 
-            <button
-              onClick={() => setVerCartao((v) => !v)}
-              className="w-full text-xs font-semibold text-primary underline"
-            >
-              {verCartao ? "Ocultar histórico clínico" : "Mostrar histórico clínico"}
-            </button>
-
-            {verCartao && (
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs font-bold text-foreground mb-1">Últimas medições</p>
-                  {info.cartao.medicoes.length === 0 ? (
-                    <p className="text-[11px] text-muted-foreground">Sem medições registradas.</p>
-                  ) : (
-                    <ul className="space-y-1">
-                      {info.cartao.medicoes.slice(0, 12).map((m, i) => (
-                        <li key={i} className="text-[11px] text-foreground flex justify-between border-b border-border py-1">
-                          <span className="font-semibold">{String(m.parametro)}</span>
-                          <span>
-                            {String(m.valor)} {m.semana_gestacional ? `• ${m.semana_gestacional}s` : ""} • {fmtData(m.data_medicao)}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                <div>
-                  <p className="text-xs font-bold text-foreground mb-1">Exames laboratoriais</p>
-                  {info.cartao.exames.length === 0 ? (
-                    <p className="text-[11px] text-muted-foreground">Sem exames registrados.</p>
-                  ) : (
-                    <ul className="space-y-1">
-                      {info.cartao.exames.slice(0, 10).map((e, i) => (
-                        <li key={i} className="text-[11px] text-foreground border-b border-border py-1">
-                          <span className="font-semibold">{String(e.tipo_exame)}</span> — {String(e.resultado)}{" "}
-                          <span className={`text-[10px] ${e.status === "alterado" ? "text-destructive" : "text-muted-foreground"}`}>
-                            ({String(e.status)})
-                          </span>
-                          <span className="block text-[10px] text-muted-foreground">{fmtData(e.data_exame)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                <div>
-                  <p className="text-xs font-bold text-foreground mb-1">Exames de imagem</p>
-                  {info.cartao.imagens.length === 0 ? (
-                    <p className="text-[11px] text-muted-foreground">Sem exames de imagem registrados.</p>
-                  ) : (
-                    <ul className="space-y-1">
-                      {info.cartao.imagens.slice(0, 8).map((e, i) => (
-                        <li key={i} className="text-[11px] text-foreground border-b border-border py-1">
-                          <span className="font-semibold">{String(e.tipo_exame)}</span>
-                          <span className="block text-[10px] text-muted-foreground">{fmtData(e.data_exame)} • {String(e.status)}</span>
-                          {e.laudo_texto ? <p className="text-[11px]">{String(e.laudo_texto)}</p> : null}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                <div>
-                  <p className="text-xs font-bold text-foreground mb-1">Vacinas</p>
-                  {info.cartao.vacinas.length === 0 ? (
-                    <p className="text-[11px] text-muted-foreground">Sem vacinas registradas.</p>
-                  ) : (
-                    <ul className="space-y-1">
-                      {info.cartao.vacinas.slice(0, 10).map((v, i) => (
-                        <li key={i} className="text-[11px] text-foreground border-b border-border py-1 flex justify-between">
-                          <span>{String(v.vacina)} {v.dose ? `(${v.dose})` : ""}</span>
-                          <span className="text-muted-foreground">{fmtData(v.data_aplicacao)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+            {preenchidos.size > 0 && (
+              <div className="px-3 py-2 rounded-lg bg-mint-light text-foreground text-[11px]">
+                Campos marcados com <strong>“do cartão”</strong> foram pré-preenchidos com dados já registrados no aplicativo da gestante. Confirme ou ajuste se necessário.
               </div>
             )}
 
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={() => setEtapa("identificacao")}
-                className="flex-1 bg-secondary text-secondary-foreground text-sm font-bold py-2.5 rounded-full"
-              >
-                Voltar
-              </button>
-              <button
-                onClick={() => setEtapa("formulario")}
-                className="flex-1 bg-primary text-primary-foreground text-sm font-bold py-2.5 rounded-full"
-              >
-                Iniciar avaliação
-              </button>
-            </div>
-          </LiquidCard>
-        )}
-
-        {etapa === "formulario" && (
-          <div className="space-y-4">
             {SECOES[info.especialidade].map((sec) => (
               <LiquidCard key={sec.titulo} className="p-5 space-y-3">
                 <h2 className="text-base font-bold font-display text-foreground">{sec.titulo}</h2>
                 <div className="grid grid-cols-2 gap-3">
-                  {sec.campos.map((c) => (
-                    <div key={c.key} className={c.full || c.type === "textarea" ? "col-span-2" : ""}>
-                      <label className="text-xs font-semibold text-foreground block mb-1">{c.label}</label>
-                      {c.type === "textarea" ? (
-                        <textarea
-                          value={respostas[c.key] ?? ""}
-                          onChange={(e) => setRespostas({ ...respostas, [c.key]: e.target.value })}
-                          rows={3}
-                          className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-background"
-                        />
-                      ) : c.type === "select" ? (
-                        <select
-                          value={respostas[c.key] ?? ""}
-                          onChange={(e) => setRespostas({ ...respostas, [c.key]: e.target.value })}
-                          className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-background"
-                        >
-                          <option value="">Selecione</option>
-                          {c.options!.map((o) => (
-                            <option key={o} value={o}>{o}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <input
-                          type={c.type}
-                          value={respostas[c.key] ?? ""}
-                          onChange={(e) => setRespostas({ ...respostas, [c.key]: e.target.value })}
-                          className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-background"
-                        />
-                      )}
-                    </div>
-                  ))}
+                  {sec.campos.map((c) => {
+                    const isPrefilled = preenchidos.has(c.key) && (respostas[c.key] ?? "") !== "";
+                    return (
+                      <div key={c.key} className={c.full || c.type === "textarea" ? "col-span-2" : ""}>
+                        <label className="text-xs font-semibold text-foreground flex items-center justify-between gap-2 mb-1">
+                          <span>{c.label}</span>
+                          {isPrefilled && (
+                            <span className="text-[9px] font-bold uppercase tracking-wide bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                              do cartão
+                            </span>
+                          )}
+                        </label>
+                        {c.type === "textarea" ? (
+                          <textarea
+                            value={respostas[c.key] ?? ""}
+                            onChange={(e) => setRespostas({ ...respostas, [c.key]: e.target.value })}
+                            rows={3}
+                            className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-background"
+                          />
+                        ) : c.type === "select" ? (
+                          <select
+                            value={respostas[c.key] ?? ""}
+                            onChange={(e) => setRespostas({ ...respostas, [c.key]: e.target.value })}
+                            className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-background"
+                          >
+                            <option value="">Selecione</option>
+                            {c.options!.map((o) => (
+                              <option key={o} value={o}>{o}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type={c.type}
+                            value={respostas[c.key] ?? ""}
+                            onChange={(e) => setRespostas({ ...respostas, [c.key]: e.target.value })}
+                            className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-background"
+                          />
+                        )}
+                        {c.hint && (
+                          <p className="text-[10px] text-muted-foreground mt-1">{c.hint}</p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </LiquidCard>
             ))}
@@ -658,7 +679,7 @@ function AvaliacaoPublicaPage() {
 
             <div className="flex gap-2">
               <button
-                onClick={() => setEtapa("cartao")}
+                onClick={() => setEtapa("identificacao")}
                 className="flex-1 bg-secondary text-secondary-foreground text-sm font-bold py-2.5 rounded-full"
               >
                 Voltar
@@ -673,6 +694,158 @@ function AvaliacaoPublicaPage() {
             </div>
           </div>
         )}
+      </div>
+
+      {cartaoAberto && (
+        <CartaoModal cartao={info.cartao} onClose={() => setCartaoAberto(false)} />
+      )}
+    </div>
+  );
+}
+
+function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void }) {
+  const profile = (cartao.profile ?? {}) as Record<string, unknown>;
+  const semanasAtuais = semanas(profile.dum as string | null | undefined);
+  const idade = idadeAnos(profile.data_nascimento);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-3"
+      onClick={onClose}
+    >
+      <div
+        className="bg-background rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <h3 className="text-lg font-bold font-display text-foreground">Cartão da gestante</h3>
+            <p className="text-xs text-muted-foreground">
+              Dados clínicos disponíveis para esta avaliação.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Fechar"
+            className="text-base font-bold w-8 h-8 rounded-full bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground shrink-0"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-xs mb-4">
+          <div className="bg-muted rounded-lg px-3 py-2">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Nascimento</p>
+            <p className="font-semibold text-foreground">
+              {fmtData(profile.data_nascimento)} {idade != null ? `• ${idade}a` : ""}
+            </p>
+          </div>
+          <div className="bg-muted rounded-lg px-3 py-2">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">DUM</p>
+            <p className="font-semibold text-foreground">{fmtData(profile.dum)}</p>
+          </div>
+          <div className="bg-muted rounded-lg px-3 py-2">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Idade gestacional</p>
+            <p className="font-semibold text-foreground">
+              {semanasAtuais != null ? `${semanasAtuais} semanas` : "—"}
+            </p>
+          </div>
+          <div className="bg-muted rounded-lg px-3 py-2">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">G / P / A</p>
+            <p className="font-semibold text-foreground">
+              {(profile.numero_gestacoes ?? 0) as number} / {(profile.numero_partos ?? 0) as number} / {(profile.numero_abortos ?? 0) as number}
+            </p>
+          </div>
+          <div className="bg-muted rounded-lg px-3 py-2 col-span-2">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Unidade de saúde</p>
+            <p className="font-semibold text-foreground">
+              {(profile.unidade_saude as string) || "—"} — {(profile.bairro as string) || ""} {profile.cidade ? `/ ${profile.cidade}` : ""}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <p className="text-xs font-bold text-foreground mb-1">Últimas medições</p>
+            {cartao.medicoes.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">Sem medições registradas.</p>
+            ) : (
+              <ul className="space-y-1">
+                {cartao.medicoes.slice(0, 20).map((m, i) => (
+                  <li key={i} className="text-[11px] text-foreground flex justify-between border-b border-border py-1">
+                    <span className="font-semibold">{String(m.parametro)}</span>
+                    <span>
+                      {String(m.valor)} {m.semana_gestacional ? `• ${m.semana_gestacional}s` : ""} • {fmtData(m.data_medicao)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div>
+            <p className="text-xs font-bold text-foreground mb-1">Exames laboratoriais</p>
+            {cartao.exames.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">Sem exames registrados.</p>
+            ) : (
+              <ul className="space-y-1">
+                {cartao.exames.slice(0, 15).map((e, i) => (
+                  <li key={i} className="text-[11px] text-foreground border-b border-border py-1">
+                    <span className="font-semibold">{String(e.tipo_exame)}</span> — {String(e.resultado)}{" "}
+                    <span className={`text-[10px] ${e.status === "alterado" ? "text-destructive" : "text-muted-foreground"}`}>
+                      ({String(e.status)})
+                    </span>
+                    <span className="block text-[10px] text-muted-foreground">{fmtData(e.data_exame)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div>
+            <p className="text-xs font-bold text-foreground mb-1">Exames de imagem</p>
+            {cartao.imagens.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">Sem exames de imagem registrados.</p>
+            ) : (
+              <ul className="space-y-1">
+                {cartao.imagens.slice(0, 10).map((e, i) => (
+                  <li key={i} className="text-[11px] text-foreground border-b border-border py-1">
+                    <span className="font-semibold">{String(e.tipo_exame)}</span>
+                    <span className="block text-[10px] text-muted-foreground">{fmtData(e.data_exame)} • {String(e.status)}</span>
+                    {e.laudo_texto ? <p className="text-[11px]">{String(e.laudo_texto)}</p> : null}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div>
+            <p className="text-xs font-bold text-foreground mb-1">Vacinas</p>
+            {cartao.vacinas.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">Sem vacinas registradas.</p>
+            ) : (
+              <ul className="space-y-1">
+                {cartao.vacinas.slice(0, 15).map((v, i) => (
+                  <li key={i} className="text-[11px] text-foreground border-b border-border py-1 flex justify-between gap-2">
+                    <span>
+                      {String(v.vacina)}{" "}
+                      {v.lote ? <span className="text-muted-foreground">(lote {String(v.lote)})</span> : null}
+                      {v.fabricante ? <span className="text-muted-foreground"> — {String(v.fabricante)}</span> : null}
+                    </span>
+                    <span className="text-muted-foreground shrink-0">{fmtData(v.data_aplicacao)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        <button
+          onClick={onClose}
+          className="w-full mt-5 bg-primary text-primary-foreground text-sm font-bold py-2.5 rounded-full"
+        >
+          Fechar e continuar avaliação
+        </button>
       </div>
     </div>
   );
