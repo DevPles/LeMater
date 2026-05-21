@@ -79,15 +79,15 @@ type Secao = { titulo: string; campos: Campo[] };
 const SECOES: Record<Especialidade, Secao[]> = {
   medico: [
     {
-      titulo: "Consulta do dia",
+      titulo: "Acompanhamento da gestação (hoje)",
       campos: [
-        { key: "queixa_principal", label: "Queixa principal", type: "textarea", full: true },
-        { key: "historia_doenca_atual", label: "História da doença atual", type: "textarea", full: true },
+        { key: "como_se_sente", label: "Como a gestante está se sentindo? (relato subjetivo)", type: "textarea", full: true },
+        { key: "queixas_desconfortos", label: "Queixas e desconfortos do período", type: "textarea", full: true, hint: "Náuseas, azia, lombalgia, edema, contrações, sangramento, perdas, redução de movimentos fetais, etc." },
         { key: "intercorrencias_periodo", label: "Intercorrências desde a última consulta", type: "textarea", full: true },
       ],
     },
     {
-      titulo: "Sinais vitais e exame físico (hoje)",
+      titulo: "Sinais vitais e antropometria (hoje)",
       campos: [
         { key: "pa_sistolica", label: "PA sistólica (mmHg)", type: "number" },
         { key: "pa_diastolica", label: "PA diastólica (mmHg)", type: "number" },
@@ -95,8 +95,7 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "frequencia_respiratoria", label: "FR (irpm)", type: "number" },
         { key: "temperatura", label: "Temperatura (°C)", type: "number" },
         { key: "saturacao_o2", label: "SatO₂ (%)", type: "number" },
-        { key: "peso_kg", label: "Peso de hoje (kg)", type: "number" },
-        { key: "exame_fisico_geral", label: "Exame físico geral", type: "textarea", full: true },
+        { key: "peso_kg", label: "Peso de hoje (kg)", type: "number", hint: "Ganho ponderal acumulado aparece no resumo do cartão acima." },
       ],
     },
     {
@@ -109,28 +108,34 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "edema", label: "Edema", type: "select", options: ["Ausente", "MMII +/4", "MMII ++/4", "MMII +++/4", "Anasarca"] },
         { key: "dinamica_uterina", label: "Dinâmica uterina", type: "text" },
         { key: "perdas_vaginais", label: "Perdas vaginais", type: "text" },
-        { key: "toque_vaginal", label: "Toque vaginal (se realizado)", type: "text" },
+        { key: "toque_vaginal", label: "Toque vaginal (se indicado)", type: "text" },
       ],
     },
     {
-      titulo: "Avaliação dos exames do cartão",
+      titulo: "Exame físico geral",
       campos: [
-        { key: "analise_laboratoriais", label: "Análise dos laboratoriais", type: "textarea", full: true, hint: "Consulte os exames listados acima no resumo." },
-        { key: "analise_imagem", label: "Análise dos exames de imagem", type: "textarea", full: true },
-        { key: "situacao_vacinal", label: "Situação vacinal", type: "select", options: ["Em dia","Pendências","Esquema desconhecido"] },
+        { key: "exame_fisico_geral", label: "Achados do exame físico geral", type: "textarea", full: true, hint: "Estado geral, mucosas, ausculta cardiopulmonar, mamas, MMII, etc." },
       ],
     },
     {
-      titulo: "Conduta",
+      titulo: "Análise do cartão e exames",
       campos: [
-        { key: "hipoteses_diagnosticas", label: "Hipóteses diagnósticas / CID", type: "textarea", full: true },
+        { key: "analise_laboratoriais", label: "Avaliação dos exames laboratoriais", type: "textarea", full: true, hint: "Consulte os exames no cartão completo." },
+        { key: "analise_imagem", label: "Avaliação dos exames de imagem / ultrassonografias", type: "textarea", full: true },
+        { key: "situacao_vacinal", label: "Situação vacinal", type: "select", options: ["Em dia", "Pendências", "Esquema desconhecido"] },
+        { key: "classificacao_risco", label: "Classificação de risco gestacional hoje", type: "select", options: ["Habitual", "Risco intermediário", "Alto risco"] },
+        { key: "justificativa_risco", label: "Justificativa da classificação", type: "textarea", full: true },
+      ],
+    },
+    {
+      titulo: "Plano de cuidado",
+      campos: [
+        { key: "conduta", label: "Conduta e orientações da consulta", type: "textarea", full: true },
         { key: "exames_solicitados", label: "Exames solicitados", type: "textarea", full: true },
-        { key: "prescricoes", label: "Prescrições", type: "textarea", full: true },
-        { key: "suplementacao", label: "Suplementação (ácido fólico, ferro, cálcio, DHA...)", type: "textarea", full: true },
-        { key: "orientacoes", label: "Orientações", type: "textarea", full: true },
-        { key: "encaminhamentos", label: "Encaminhamentos", type: "textarea", full: true },
-        { key: "sinais_alarme_orientados", label: "Sinais de alarme orientados", type: "textarea", full: true, hint: "Sangramento, cefaleia, edema súbito, redução de movimentação fetal, etc." },
-        { key: "data_retorno", label: "Data sugerida de retorno", type: "date" },
+        { key: "prescricoes", label: "Prescrições e suplementação", type: "textarea", full: true, hint: "Ácido fólico, ferro, cálcio, DHA, etc." },
+        { key: "encaminhamentos", label: "Encaminhamentos", type: "textarea", full: true, hint: "Alto risco, especialidades, serviço social, etc." },
+        { key: "sinais_alarme_orientados", label: "Sinais de alarme reforçados", type: "textarea", full: true, hint: "Sangramento, cefaleia, edema súbito, redução de movimentação fetal, etc." },
+        { key: "data_retorno", label: "Próxima consulta sugerida", type: "date" },
       ],
     },
   ],
@@ -181,7 +186,7 @@ const SECOES: Record<Especialidade, Secao[]> = {
     {
       titulo: "Conduta nutricional",
       campos: [
-        { key: "diagnostico_nutricional", label: "Diagnóstico nutricional", type: "textarea", full: true },
+        { key: "diagnostico_nutricional", label: "Avaliação nutricional", type: "textarea", full: true },
         { key: "necessidades_caloricas", label: "Necessidades calóricas (kcal/dia)", type: "number" },
         { key: "distribuicao_macros", label: "Distribuição de macronutrientes (CHO/PTN/LIP %)", type: "text" },
         { key: "suplementacao", label: "Suplementação (ácido fólico, ferro, cálcio, DHA...)", type: "textarea", full: true },
@@ -761,7 +766,6 @@ function AvaliacaoPublicaPage() {
             <ResumoCartaoBlock
               resumo={resumo}
               alertas={info.cartao.alertas ?? []}
-              series={series}
               onAbrirCartao={() => setCartaoAberto(true)}
             />
 
@@ -886,8 +890,13 @@ function AvaliacaoPublicaPage() {
         )}
       </div>
 
-      {cartaoAberto && (
-        <CartaoModal cartao={info.cartao} onClose={() => setCartaoAberto(false)} />
+      {cartaoAberto && resumo && series && (
+        <CartaoModal
+          cartao={info.cartao}
+          resumo={resumo}
+          series={series}
+          onClose={() => setCartaoAberto(false)}
+        />
       )}
     </div>
   );
@@ -904,21 +913,19 @@ function corPorSeveridade(sev: string): string {
 function ResumoCartaoBlock({
   resumo,
   alertas,
-  series,
   onAbrirCartao,
 }: {
   resumo: ResumoCartao;
   alertas: AlertaPublico[];
-  series: ReturnType<typeof buildSeries>;
   onAbrirCartao: () => void;
 }) {
   return (
-    <LiquidCard className="p-5 space-y-5">
+    <LiquidCard className="p-5 space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-base font-bold font-display text-foreground">Resumo do cartão da gestante</h2>
           <p className="text-[11px] text-muted-foreground">
-            Dados já registrados no aplicativo. Use como contexto para a consulta de hoje.
+            Visão de relance para a consulta. Abra o cartão completo para gráficos, exames e medições.
           </p>
         </div>
         <button
@@ -950,134 +957,51 @@ function ResumoCartaoBlock({
         )}
       </div>
 
-      {/* Identificação + obstétrico */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+      {/* Linha-chefe */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
         <Chip titulo="Idade" valor={resumo.idade != null ? `${resumo.idade}a` : "—"} />
         <Chip titulo="IG" valor={resumo.ig != null ? `${resumo.ig} sem.` : "—"} />
-        <Chip titulo="DUM" valor={fmtData(resumo.dum)} />
         <Chip titulo="DPP" valor={fmtData(resumo.dpp)} />
         <Chip titulo="G/P/A" valor={resumo.gpa} />
-        <Chip titulo="Tipo de gestação" valor={resumo.tipoGestacao ?? "—"} />
         <Chip titulo="Risco" valor={resumo.risco ?? "—"} />
-        <Chip titulo="DPP (eco)" valor={resumo.dppEco ? fmtData(resumo.dppEco) : "—"} />
+        <Chip titulo="Tipo" valor={resumo.tipoGestacao ?? "—"} />
       </div>
 
-      {/* Antropometria */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
-        <Chip titulo="Peso pré-gest." valor={resumo.pesoAnterior != null ? `${resumo.pesoAnterior} kg` : "—"} />
-        <Chip titulo="Altura" valor={resumo.altura != null ? `${resumo.altura}${resumo.altura > 3 ? " cm" : " m"}` : "—"} />
-        <Chip titulo="IMC pré-gest." valor={resumo.imcAnterior != null ? String(resumo.imcAnterior) : "—"} />
-        <Chip titulo="Peso atual" valor={resumo.pesoAtual != null ? `${resumo.pesoAtual} kg` : "—"} />
+      {/* Antropometria curta */}
+      <div className="grid grid-cols-3 gap-2 text-[11px]">
+        <Chip titulo="IMC pré" valor={resumo.imcAnterior != null ? String(resumo.imcAnterior) : "—"} />
         <Chip titulo="IMC atual" valor={resumo.imcAtual != null ? String(resumo.imcAtual) : "—"} />
         <Chip
           titulo="Ganho ponderal"
           valor={resumo.ganhoPeso != null ? `${resumo.ganhoPeso > 0 ? "+" : ""}${resumo.ganhoPeso} kg` : "—"}
         />
-        {resumo.ultimaPA && (
-          <Chip
-            titulo="Última PA"
-            valor={`${resumo.ultimaPA.sis}/${resumo.ultimaPA.dia} ${resumo.ultimaPA.semana ? `• ${resumo.ultimaPA.semana}s` : ""}`}
-          />
-        )}
-        {resumo.ultimoBCF && (
-          <Chip
-            titulo="Último BCF"
-            valor={`${resumo.ultimoBCF.valor} bpm ${resumo.ultimoBCF.semana ? `• ${resumo.ultimoBCF.semana}s` : ""}`}
-          />
-        )}
-        {resumo.ultimaAU && (
-          <Chip
-            titulo="Última AU"
-            valor={`${resumo.ultimaAU.valor} cm ${resumo.ultimaAU.semana ? `• ${resumo.ultimaAU.semana}s` : ""}`}
-          />
-        )}
-        {resumo.ultimaFC && (
-          <Chip titulo="Última FC" valor={`${resumo.ultimaFC.valor} bpm`} />
-        )}
       </div>
 
-      {/* Listas clínicas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <ChipList titulo="Comorbidades" itens={resumo.comorbidades} />
-        <ChipList titulo="Hist. familiar" itens={resumo.familiares} />
-        <ChipList titulo="Hábitos" itens={resumo.habitos} />
-        <ChipList titulo="Intercorrências registradas" itens={resumo.intercorrencias} />
+      {/* Últimos sinais */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+        <Chip
+          titulo="Última PA"
+          valor={resumo.ultimaPA ? `${resumo.ultimaPA.sis}/${resumo.ultimaPA.dia}${resumo.ultimaPA.semana ? ` • ${resumo.ultimaPA.semana}s` : ""}` : "—"}
+        />
+        <Chip
+          titulo="Último BCF"
+          valor={resumo.ultimoBCF ? `${resumo.ultimoBCF.valor} bpm${resumo.ultimoBCF.semana ? ` • ${resumo.ultimoBCF.semana}s` : ""}` : "—"}
+        />
+        <Chip
+          titulo="Última AU"
+          valor={resumo.ultimaAU ? `${resumo.ultimaAU.valor} cm${resumo.ultimaAU.semana ? ` • ${resumo.ultimaAU.semana}s` : ""}` : "—"}
+        />
+        <Chip
+          titulo="Peso atual"
+          valor={resumo.pesoAtual != null ? `${resumo.pesoAtual} kg` : "—"}
+        />
       </div>
 
-      {/* Gráficos de evolução */}
-      <div>
-        <p className="text-xs font-bold text-foreground mb-2">Evolução da gestação</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {series.pressao.length > 0 && (
-            <ChartCard titulo="Pressão arterial (× semana)">
-              <ComposedChart data={series.pressao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} domain={[40, 180]} />
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-                <ReferenceLine y={140} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
-                <ReferenceLine y={90} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
-                <Line type="monotone" dataKey="sistolica" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} name="Sistólica" />
-                <Line type="monotone" dataKey="diastolica" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} name="Diastólica" />
-              </ComposedChart>
-            </ChartCard>
-          )}
-          {series.peso.length > 0 && (
-            <ChartCard titulo="Peso (× semana)">
-              <LineChart data={series.peso} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="peso" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ChartCard>
-          )}
-          {series.au.length > 0 && (
-            <ChartCard titulo="Altura uterina (× semana)">
-              <LineChart data={series.au} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="au" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ChartCard>
-          )}
-          {series.bcf.length > 0 && (
-            <ChartCard titulo="BCF (× semana)">
-              <ComposedChart data={series.bcf} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} domain={[80, 200]} />
-                <Tooltip />
-                <ReferenceLine y={110} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
-                <ReferenceLine y={160} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
-                <Line type="monotone" dataKey="bcf" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-              </ComposedChart>
-            </ChartCard>
-          )}
-          {series.glic.length > 0 && (
-            <ChartCard titulo="Glicemia (× semana)">
-              <LineChart data={series.glic} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="glicemia" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ChartCard>
-          )}
-        </div>
-        {series.pressao.length === 0 && series.peso.length === 0 && series.au.length === 0 && series.bcf.length === 0 && series.glic.length === 0 && (
-          <p className="text-[11px] text-muted-foreground">Sem medições suficientes para gerar gráficos.</p>
-        )}
-      </div>
-
-      {resumo.unidade && (
-        <p className="text-[11px] text-muted-foreground">
-          Unidade de saúde: <span className="font-semibold text-foreground">{resumo.unidade}</span>
+      {/* Comorbidades relevantes em linha única */}
+      {resumo.comorbidades.length > 0 && (
+        <p className="text-[11px] text-foreground">
+          <span className="font-bold">Comorbidades:</span>{" "}
+          <span className="text-muted-foreground">{resumo.comorbidades.join(" • ")}</span>
         </p>
       )}
     </LiquidCard>
@@ -1126,10 +1050,18 @@ function ChartCard({ titulo, children }: { titulo: string; children: React.React
 }
 
 // ============= Modal com cartão completo =============
-function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void }) {
+function CartaoModal({
+  cartao,
+  resumo,
+  series,
+  onClose,
+}: {
+  cartao: Cartao;
+  resumo: ResumoCartao;
+  series: ReturnType<typeof buildSeries>;
+  onClose: () => void;
+}) {
   const profile = (cartao.profile ?? {}) as Record<string, unknown>;
-  const semanasAtuais = semanas(profile.dum as string | null | undefined);
-  const idade = idadeAnos(profile.data_nascimento);
 
   return (
     <div
@@ -1137,14 +1069,14 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
       onClick={onClose}
     >
       <div
-        className="bg-background rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5"
+        className="bg-background rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-5"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between mb-4 sticky top-0 bg-background pb-2 z-10">
           <div>
             <h3 className="text-lg font-bold font-display text-foreground">Cartão da gestante</h3>
             <p className="text-xs text-muted-foreground">
-              Dados clínicos completos disponíveis para esta avaliação.
+              Visão completa: dados clínicos, antropometria, gráficos de evolução, exames e vacinas.
             </p>
           </div>
           <button
@@ -1156,39 +1088,146 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 text-xs mb-4">
-          <div className="bg-muted rounded-lg px-3 py-2">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Nascimento</p>
-            <p className="font-semibold text-foreground">
-              {fmtData(profile.data_nascimento)} {idade != null ? `• ${idade}a` : ""}
-            </p>
-          </div>
-          <div className="bg-muted rounded-lg px-3 py-2">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">DUM</p>
-            <p className="font-semibold text-foreground">{fmtData(profile.dum)}</p>
-          </div>
-          <div className="bg-muted rounded-lg px-3 py-2">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Idade gestacional</p>
-            <p className="font-semibold text-foreground">
-              {semanasAtuais != null ? `${semanasAtuais} semanas` : "—"}
-            </p>
-          </div>
-          <div className="bg-muted rounded-lg px-3 py-2">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">G / P / A</p>
-            <p className="font-semibold text-foreground">
-              {(profile.numero_gestacoes ?? 0) as number} / {(profile.numero_partos ?? 0) as number} / {(profile.numero_abortos ?? 0) as number}
-            </p>
-          </div>
-          <div className="bg-muted rounded-lg px-3 py-2 col-span-2">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Unidade de saúde</p>
-            <p className="font-semibold text-foreground">
-              {(profile.unidade_saude as string) || "—"} — {(profile.bairro as string) || ""} {profile.cidade ? `/ ${profile.cidade}` : ""}
-            </p>
-          </div>
-        </div>
+        <div className="space-y-5">
+          {/* Identificação */}
+          <section>
+            <p className="text-xs font-bold text-foreground mb-2">Identificação</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
+              <Chip titulo="Nascimento" valor={`${fmtData(profile.data_nascimento)}${resumo.idade != null ? ` • ${resumo.idade}a` : ""}`} />
+              <Chip titulo="Telefone" valor={(profile.telefone as string) || "—"} />
+              <Chip titulo="Unidade de saúde" valor={(profile.unidade_saude as string) || "—"} />
+              <Chip
+                titulo="Bairro / Cidade"
+                valor={`${(profile.bairro as string) || "—"}${profile.cidade ? ` / ${profile.cidade}` : ""}`}
+              />
+            </div>
+          </section>
 
-        <div className="space-y-4">
-          <div>
+          {/* Obstétrico */}
+          <section>
+            <p className="text-xs font-bold text-foreground mb-2">Obstétrico</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+              <Chip titulo="DUM" valor={fmtData(resumo.dum)} />
+              <Chip titulo="DPP (calculada)" valor={fmtData(resumo.dpp)} />
+              <Chip titulo="DPP (eco)" valor={resumo.dppEco ? fmtData(resumo.dppEco) : "—"} />
+              <Chip titulo="IG hoje" valor={resumo.ig != null ? `${resumo.ig} sem.` : "—"} />
+              <Chip titulo="G / P / A" valor={resumo.gpa} />
+              <Chip titulo="Tipo de gestação" valor={resumo.tipoGestacao ?? "—"} />
+              <Chip titulo="Risco" valor={resumo.risco ?? "—"} />
+            </div>
+          </section>
+
+          {/* Antropometria */}
+          <section>
+            <p className="text-xs font-bold text-foreground mb-2">Antropometria</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
+              <Chip titulo="Peso pré-gest." valor={resumo.pesoAnterior != null ? `${resumo.pesoAnterior} kg` : "—"} />
+              <Chip titulo="Altura" valor={resumo.altura != null ? `${resumo.altura}${resumo.altura > 3 ? " cm" : " m"}` : "—"} />
+              <Chip titulo="IMC pré-gest." valor={resumo.imcAnterior != null ? String(resumo.imcAnterior) : "—"} />
+              <Chip titulo="Peso atual" valor={resumo.pesoAtual != null ? `${resumo.pesoAtual} kg` : "—"} />
+              <Chip titulo="IMC atual" valor={resumo.imcAtual != null ? String(resumo.imcAtual) : "—"} />
+              <Chip
+                titulo="Ganho ponderal"
+                valor={resumo.ganhoPeso != null ? `${resumo.ganhoPeso > 0 ? "+" : ""}${resumo.ganhoPeso} kg` : "—"}
+              />
+            </div>
+          </section>
+
+          {/* Listas clínicas */}
+          <section>
+            <p className="text-xs font-bold text-foreground mb-2">Antecedentes e hábitos</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <ChipList titulo="Comorbidades" itens={resumo.comorbidades} />
+              <ChipList titulo="Hist. familiar" itens={resumo.familiares} />
+              <ChipList titulo="Hábitos" itens={resumo.habitos} />
+              <ChipList titulo="Intercorrências registradas" itens={resumo.intercorrencias} />
+            </div>
+          </section>
+
+          {/* Gráficos */}
+          <section>
+            <p className="text-xs font-bold text-foreground mb-2">Evolução da gestação</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {series.pressao.length > 0 ? (
+                <ChartCard titulo="Pressão arterial (× semana)">
+                  <ComposedChart data={series.pressao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} domain={[40, 180]} />
+                    <Tooltip />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    <ReferenceLine y={140} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                    <ReferenceLine y={90} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                    <Line type="monotone" dataKey="sistolica" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} name="Sistólica" />
+                    <Line type="monotone" dataKey="diastolica" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} name="Diastólica" />
+                  </ComposedChart>
+                </ChartCard>
+              ) : (
+                <ChartCardEmpty titulo="Pressão arterial (× semana)" mensagem="Sem registros de PA — aparecerá aqui quando a gestante registrar no cartão." />
+              )}
+
+              {series.peso.length > 0 ? (
+                <ChartCard titulo="Peso (× semana)">
+                  <LineChart data={series.peso} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="peso" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ChartCard>
+              ) : (
+                <ChartCardEmpty titulo="Peso (× semana)" mensagem="Sem registros de peso ainda." />
+              )}
+
+              {series.au.length > 0 ? (
+                <ChartCard titulo="Altura uterina (× semana)">
+                  <LineChart data={series.au} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="au" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ChartCard>
+              ) : (
+                <ChartCardEmpty titulo="Altura uterina (× semana)" mensagem="Sem registros de AU ainda." />
+              )}
+
+              {series.bcf.length > 0 ? (
+                <ChartCard titulo="BCF (× semana)">
+                  <ComposedChart data={series.bcf} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} domain={[80, 200]} />
+                    <Tooltip />
+                    <ReferenceLine y={110} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                    <ReferenceLine y={160} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                    <Line type="monotone" dataKey="bcf" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                  </ComposedChart>
+                </ChartCard>
+              ) : (
+                <ChartCardEmpty titulo="BCF (× semana)" mensagem="Sem registros de BCF ainda." />
+              )}
+
+              {series.glic.length > 0 ? (
+                <ChartCard titulo="Glicemia (× semana)">
+                  <LineChart data={series.glic} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 10 }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="glicemia" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ChartCard>
+              ) : (
+                <ChartCardEmpty titulo="Glicemia (× semana)" mensagem="Sem registros de glicemia ainda." />
+              )}
+            </div>
+          </section>
+
+          {/* Medições detalhadas */}
+          <section>
             <p className="text-xs font-bold text-foreground mb-1">Últimas medições</p>
             {cartao.medicoes.length === 0 ? (
               <p className="text-[11px] text-muted-foreground">Sem medições registradas.</p>
@@ -1204,9 +1243,9 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
                 ))}
               </ul>
             )}
-          </div>
+          </section>
 
-          <div>
+          <section>
             <p className="text-xs font-bold text-foreground mb-1">Exames laboratoriais</p>
             {cartao.exames.length === 0 ? (
               <p className="text-[11px] text-muted-foreground">Sem exames registrados.</p>
@@ -1223,9 +1262,9 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
                 ))}
               </ul>
             )}
-          </div>
+          </section>
 
-          <div>
+          <section>
             <p className="text-xs font-bold text-foreground mb-1">Exames de imagem</p>
             {cartao.imagens.length === 0 ? (
               <p className="text-[11px] text-muted-foreground">Sem exames de imagem registrados.</p>
@@ -1240,9 +1279,9 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
                 ))}
               </ul>
             )}
-          </div>
+          </section>
 
-          <div>
+          <section>
             <p className="text-xs font-bold text-foreground mb-1">Vacinas</p>
             {cartao.vacinas.length === 0 ? (
               <p className="text-[11px] text-muted-foreground">Sem vacinas registradas.</p>
@@ -1260,7 +1299,7 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
                 ))}
               </ul>
             )}
-          </div>
+          </section>
         </div>
 
         <button
@@ -1270,6 +1309,15 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
           Fechar e continuar avaliação
         </button>
       </div>
+    </div>
+  );
+}
+
+function ChartCardEmpty({ titulo, mensagem }: { titulo: string; mensagem: string }) {
+  return (
+    <div className="bg-background border border-dashed border-border rounded-lg p-3 flex flex-col justify-center" style={{ minHeight: 180 }}>
+      <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1 font-bold">{titulo}</p>
+      <p className="text-[11px] text-muted-foreground">{mensagem}</p>
     </div>
   );
 }
