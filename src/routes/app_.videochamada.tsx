@@ -43,7 +43,7 @@ function AgendamentosPage() {
   const userId = session?.user?.id ?? null;
   const [slots, setSlots] = useState<SlotComProf[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"disponiveis" | "meus">("disponiveis");
+  const [tab, setTab] = useState<"disponiveis" | "meus" | "avaliacoes">("disponiveis");
   const [filtroEsp, setFiltroEsp] = useState<string>("todas");
   const [booking, setBooking] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
