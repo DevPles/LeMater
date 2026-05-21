@@ -53,8 +53,7 @@ function HomePage() {
   const calculatedWeek = weeksFromDum(profile?.dum ?? null);
   const currentWeek = calculatedWeek ?? 1;
 
-  const tipsFiltered = tipsAll.filter((t) => tipMatchesWeek(t, currentWeek));
-  const tipsToShow = tipsFiltered.length > 0 ? tipsFiltered : tipsAll;
+
 
   return (
     <>
