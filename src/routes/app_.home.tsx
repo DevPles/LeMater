@@ -1,13 +1,14 @@
-import { createFileRoute, Navigate, Link } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { WeekProgress } from "@/components/WeekProgress";
 import { BabySize } from "@/components/BabySize";
 import { QuickActions } from "@/components/QuickActions";
 import { UserAvatar } from "@/components/UserAvatar";
 import { FlyingStork } from "@/components/FlyingStork";
-import { LiquidCard } from "@/components/LiquidCard";
+import { PregnancyTimelinePreview } from "@/components/PregnancyTimelinePreview";
 import { motion } from "framer-motion";
 import { useGestanteProfile, weeksFromDum } from "@/hooks/useGestanteProfile";
 import { LoadingMessage } from "@/components/LoadingMessage";
+
 
 
 export const Route = createFileRoute("/app_/home")({
@@ -83,21 +84,12 @@ function HomePage() {
           <BabySize week={currentWeek} />
           <QuickActions />
 
-          <Link to="/app/cronograma" className="block">
-            <LiquidCard className="p-5 hover:scale-[1.01] transition-transform" bgOpacity={0.85}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-display font-semibold text-lg text-foreground">
-                    Meu cronograma
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Veja sua linha do tempo, peso e pressão arterial
-                  </p>
-                </div>
-                <span className="text-[#1a1557] font-bold text-xl">›</span>
-              </div>
-            </LiquidCard>
-          </Link>
+          <PregnancyTimelinePreview
+            userId={profile!.user_id}
+            dum={profile?.dum}
+            cadastroISO={(profile as { created_at?: string } | null)?.created_at ?? null}
+          />
+
 
 
         </div>
