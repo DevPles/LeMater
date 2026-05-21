@@ -866,7 +866,7 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
                   {detalhe.semana !== undefined && (
                     <span className="text-[10px] font-bold text-primary">SEM {detalhe.semana}</span>
                   )}
-                  <span className="text-[11px] text-muted-foreground ml-auto">{detalhe.data}</span>
+                  <span className="text-[11px] text-muted-foreground ml-auto mr-8">{detalhe.data}</span>
                 </div>
                 <DialogTitle className="text-base">{detalhe.titulo}</DialogTitle>
                 <DialogDescription className="sr-only">Detalhes do registro</DialogDescription>
