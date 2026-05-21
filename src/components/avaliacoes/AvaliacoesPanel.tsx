@@ -193,29 +193,6 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
                 ))}
               </div>
             </div>
-            <div>
-              <label className="text-xs font-semibold text-foreground block mb-1.5">
-                Vincular a uma consulta (opcional)
-              </label>
-              <select
-                value={appointmentId}
-                onChange={(e) => setAppointmentId(e.target.value)}
-                className="w-full text-xs border border-border rounded-lg px-3 py-2 bg-background"
-              >
-                <option value="">Sem vínculo</option>
-                {appointments.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {new Date(a.data_hora).toLocaleString("pt-BR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </option>
-                ))}
-              </select>
-            </div>
             <button
               onClick={gerarLink}
               disabled={gerando || !userId}
