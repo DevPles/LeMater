@@ -914,21 +914,19 @@ function corPorSeveridade(sev: string): string {
 function ResumoCartaoBlock({
   resumo,
   alertas,
-  series,
   onAbrirCartao,
 }: {
   resumo: ResumoCartao;
   alertas: AlertaPublico[];
-  series: ReturnType<typeof buildSeries>;
   onAbrirCartao: () => void;
 }) {
   return (
-    <LiquidCard className="p-5 space-y-5">
+    <LiquidCard className="p-5 space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-base font-bold font-display text-foreground">Resumo do cartão da gestante</h2>
           <p className="text-[11px] text-muted-foreground">
-            Dados já registrados no aplicativo. Use como contexto para a consulta de hoje.
+            Visão de relance para a consulta. Abra o cartão completo para gráficos, exames e medições.
           </p>
         </div>
         <button
@@ -960,134 +958,51 @@ function ResumoCartaoBlock({
         )}
       </div>
 
-      {/* Identificação + obstétrico */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+      {/* Linha-chefe */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
         <Chip titulo="Idade" valor={resumo.idade != null ? `${resumo.idade}a` : "—"} />
         <Chip titulo="IG" valor={resumo.ig != null ? `${resumo.ig} sem.` : "—"} />
-        <Chip titulo="DUM" valor={fmtData(resumo.dum)} />
         <Chip titulo="DPP" valor={fmtData(resumo.dpp)} />
         <Chip titulo="G/P/A" valor={resumo.gpa} />
-        <Chip titulo="Tipo de gestação" valor={resumo.tipoGestacao ?? "—"} />
         <Chip titulo="Risco" valor={resumo.risco ?? "—"} />
-        <Chip titulo="DPP (eco)" valor={resumo.dppEco ? fmtData(resumo.dppEco) : "—"} />
+        <Chip titulo="Tipo" valor={resumo.tipoGestacao ?? "—"} />
       </div>
 
-      {/* Antropometria */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
-        <Chip titulo="Peso pré-gest." valor={resumo.pesoAnterior != null ? `${resumo.pesoAnterior} kg` : "—"} />
-        <Chip titulo="Altura" valor={resumo.altura != null ? `${resumo.altura}${resumo.altura > 3 ? " cm" : " m"}` : "—"} />
-        <Chip titulo="IMC pré-gest." valor={resumo.imcAnterior != null ? String(resumo.imcAnterior) : "—"} />
-        <Chip titulo="Peso atual" valor={resumo.pesoAtual != null ? `${resumo.pesoAtual} kg` : "—"} />
+      {/* Antropometria curta */}
+      <div className="grid grid-cols-3 gap-2 text-[11px]">
+        <Chip titulo="IMC pré" valor={resumo.imcAnterior != null ? String(resumo.imcAnterior) : "—"} />
         <Chip titulo="IMC atual" valor={resumo.imcAtual != null ? String(resumo.imcAtual) : "—"} />
         <Chip
           titulo="Ganho ponderal"
           valor={resumo.ganhoPeso != null ? `${resumo.ganhoPeso > 0 ? "+" : ""}${resumo.ganhoPeso} kg` : "—"}
         />
-        {resumo.ultimaPA && (
-          <Chip
-            titulo="Última PA"
-            valor={`${resumo.ultimaPA.sis}/${resumo.ultimaPA.dia} ${resumo.ultimaPA.semana ? `• ${resumo.ultimaPA.semana}s` : ""}`}
-          />
-        )}
-        {resumo.ultimoBCF && (
-          <Chip
-            titulo="Último BCF"
-            valor={`${resumo.ultimoBCF.valor} bpm ${resumo.ultimoBCF.semana ? `• ${resumo.ultimoBCF.semana}s` : ""}`}
-          />
-        )}
-        {resumo.ultimaAU && (
-          <Chip
-            titulo="Última AU"
-            valor={`${resumo.ultimaAU.valor} cm ${resumo.ultimaAU.semana ? `• ${resumo.ultimaAU.semana}s` : ""}`}
-          />
-        )}
-        {resumo.ultimaFC && (
-          <Chip titulo="Última FC" valor={`${resumo.ultimaFC.valor} bpm`} />
-        )}
       </div>
 
-      {/* Listas clínicas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <ChipList titulo="Comorbidades" itens={resumo.comorbidades} />
-        <ChipList titulo="Hist. familiar" itens={resumo.familiares} />
-        <ChipList titulo="Hábitos" itens={resumo.habitos} />
-        <ChipList titulo="Intercorrências registradas" itens={resumo.intercorrencias} />
+      {/* Últimos sinais */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+        <Chip
+          titulo="Última PA"
+          valor={resumo.ultimaPA ? `${resumo.ultimaPA.sis}/${resumo.ultimaPA.dia}${resumo.ultimaPA.semana ? ` • ${resumo.ultimaPA.semana}s` : ""}` : "—"}
+        />
+        <Chip
+          titulo="Último BCF"
+          valor={resumo.ultimoBCF ? `${resumo.ultimoBCF.valor} bpm${resumo.ultimoBCF.semana ? ` • ${resumo.ultimoBCF.semana}s` : ""}` : "—"}
+        />
+        <Chip
+          titulo="Última AU"
+          valor={resumo.ultimaAU ? `${resumo.ultimaAU.valor} cm${resumo.ultimaAU.semana ? ` • ${resumo.ultimaAU.semana}s` : ""}` : "—"}
+        />
+        <Chip
+          titulo="Peso atual"
+          valor={resumo.pesoAtual != null ? `${resumo.pesoAtual} kg` : "—"}
+        />
       </div>
 
-      {/* Gráficos de evolução */}
-      <div>
-        <p className="text-xs font-bold text-foreground mb-2">Evolução da gestação</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {series.pressao.length > 0 && (
-            <ChartCard titulo="Pressão arterial (× semana)">
-              <ComposedChart data={series.pressao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} domain={[40, 180]} />
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-                <ReferenceLine y={140} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
-                <ReferenceLine y={90} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
-                <Line type="monotone" dataKey="sistolica" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} name="Sistólica" />
-                <Line type="monotone" dataKey="diastolica" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} name="Diastólica" />
-              </ComposedChart>
-            </ChartCard>
-          )}
-          {series.peso.length > 0 && (
-            <ChartCard titulo="Peso (× semana)">
-              <LineChart data={series.peso} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="peso" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ChartCard>
-          )}
-          {series.au.length > 0 && (
-            <ChartCard titulo="Altura uterina (× semana)">
-              <LineChart data={series.au} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="au" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ChartCard>
-          )}
-          {series.bcf.length > 0 && (
-            <ChartCard titulo="BCF (× semana)">
-              <ComposedChart data={series.bcf} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} domain={[80, 200]} />
-                <Tooltip />
-                <ReferenceLine y={110} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
-                <ReferenceLine y={160} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
-                <Line type="monotone" dataKey="bcf" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-              </ComposedChart>
-            </ChartCard>
-          )}
-          {series.glic.length > 0 && (
-            <ChartCard titulo="Glicemia (× semana)">
-              <LineChart data={series.glic} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="glicemia" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ChartCard>
-          )}
-        </div>
-        {series.pressao.length === 0 && series.peso.length === 0 && series.au.length === 0 && series.bcf.length === 0 && series.glic.length === 0 && (
-          <p className="text-[11px] text-muted-foreground">Sem medições suficientes para gerar gráficos.</p>
-        )}
-      </div>
-
-      {resumo.unidade && (
-        <p className="text-[11px] text-muted-foreground">
-          Unidade de saúde: <span className="font-semibold text-foreground">{resumo.unidade}</span>
+      {/* Comorbidades relevantes em linha única */}
+      {resumo.comorbidades.length > 0 && (
+        <p className="text-[11px] text-foreground">
+          <span className="font-bold">Comorbidades:</span>{" "}
+          <span className="text-muted-foreground">{resumo.comorbidades.join(" • ")}</span>
         </p>
       )}
     </LiquidCard>
