@@ -142,6 +142,19 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
     window.open(wa, "_blank", "noopener,noreferrer");
   };
 
+  const excluir = async (id: string, token: string) => {
+    if (!confirm("Excluir este link de avaliação? Esta ação não pode ser desfeita.")) return;
+    const { error } = await supabase.from("evaluation_requests").delete().eq("id", id);
+    if (error) {
+      setMsg("Não foi possível excluir: " + error.message);
+      return;
+    }
+    setPedidos((prev) => prev.filter((p) => p.id !== id));
+    if (novoLink && novoLink.endsWith(token)) setNovoLink(null);
+    setMsg("Link excluído.");
+    setTimeout(() => setMsg(null), 2000);
+  };
+
   return (
     <div>
       <div className="flex gap-1 bg-muted rounded-full p-1 mb-4">
