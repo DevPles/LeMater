@@ -24,21 +24,12 @@ export const Route = createFileRoute("/app_/home")({
   component: HomePage,
 });
 
-type Tip = { title: string; description: string; weekMin?: number; weekMax?: number };
-
-function tipMatchesWeek(tip: Tip, week: number) {
-  const min = typeof tip.weekMin === "number" ? tip.weekMin : 0;
-  const max = typeof tip.weekMax === "number" ? tip.weekMax : 42;
-  return week >= min && week <= max;
-}
-
 function firstName(name: string | null | undefined) {
   if (!name) return "";
   return name.trim().split(/\s+/)[0];
 }
 
 function HomePage() {
-  const { content } = useScreenContent("home", HOME_DEFAULT);
   const { profile, loading, session } = useGestanteProfile();
 
   if (loading) {
@@ -58,12 +49,10 @@ function HomePage() {
     profile?.nome?.trim() || profile?.email?.split("@")[0] || "Mamãe";
   const primeiroNome = firstName(nomeCompleto) || "Mamãe";
 
-  // Semana = calculada da DUM da gestante (se houver). Senão cai no padrão editável.
+  // Semana = calculada da DUM da gestante (se houver). Senão 1.
   const calculatedWeek = weeksFromDum(profile?.dum ?? null);
-  const currentWeek = calculatedWeek ?? content.currentWeek;
+  const currentWeek = calculatedWeek ?? 1;
 
-  // Filtra dicas pela semana atual (se a dica tiver weekMin/weekMax definidos).
-  const tipsAll = (content.weeklyTips ?? []) as Tip[];
   const tipsFiltered = tipsAll.filter((t) => tipMatchesWeek(t, currentWeek));
   const tipsToShow = tipsFiltered.length > 0 ? tipsFiltered : tipsAll;
 
