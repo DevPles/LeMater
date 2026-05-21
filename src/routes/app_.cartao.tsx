@@ -7,6 +7,7 @@ import { CARTAO_DEFAULT } from "@/lib/screen-defaults";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { LancamentoModal } from "@/components/LancamentoModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import logoHospitalUrl from "@/assets/logo-lemater.png";
