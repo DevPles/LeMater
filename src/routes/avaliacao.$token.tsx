@@ -79,15 +79,15 @@ type Secao = { titulo: string; campos: Campo[] };
 const SECOES: Record<Especialidade, Secao[]> = {
   medico: [
     {
-      titulo: "Consulta do dia",
+      titulo: "Acompanhamento da gestação (hoje)",
       campos: [
-        { key: "queixa_principal", label: "Queixa principal", type: "textarea", full: true },
-        { key: "historia_doenca_atual", label: "História da doença atual", type: "textarea", full: true },
+        { key: "como_se_sente", label: "Como a gestante está se sentindo? (relato subjetivo)", type: "textarea", full: true },
+        { key: "queixas_desconfortos", label: "Queixas e desconfortos do período", type: "textarea", full: true, hint: "Náuseas, azia, lombalgia, edema, contrações, sangramento, perdas, redução de movimentos fetais, etc." },
         { key: "intercorrencias_periodo", label: "Intercorrências desde a última consulta", type: "textarea", full: true },
       ],
     },
     {
-      titulo: "Sinais vitais e exame físico (hoje)",
+      titulo: "Sinais vitais e antropometria (hoje)",
       campos: [
         { key: "pa_sistolica", label: "PA sistólica (mmHg)", type: "number" },
         { key: "pa_diastolica", label: "PA diastólica (mmHg)", type: "number" },
@@ -95,8 +95,7 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "frequencia_respiratoria", label: "FR (irpm)", type: "number" },
         { key: "temperatura", label: "Temperatura (°C)", type: "number" },
         { key: "saturacao_o2", label: "SatO₂ (%)", type: "number" },
-        { key: "peso_kg", label: "Peso de hoje (kg)", type: "number" },
-        { key: "exame_fisico_geral", label: "Exame físico geral", type: "textarea", full: true },
+        { key: "peso_kg", label: "Peso de hoje (kg)", type: "number", hint: "Ganho ponderal acumulado aparece no resumo do cartão acima." },
       ],
     },
     {
@@ -109,28 +108,34 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "edema", label: "Edema", type: "select", options: ["Ausente", "MMII +/4", "MMII ++/4", "MMII +++/4", "Anasarca"] },
         { key: "dinamica_uterina", label: "Dinâmica uterina", type: "text" },
         { key: "perdas_vaginais", label: "Perdas vaginais", type: "text" },
-        { key: "toque_vaginal", label: "Toque vaginal (se realizado)", type: "text" },
+        { key: "toque_vaginal", label: "Toque vaginal (se indicado)", type: "text" },
       ],
     },
     {
-      titulo: "Avaliação dos exames do cartão",
+      titulo: "Exame físico geral",
       campos: [
-        { key: "analise_laboratoriais", label: "Análise dos laboratoriais", type: "textarea", full: true, hint: "Consulte os exames listados acima no resumo." },
-        { key: "analise_imagem", label: "Análise dos exames de imagem", type: "textarea", full: true },
-        { key: "situacao_vacinal", label: "Situação vacinal", type: "select", options: ["Em dia","Pendências","Esquema desconhecido"] },
+        { key: "exame_fisico_geral", label: "Achados do exame físico geral", type: "textarea", full: true, hint: "Estado geral, mucosas, ausculta cardiopulmonar, mamas, MMII, etc." },
       ],
     },
     {
-      titulo: "Conduta",
+      titulo: "Análise do cartão e exames",
       campos: [
-        { key: "hipoteses_diagnosticas", label: "Hipóteses diagnósticas / CID", type: "textarea", full: true },
+        { key: "analise_laboratoriais", label: "Avaliação dos exames laboratoriais", type: "textarea", full: true, hint: "Consulte os exames no cartão completo." },
+        { key: "analise_imagem", label: "Avaliação dos exames de imagem / ultrassonografias", type: "textarea", full: true },
+        { key: "situacao_vacinal", label: "Situação vacinal", type: "select", options: ["Em dia", "Pendências", "Esquema desconhecido"] },
+        { key: "classificacao_risco", label: "Classificação de risco gestacional hoje", type: "select", options: ["Habitual", "Risco intermediário", "Alto risco"] },
+        { key: "justificativa_risco", label: "Justificativa da classificação", type: "textarea", full: true },
+      ],
+    },
+    {
+      titulo: "Plano de cuidado",
+      campos: [
+        { key: "conduta", label: "Conduta e orientações da consulta", type: "textarea", full: true },
         { key: "exames_solicitados", label: "Exames solicitados", type: "textarea", full: true },
-        { key: "prescricoes", label: "Prescrições", type: "textarea", full: true },
-        { key: "suplementacao", label: "Suplementação (ácido fólico, ferro, cálcio, DHA...)", type: "textarea", full: true },
-        { key: "orientacoes", label: "Orientações", type: "textarea", full: true },
-        { key: "encaminhamentos", label: "Encaminhamentos", type: "textarea", full: true },
-        { key: "sinais_alarme_orientados", label: "Sinais de alarme orientados", type: "textarea", full: true, hint: "Sangramento, cefaleia, edema súbito, redução de movimentação fetal, etc." },
-        { key: "data_retorno", label: "Data sugerida de retorno", type: "date" },
+        { key: "prescricoes", label: "Prescrições e suplementação", type: "textarea", full: true, hint: "Ácido fólico, ferro, cálcio, DHA, etc." },
+        { key: "encaminhamentos", label: "Encaminhamentos", type: "textarea", full: true, hint: "Alto risco, especialidades, serviço social, etc." },
+        { key: "sinais_alarme_orientados", label: "Sinais de alarme reforçados", type: "textarea", full: true, hint: "Sangramento, cefaleia, edema súbito, redução de movimentação fetal, etc." },
+        { key: "data_retorno", label: "Próxima consulta sugerida", type: "date" },
       ],
     },
   ],
