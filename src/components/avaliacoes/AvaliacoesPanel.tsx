@@ -37,10 +37,8 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
   const [sub, setSub] = useState<"solicitar" | "recebidas">("solicitar");
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [respostas, setRespostas] = useState<Resposta[]>([]);
-  const [appointments, setAppointments] = useState<Array<{ id: string; data_hora: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [especialidade, setEspecialidade] = useState<Especialidade>("medico");
-  const [appointmentId, setAppointmentId] = useState<string>("");
   const [gerando, setGerando] = useState(false);
   const [novoLink, setNovoLink] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
