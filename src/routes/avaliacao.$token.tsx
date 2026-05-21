@@ -766,7 +766,6 @@ function AvaliacaoPublicaPage() {
             <ResumoCartaoBlock
               resumo={resumo}
               alertas={info.cartao.alertas ?? []}
-              series={series}
               onAbrirCartao={() => setCartaoAberto(true)}
             />
 
