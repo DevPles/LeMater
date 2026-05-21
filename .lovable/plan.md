@@ -1,74 +1,134 @@
 ## Objetivo
 
-Adicionar uma terceira aba em `/app/videochamada` chamada **Consultas**, onde a gestante gera um link de formulário interno (por especialidade — médico, nutricionista, psicólogo), copia/compartilha esse link com o profissional. O profissional abre o link em uma página pública, informa seu registro profissional, preenche a avaliação, e a resposta passa a constar na lista de consultas dessa mesma aba.
+Hoje o formulário médico em `/avaliacao/$token` repete dezenas de campos que a gestante já preencheu (idade, G/P/A, comorbidades, tabagismo, alergias, peso/altura/IMC, IG etc.). O médico deve receber esses dados — **mais os gráficos de evolução e os alertas clínicos ativos** — como contexto já preenchido, e o formulário só deve perguntar o que pertence à consulta de hoje.
 
-Os formulários são **internos do app** (não Google Forms/Typeform). Isso elimina a dependência de webhook externo e mantém os dados nativos, prontos para serem lidos junto às consultas.
+## O que já existe no app (e está disponível para o RPC `get_evaluation_request_public`)
 
-## Fluxo do usuário
+- `profiles`: nome, data_nascimento, dum, cidade, bairro, unidade_saude, G/P/A.
+- `profiles.partos_classificacao` (array JSON do "Histórico" do Cartão) — armazena:
+  - **Dados gerais**: risco, peso_anterior, altura, imc_anterior, dpp, dpp_eco, tipo_gestacao.
+  - **Ant. clínicos**: diabetes, HAS, cardiopatia, tromboembolismo, infecção urinária, etc.
+  - **Ant. familiares**: diabetes, HAS, gemelar.
+  - **Gestação atual**: tabagismo, etilismo, outras drogas, violência doméstica, HIV/sífilis/toxoplasmose, anemia, pré-eclâmpsia, DM gestacional, etc.
+- `clinical_measurements`: PA, FC, BCF, AU, peso, altura, glicemia, temperatura, SatO₂ — séries temporais por semana gestacional.
+- `vaccinations`, `exam_results`, `image_exam_results`.
+- **Alertas clínicos**: RPC `get_active_alerts` já calcula alertas ativos a partir de dados clínicos, exames e calendário vacinal (usado em `/app/alertas`).
 
-1. Gestante abre `/app/videochamada` → aba **Consultas**.
-2. Sub-aba **Solicitar**: escolhe especialidade (Médico, Nutricionista, Psicólogo) e, opcionalmente, vincula a uma de suas consultas em "Meus agendamentos". Clica em **Gerar link**.
-3. Recebe um cartão com o link público (`/avaliacao/{token}`), botões **Copiar** e **Compartilhar** (Web Share API com fallback p/ WhatsApp).
-4. Sub-aba **Recebidas**: lista as avaliações já preenchidas pelos profissionais, com nome, especialidade, registro, data e botão "Ver detalhes" abrindo um modal com todas as respostas. Cada item indica se está vinculado a uma consulta.
+## Mudanças
 
-## Fluxo do profissional (link público)
+### 1. Migration — expor alertas no link público da avaliação
 
-1. Abre o link `/avaliacao/{token}`. Página pública (sem login).
-2. Tela 1 — identificação: nome completo + tipo de registro (CRM, CRN, CRP) + número + UF. Validação client + server.
-3. Tela 2 — formulário específico da especialidade (campos abaixo). Botão **Enviar avaliação**.
-4. Tela de sucesso. Token marcado como respondido (não pode ser reenviado).
+Atualizar `public.get_evaluation_request_public(_token uuid)` para incluir, dentro do objeto `cartao`, um campo `alertas` com a lista de alertas ativos da gestante daquele token (mesma lógica do RPC `get_active_alerts`, mas chamada server-side com o `gestante_id` do request — assim continua sem exigir login). Sem alteração de tabelas, só do retorno do RPC.
 
-## Formulários por especialidade (campos)
+### 2. `src/routes/avaliacao.$token.tsx` — formulário médico
 
-**Médico (Obstetra/Clínico)** — pressão sistólica, diastólica, FC, peso, altura uterina, BCF, idade gestacional, queixas, exame físico, conduta/orientações, prescrições.
+**Reestruturar `SECOES.medico`** em duas zonas:
 
-**Nutricionista** — peso atual, ganho ponderal na gestação, IMC, recordatório 24h, intolerâncias/alergias, suplementação atual, plano alimentar/orientações.
+```text
+[Resumo do cartão — somente leitura, no topo]
 
-**Psicólogo** — humor (escala 1–10), ansiedade (1–10), sono, suporte familiar, rede de apoio, sinais de depressão pós-parto (PHQ-2/EPDS livre-texto), conduta/encaminhamentos.
+Alertas clínicos ativos
+- Cards/chips coloridos por severidade vindos de cartao.alertas
+  (ex.: "PA elevada na sem. 28", "Hemograma 3T pendente", "Vacina dTpa em atraso")
 
-Cada formulário tem um schema fixo no front + validação Zod no server.
+Gráficos de evolução (recharts, mesmos do cartão)
+- Pressão arterial (sistólica/diastólica × semana) com faixas de referência
+- Peso × semana, com ganho ponderal acumulado
+- Altura uterina × semana
+- BCF × semana
+- Glicemia × semana (se houver registros)
+  Renderizados em pequeno formato (sparkline-like, ~160px de altura),
+  com botão "expandir" abrindo o gráfico em tamanho cheio dentro
+  do CartaoModal já existente.
 
-## Mudanças no banco (migração)
+Identificação: nome, idade, IG (sem.), DPP, DUM, unidade de saúde
+Obstétrico: G/P/A, tipo de gestação, risco
+Comorbidades: lista derivada de ant_clinico (chips)
+Hist. familiar: lista derivada de ant_fam (chips)
+Hábitos: tabagismo, etilismo, outras drogas (de gest_atual)
+Intercorrências já registradas na gestação atual (chips)
+Últimos sinais vitais: PA, FC, peso, BCF, AU (com semana/data)
+Antropometria: peso pré-gest., altura, IMC, ganho ponderal calculado
+Vacinas: resumo
+Exames recentes: lab + imagem (com data e status)
 
-Nova tabela `evaluation_requests`:
+Botão "Ver cartão completo" mantém o modal atual.
+```
 
-- `id`, `token` (uuid único usado na URL pública), `gestante_id` (uuid), `appointment_id` (uuid, nullable — vincula a uma consulta de `appointment_slots`), `especialidade` (text: `medico` | `nutricionista` | `psicologo`), `status` (text: `pendente` | `respondida` | `expirada`), `expira_em` (timestamptz, +30 dias), `created_at`.
+```text
+[Formulário da consulta — o que o médico precisa preencher hoje]
 
-Nova tabela `evaluation_responses`:
+Consulta do dia
+- Queixa principal
+- História da doença atual
+- Intercorrências desde a última consulta
 
-- `id`, `request_id` (FK lógica → `evaluation_requests`), `professional_nome` (text), `professional_registro_tipo` (CRM/CRN/CRP), `professional_registro_numero` (text), `professional_registro_uf` (text), `respostas` (jsonb com os campos específicos), `created_at`.
+Sinais vitais e exame físico de hoje
+- PA sistólica/diastólica, FC, FR, Temp, SatO₂
+- Peso de hoje, exame físico geral
 
-RLS:
+Avaliação obstétrica de hoje
+- AU, BCF, movimentos fetais, apresentação, edema,
+  dinâmica uterina, perdas vaginais, toque (se realizado)
 
-- `evaluation_requests`: gestante lê/cria as próprias (`gestante_id = auth.uid()`); admin lê tudo. Sem leitura pública direta — o acesso ao formulário é via server function que consulta por token.
-- `evaluation_responses`: gestante lê as próprias (via JOIN `request_id → gestante_id`); admin lê tudo. Insert apenas via server function (sem policy de insert para `authenticated`/`anon`).
+Avaliação dos exames disponíveis no cartão
+- Análise dos laboratoriais (hint "veja o cartão")
+- Análise dos exames de imagem
+- Situação vacinal
 
-Os inserts pelo profissional (anônimo) acontecem em **server functions** que validam o token, então a tabela `evaluation_responses` não precisa de policy permissiva — usa o cliente admin no servidor.
+Conduta
+- Hipóteses diagnósticas / CID
+- Exames solicitados
+- Prescrições
+- Suplementação
+- Orientações
+- Encaminhamentos
+- Sinais de alarme orientados
+- Data de retorno
+```
 
-## Server functions (`src/lib/evaluations.functions.ts`)
+Removidos do formulário (passam a aparecer apenas no resumo): idade materna, gestação atual tipo, classificação de risco, antecedentes pessoais/familiares/obstétricos, alergias, medicamentos em uso, tabagismo, etilismo, drogas, peso/altura/IMC pré-gestacionais, IG em semanas, tipo sanguíneo (não temos no app — fica fora).
 
-- `createEvaluationRequest({ especialidade, appointmentId? })` — protegida por `requireSupabaseAuth`, cria registro com token e devolve o link público.
-- `getEvaluationByToken({ token })` — pública, devolve `{ especialidade, gestanteNome, status }` para a página do formulário (sem PII sensível).
-- `submitEvaluation({ token, profissional, respostas })` — pública, valida token + status, valida formato do registro por especialidade (CRM/CRN/CRP), grava resposta via `supabaseAdmin`, marca request como `respondida`.
-- `listMyEvaluations()` — protegida, lista requests + respostas da gestante para a sub-aba "Recebidas".
+### 3. `montarPrefill` — estender para ler `partos_classificacao`
 
-## Mudanças no front
+Agrupar os eventos do array por `categoria`/`tipo` (pegando a versão mais recente de cada chave) para extrair:
 
-- `src/routes/app_.videochamada.tsx`: adicionar terceira pílula na tab bar (`Disponíveis` | `Meus agendamentos` | `Avaliações`). Quando `tab === "avaliacoes"`, renderiza `<AvaliacoesPanel />`.
-- `src/components/avaliacoes/AvaliacoesPanel.tsx`: sub-abas Solicitar / Recebidas, listagem, modal de detalhes.
-- `src/components/avaliacoes/GerarLinkForm.tsx`: form de geração + cartão de resultado com Copiar/Compartilhar.
-- `src/routes/avaliacao.$token.tsx`: rota pública (fora de `_authenticated`) com as duas telas (identificação + formulário) e tela de sucesso.
-- `src/components/avaliacoes/forms/{MedicoForm,NutricionistaForm,PsicologoForm}.tsx`: campos específicos.
-- `src/components/avaliacoes/RespostaModal.tsx`: visualização da avaliação preenchida.
+- `resumo.risco`, `resumo.tipo_gestacao`, `resumo.dpp_eco`, `resumo.peso_anterior`, `resumo.altura`, `resumo.imc_anterior`.
+- `resumo.comorbidades`: labels legíveis dos itens marcados em ant_clinico.
+- `resumo.familiares`: idem ant_fam.
+- `resumo.habitos`: tabagismo/etilismo/outras drogas.
+- `resumo.intercorrencias`: itens marcados em gest_atual.
+- `resumo.ganho_peso`: `peso_atual − peso_anterior` quando ambos existirem.
+- `resumo.imc_atual`: a partir de peso atual e altura.
 
-Tudo segue o design system existente (`LiquidCard`, tokens semânticos, sem ícones, fontes Playfair/DM Sans).
+Esse "resumo" alimenta o card de contexto. Campos do formulário só recebem prefill quando fizerem parte da entrada de hoje (PA, FC, peso, AU, BCF) com a última medição e selo "do cartão", continuando editáveis.
 
-## Sobre o webhook externo
+### 4. Séries para os gráficos
 
-Como combinado, a resposta vai pelo formulário interno → os dados já entram direto na consulta sem precisar de webhook externo. Se mais para frente você quiser permitir formulários externos (Typeform, Google Forms), adiciono `/api/public/avaliacoes/webhook` com verificação de assinatura — mas isso fica para uma segunda iteração.
+Reaproveitar o cálculo já presente em `app_.cartao.tsx`: filtrar `cartao.medicoes` por parâmetro (peso, sistólica/diastólica, AU, BCF, glicemia) e ordenar por `semana_gestacional`. Renderizar com `recharts` (`LineChart`/`ComposedChart`) já usado no projeto. Adicionar linhas de referência (PA 140/90, BCF 110-160) para leitura clínica rápida.
 
-## Fora do escopo desta entrega
+### 5. Card de alertas
 
-- Envio do link por e-mail/SMS dentro do app (escolhido "Copiar/compartilhar" apenas).
-- Edição/exclusão de avaliação já respondida.
-- Validação online do registro profissional contra CRM/CRN/CRP (apenas formato).
+Cada item de `cartao.alertas` vira um chip com cor por severidade (`baixa`, `media`, `alta`, `critica`) usando tokens do design system. Sem ícones (regra do projeto).
+
+### 6. Aplicar o mesmo princípio (mais leve) a nutricionista e psicólogo
+
+- Nutricionista: resumo recebe peso pré/atual, altura, IMC pré/atual, ganho ponderal, gráfico de peso × semana, alertas relevantes. Formulário mantém só o que é da consulta (hábitos, recordatório 24h, bioquímica, plano, metas, retorno).
+- Psicólogo: resumo mostra histórico psiquiátrico e uso de substâncias (vindo de `gest_atual`) + alertas. Formulário mantém estado emocional do dia, escalas, conduta.
+
+## Arquivos tocados
+
+- **Migration**: atualizar `get_evaluation_request_public` para incluir `alertas`.
+- `src/routes/avaliacao.$token.tsx` — única alteração de código (resumo + gráficos + alertas + prefill estendido + reformulação das seções).
+
+## Sem mudanças
+
+- Sem alteração no painel da gestante (`AvaliacoesPanel.tsx`).
+- Sem alteração no Cartão.
+- Tabelas e RLS intocadas (só o corpo do RPC).
+
+## Riscos
+
+- `partos_classificacao` guarda `valor` como `"sim"/"nao"` por chave; mapear de volta para o label legível duplicando as listas `ANT_CLINICOS`, `ANT_FAMILIARES`, `GEST_ATUAL` em `avaliacao.$token.tsx` (evitar importar do componente da gestante).
+- Como o array é cumulativo, considerar **a versão mais recente** de cada `(categoria, key)` ao montar o resumo.
+- `get_active_alerts` espera contexto de usuário; ao chamá-lo dentro do RPC `SECURITY DEFINER` com o `gestante_id` do request, validar que a função aceita parâmetro explícito — caso contrário, replicar a lógica essencial (PA, vacinas em atraso, exames pendentes) dentro do próprio `get_evaluation_request_public`.

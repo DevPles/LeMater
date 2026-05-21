@@ -3,6 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { LiquidCard } from "@/components/LiquidCard";
 import { LoadingMessage } from "@/components/LoadingMessage";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  ComposedChart, ReferenceLine, Legend,
+} from "recharts";
 
 export const Route = createFileRoute("/avaliacao/$token")({
   head: () => ({
@@ -18,12 +22,22 @@ export const Route = createFileRoute("/avaliacao/$token")({
 
 type Especialidade = "medico" | "nutricionista" | "psicologo";
 
+type AlertaPublico = {
+  id: string;
+  origem: string;
+  severidade: string;
+  titulo: string;
+  mensagem: string;
+  data: string | null;
+};
+
 type Cartao = {
   profile: Record<string, unknown> | null;
   medicoes: Array<Record<string, unknown>>;
   vacinas: Array<Record<string, unknown>>;
   exames: Array<Record<string, unknown>>;
   imagens: Array<Record<string, unknown>>;
+  alertas?: AlertaPublico[];
 };
 
 type Info = {
@@ -52,40 +66,28 @@ type Campo = {
   type: "text" | "number" | "textarea" | "select" | "date";
   options?: string[];
   full?: boolean;
-  /** Dica visível abaixo do campo (ex.: orientação clínica). */
   hint?: string;
 };
 
 type Secao = { titulo: string; campos: Campo[] };
 
+/**
+ * Formulários focados APENAS na consulta do dia. Dados já registrados no
+ * cartão (idade, G/P/A, comorbidades, hábitos, alergias, antecedentes, IMC
+ * pré-gestacional etc.) aparecem como contexto somente leitura no topo.
+ */
 const SECOES: Record<Especialidade, Secao[]> = {
   medico: [
     {
-      titulo: "Identificação clínica",
-      campos: [
-        { key: "idade_materna_anos", label: "Idade materna (anos)", type: "number" },
-        { key: "tipo_sanguineo", label: "Tipo sanguíneo / Rh", type: "select", options: ["A+","A-","B+","B-","AB+","AB-","O+","O-","Não informado"] },
-        { key: "gestacao_atual_tipo", label: "Gestação atual", type: "select", options: ["Única","Gemelar dicoriônica","Gemelar monocoriônica","Múltipla","Indeterminada"] },
-        { key: "classificacao_risco", label: "Classificação de risco gestacional", type: "select", options: ["Habitual / baixo","Alto risco","Muito alto risco"] },
-      ],
-    },
-    {
-      titulo: "Anamnese",
+      titulo: "Consulta do dia",
       campos: [
         { key: "queixa_principal", label: "Queixa principal", type: "textarea", full: true },
         { key: "historia_doenca_atual", label: "História da doença atual", type: "textarea", full: true },
-        { key: "antecedentes_pessoais", label: "Antecedentes pessoais e comorbidades", type: "textarea", full: true },
-        { key: "antecedentes_obstetricos", label: "Antecedentes obstétricos (G/P/A)", type: "text" },
-        { key: "antecedentes_familiares", label: "Antecedentes familiares relevantes", type: "textarea", full: true },
-        { key: "alergias", label: "Alergias", type: "text" },
-        { key: "medicamentos_uso", label: "Medicamentos em uso", type: "textarea", full: true },
-        { key: "tabagismo", label: "Tabagismo", type: "select", options: ["Não", "Sim", "Ex-tabagista"] },
-        { key: "etilismo", label: "Etilismo", type: "select", options: ["Não", "Sim", "Ex-etilista"] },
-        { key: "drogas_ilicitas", label: "Uso de drogas ilícitas", type: "select", options: ["Não", "Sim", "Ex-usuária"] },
+        { key: "intercorrencias_periodo", label: "Intercorrências desde a última consulta", type: "textarea", full: true },
       ],
     },
     {
-      titulo: "Sinais vitais e exame físico",
+      titulo: "Sinais vitais e exame físico (hoje)",
       campos: [
         { key: "pa_sistolica", label: "PA sistólica (mmHg)", type: "number" },
         { key: "pa_diastolica", label: "PA diastólica (mmHg)", type: "number" },
@@ -93,16 +95,13 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "frequencia_respiratoria", label: "FR (irpm)", type: "number" },
         { key: "temperatura", label: "Temperatura (°C)", type: "number" },
         { key: "saturacao_o2", label: "SatO₂ (%)", type: "number" },
-        { key: "peso_kg", label: "Peso (kg)", type: "number" },
-        { key: "altura_cm", label: "Altura (cm)", type: "number" },
-        { key: "imc", label: "IMC", type: "number" },
+        { key: "peso_kg", label: "Peso de hoje (kg)", type: "number" },
         { key: "exame_fisico_geral", label: "Exame físico geral", type: "textarea", full: true },
       ],
     },
     {
-      titulo: "Avaliação obstétrica",
+      titulo: "Avaliação obstétrica (hoje)",
       campos: [
-        { key: "idade_gestacional_sem", label: "Idade gestacional (semanas)", type: "number" },
         { key: "altura_uterina_cm", label: "Altura uterina (cm)", type: "number" },
         { key: "bcf", label: "BCF (bpm)", type: "number" },
         { key: "movimentos_fetais", label: "Movimentos fetais", type: "select", options: ["Presentes", "Diminuídos", "Ausentes", "Ainda não percebe"] },
@@ -114,10 +113,10 @@ const SECOES: Record<Especialidade, Secao[]> = {
       ],
     },
     {
-      titulo: "Avaliação de exames disponíveis",
+      titulo: "Avaliação dos exames do cartão",
       campos: [
-        { key: "analise_laboratoriais", label: "Análise dos exames laboratoriais", type: "textarea", full: true, hint: "Revise os exames listados no cartão da gestante." },
-        { key: "analise_imagem", label: "Análise dos exames de imagem", type: "textarea", full: true, hint: "Inclui USG, doppler, ecocardio fetal etc." },
+        { key: "analise_laboratoriais", label: "Análise dos laboratoriais", type: "textarea", full: true, hint: "Consulte os exames listados acima no resumo." },
+        { key: "analise_imagem", label: "Análise dos exames de imagem", type: "textarea", full: true },
         { key: "situacao_vacinal", label: "Situação vacinal", type: "select", options: ["Em dia","Pendências","Esquema desconhecido"] },
       ],
     },
@@ -137,17 +136,12 @@ const SECOES: Record<Especialidade, Secao[]> = {
   ],
   nutricionista: [
     {
-      titulo: "Avaliação antropométrica",
+      titulo: "Consulta do dia",
       campos: [
-        { key: "peso_pregestacional_kg", label: "Peso pré-gestacional (kg)", type: "number" },
-        { key: "peso_atual_kg", label: "Peso atual (kg)", type: "number" },
-        { key: "altura_cm", label: "Altura (cm)", type: "number" },
-        { key: "imc_pregestacional", label: "IMC pré-gestacional", type: "number" },
-        { key: "imc_atual", label: "IMC atual", type: "number" },
-        { key: "ganho_ponderal_kg", label: "Ganho ponderal total (kg)", type: "number" },
-        { key: "ganho_esperado", label: "Ganho esperado (kg)", type: "text", hint: "Conforme IMC pré-gestacional (IOM)." },
+        { key: "queixa_principal", label: "Queixa principal", type: "textarea", full: true },
+        { key: "peso_atual_kg", label: "Peso de hoje (kg)", type: "number" },
         { key: "circunferencia_braco", label: "Circunferência do braço (cm)", type: "number" },
-        { key: "classificacao_nutricional", label: "Classificação nutricional", type: "select", options: ["Baixo peso","Eutrofia","Sobrepeso","Obesidade"] },
+        { key: "classificacao_nutricional", label: "Classificação nutricional atual", type: "select", options: ["Baixo peso","Eutrofia","Sobrepeso","Obesidade"] },
       ],
     },
     {
@@ -161,7 +155,6 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "pirose_refluxo", label: "Pirose / refluxo", type: "select", options: ["Não","Leve","Moderado","Intenso"] },
         { key: "intolerancias_alergias", label: "Intolerâncias e alergias alimentares", type: "textarea", full: true },
         { key: "aversoes_desejos", label: "Aversões e desejos", type: "textarea", full: true },
-        { key: "preferencias_culturais", label: "Preferências culturais/religiosas", type: "textarea", full: true },
         { key: "padrao_alimentar", label: "Padrão alimentar (onívora, vegetariana, vegana...)", type: "text" },
         { key: "consumo_ultraprocessados", label: "Consumo de ultraprocessados", type: "select", options: ["Baixo","Moderado","Alto"] },
         { key: "atividade_fisica", label: "Atividade física (tipo e frequência)", type: "text" },
@@ -179,9 +172,9 @@ const SECOES: Record<Especialidade, Secao[]> = {
       ],
     },
     {
-      titulo: "Exames bioquímicos relevantes",
+      titulo: "Análise bioquímica",
       campos: [
-        { key: "exames_bioquimicos", label: "Análise dos exames laboratoriais (Hb, Ht, ferritina, glicemia, TOTG, vit D...)", type: "textarea", full: true, hint: "Use o cartão da gestante como referência." },
+        { key: "exames_bioquimicos", label: "Análise dos laboratoriais (Hb, Ht, ferritina, glicemia, TOTG, vit D...)", type: "textarea", full: true, hint: "Veja o resumo de exames acima." },
         { key: "deficiencias_identificadas", label: "Deficiências identificadas", type: "textarea", full: true },
       ],
     },
@@ -201,16 +194,11 @@ const SECOES: Record<Especialidade, Secao[]> = {
   ],
   psicologo: [
     {
-      titulo: "Anamnese psicológica",
+      titulo: "Consulta do dia",
       campos: [
         { key: "queixa_principal", label: "Queixa principal", type: "textarea", full: true },
         { key: "gestacao_planejada", label: "Gestação planejada", type: "select", options: ["Sim", "Não", "Parcialmente"] },
         { key: "gestacao_desejada", label: "Gestação desejada", type: "select", options: ["Sim", "Não", "Ambivalente"] },
-        { key: "historico_psiquiatrico", label: "Histórico psiquiátrico pessoal", type: "textarea", full: true },
-        { key: "historico_familiar", label: "Histórico psiquiátrico familiar", type: "textarea", full: true },
-        { key: "uso_medicacao_psi", label: "Uso de psicofármacos", type: "text" },
-        { key: "uso_substancias", label: "Uso de álcool / tabaco / outras substâncias", type: "text" },
-        { key: "acompanhamento_anterior", label: "Acompanhamento psicológico anterior", type: "text" },
         { key: "lutos_perdas", label: "Lutos / perdas gestacionais anteriores", type: "textarea", full: true },
       ],
     },
@@ -237,7 +225,6 @@ const SECOES: Record<Especialidade, Secao[]> = {
         { key: "vinculo_bebe", label: "Vínculo com o bebê", type: "textarea", full: true },
         { key: "expectativa_parto", label: "Expectativa em relação ao parto", type: "textarea", full: true },
         { key: "violencia", label: "Indícios de violência (psicológica, física, sexual)", type: "textarea", full: true, hint: "Em caso positivo, encaminhar conforme protocolo." },
-        { key: "condicoes_socioeconomicas", label: "Condições socioeconômicas / moradia", type: "textarea", full: true },
       ],
     },
     {
@@ -260,12 +247,65 @@ const UFS = [
   "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO",
 ];
 
+// Mapas de label legível para os checklists guardados em partos_classificacao
+const LABEL_ANT_CLINICO: Record<string, string> = {
+  diabetes: "Diabetes",
+  infeccao_urinaria: "Infecção urinária",
+  infertilidade: "Infertilidade",
+  cardiopatia: "Cardiopatia",
+  tromboembolismo: "Tromboembolismo",
+  hipertensao: "Hipertensão arterial",
+  criterios_pelvicos: "Critérios pélvicos uterinos",
+  cirurgia: "Cirurgia",
+};
+const LABEL_ANT_FAM: Record<string, string> = {
+  diabetes: "Diabetes",
+  hipertensao: "Hipertensão",
+  gemelar: "Gemelar",
+};
+const LABEL_GEST_ATUAL: Record<string, string> = {
+  tabagismo: "Tabagismo",
+  etilismo: "Etilismo",
+  outras_drogas: "Outras drogas",
+  violencia_domestica: "Violência doméstica",
+  hiv: "HIV",
+  sifilis: "Sífilis",
+  toxoplasmose: "Toxoplasmose",
+  infeccao_urinaria: "Infecção urinária",
+  anemia: "Anemia",
+  insuf_istimocervical: "Insuficiência istimocervical",
+  ameaca_parto_prematuro: "Ameaça de parto prematuro",
+  hemograma_1t: "Hemograma 1º Trim.",
+  hemograma_2t: "Hemograma 2º Trim.",
+  hemograma_3t: "Hemograma 3º Trim.",
+  isoimunizacao_rh: "Isoimunização Rh",
+  oligo_polidramnio: "Oligo / polidrâmnio",
+  rotura_prematura: "Rotura prematura de membranas",
+  ciur: "CIUR",
+  febre: "Febre",
+  hipertensao: "Hipertensão arterial",
+  pre_eclampsia: "Pré-eclâmpsia",
+  eclampsia: "Eclâmpsia",
+  cardiopatia: "Cardiopatia",
+  diabetes_gestacional: "Diabetes gestacional",
+  uso_insulina: "Uso de insulina",
+  exantema: "Exantema / rash cutâneo",
+};
+
 function semanas(dum: string | null | undefined): number | null {
   if (!dum) return null;
   const d = new Date(dum);
   if (isNaN(d.getTime())) return null;
   const w = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24 * 7));
   return w < 0 ? 0 : w > 42 ? 42 : w;
+}
+
+function dpp(dum: string | null | undefined): string | null {
+  if (!dum) return null;
+  const d = new Date(dum);
+  if (isNaN(d.getTime())) return null;
+  d.setDate(d.getDate() + 280);
+  return d.toISOString().slice(0, 10);
 }
 
 function fmtData(s: unknown): string {
@@ -283,7 +323,6 @@ function idadeAnos(nascimento: unknown): number | null {
   return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
 }
 
-/** Acha a última medição cujo parâmetro contenha qualquer um dos termos (case insensitive). */
 function ultimaMedicao(medicoes: Array<Record<string, unknown>>, termos: string[]): string | null {
   const norm = (s: string) => s.toLowerCase();
   const matched = medicoes.find((m) => {
@@ -293,51 +332,214 @@ function ultimaMedicao(medicoes: Array<Record<string, unknown>>, termos: string[
   return matched ? String(matched.valor ?? "") : null;
 }
 
-/** Monta valores pré-preenchidos a partir do cartão. Retorna mapa + conjunto de chaves preenchidas. */
-function montarPrefill(cartao: Cartao): { valores: Record<string, string>; preenchidos: Set<string> } {
-  const valores: Record<string, string> = {};
+type ResumoCartao = {
+  // Identificação
+  idade: number | null;
+  ig: number | null;
+  dpp: string | null;
+  dum: string | null;
+  unidade: string | null;
+  // Obstétrico
+  gpa: string;
+  tipoGestacao: string | null;
+  risco: string | null;
+  dppEco: string | null;
+  // Antropometria
+  pesoAnterior: number | null;
+  altura: number | null;
+  imcAnterior: number | null;
+  pesoAtual: number | null;
+  imcAtual: number | null;
+  ganhoPeso: number | null;
+  // Listas legíveis
+  comorbidades: string[];
+  familiares: string[];
+  habitos: string[];
+  intercorrencias: string[];
+  // Vitais mais recentes (para chips)
+  ultimaPA: { sis: number; dia: number; semana?: number; data?: string } | null;
+  ultimoBCF: { valor: number; semana?: number; data?: string } | null;
+  ultimaFC: { valor: number; data?: string } | null;
+  ultimaAU: { valor: number; semana?: number; data?: string } | null;
+};
+
+/** Pega o último evento por (categoria, key) — array é cumulativo. */
+function reduzirChecklist(
+  eventos: Array<Record<string, unknown>>,
+  categoria: string,
+  labels: Record<string, string>,
+): string[] {
+  const map = new Map<string, string>();
+  for (const ev of eventos) {
+    if (String(ev.categoria ?? "") !== categoria) continue;
+    const key = String(ev.key ?? "");
+    if (!key) continue;
+    map.set(key, String(ev.valor ?? ""));
+  }
+  const out: string[] = [];
+  for (const [key, valor] of map.entries()) {
+    if (valor === "sim" && labels[key]) out.push(labels[key]);
+  }
+  return out;
+}
+
+/** Pega o último valor para um tipo dentro da categoria "geral" do histórico. */
+function ultimoGeral(eventos: Array<Record<string, unknown>>, tipo: string): string | null {
+  let valor: string | null = null;
+  for (const ev of eventos) {
+    if (String(ev.tipo ?? "") === tipo) {
+      const v = ev.valor;
+      if (v != null && String(v) !== "") valor = String(v);
+    }
+  }
+  return valor;
+}
+
+function montarResumo(cartao: Cartao): ResumoCartao {
   const profile = (cartao.profile ?? {}) as Record<string, unknown>;
   const medicoes = cartao.medicoes ?? [];
+  const eventos = Array.isArray(profile.partos_classificacao)
+    ? (profile.partos_classificacao as Array<Record<string, unknown>>)
+    : [];
 
-  // Demografia / obstétrico básico
   const idade = idadeAnos(profile.data_nascimento);
-  if (idade != null) valores.idade_materna_anos = String(idade);
-
   const ig = semanas(profile.dum as string | null | undefined);
-  if (ig != null) valores.idade_gestacional_sem = String(ig);
+  const dum = (profile.dum as string | null | undefined) ?? null;
 
-  const g = (profile.numero_gestacoes ?? null) as number | null;
-  const p = (profile.numero_partos ?? null) as number | null;
-  const a = (profile.numero_abortos ?? null) as number | null;
-  if (g != null || p != null || a != null) {
-    valores.antecedentes_obstetricos = `G${g ?? 0} P${p ?? 0} A${a ?? 0}`;
+  // Geral (último valor de cada tipo no histórico)
+  const risco = ultimoGeral(eventos, "risco");
+  const tipoGestacao = ultimoGeral(eventos, "tipo_gestacao");
+  const dppEco = ultimoGeral(eventos, "dpp_eco");
+  const pesoAnteriorStr = ultimoGeral(eventos, "peso_anterior");
+  const alturaStr = ultimoGeral(eventos, "altura");
+  const imcAntStr = ultimoGeral(eventos, "imc_anterior");
+
+  const pesoAnterior = pesoAnteriorStr ? Number(pesoAnteriorStr) : null;
+  const altura = alturaStr ? Number(alturaStr) : null;
+  const imcAnterior = imcAntStr ? Number(imcAntStr) : null;
+
+  const pesoAtualStr = ultimaMedicao(medicoes, ["peso"]);
+  const pesoAtual = pesoAtualStr ? Number(pesoAtualStr) : null;
+
+  let imcAtual: number | null = null;
+  if (pesoAtual && altura) {
+    const aM = altura > 3 ? altura / 100 : altura; // aceita cm ou m
+    if (aM > 0) imcAtual = Number((pesoAtual / (aM * aM)).toFixed(1));
   }
+  const ganhoPeso = pesoAtual != null && pesoAnterior != null
+    ? Number((pesoAtual - pesoAnterior).toFixed(1))
+    : null;
 
-  // Medições clínicas mais recentes
+  // Vitais mais recentes
+  const findLast = (
+    pred: (parametro: string) => boolean,
+  ): { valor: number; semana?: number; data?: string } | null => {
+    for (const m of medicoes) {
+      const p = String(m.parametro ?? "").toLowerCase();
+      if (pred(p)) {
+        return {
+          valor: Number(m.valor),
+          semana: (m.semana_gestacional as number | null) ?? undefined,
+          data: m.data_medicao as string | undefined,
+        };
+      }
+    }
+    return null;
+  };
+  const sis = findLast((p) => p.includes("sist"));
+  const dia = findLast((p) => p.includes("diast"));
+  const bcf = findLast((p) => p.includes("bcf") || p.includes("batim"));
+  const fc = findLast((p) => p.includes("frequência cardíaca") || p.includes("frequencia cardiaca") || p === "fc");
+  const au = findLast((p) => p.includes("altura uterina"));
+
+  return {
+    idade,
+    ig,
+    dpp: dpp(dum),
+    dum,
+    unidade: (profile.unidade_saude as string | null) ?? null,
+    gpa: `G${profile.numero_gestacoes ?? 0} P${profile.numero_partos ?? 0} A${profile.numero_abortos ?? 0}`,
+    tipoGestacao,
+    risco,
+    dppEco,
+    pesoAnterior,
+    altura,
+    imcAnterior,
+    pesoAtual,
+    imcAtual,
+    ganhoPeso,
+    comorbidades: reduzirChecklist(eventos, "ant_clinico", LABEL_ANT_CLINICO),
+    familiares: reduzirChecklist(eventos, "ant_fam", LABEL_ANT_FAM),
+    habitos: reduzirChecklist(eventos, "gest_atual", {
+      tabagismo: "Tabagismo",
+      etilismo: "Etilismo",
+      outras_drogas: "Outras drogas",
+    }),
+    intercorrencias: reduzirChecklist(eventos, "gest_atual", LABEL_GEST_ATUAL)
+      .filter((l) => !["Tabagismo", "Etilismo", "Outras drogas"].includes(l)),
+    ultimaPA: sis && dia ? { sis: sis.valor, dia: dia.valor, semana: sis.semana, data: sis.data } : null,
+    ultimoBCF: bcf,
+    ultimaFC: fc ? { valor: fc.valor, data: fc.data } : null,
+    ultimaAU: au,
+  };
+}
+
+/** Prefill apenas dos campos que fazem sentido ressalvar no formulário do dia. */
+function montarPrefill(cartao: Cartao): { valores: Record<string, string>; preenchidos: Set<string> } {
+  const valores: Record<string, string> = {};
+  const medicoes = cartao.medicoes ?? [];
+
   const map: Array<[string, string[]]> = [
     ["pa_sistolica", ["sistólica", "sistolica"]],
     ["pa_diastolica", ["diastólica", "diastolica"]],
     ["frequencia_cardiaca", ["frequência cardíaca", "frequencia cardiaca", "fc"]],
-    ["bcf", ["bcf", "batimento"]],
+    ["bcf", ["bcf", "batiment"]],
     ["temperatura", ["temperatura"]],
     ["saturacao_o2", ["satura"]],
     ["peso_kg", ["peso"]],
     ["peso_atual_kg", ["peso"]],
-    ["altura_cm", ["altura "]], // espaço para não casar com 'altura uterina'
     ["altura_uterina_cm", ["altura uterina"]],
-    ["imc", ["imc"]],
-    ["imc_atual", ["imc"]],
-    ["circunferencia_braco", ["circunferência do braço", "circunferencia do braco"]],
   ];
   for (const [k, termos] of map) {
     const v = ultimaMedicao(medicoes, termos);
     if (v != null && v !== "") valores[k] = v;
   }
-
-  const preenchidos = new Set(Object.keys(valores));
-  return { valores, preenchidos };
+  return { valores, preenchidos: new Set(Object.keys(valores)) };
 }
 
+// ============= Séries para os gráficos =============
+type Ponto = { semana: number } & Record<string, number | undefined>;
+
+function buildSeries(medicoes: Array<Record<string, unknown>>) {
+  const filtrar = (pred: (p: string) => boolean) =>
+    medicoes
+      .filter((m) => pred(String(m.parametro ?? "").toLowerCase()))
+      .map((m) => ({
+        semana: (m.semana_gestacional as number | null) ?? 0,
+        valor: Number(m.valor),
+      }))
+      .sort((a, b) => a.semana - b.semana);
+
+  const sis = filtrar((p) => p.includes("sist"));
+  const dia = filtrar((p) => p.includes("diast"));
+  const semSet = new Set<number>([...sis.map((s) => s.semana), ...dia.map((d) => d.semana)]);
+  const pressao: Ponto[] = Array.from(semSet)
+    .sort((a, b) => a - b)
+    .map((s) => ({
+      semana: s,
+      sistolica: sis.find((x) => x.semana === s)?.valor,
+      diastolica: dia.find((x) => x.semana === s)?.valor,
+    }));
+
+  const peso = filtrar((p) => p.includes("peso")).map((m) => ({ semana: m.semana, peso: m.valor }));
+  const au = filtrar((p) => p.includes("altura uterina")).map((m) => ({ semana: m.semana, au: m.valor }));
+  const bcf = filtrar((p) => p.includes("bcf") || p.includes("batim")).map((m) => ({ semana: m.semana, bcf: m.valor }));
+  const glic = filtrar((p) => p.includes("glic")).map((m) => ({ semana: m.semana, glicemia: m.valor }));
+
+  return { pressao, peso, au, bcf, glic };
+}
+
+// ============= Componente principal =============
 function AvaliacaoPublicaPage() {
   const { token } = Route.useParams();
   const [info, setInfo] = useState<Info | null>(null);
@@ -353,7 +555,6 @@ function AvaliacaoPublicaPage() {
   const [uploadando, setUploadando] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [cartaoAberto, setCartaoAberto] = useState(false);
-  const [jaAbriuCartao, setJaAbriuCartao] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -365,18 +566,15 @@ function AvaliacaoPublicaPage() {
   }, [token]);
 
   const prefill = useMemo(() => (info ? montarPrefill(info.cartao) : null), [info]);
+  const resumo = useMemo(() => (info ? montarResumo(info.cartao) : null), [info]);
+  const series = useMemo(() => (info ? buildSeries(info.cartao.medicoes) : null), [info]);
 
   const irParaFormulario = () => {
     if (prefill) {
-      // Mescla pré-preenchidos sem sobrescrever o que o profissional já digitou.
       setRespostas((prev) => ({ ...prefill.valores, ...prev }));
       setPreenchidos(prefill.preenchidos);
     }
     setEtapa("formulario");
-    if (!jaAbriuCartao) {
-      setCartaoAberto(true);
-      setJaAbriuCartao(true);
-    }
   };
 
   const uploadEvidencia = async (file: File) => {
@@ -489,7 +687,7 @@ function AvaliacaoPublicaPage() {
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold font-display text-foreground">
           Avaliação — {ESP_LABEL[info.especialidade]}
         </h1>
@@ -558,26 +756,18 @@ function AvaliacaoPublicaPage() {
           </LiquidCard>
         )}
 
-        {etapa === "formulario" && (
+        {etapa === "formulario" && resumo && series && (
           <div className="space-y-4">
-            <LiquidCard className="p-4 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-foreground">Dados da gestante disponíveis</p>
-                <p className="text-[11px] text-muted-foreground">
-                  Reabra a qualquer momento para revisar o cartão e histórico clínico.
-                </p>
-              </div>
-              <button
-                onClick={() => setCartaoAberto(true)}
-                className="bg-primary text-primary-foreground text-xs font-bold px-3 py-2 rounded-full shrink-0"
-              >
-                Ver dados da gestante
-              </button>
-            </LiquidCard>
+            <ResumoCartaoBlock
+              resumo={resumo}
+              alertas={info.cartao.alertas ?? []}
+              series={series}
+              onAbrirCartao={() => setCartaoAberto(true)}
+            />
 
             {preenchidos.size > 0 && (
               <div className="px-3 py-2 rounded-lg bg-mint-light text-foreground text-[11px]">
-                Campos marcados com <strong>“do cartão”</strong> foram pré-preenchidos com dados já registrados no aplicativo da gestante. Confirme ou ajuste se necessário.
+                Campos marcados com <strong>"do cartão"</strong> foram pré-preenchidos com a última medição registrada. Confirme ou ajuste se necessário.
               </div>
             )}
 
@@ -703,6 +893,239 @@ function AvaliacaoPublicaPage() {
   );
 }
 
+// ============= Resumo do cartão (alertas + gráficos + chips) =============
+function corPorSeveridade(sev: string): string {
+  const s = sev.toLowerCase();
+  if (s === "critica" || s === "crítica" || s === "grave") return "bg-destructive/15 text-destructive border-destructive/40";
+  if (s === "alta" || s === "alerta" || s === "atencao" || s === "atenção") return "bg-warm text-foreground border-warm";
+  return "bg-muted text-foreground border-border";
+}
+
+function ResumoCartaoBlock({
+  resumo,
+  alertas,
+  series,
+  onAbrirCartao,
+}: {
+  resumo: ResumoCartao;
+  alertas: AlertaPublico[];
+  series: ReturnType<typeof buildSeries>;
+  onAbrirCartao: () => void;
+}) {
+  return (
+    <LiquidCard className="p-5 space-y-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-base font-bold font-display text-foreground">Resumo do cartão da gestante</h2>
+          <p className="text-[11px] text-muted-foreground">
+            Dados já registrados no aplicativo. Use como contexto para a consulta de hoje.
+          </p>
+        </div>
+        <button
+          onClick={onAbrirCartao}
+          className="bg-primary text-primary-foreground text-xs font-bold px-3 py-2 rounded-full shrink-0"
+        >
+          Ver cartão completo
+        </button>
+      </div>
+
+      {/* Alertas */}
+      <div>
+        <p className="text-xs font-bold text-foreground mb-2">Alertas clínicos ativos</p>
+        {alertas.length === 0 ? (
+          <p className="text-[11px] text-muted-foreground">Sem alertas no momento.</p>
+        ) : (
+          <ul className="space-y-1.5">
+            {alertas.map((a) => (
+              <li
+                key={a.id}
+                className={`text-[11px] border rounded-lg px-3 py-2 ${corPorSeveridade(a.severidade)}`}
+              >
+                <p className="font-bold">{a.titulo}</p>
+                <p className="opacity-80">{a.mensagem}</p>
+                {a.data && <p className="text-[10px] opacity-60 mt-0.5">{fmtData(a.data)}</p>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Identificação + obstétrico */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+        <Chip titulo="Idade" valor={resumo.idade != null ? `${resumo.idade}a` : "—"} />
+        <Chip titulo="IG" valor={resumo.ig != null ? `${resumo.ig} sem.` : "—"} />
+        <Chip titulo="DUM" valor={fmtData(resumo.dum)} />
+        <Chip titulo="DPP" valor={fmtData(resumo.dpp)} />
+        <Chip titulo="G/P/A" valor={resumo.gpa} />
+        <Chip titulo="Tipo de gestação" valor={resumo.tipoGestacao ?? "—"} />
+        <Chip titulo="Risco" valor={resumo.risco ?? "—"} />
+        <Chip titulo="DPP (eco)" valor={resumo.dppEco ? fmtData(resumo.dppEco) : "—"} />
+      </div>
+
+      {/* Antropometria */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+        <Chip titulo="Peso pré-gest." valor={resumo.pesoAnterior != null ? `${resumo.pesoAnterior} kg` : "—"} />
+        <Chip titulo="Altura" valor={resumo.altura != null ? `${resumo.altura}${resumo.altura > 3 ? " cm" : " m"}` : "—"} />
+        <Chip titulo="IMC pré-gest." valor={resumo.imcAnterior != null ? String(resumo.imcAnterior) : "—"} />
+        <Chip titulo="Peso atual" valor={resumo.pesoAtual != null ? `${resumo.pesoAtual} kg` : "—"} />
+        <Chip titulo="IMC atual" valor={resumo.imcAtual != null ? String(resumo.imcAtual) : "—"} />
+        <Chip
+          titulo="Ganho ponderal"
+          valor={resumo.ganhoPeso != null ? `${resumo.ganhoPeso > 0 ? "+" : ""}${resumo.ganhoPeso} kg` : "—"}
+        />
+        {resumo.ultimaPA && (
+          <Chip
+            titulo="Última PA"
+            valor={`${resumo.ultimaPA.sis}/${resumo.ultimaPA.dia} ${resumo.ultimaPA.semana ? `• ${resumo.ultimaPA.semana}s` : ""}`}
+          />
+        )}
+        {resumo.ultimoBCF && (
+          <Chip
+            titulo="Último BCF"
+            valor={`${resumo.ultimoBCF.valor} bpm ${resumo.ultimoBCF.semana ? `• ${resumo.ultimoBCF.semana}s` : ""}`}
+          />
+        )}
+        {resumo.ultimaAU && (
+          <Chip
+            titulo="Última AU"
+            valor={`${resumo.ultimaAU.valor} cm ${resumo.ultimaAU.semana ? `• ${resumo.ultimaAU.semana}s` : ""}`}
+          />
+        )}
+        {resumo.ultimaFC && (
+          <Chip titulo="Última FC" valor={`${resumo.ultimaFC.valor} bpm`} />
+        )}
+      </div>
+
+      {/* Listas clínicas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <ChipList titulo="Comorbidades" itens={resumo.comorbidades} />
+        <ChipList titulo="Hist. familiar" itens={resumo.familiares} />
+        <ChipList titulo="Hábitos" itens={resumo.habitos} />
+        <ChipList titulo="Intercorrências registradas" itens={resumo.intercorrencias} />
+      </div>
+
+      {/* Gráficos de evolução */}
+      <div>
+        <p className="text-xs font-bold text-foreground mb-2">Evolução da gestação</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {series.pressao.length > 0 && (
+            <ChartCard titulo="Pressão arterial (× semana)">
+              <ComposedChart data={series.pressao} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} domain={[40, 180]} />
+                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: 10 }} />
+                <ReferenceLine y={140} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                <ReferenceLine y={90} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                <Line type="monotone" dataKey="sistolica" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} name="Sistólica" />
+                <Line type="monotone" dataKey="diastolica" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} name="Diastólica" />
+              </ComposedChart>
+            </ChartCard>
+          )}
+          {series.peso.length > 0 && (
+            <ChartCard titulo="Peso (× semana)">
+              <LineChart data={series.peso} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Line type="monotone" dataKey="peso" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ChartCard>
+          )}
+          {series.au.length > 0 && (
+            <ChartCard titulo="Altura uterina (× semana)">
+              <LineChart data={series.au} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Line type="monotone" dataKey="au" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ChartCard>
+          )}
+          {series.bcf.length > 0 && (
+            <ChartCard titulo="BCF (× semana)">
+              <ComposedChart data={series.bcf} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} domain={[80, 200]} />
+                <Tooltip />
+                <ReferenceLine y={110} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                <ReferenceLine y={160} stroke="hsl(var(--destructive))" strokeDasharray="3 3" />
+                <Line type="monotone" dataKey="bcf" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+              </ComposedChart>
+            </ChartCard>
+          )}
+          {series.glic.length > 0 && (
+            <ChartCard titulo="Glicemia (× semana)">
+              <LineChart data={series.glic} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="semana" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Line type="monotone" dataKey="glicemia" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ChartCard>
+          )}
+        </div>
+        {series.pressao.length === 0 && series.peso.length === 0 && series.au.length === 0 && series.bcf.length === 0 && series.glic.length === 0 && (
+          <p className="text-[11px] text-muted-foreground">Sem medições suficientes para gerar gráficos.</p>
+        )}
+      </div>
+
+      {resumo.unidade && (
+        <p className="text-[11px] text-muted-foreground">
+          Unidade de saúde: <span className="font-semibold text-foreground">{resumo.unidade}</span>
+        </p>
+      )}
+    </LiquidCard>
+  );
+}
+
+function Chip({ titulo, valor }: { titulo: string; valor: string }) {
+  return (
+    <div className="bg-muted rounded-lg px-3 py-2">
+      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{titulo}</p>
+      <p className="text-[12px] font-semibold text-foreground">{valor}</p>
+    </div>
+  );
+}
+
+function ChipList({ titulo, itens }: { titulo: string; itens: string[] }) {
+  return (
+    <div className="bg-muted rounded-lg px-3 py-2">
+      <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">{titulo}</p>
+      {itens.length === 0 ? (
+        <p className="text-[11px] text-muted-foreground">Nenhum registro.</p>
+      ) : (
+        <div className="flex flex-wrap gap-1">
+          {itens.map((i) => (
+            <span key={i} className="text-[10px] bg-background border border-border rounded-full px-2 py-0.5 font-semibold text-foreground">
+              {i}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChartCard({ titulo, children }: { titulo: string; children: React.ReactElement }) {
+  return (
+    <div className="bg-background border border-border rounded-lg p-2">
+      <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1 font-bold">{titulo}</p>
+      <div style={{ width: "100%", height: 160 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          {children}
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+// ============= Modal com cartão completo =============
 function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void }) {
   const profile = (cartao.profile ?? {}) as Record<string, unknown>;
   const semanasAtuais = semanas(profile.dum as string | null | undefined);
@@ -721,7 +1144,7 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
           <div>
             <h3 className="text-lg font-bold font-display text-foreground">Cartão da gestante</h3>
             <p className="text-xs text-muted-foreground">
-              Dados clínicos disponíveis para esta avaliação.
+              Dados clínicos completos disponíveis para esta avaliação.
             </p>
           </div>
           <button
@@ -771,7 +1194,7 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
               <p className="text-[11px] text-muted-foreground">Sem medições registradas.</p>
             ) : (
               <ul className="space-y-1">
-                {cartao.medicoes.slice(0, 20).map((m, i) => (
+                {cartao.medicoes.slice(0, 30).map((m, i) => (
                   <li key={i} className="text-[11px] text-foreground flex justify-between border-b border-border py-1">
                     <span className="font-semibold">{String(m.parametro)}</span>
                     <span>
@@ -789,7 +1212,7 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
               <p className="text-[11px] text-muted-foreground">Sem exames registrados.</p>
             ) : (
               <ul className="space-y-1">
-                {cartao.exames.slice(0, 15).map((e, i) => (
+                {cartao.exames.slice(0, 20).map((e, i) => (
                   <li key={i} className="text-[11px] text-foreground border-b border-border py-1">
                     <span className="font-semibold">{String(e.tipo_exame)}</span> — {String(e.resultado)}{" "}
                     <span className={`text-[10px] ${e.status === "alterado" ? "text-destructive" : "text-muted-foreground"}`}>
@@ -808,7 +1231,7 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
               <p className="text-[11px] text-muted-foreground">Sem exames de imagem registrados.</p>
             ) : (
               <ul className="space-y-1">
-                {cartao.imagens.slice(0, 10).map((e, i) => (
+                {cartao.imagens.slice(0, 15).map((e, i) => (
                   <li key={i} className="text-[11px] text-foreground border-b border-border py-1">
                     <span className="font-semibold">{String(e.tipo_exame)}</span>
                     <span className="block text-[10px] text-muted-foreground">{fmtData(e.data_exame)} • {String(e.status)}</span>
@@ -825,7 +1248,7 @@ function CartaoModal({ cartao, onClose }: { cartao: Cartao; onClose: () => void 
               <p className="text-[11px] text-muted-foreground">Sem vacinas registradas.</p>
             ) : (
               <ul className="space-y-1">
-                {cartao.vacinas.slice(0, 15).map((v, i) => (
+                {cartao.vacinas.slice(0, 20).map((v, i) => (
                   <li key={i} className="text-[11px] text-foreground border-b border-border py-1 flex justify-between gap-2">
                     <span>
                       {String(v.vacina)}{" "}
