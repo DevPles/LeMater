@@ -1,44 +1,74 @@
-## O que vou fazer
+## Objetivo
 
-### 1. Admin: um cadastro só de "Conteúdos"
-- Substituir as abas separadas **Cursos** e **Materiais** por uma única aba **Conteúdos** com seletor de tipo no topo do formulário:
-  - **Curso** → campos atuais de curso (módulos, aulas, preço, link de venda, instrutor)
-  - **Material** → campos atuais de material (PDF, vídeo, artigo, área grátis/pago)
-  - **Serviço** → cadastro de oferta de serviço (título, descrição, preço, link de compra/agendamento, plataforma)
-- Lista única na aba mostrando todos os itens com coluna "Tipo".
-- Aba **Acessos** continua igual (libera curso ou material para um usuário).
-- Aba antiga "Serviços" se já existir como tal continua; o que muda é a entrada principal.
+Adicionar uma terceira aba em `/app/videochamada` chamada **Consultas**, onde a gestante gera um link de formulário interno (por especialidade — médico, nutricionista, psicólogo), copia/compartilha esse link com o profissional. O profissional abre o link em uma página pública, informa seu registro profissional, preenche a avaliação, e a resposta passa a constar na lista de consultas dessa mesma aba.
 
-### 2. Cursos abrem em modal com player
-- Cards na vitrine `/cursos` (e listagens) abrem **modal sobre a página** em vez de navegar pra landing.
-- Dentro do modal: cabeçalho com título/descrição + lista de módulos/aulas na lateral + player central (vídeo YouTube/Vimeo/upload, PDF, artigo HTML).
-- Se o usuário ainda não tem acesso: o modal mostra a landing/sales view (descrição, ementa, instrutor, botão Comprar) — sem player.
-- A página `/cursos/$slug` continua existindo (deep-link/SEO), mas o fluxo principal vira modal.
-- A rota `/cursos/$slug/aprender` continua para quem quiser tela cheia.
+Os formulários são **internos do app** (não Google Forms/Typeform). Isso elimina a dependência de webhook externo e mantém os dados nativos, prontos para serem lidos junto às consultas.
 
-### 3. Atlas Materno: card como padrão visual
-- Atlas Materno **continua existindo** como está hoje.
-- Replicar o estilo dos cards do Atlas (imagem 48 — numeração grande "01/02", fundo alternando verde/bege, label em caixa alta, título serifado grande, descrição, divisor com "CONTEÚDO GRATUITO" e CTA full-width) em:
-  - Vitrine `/cursos`
-  - Página `/conteudos-gratis`
-  - Lista de cursos liberados em `/membro`
-- Mesma paleta cream/sage/sageDark já em uso. Apenas um componente reutilizável `<ContentCard variant="atlas" />`.
+## Fluxo do usuário
 
-## Mudanças técnicas
+1. Gestante abre `/app/videochamada` → aba **Consultas**.
+2. Sub-aba **Solicitar**: escolhe especialidade (Médico, Nutricionista, Psicólogo) e, opcionalmente, vincula a uma de suas consultas em "Meus agendamentos". Clica em **Gerar link**.
+3. Recebe um cartão com o link público (`/avaliacao/{token}`), botões **Copiar** e **Compartilhar** (Web Share API com fallback p/ WhatsApp).
+4. Sub-aba **Recebidas**: lista as avaliações já preenchidas pelos profissionais, com nome, especialidade, registro, data e botão "Ver detalhes" abrindo um modal com todas as respostas. Cada item indica se está vinculado a uma consulta.
 
-- `src/components/admin/ConteudosTab.tsx` (novo) — formulário unificado com seletor de tipo; reutiliza lógica de `CursosTab` e `MateriaisTab`.
-- `src/routes/_authenticated/admin.tsx` — substituir as abas "Cursos" e "Materiais" pela aba "Conteúdos".
-- `src/components/ContentCard.tsx` (novo) — card visual padrão estilo Atlas, usado em cursos/conteúdos/membro.
-- `src/components/CursoModal.tsx` (novo) — modal de player de curso (lista de aulas + player).
-- `src/routes/cursos.tsx` — usar `ContentCard` + abrir `CursoModal` ao clicar.
-- `src/routes/conteudos-gratis.tsx` — usar `ContentCard`.
-- `src/routes/_authenticated/membro.tsx` — usar `ContentCard` na seção de cursos.
-- Sem migração de banco. As tabelas `cursos`, `materiais` e (se houver) serviços já cobrem tudo — o seletor de tipo apenas decide qual delas é alimentada no form.
+## Fluxo do profissional (link público)
 
-## Pontos que vou manter como estão
+1. Abre o link `/avaliacao/{token}`. Página pública (sem login).
+2. Tela 1 — identificação: nome completo + tipo de registro (CRM, CRN, CRP) + número + UF. Validação client + server.
+3. Tela 2 — formulário específico da especialidade (campos abaixo). Botão **Enviar avaliação**.
+4. Tela de sucesso. Token marcado como respondido (não pode ser reenviado).
 
-- Página `/atlas-materno` (atlas público) e `/_authenticated/atlas` (biblioteca).
-- Rotas `/cursos/$slug` (landing SEO) e `/cursos/$slug/aprender` (player full-screen).
-- Permissões: continua usando `pode_ver_aula`, matrículas e `app_acesso_pago`.
+## Formulários por especialidade (campos)
 
-Confirma para eu implementar?
+**Médico (Obstetra/Clínico)** — pressão sistólica, diastólica, FC, peso, altura uterina, BCF, idade gestacional, queixas, exame físico, conduta/orientações, prescrições.
+
+**Nutricionista** — peso atual, ganho ponderal na gestação, IMC, recordatório 24h, intolerâncias/alergias, suplementação atual, plano alimentar/orientações.
+
+**Psicólogo** — humor (escala 1–10), ansiedade (1–10), sono, suporte familiar, rede de apoio, sinais de depressão pós-parto (PHQ-2/EPDS livre-texto), conduta/encaminhamentos.
+
+Cada formulário tem um schema fixo no front + validação Zod no server.
+
+## Mudanças no banco (migração)
+
+Nova tabela `evaluation_requests`:
+
+- `id`, `token` (uuid único usado na URL pública), `gestante_id` (uuid), `appointment_id` (uuid, nullable — vincula a uma consulta de `appointment_slots`), `especialidade` (text: `medico` | `nutricionista` | `psicologo`), `status` (text: `pendente` | `respondida` | `expirada`), `expira_em` (timestamptz, +30 dias), `created_at`.
+
+Nova tabela `evaluation_responses`:
+
+- `id`, `request_id` (FK lógica → `evaluation_requests`), `professional_nome` (text), `professional_registro_tipo` (CRM/CRN/CRP), `professional_registro_numero` (text), `professional_registro_uf` (text), `respostas` (jsonb com os campos específicos), `created_at`.
+
+RLS:
+
+- `evaluation_requests`: gestante lê/cria as próprias (`gestante_id = auth.uid()`); admin lê tudo. Sem leitura pública direta — o acesso ao formulário é via server function que consulta por token.
+- `evaluation_responses`: gestante lê as próprias (via JOIN `request_id → gestante_id`); admin lê tudo. Insert apenas via server function (sem policy de insert para `authenticated`/`anon`).
+
+Os inserts pelo profissional (anônimo) acontecem em **server functions** que validam o token, então a tabela `evaluation_responses` não precisa de policy permissiva — usa o cliente admin no servidor.
+
+## Server functions (`src/lib/evaluations.functions.ts`)
+
+- `createEvaluationRequest({ especialidade, appointmentId? })` — protegida por `requireSupabaseAuth`, cria registro com token e devolve o link público.
+- `getEvaluationByToken({ token })` — pública, devolve `{ especialidade, gestanteNome, status }` para a página do formulário (sem PII sensível).
+- `submitEvaluation({ token, profissional, respostas })` — pública, valida token + status, valida formato do registro por especialidade (CRM/CRN/CRP), grava resposta via `supabaseAdmin`, marca request como `respondida`.
+- `listMyEvaluations()` — protegida, lista requests + respostas da gestante para a sub-aba "Recebidas".
+
+## Mudanças no front
+
+- `src/routes/app_.videochamada.tsx`: adicionar terceira pílula na tab bar (`Disponíveis` | `Meus agendamentos` | `Avaliações`). Quando `tab === "avaliacoes"`, renderiza `<AvaliacoesPanel />`.
+- `src/components/avaliacoes/AvaliacoesPanel.tsx`: sub-abas Solicitar / Recebidas, listagem, modal de detalhes.
+- `src/components/avaliacoes/GerarLinkForm.tsx`: form de geração + cartão de resultado com Copiar/Compartilhar.
+- `src/routes/avaliacao.$token.tsx`: rota pública (fora de `_authenticated`) com as duas telas (identificação + formulário) e tela de sucesso.
+- `src/components/avaliacoes/forms/{MedicoForm,NutricionistaForm,PsicologoForm}.tsx`: campos específicos.
+- `src/components/avaliacoes/RespostaModal.tsx`: visualização da avaliação preenchida.
+
+Tudo segue o design system existente (`LiquidCard`, tokens semânticos, sem ícones, fontes Playfair/DM Sans).
+
+## Sobre o webhook externo
+
+Como combinado, a resposta vai pelo formulário interno → os dados já entram direto na consulta sem precisar de webhook externo. Se mais para frente você quiser permitir formulários externos (Typeform, Google Forms), adiciono `/api/public/avaliacoes/webhook` com verificação de assinatura — mas isso fica para uma segunda iteração.
+
+## Fora do escopo desta entrega
+
+- Envio do link por e-mail/SMS dentro do app (escolhido "Copiar/compartilhar" apenas).
+- Edição/exclusão de avaliação já respondida.
+- Validação online do registro profissional contra CRM/CRN/CRP (apenas formato).
