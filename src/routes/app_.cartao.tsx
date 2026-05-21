@@ -7,6 +7,7 @@ import { CARTAO_DEFAULT } from "@/lib/screen-defaults";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { LancamentoModal } from "@/components/LancamentoModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import jsPDF from "jspdf";
 import QRCode from "qrcode";
 import logoHospitalUrl from "@/assets/logo-lemater.png";
@@ -587,9 +588,47 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
 }) {
   type FiltroTimeline = "geral" | "clinico" | "exame" | "vacina" | "historico";
   const [filtro, setFiltro] = useState<FiltroTimeline>("geral");
+  const [detalhe, setDetalhe] = useState<Item | null>(null);
 
   // Linha do tempo unificada
-  type Item = { id: string; data: string; titulo: string; tipo: "clinico" | "vacina" | "exame" | "historico"; semana?: number; nota?: string; arquivo_path?: string | null; bucket?: "exam-attachments" | "image-exams" };
+  type DetalheCampo = { label: string; valor: string; obs?: string };
+  type Item = {
+    id: string;
+    data: string;
+    titulo: string;
+    tipo: "clinico" | "vacina" | "exame" | "historico";
+    semana?: number;
+    resumo?: string;
+    detalhes: DetalheCampo[];
+    arquivo_path?: string | null;
+    bucket?: "exam-attachments" | "image-exams";
+  };
+
+  const PARAM_LABELS: Record<string, string> = {
+    pa_sistolica: "PA sistólica",
+    pa_diastolica: "PA diastólica",
+    peso: "Peso",
+    altura_uterina: "Altura uterina",
+    bcf: "BCF",
+    frequencia_cardiaca: "Freq. cardíaca",
+    temperatura: "Temperatura",
+    hemoglobina: "Hemoglobina",
+    glicemia: "Glicemia",
+    imc: "IMC",
+  };
+  const PARAM_UNIDADES: Record<string, string> = {
+    pa_sistolica: "mmHg",
+    pa_diastolica: "mmHg",
+    peso: "kg",
+    altura_uterina: "cm",
+    bcf: "bpm",
+    frequencia_cardiaca: "bpm",
+    temperatura: "°C",
+    hemoglobina: "g/dL",
+    glicemia: "mg/dL",
+  };
+  const labelParam = (p: string) => PARAM_LABELS[p] ?? p.replace(/_/g, " ");
+  const fmtValor = (p: string, v: number) => `${v}${PARAM_UNIDADES[p] ? ` ${PARAM_UNIDADES[p]}` : ""}`;
 
   const labelHistorico = (t?: string) => {
     if (!t) return "Evento";
@@ -634,22 +673,73 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
     return k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
+  // Agrupa medições por data → 1 card por consulta com vários parâmetros
+  const clinicoItems: Item[] = useMemo(() => {
+    const porData = new Map<string, MedicaoReal[]>();
+    medicoes.forEach(m => {
+      if (!porData.has(m.data)) porData.set(m.data, []);
+      porData.get(m.data)!.push(m);
+    });
+    return Array.from(porData.entries()).map(([data, ms]) => {
+      const semana = ms[0].semana;
+      const detalhes: DetalheCampo[] = ms.map(m => ({
+        label: labelParam(m.parametro),
+        valor: fmtValor(m.parametro, m.valor),
+        obs: m.observacao,
+      }));
+      const top = detalhes.slice(0, 3).map(d => `${d.label} ${d.valor}`).join(" · ");
+      const extra = detalhes.length > 3 ? ` +${detalhes.length - 3}` : "";
+      return {
+        id: `clin-${data}`,
+        data,
+        titulo: "Consulta de pré-natal",
+        tipo: "clinico" as const,
+        semana,
+        resumo: top + extra,
+        detalhes,
+      };
+    });
+  }, [medicoes]);
+
   const itens: Item[] = [
-    ...medicoes.reduce<Item[]>((acc, m) => {
-      const existing = acc.find(a => a.data === m.data && a.tipo === "clinico");
-      if (!existing) acc.push({ id: m.id, data: m.data, titulo: "Registro clínico", tipo: "clinico", semana: m.semana, nota: `${m.parametro}: ${m.valor}` });
-      else existing.nota = (existing.nota ?? "") + ` • ${m.parametro}: ${m.valor}`;
-      return acc;
-    }, []),
-    ...vacinas.map<Item>(v => ({ id: v.id, data: v.data, titulo: `Vacina: ${v.vacina}`, tipo: "vacina", nota: v.observacao })),
-    ...exames.map<Item>(e => ({ id: e.id, data: e.data, titulo: `${e.origem === "imagem" ? "Imagem" : "Exame"}: ${e.tipo_exame}`, tipo: "exame", nota: e.resultado, arquivo_path: e.arquivo_path ?? null, bucket: e.bucket })),
+    ...clinicoItems,
+    ...vacinas.map<Item>(v => ({
+      id: v.id,
+      data: v.data,
+      titulo: v.vacina,
+      tipo: "vacina",
+      resumo: [v.lote && `Lote ${v.lote}`, v.fabricante].filter(Boolean).join(" · ") || undefined,
+      detalhes: [
+        { label: "Vacina", valor: v.vacina },
+        ...(v.lote ? [{ label: "Lote", valor: v.lote }] : []),
+        ...(v.fabricante ? [{ label: "Fabricante", valor: v.fabricante }] : []),
+        ...(v.observacao ? [{ label: "Observação", valor: v.observacao }] : []),
+      ],
+    })),
+    ...exames.map<Item>(e => ({
+      id: e.id,
+      data: e.data,
+      titulo: e.tipo_exame,
+      tipo: "exame",
+      resumo: e.resultado,
+      detalhes: [
+        { label: "Tipo", valor: e.tipo_exame },
+        { label: "Categoria", valor: e.origem === "imagem" ? "Exame de imagem" : "Exame laboratorial" },
+        { label: "Status", valor: e.status },
+        ...(e.resultado ? [{ label: "Resultado", valor: e.resultado }] : []),
+      ],
+      arquivo_path: e.arquivo_path ?? null,
+      bucket: e.bucket,
+    })),
     ...historico.map<Item>((h, idx) => {
       const dt = h.registrado_em ? new Date(h.registrado_em) : (h.ano ? new Date(h.ano, 0, 1) : null);
       const dataStr = dt ? formatBR(dt) : (h.ano ? `01/01/${h.ano}` : "—");
       const partes: string[] = [];
+      let valorStr: string | undefined;
       if (h.valor !== undefined && h.valor !== null && h.valor !== "") {
         const v = String(h.valor);
-        partes.push(v === "sim" ? "Sim" : v === "nao" ? "Não" : v);
+        valorStr = v === "sim" ? "Sim" : v === "nao" ? "Não" : v;
+        partes.push(valorStr);
       }
       if (h.observacao) partes.push(h.observacao);
       return {
@@ -657,7 +747,12 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
         data: dataStr,
         titulo: labelHistorico(h.tipo) + (h.ano ? ` (${h.ano})` : ""),
         tipo: "historico",
-        nota: partes.join(" — ") || undefined,
+        resumo: partes.join(" — ") || undefined,
+        detalhes: [
+          ...(valorStr ? [{ label: "Valor", valor: valorStr }] : []),
+          ...(h.ano ? [{ label: "Ano", valor: String(h.ano) }] : []),
+          ...(h.observacao ? [{ label: "Observação", valor: h.observacao }] : []),
+        ],
       };
     }),
   ].sort((a, b) => {
@@ -674,6 +769,18 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
     { key: "vacina", label: "Vacina" },
     { key: "historico", label: "Histórico" },
   ];
+
+  const tipoLabel = (t: Item["tipo"]) =>
+    t === "clinico" ? "Dado clínico" : t === "exame" ? "Exame" : t === "vacina" ? "Vacina" : "Histórico";
+
+  const abrirArquivo = async (bucket: string, path: string) => {
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 10);
+    if (error || !data?.signedUrl) {
+      alert("Não foi possível abrir o arquivo.");
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -715,41 +822,81 @@ function ResumoTab({ medicoes, vacinas, exames, vitals, historico }: {
               t.tipo === "exame" ? "bg-blue-500" :
               t.tipo === "historico" ? "bg-amber-500" : "bg-primary";
             return (
-              <motion.div key={t.id} className="bg-card rounded-xl p-3 shadow-sm border border-border" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
+              <motion.button
+                key={t.id}
+                type="button"
+                onClick={() => setDetalhe(t)}
+                className="w-full text-left bg-card rounded-xl p-3 shadow-sm border border-border hover:border-primary/50 hover:shadow-md transition"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className={`w-2 h-2 rounded-full ${cor}`} />
-                    {t.semana ? <span className="text-xs font-semibold text-primary">Semana {t.semana}</span> : null}
-                    <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{t.tipo === "clinico" ? "dado clínico" : t.tipo}</span>
+                    {t.semana !== undefined && (
+                      <span className="text-[10px] font-bold text-primary">SEM {t.semana}</span>
+                    )}
+                    <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                      {tipoLabel(t.tipo)}
+                    </span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{t.data}</span>
+                  <span className="text-[11px] text-muted-foreground">{t.data}</span>
                 </div>
-                <h4 className="font-medium text-sm text-foreground">{t.titulo}</h4>
-                {t.nota && <p className="text-xs text-muted-foreground mt-1">{t.nota}</p>}
-                {t.arquivo_path && t.bucket && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const { data, error } = await supabase.storage.from(t.bucket!).createSignedUrl(t.arquivo_path!, 60 * 10);
-                      if (error || !data?.signedUrl) {
-                        alert("Não foi possível abrir o arquivo.");
-                        return;
-                      }
-                      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
-                    }}
-                    className="mt-2 text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full bg-primary text-primary-foreground hover:opacity-90"
-                  >
-                    Ver exame
-                  </button>
+                <h4 className="font-semibold text-sm text-foreground leading-tight">{t.titulo}</h4>
+                {t.resumo && (
+                  <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{t.resumo}</p>
                 )}
-              </motion.div>
+                <p className="text-[10px] font-semibold text-primary/80 mt-1.5">Ver detalhes →</p>
+              </motion.button>
             );
           })}
         </div>
       )}
+
+      <Dialog open={!!detalhe} onOpenChange={(o) => !o && setDetalhe(null)}>
+        <DialogContent className="max-w-md">
+          {detalhe && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                    {tipoLabel(detalhe.tipo)}
+                  </span>
+                  {detalhe.semana !== undefined && (
+                    <span className="text-[10px] font-bold text-primary">SEM {detalhe.semana}</span>
+                  )}
+                  <span className="text-[11px] text-muted-foreground ml-auto">{detalhe.data}</span>
+                </div>
+                <DialogTitle className="text-base">{detalhe.titulo}</DialogTitle>
+                <DialogDescription className="sr-only">Detalhes do registro</DialogDescription>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-2 mt-2 max-h-[60vh] overflow-y-auto">
+                {detalhe.detalhes.map((d, idx) => (
+                  <div key={idx} className="bg-muted/60 rounded-lg p-2">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">{d.label}</p>
+                    <p className="text-sm font-semibold text-foreground break-words">{d.valor}</p>
+                    {d.obs && <p className="text-[10px] text-muted-foreground italic mt-0.5">{d.obs}</p>}
+                  </div>
+                ))}
+              </div>
+              {detalhe.arquivo_path && detalhe.bucket && (
+                <button
+                  type="button"
+                  onClick={() => abrirArquivo(detalhe.bucket!, detalhe.arquivo_path!)}
+                  className="mt-3 w-full text-xs font-bold uppercase tracking-wide px-3 py-2 rounded-full bg-primary text-primary-foreground hover:opacity-90"
+                >
+                  Abrir arquivo / laudo
+                </button>
+              )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }
+
 
 /* ========== LANÇAMENTOS TAB ========== */
 function LancamentosTab({ medicoes }: { medicoes: MedicaoReal[] }) {
