@@ -51,6 +51,10 @@ function AgendamentosPage() {
   const load = async () => {
     setLoading(true);
     setMsg(null);
+    if (tab === "avaliacoes") {
+      setLoading(false);
+      return;
+    }
     if (tab === "disponiveis") {
       // Mostra slots disponíveis que ainda não terminaram (considera 2h de janela retroativa
       // para cobrir slots em andamento ou recém-iniciados que o profissional acabou de liberar)
