@@ -94,7 +94,7 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
       .insert({
         gestante_id: userId,
         especialidade,
-        appointment_id: appointmentId || null,
+        appointment_id: null,
       })
       .select("token")
       .single();
