@@ -891,8 +891,13 @@ function AvaliacaoPublicaPage() {
         )}
       </div>
 
-      {cartaoAberto && (
-        <CartaoModal cartao={info.cartao} onClose={() => setCartaoAberto(false)} />
+      {cartaoAberto && resumo && series && (
+        <CartaoModal
+          cartao={info.cartao}
+          resumo={resumo}
+          series={series}
+          onClose={() => setCartaoAberto(false)}
+        />
       )}
     </div>
   );
