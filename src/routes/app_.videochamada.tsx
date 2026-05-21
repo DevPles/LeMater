@@ -145,7 +145,21 @@ function AgendamentosPage() {
         >
           Meus agendamentos
         </button>
+        <button
+          onClick={() => setTab("avaliacoes")}
+          className={`flex-1 py-1.5 rounded-full text-xs font-semibold ${
+            tab === "avaliacoes" ? "bg-white text-primary shadow-sm" : "text-muted-foreground"
+          }`}
+        >
+          Avaliações
+        </button>
       </div>
+
+      {tab === "avaliacoes" ? (
+        <AvaliacoesPanel userId={userId} />
+      ) : (
+        <>
+
 
       {tab === "disponiveis" && especialidades.length > 0 && (
         <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
