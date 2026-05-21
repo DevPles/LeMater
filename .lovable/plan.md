@@ -1,96 +1,77 @@
-## Problemas identificados
 
-1. **Linguagem clínica errada para pré-natal** — o formulário usa termos de "doença" (`História da doença atual`, `Hipóteses diagnósticas / CID`, `Avaliação dos exames`), mas a gestante é uma mulher **saudável em acompanhamento**, não uma paciente doente.
-2. **Cartão completo (modal) mais pobre que o resumo** — o `CartaoModal` mostra só nascimento/DUM/IG/G-P-A/unidade + listas brutas; o resumo no topo já mostra risco, tipo de gestação, comorbidades, familiares, hábitos, antropometria, ganho ponderal etc. Deveria ser o contrário (modal = visão completa).
-3. **Gráficos invisíveis para o médico** — só aparecem se houver medições; quando não há, some tudo e o médico não tem visualização de evolução nem placeholders úteis.
-4. **Duplicação** — campos como queixa principal, peso de hoje, PA, FC, AU, BCF aparecem soltos sem agrupar o raciocínio clínico de pré-natal.
+# Cronograma gestacional na Home
 
-## Mudanças (todas em `src/routes/avaliacao.$token.tsx`)
+Substituir a seção **Dicas da semana** em `src/routes/app_.home.tsx` por um bloco **Meu cronograma** que mostra, em uma única visão, a linha do tempo da gestação (DUM → DPP), onde a gestante está hoje, os marcos clínicos esperados e como o **peso** e a **pressão arterial** dela evoluem em relação à faixa de normalidade por trimestre.
 
-### A. Reescrever `SECOES.medico` para consulta de pré-natal real
+## O que será exibido
+
+1. **Barra Gantt da gestação (40 semanas)**
+   - Eixo da DUM até a DPP (DUM + 280 dias).
+   - Três faixas coloridas para 1º (sem 1–13), 2º (14–27) e 3º (28–40) trimestres.
+   - Marcador "Cadastro" (data de `created_at` do profile).
+   - Marcador "Hoje" (linha vertical destacada com a semana atual).
+   - Marcador "DPP" no fim.
+   - Pontos sobre a barra para consultas já registradas em `clinical_measurements` (agrupadas por `data_medicao`).
+
+2. **Mini-gráfico de Peso (kg × semana)**
+   - Pontos reais: `clinical_measurements` onde `parametro = 'peso'`.
+   - Área sombreada de normalidade: ganho cumulativo esperado a partir do peso inicial (primeira medição ou peso pré-gestacional se houver), usando as faixas do IOM por trimestre (1º: +0,5 a 2 kg total; 2º/3º: +0,35 a 0,5 kg/sem como aproximação para IMC normal — fórmula simples e clara no código).
+   - Linha pontilhada de projeção do peso atual até a DPP, mantendo o ritmo do trimestre vigente.
+
+3. **Mini-gráfico de Pressão Arterial (mmHg × semana)**
+   - Duas séries: `pa_sistolica` e `pa_diastolica` de `clinical_measurements`.
+   - Faixa de normalidade sombreada: sistólica 90–120, diastólica 60–80 (constante nas 40 semanas).
+   - Marcação visual quando algum ponto sai da faixa.
+
+4. **Resumo textual curto** acima dos gráficos: "Semana X de 40 · Trimestre Y · DPP: dd/mm/aaaa".
+
+## Onde mexer
+
+- `src/routes/app_.home.tsx`
+  - Remover o bloco "Dicas da semana" (`tipsToShow.map` e heading).
+  - Remover o uso de `useScreenContent('home', HOME_DEFAULT)` se não for mais necessário em outra parte (mantém só se ainda usado por outro elemento — verificar; provavelmente removível inteiro).
+  - Inserir `<PregnancyTimeline profile={profile} currentWeek={currentWeek} />` no lugar.
+
+- `src/components/PregnancyTimeline.tsx` (novo)
+  - Componente client-side.
+  - Busca `clinical_measurements` da própria gestante via `supabase.from('clinical_measurements').select(...).eq('gestante_id', profile.user_id).in('parametro', ['peso','pa_sistolica','pa_diastolica']).order('data_medicao')`.
+  - Calcula DPP = DUM + 280 dias, semana atual a partir da DUM.
+  - Renderiza 3 sub-componentes internos: `GanttTrimestres`, `MiniChartPeso`, `MiniChartPA`.
+  - Estados de loading e vazio (sem DUM → mostra CTA para cadastrar DUM; sem medições → mostra só o Gantt + mensagem "registre suas medições para ver os gráficos").
+
+- `src/lib/pregnancy-norms.ts` (novo, pequeno)
+  - Funções puras: `weeksBetween(dum, date)`, `trimesterOfWeek(w)`, `expectedWeightGainRange(weekFromStart, startWeek)`, `bpNormalRange()` — para manter o componente fino e testável.
+
+## Detalhes técnicos
+
+- **Biblioteca de gráficos**: `recharts` (já disponível via `src/components/ui/chart.tsx`). Sem novas dependências.
+- **Tokens de cor**: usar `--primary` (navy #1a1557), `--accent` (gold #f0c040) e tokens semânticos existentes. Faixa de normalidade com `fill` de baixa opacidade sobre o primary. Sem ícones (respeitando regra do projeto).
+- **Tipografia**: Playfair para o título "Meu cronograma", DM Sans para labels — já configurado globalmente.
+- **Performance**: 1 query única ao banco, agregação em memória. Sem N+1.
+- **Acessibilidade**: aria-label nos gráficos, tooltip do recharts traduzido.
+- **RLS**: a política `Gestante vê próprias medições` já cobre o acesso direto pelo client.
+- **Sem mudanças no schema**: tudo deriva de `profiles.dum`, `profiles.created_at` e `clinical_measurements`.
+
+## Layout final do bloco (na Home, dentro do mesmo `max-w-md`)
 
 ```text
-1. Acompanhamento da gestação (hoje)
-   - Como você está se sentindo? (subjetivo da gestante) [textarea]
-   - Queixas/desconfortos do período (náuseas, azia, lombalgia, edema, contrações, sangramento, perdas, MF reduzido…) [textarea]
-   - Intercorrências desde a última consulta [textarea]
-
-2. Sinais vitais e antropometria (hoje)
-   - PA sis/dia, FC, FR, Temp, SatO₂, Peso de hoje
-   - Cálculo de ganho ponderal acumulado (auto, do resumo)
-
-3. Avaliação obstétrica (hoje)
-   - Altura uterina, BCF, Movimentos fetais, Apresentação fetal,
-     Edema, Dinâmica uterina, Perdas vaginais,
-     Toque vaginal (se indicado)
-
-4. Exame físico geral [textarea único]
-
-5. Análise do cartão e exames
-   - Avaliação dos exames laboratoriais [textarea, hint "ver resumo"]
-   - Avaliação dos exames de imagem [textarea]
-   - Situação vacinal [select Em dia/Pendências/Desconhecida]
-   - Classificação de risco gestacional hoje
-     [select Habitual / Intermediário / Alto risco]
-   - Justificativa da classificação [textarea]
-
-6. Plano de cuidado
-   - Conduta / orientações da consulta [textarea]
-   - Exames solicitados [textarea]
-   - Prescrições e suplementação (AF, ferro, cálcio, DHA…) [textarea]
-   - Encaminhamentos (alto risco, especialidades, serviço social…) [textarea]
-   - Sinais de alarme reforçados [textarea com hint]
-   - Próxima consulta sugerida [date]
++------------------------------------------+
+|  Meu cronograma                          |
+|  Semana 36 · 3º trimestre · DPP 12/06/26 |
++------------------------------------------+
+|  [Gantt 1ºT |==2ºT==|====3ºT====]        |
+|         ^cadastro       ^hoje      ^DPP  |
++------------------------------------------+
+|  Peso (kg)                               |
+|  [linha real + área esperada + projeção] |
++------------------------------------------+
+|  Pressão arterial (mmHg)                 |
+|  [sistólica + diastólica + faixa normal] |
++------------------------------------------+
 ```
 
-Removidos: `historia_doenca_atual`, `hipoteses_diagnosticas` (substituídos pelos campos acima, com linguagem de pré-natal).
+## Fora do escopo
 
-### B. Tornar o `CartaoModal` realmente completo
-
-Reorganizar o modal para conter, na ordem:
-1. **Identificação** (nascimento, idade, telefone, unidade, bairro/cidade).
-2. **Obstétrico** (DUM, DPP calculada, DPP eco, IG hoje, G/P/A, tipo de gestação, risco).
-3. **Antropometria** (peso pré-gest., altura, IMC pré-gest., peso atual, IMC atual, ganho ponderal).
-4. **Comorbidades / Hist. familiar / Hábitos / Intercorrências registradas** — chips, vindos do mesmo `resumo` que alimenta o topo.
-5. **Gráficos de evolução** — PA, peso, AU, BCF, glicemia (os mesmos do resumo, em tamanho maior). Quando uma série não tem dados: mostrar placeholder "Sem registros — aparecerá aqui quando a gestante registrar".
-6. **Últimas medições** detalhadas (lista existente, mantida).
-7. **Exames laboratoriais** detalhados.
-8. **Exames de imagem** detalhados.
-9. **Vacinas** detalhadas.
-
-Resultado: o modal vira a "visão completa" e o resumo no topo passa a ser uma **versão enxuta** (chips essenciais + alertas), sem repetir tudo.
-
-### C. Enxugar o `ResumoCartaoBlock` (não duplicar o modal)
-
-Resumo no topo passa a mostrar **apenas o que o médico precisa olhar de relance** antes de começar a consulta:
-- Alertas clínicos ativos (mantém).
-- Linha-chefe: Idade • IG • DPP • G/P/A • Risco • Tipo de gestação.
-- Antropometria curta: IMC pré / IMC atual / Ganho ponderal.
-- Últimos sinais: PA, BCF, AU, Peso (com a semana correspondente).
-- 1 linha "Comorbidades relevantes: …" se houver.
-- Botão "Ver cartão completo" → abre o modal já com **gráficos** e tudo mais.
-
-Sem gráficos no resumo (eles passam para o modal), evitando o "Sem medições suficientes" exibido no print.
-
-### D. Placeholder de gráfico quando não há série
-
-Função utilitária `ChartCardEmpty({ titulo })` que renderiza o mesmo cartão com mensagem clínica curta ("Sem registros de PA ainda — peça à gestante para registrar no cartão") em vez de sumir. Usada dentro do modal.
-
-### E. Aplicar a mesma higiene de linguagem a nutricionista e psicólogo
-
-- Nutricionista: trocar "Diagnóstico nutricional" por "Avaliação nutricional"; manter o restante (já está adequado).
-- Psicólogo: já está OK.
-
-## Arquivos tocados
-
-- `src/routes/avaliacao.$token.tsx` — único arquivo (formulário médico + `ResumoCartaoBlock` + `CartaoModal` + helper de placeholder).
-
-## Fora de escopo
-
-- Sem migração de banco (o RPC já entrega `cartao` + `alertas`).
-- Sem mudança no app da gestante nem no painel do profissional.
-
-## Riscos
-
-- Renomear `key` dos campos (`historia_doenca_atual` → novos) descarta respostas em rascunho que estavam com a chave antiga. Aceitável: ainda não há produção dessa aba.
-- Gráficos no modal aumentam o peso visual — manter altura ~180px, 2 colunas no desktop, 1 no mobile.
+- BCF, altura uterina e exames laboratoriais (poderemos adicionar como abas em um próximo passo).
+- Edição/registro de medições a partir desse bloco — continua sendo feito no Cartão.
+- Reaproveitamento do `app_content`/`HOME_DEFAULT` para dicas (as dicas saem da Home; permanecem disponíveis em outras telas se já estiverem usadas).
