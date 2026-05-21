@@ -277,6 +277,8 @@ function AgendamentosPage() {
           })}
         </div>
       )}
+        </>
+      )}
     </div>
   );
 }
