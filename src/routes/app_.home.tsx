@@ -79,9 +79,8 @@ function HomePage() {
           className="mb-6 flex items-center justify-between"
         >
           <div>
-            <p className="text-sm text-muted-foreground">Olá, {primeiroNome}</p>
             <h1 className="text-2xl font-bold font-display text-foreground">
-              {content.pageTitle}
+              Olá, {primeiroNome}
             </h1>
             {!profile?.dum && (
               <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 mt-1 inline-block">
