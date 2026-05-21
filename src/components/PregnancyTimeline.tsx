@@ -208,7 +208,7 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
                 <YAxis tick={{ fontSize: 10 }} domain={["dataMin - 2", "dataMax + 2"]} />
                 <Tooltip
                   contentStyle={{ fontSize: 11, borderRadius: 8 }}
-                  formatter={(v: number | null, name: string) => {
+                  formatter={(v: any, name: any) => {
                     if (v === null) return ["—", name];
                     if (name === "faixaMin" || name === "faixaRange") return null as never;
                     return [`${v} kg`, name === "peso" ? "Peso" : "Projeção"];
@@ -275,7 +275,7 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
                 <YAxis tick={{ fontSize: 10 }} domain={[50, 140]} />
                 <Tooltip
                   contentStyle={{ fontSize: 11, borderRadius: 8 }}
-                  formatter={(v: number | null, name: string) => {
+                  formatter={(v: any, name: any) => {
                     if (
                       name === "sistMin" ||
                       name === "sistRange" ||
