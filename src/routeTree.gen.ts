@@ -15,6 +15,7 @@ import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AvaliacaoTokenRouteImport } from './routes/avaliacao.$token'
 import { Route as AtlasSlugRouteImport } from './routes/atlas.$slug'
 import { Route as AppVideosRouteImport } from './routes/app_.videos'
 import { Route as AppVideochamadaRouteImport } from './routes/app_.videochamada'
@@ -58,6 +59,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvaliacaoTokenRoute = AvaliacaoTokenRouteImport.update({
+  id: '/avaliacao/$token',
+  path: '/avaliacao/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AtlasSlugRoute = AtlasSlugRouteImport.update({
@@ -153,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/app/videochamada': typeof AppVideochamadaRoute
   '/app/videos': typeof AppVideosRoute
   '/atlas/$slug': typeof AtlasSlugRoute
+  '/avaliacao/$token': typeof AvaliacaoTokenRoute
   '/app/admin': typeof AuthenticatedAppAdminRoute
   '/app/membro': typeof AuthenticatedAppMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/app/videochamada': typeof AppVideochamadaRoute
   '/app/videos': typeof AppVideosRoute
   '/atlas/$slug': typeof AtlasSlugRoute
+  '/avaliacao/$token': typeof AvaliacaoTokenRoute
   '/app/admin': typeof AuthenticatedAppAdminRoute
   '/app/membro': typeof AuthenticatedAppMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/app_/videochamada': typeof AppVideochamadaRoute
   '/app_/videos': typeof AppVideosRoute
   '/atlas/$slug': typeof AtlasSlugRoute
+  '/avaliacao/$token': typeof AvaliacaoTokenRoute
   '/_authenticated/app/admin': typeof AuthenticatedAppAdminRoute
   '/_authenticated/app/membro': typeof AuthenticatedAppMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/app/videochamada'
     | '/app/videos'
     | '/atlas/$slug'
+    | '/avaliacao/$token'
     | '/app/admin'
     | '/app/membro'
     | '/api/public/hotmart-webhook'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/app/videochamada'
     | '/app/videos'
     | '/atlas/$slug'
+    | '/avaliacao/$token'
     | '/app/admin'
     | '/app/membro'
     | '/api/public/hotmart-webhook'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/app_/videochamada'
     | '/app_/videos'
     | '/atlas/$slug'
+    | '/avaliacao/$token'
     | '/_authenticated/app/admin'
     | '/_authenticated/app/membro'
     | '/api/public/hotmart-webhook'
@@ -291,6 +303,7 @@ export interface RootRouteChildren {
   AppResetPasswordRoute: typeof AppResetPasswordRoute
   AppVideochamadaRoute: typeof AppVideochamadaRoute
   AppVideosRoute: typeof AppVideosRoute
+  AvaliacaoTokenRoute: typeof AvaliacaoTokenRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
   AppSalaRoomIdRoute: typeof AppSalaRoomIdRoute
 }
@@ -337,6 +350,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/avaliacao/$token': {
+      id: '/avaliacao/$token'
+      path: '/avaliacao/$token'
+      fullPath: '/avaliacao/$token'
+      preLoaderRoute: typeof AvaliacaoTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/atlas/$slug': {
@@ -489,19 +509,10 @@ const rootRouteChildren: RootRouteChildren = {
   AppResetPasswordRoute: AppResetPasswordRoute,
   AppVideochamadaRoute: AppVideochamadaRoute,
   AppVideosRoute: AppVideosRoute,
+  AvaliacaoTokenRoute: AvaliacaoTokenRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
   AppSalaRoomIdRoute: AppSalaRoomIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

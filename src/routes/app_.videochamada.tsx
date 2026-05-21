@@ -5,6 +5,7 @@ import { LiquidCard } from "@/components/LiquidCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import { LoadingMessage } from "@/components/LoadingMessage";
+import { AvaliacoesPanel } from "@/components/avaliacoes/AvaliacoesPanel";
 
 const SALA_ANTECEDENCIA_MS = 15 * 60 * 1000;
 const SALA_TOLERANCIA_MS = 30 * 60 * 1000;
@@ -42,7 +43,7 @@ function AgendamentosPage() {
   const userId = session?.user?.id ?? null;
   const [slots, setSlots] = useState<SlotComProf[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"disponiveis" | "meus">("disponiveis");
+  const [tab, setTab] = useState<"disponiveis" | "meus" | "avaliacoes">("disponiveis");
   const [filtroEsp, setFiltroEsp] = useState<string>("todas");
   const [booking, setBooking] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -50,6 +51,10 @@ function AgendamentosPage() {
   const load = async () => {
     setLoading(true);
     setMsg(null);
+    if (tab === "avaliacoes") {
+      setLoading(false);
+      return;
+    }
     if (tab === "disponiveis") {
       // Mostra slots disponíveis que ainda não terminaram (considera 2h de janela retroativa
       // para cobrir slots em andamento ou recém-iniciados que o profissional acabou de liberar)
@@ -140,7 +145,21 @@ function AgendamentosPage() {
         >
           Meus agendamentos
         </button>
+        <button
+          onClick={() => setTab("avaliacoes")}
+          className={`flex-1 py-1.5 rounded-full text-xs font-semibold ${
+            tab === "avaliacoes" ? "bg-white text-primary shadow-sm" : "text-muted-foreground"
+          }`}
+        >
+          Avaliações
+        </button>
       </div>
+
+      {tab === "avaliacoes" ? (
+        <AvaliacoesPanel userId={userId} />
+      ) : (
+        <>
+
 
       {tab === "disponiveis" && especialidades.length > 0 && (
         <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
@@ -257,6 +276,8 @@ function AgendamentosPage() {
             );
           })}
         </div>
+      )}
+        </>
       )}
     </div>
   );

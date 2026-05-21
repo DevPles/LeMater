@@ -600,6 +600,80 @@ export type Database = {
         }
         Relationships: []
       }
+      evaluation_requests: {
+        Row: {
+          appointment_id: string | null
+          created_at: string
+          especialidade: string
+          expira_em: string
+          gestante_id: string
+          id: string
+          status: string
+          token: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          created_at?: string
+          especialidade: string
+          expira_em?: string
+          gestante_id: string
+          id?: string
+          status?: string
+          token?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          created_at?: string
+          especialidade?: string
+          expira_em?: string
+          gestante_id?: string
+          id?: string
+          status?: string
+          token?: string
+        }
+        Relationships: []
+      }
+      evaluation_responses: {
+        Row: {
+          created_at: string
+          id: string
+          professional_nome: string
+          professional_registro_numero: string
+          professional_registro_tipo: string
+          professional_registro_uf: string
+          request_id: string
+          respostas: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          professional_nome: string
+          professional_registro_numero: string
+          professional_registro_tipo: string
+          professional_registro_uf: string
+          request_id: string
+          respostas?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          professional_nome?: string
+          professional_registro_numero?: string
+          professional_registro_tipo?: string
+          professional_registro_uf?: string
+          request_id?: string
+          respostas?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluation_responses_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "evaluation_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exam_criteria: {
         Row: {
           created_at: string
@@ -1682,6 +1756,7 @@ export type Database = {
         Args: { _appointment_id: string }
         Returns: Json
       }
+      get_evaluation_request_public: { Args: { _token: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1724,6 +1799,17 @@ export type Database = {
       resolve_login_email_by_registro: {
         Args: { _registro: string }
         Returns: string
+      }
+      submit_evaluation_response: {
+        Args: {
+          _nome: string
+          _registro_numero: string
+          _registro_tipo: string
+          _registro_uf: string
+          _respostas: Json
+          _token: string
+        }
+        Returns: Json
       }
     }
     Enums: {
