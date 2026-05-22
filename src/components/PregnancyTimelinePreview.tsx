@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { ResponsiveContainer, LineChart, Line, YAxis } from "recharts";
+import { ResponsiveContainer, AreaChart, Area, YAxis } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { LiquidCard } from "@/components/LiquidCard";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PregnancyTimeline } from "@/components/PregnancyTimeline";
+import { motion } from "framer-motion";
 import {
   GESTATION_WEEKS,
   GESTATION_DAYS,
@@ -53,10 +53,10 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
 
   const dumDate = parseDate(dum);
 
-  const content = (() => {
+  const body = (() => {
     if (!dumDate) {
       return (
-        <p className="text-xs text-muted-foreground mt-2">
+        <p className="text-xs text-muted-foreground">
           Cadastre sua DUM no perfil para visualizar.
         </p>
       );
@@ -70,11 +70,7 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
     );
     const semanaAtual = Math.floor(semanaAtualNum);
     const trimestre = trimesterOfWeek(semanaAtual);
-
-    const cadastroDate = parseDate(cadastroISO);
-    const semanaCadastro = cadastroDate
-      ? Math.max(0, Math.min(GESTATION_WEEKS, weeksBetween(dumDate, cadastroDate)))
-      : null;
+    const progresso = (semanaAtualNum / GESTATION_WEEKS) * 100;
 
     const pesoData = medicoes
       .filter((m) => m.parametro === "peso")
@@ -84,89 +80,80 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
       .filter((m) => m.parametro === "pa_sistolica")
       .map((m) => ({ v: Number(m.valor) }));
 
-    return (
-      <div className="mt-3 space-y-3">
-        <p className="text-xs text-muted-foreground">
-          Semana {semanaAtual} · {trimestre}º trimestre · DPP {formatBRDate(dpp)}
-        </p>
+    const pesoUltimo = pesoData.at(-1)?.v;
+    const pesoPrimeiro = pesoData[0]?.v;
+    const pesoDelta =
+      pesoUltimo != null && pesoPrimeiro != null ? pesoUltimo - pesoPrimeiro : null;
+    const sistUltimo = sistData.at(-1)?.v;
 
-        {/* Mini gantt */}
+    return (
+      <div className="space-y-5">
+        {/* Hero: semana grande */}
+        <div className="flex items-end justify-between">
+          <div>
+            <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+              Semana
+            </span>
+            <div className="flex items-baseline gap-2 mt-0.5">
+              <span className="font-display text-6xl font-light leading-none text-[#1a1557]">
+                {semanaAtual}
+              </span>
+              <span className="text-base text-muted-foreground font-light">/ 40</span>
+            </div>
+          </div>
+          <div className="text-right space-y-1">
+            <span className="inline-block text-[10px] uppercase tracking-wider font-semibold px-2.5 py-1 rounded-full bg-[#f0c040]/15 text-[#a87a10]">
+              {trimestre}º trimestre
+            </span>
+            <p className="text-[10px] text-muted-foreground">DPP {formatBRDate(dpp)}</p>
+          </div>
+        </div>
+
+        {/* Progresso slim com gradiente */}
         <div>
-          <div className="relative h-3 rounded-full overflow-hidden bg-[#e8e6f2]">
-            <div
-              className="absolute inset-y-0 left-0 bg-[#d9d5ea]"
-              style={{ left: `${(13 / GESTATION_WEEKS) * 100}%`, width: `${(14 / GESTATION_WEEKS) * 100}%` }}
+          <div className="relative h-1.5 rounded-full bg-[#1a1557]/10 overflow-visible">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progresso}%` }}
+              transition={{ duration: 1.1, ease: "easeOut" }}
+              className="absolute inset-y-0 left-0 rounded-full"
+              style={{ background: `linear-gradient(90deg, ${NAVY}, ${GOLD})` }}
             />
             <div
-              className="absolute inset-y-0 bg-[#c4bedf]"
-              style={{ left: `${(27 / GESTATION_WEEKS) * 100}%`, right: 0 }}
-            />
-            {semanaCadastro !== null && (
-              <div
-                className="absolute top-0 bottom-0 w-px bg-[#1a1557]/40"
-                style={{ left: `${(semanaCadastro / GESTATION_WEEKS) * 100}%` }}
-              />
-            )}
-            <div
-              className="absolute top-0 bottom-0 w-0.5 bg-[#f0c040]"
-              style={{ left: `${(semanaAtualNum / GESTATION_WEEKS) * 100}%` }}
+              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-md border-2"
+              style={{ left: `calc(${progresso}% - 6px)`, borderColor: GOLD }}
             />
           </div>
-          <div className="flex justify-between text-[9px] text-muted-foreground mt-1">
+          <div className="flex justify-between text-[9px] text-muted-foreground/70 mt-2 uppercase tracking-wider">
             <span>DUM</span>
-            <span className="font-semibold text-[#1a1557]">sem {semanaAtual}</span>
             <span>DPP</span>
           </div>
         </div>
 
-        {/* Mini sparklines */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <p className="text-[10px] text-muted-foreground mb-1">Peso</p>
-            <div className="h-10">
-              {pesoData.length > 1 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={pesoData}>
-                    <YAxis hide domain={["dataMin - 1", "dataMax + 1"]} />
-                    <Line
-                      type="monotone"
-                      dataKey="v"
-                      stroke={NAVY}
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center text-[10px] text-muted-foreground">
-                  Sem dados
-                </div>
-              )}
-            </div>
-          </div>
-          <div>
-            <p className="text-[10px] text-muted-foreground mb-1">Pressão</p>
-            <div className="h-10">
-              {sistData.length > 1 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={sistData}>
-                    <YAxis hide domain={[50, 140]} />
-                    <Line
-                      type="monotone"
-                      dataKey="v"
-                      stroke={GOLD}
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center text-[10px] text-muted-foreground">
-                  Sem dados
-                </div>
-              )}
-            </div>
-          </div>
+        {/* Stats com sparkline embutido */}
+        <div className="grid grid-cols-2 gap-2">
+          <StatTile
+            label="Peso"
+            value={pesoUltimo != null ? pesoUltimo.toFixed(1) : "—"}
+            unit="kg"
+            delta={
+              pesoDelta != null
+                ? `${pesoDelta >= 0 ? "+" : ""}${pesoDelta.toFixed(1)}kg`
+                : null
+            }
+            data={pesoData}
+            color={NAVY}
+            gradId="pesoGrad"
+          />
+          <StatTile
+            label="Pressão"
+            value={sistUltimo != null ? String(sistUltimo) : "—"}
+            unit="mmHg"
+            delta={null}
+            data={sistData}
+            color={GOLD}
+            gradId="paGrad"
+          />
         </div>
       </div>
     );
@@ -174,25 +161,45 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="block w-full text-left">
-        <LiquidCard
-          className="p-5 hover:scale-[1.01] transition-transform"
-          bgOpacity={0.85}
-        >
-          <div className="flex items-start justify-between">
+      <motion.button
+        type="button"
+        onClick={() => setOpen(true)}
+        whileTap={{ scale: 0.985 }}
+        className="block w-full text-left group relative overflow-hidden rounded-3xl p-5"
+        style={{
+          background: "linear-gradient(135deg, #ffffff 0%, #faf8f3 100%)",
+          boxShadow:
+            "0 1px 0 0 rgba(255,255,255,0.9) inset, 0 20px 40px -24px rgba(26,21,87,0.18), 0 4px 12px -6px rgba(26,21,87,0.08)",
+          border: "1px solid rgba(26,21,87,0.06)",
+        }}
+      >
+        {/* Decoração orgânica */}
+        <div
+          className="absolute -top-16 -right-16 w-40 h-40 rounded-full opacity-50 pointer-events-none"
+          style={{ background: "radial-gradient(circle, #f0c04055 0%, transparent 70%)" }}
+        />
+        <div
+          className="absolute -bottom-20 -left-12 w-44 h-44 rounded-full opacity-40 pointer-events-none"
+          style={{ background: "radial-gradient(circle, #1a155722 0%, transparent 70%)" }}
+        />
+
+        <div className="relative">
+          <div className="flex items-start justify-between mb-5">
             <div>
-              <h3 className="font-display font-semibold text-lg text-foreground">
-                Meu cronograma
+              <span className="text-[10px] uppercase tracking-[0.22em] text-[#1a1557]/60 font-semibold">
+                Cronograma
+              </span>
+              <h3 className="font-display font-medium text-2xl text-[#1a1557] leading-tight mt-0.5">
+                Sua jornada
               </h3>
-              <p className="text-[11px] text-muted-foreground">
-                Toque para ver os gráficos completos
-              </p>
             </div>
-            <span className="text-[#1a1557] font-bold text-xl leading-none">›</span>
+            <span className="text-[#1a1557] text-2xl leading-none transition-transform group-hover:translate-x-0.5">
+              ›
+            </span>
           </div>
-          {content}
-        </LiquidCard>
-      </button>
+          {body}
+        </div>
+      </motion.button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -203,5 +210,70 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function StatTile({
+  label,
+  value,
+  unit,
+  delta,
+  data,
+  color,
+  gradId,
+}: {
+  label: string;
+  value: string;
+  unit: string;
+  delta: string | null;
+  data: { v: number }[];
+  color: string;
+  gradId: string;
+}) {
+  return (
+    <div
+      className="relative rounded-2xl p-3 overflow-hidden min-h-[88px]"
+      style={{
+        background: "rgba(255,255,255,0.65)",
+        border: "1px solid rgba(26,21,87,0.05)",
+      }}
+    >
+      <div className="relative z-10">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+          {label}
+        </p>
+        <div className="flex items-baseline gap-1 mt-0.5">
+          <span className="font-display text-2xl font-light text-[#1a1557] leading-none">
+            {value}
+          </span>
+          <span className="text-[10px] text-muted-foreground">{unit}</span>
+        </div>
+        {delta && (
+          <span className="text-[9px] text-muted-foreground font-medium">{delta}</span>
+        )}
+      </div>
+      {data.length > 1 && (
+        <div className="absolute inset-x-0 bottom-0 h-10 opacity-90 pointer-events-none">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+                  <stop offset="100%" stopColor={color} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <YAxis hide domain={["dataMin - 1", "dataMax + 1"]} />
+              <Area
+                type="monotone"
+                dataKey="v"
+                stroke={color}
+                strokeWidth={2}
+                fill={`url(#${gradId})`}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </div>
   );
 }
