@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -9,10 +9,8 @@ import {
   Tooltip,
   ReferenceLine,
   CartesianGrid,
-  Legend,
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { LiquidCard } from "@/components/LiquidCard";
 import {
   GESTATION_WEEKS,
   GESTATION_DAYS,
@@ -41,9 +39,30 @@ type Medicao = {
 const NAVY = "#1a1557";
 const GOLD = "#f0c040";
 
+type Milestone = {
+  week: number;
+  title: string;
+  detail: string;
+};
+
+const MILESTONES: Milestone[] = [
+  { week: 6, title: "1ª consulta de pré-natal", detail: "Confirmação, exames iniciais e BHCG" },
+  { week: 8, title: "USG de datação", detail: "Confirma IG e batimentos cardíacos" },
+  { week: 12, title: "Translucência nucal", detail: "Rastreio cromossômico do 1º trimestre" },
+  { week: 16, title: "Exames do 2º trimestre", detail: "Hemograma, urina, glicemia" },
+  { week: 20, title: "USG morfológica", detail: "Avaliação detalhada da anatomia fetal" },
+  { week: 24, title: "Teste de tolerância à glicose", detail: "Rastreio de diabetes gestacional" },
+  { week: 28, title: "Início do 3º trimestre", detail: "Consultas quinzenais, vacina dTpa" },
+  { week: 32, title: "USG de crescimento", detail: "Avalia peso e líquido amniótico" },
+  { week: 36, title: "Streptococcus B", detail: "Coleta vaginal e retal" },
+  { week: 37, title: "Termo precoce", detail: "Bebê considerado a termo" },
+  { week: 40, title: "Data provável do parto", detail: "DPP estimada pela DUM" },
+];
+
 export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
   const [medicoes, setMedicoes] = useState<Medicao[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<"agenda" | "peso" | "pressao">("agenda");
 
   useEffect(() => {
     let active = true;
@@ -67,12 +86,12 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
 
   if (!dumDate) {
     return (
-      <LiquidCard className="p-5" bgOpacity={0.85}>
-        <h3 className="font-display font-semibold text-lg text-foreground">Meu cronograma</h3>
-        <p className="text-sm text-muted-foreground mt-2">
+      <div className="p-6 rounded-2xl bg-[#faf8f3] border border-[#1a1557]/10 text-center">
+        <p className="font-display text-base text-[#1a1557] mb-1">Cronograma indisponível</p>
+        <p className="text-sm text-muted-foreground">
           Cadastre sua DUM no perfil para visualizar a linha do tempo da gestação.
         </p>
-      </LiquidCard>
+      </div>
     );
   }
 
@@ -80,7 +99,10 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
   const hoje = new Date();
   const semanaAtualNum = Math.max(0, Math.min(GESTATION_WEEKS, weeksBetween(dumDate, hoje)));
   const semanaAtual = Math.floor(semanaAtualNum);
+  const diaSemana = Math.floor((semanaAtualNum - semanaAtual) * 7);
   const trimestre = trimesterOfWeek(semanaAtual);
+  const diasRestantes = Math.max(0, Math.ceil((dpp.getTime() - hoje.getTime()) / 86400000));
+  const progresso = Math.min(100, (semanaAtualNum / GESTATION_WEEKS) * 100);
 
   const cadastroDate = parseDate(cadastroISO);
   const semanaCadastro = cadastroDate
@@ -100,30 +122,31 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
   const pesoInicial = pesos[0];
   const pesoUltimo = pesos[pesos.length - 1];
 
-  const pesoSeries = Array.from({ length: GESTATION_WEEKS + 1 }, (_, w) => {
-    const ponto = pesos.find((p) => p.semana === w);
-    let faixa: [number, number] | null = null;
-    if (pesoInicial) {
-      const r = expectedWeightRange(w, pesoInicial.semana, pesoInicial.peso);
-      faixa = [Number(r.min.toFixed(2)), Number(r.max.toFixed(2))];
-    }
-    return {
-      semana: w,
-      peso: ponto ? ponto.peso : null,
-      faixaMin: faixa ? faixa[0] : null,
-      faixaRange: faixa ? Number((faixa[1] - faixa[0]).toFixed(2)) : null,
-      // Projeção a partir da última medição até DPP
-      projecao:
-        pesoUltimo && w >= pesoUltimo.semana
-          ? Number(
-              (
-                pesoUltimo.peso +
-                (w - pesoUltimo.semana) * (trimestre === 1 ? 0.15 : 0.42)
-              ).toFixed(2)
-            )
-          : null,
-    };
-  });
+  const pesoSeries = useMemo(() => {
+    return Array.from({ length: GESTATION_WEEKS + 1 }, (_, w) => {
+      const ponto = pesos.find((p) => p.semana === w);
+      let faixa: [number, number] | null = null;
+      if (pesoInicial) {
+        const r = expectedWeightRange(w, pesoInicial.semana, pesoInicial.peso);
+        faixa = [Number(r.min.toFixed(2)), Number(r.max.toFixed(2))];
+      }
+      return {
+        semana: w,
+        peso: ponto ? ponto.peso : null,
+        faixaMin: faixa ? faixa[0] : null,
+        faixaRange: faixa ? Number((faixa[1] - faixa[0]).toFixed(2)) : null,
+        projecao:
+          pesoUltimo && w >= pesoUltimo.semana
+            ? Number(
+                (
+                  pesoUltimo.peso +
+                  (w - pesoUltimo.semana) * (trimestre === 1 ? 0.15 : 0.42)
+                ).toFixed(2),
+              )
+            : null,
+      };
+    });
+  }, [pesos, pesoInicial, pesoUltimo, trimestre]);
 
   // PA
   const sistMap = new Map<number, number>();
@@ -144,195 +167,320 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
     diasRange: BP_NORMAL.diastolica.max - BP_NORMAL.diastolica.min,
   }));
 
+  // Próximos marcos
+  const proximoMarco = MILESTONES.find((m) => m.week >= semanaAtual);
+
   return (
-    <LiquidCard className="p-5 space-y-5" bgOpacity={0.85}>
-      <div>
-        <h3 className="font-display font-semibold text-lg text-foreground">Meu cronograma</h3>
-        <p className="text-xs text-muted-foreground mt-1">
-          Semana {semanaAtual} de {GESTATION_WEEKS} · {trimestre}º trimestre · DPP {formatBRDate(dpp)}
-        </p>
-      </div>
+    <div className="space-y-4">
+      {/* Hero planner card */}
+      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#1a1557] via-[#252068] to-[#1a1557] text-white p-5 shadow-lg">
+        <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-[#f0c040]/15 blur-2xl" />
+        <div className="relative flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-[#f0c040]/90 font-semibold">
+              {trimestre}º trimestre
+            </p>
+            <p className="font-display text-3xl leading-tight mt-1">
+              Semana {semanaAtual}
+              <span className="text-base font-normal text-white/70"> +{diaSemana}d</span>
+            </p>
+            <p className="text-xs text-white/70 mt-1">
+              {diasRestantes} dias até a DPP · {formatBRDate(dpp)}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] uppercase tracking-wider text-white/60">Progresso</p>
+            <p className="font-display text-2xl text-[#f0c040]">{Math.round(progresso)}%</p>
+          </div>
+        </div>
 
-      {/* Gantt de trimestres */}
-      <div>
-        <div className="relative h-10 rounded-lg overflow-hidden border border-black/5">
-          <div className="absolute inset-y-0 left-0 bg-[#e8e6f2]" style={{ width: `${(13 / GESTATION_WEEKS) * 100}%` }}>
-            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-[#1a1557]">1º T</span>
+        {/* Timeline planner bar */}
+        <div className="relative mt-5">
+          <div className="flex h-2 rounded-full overflow-hidden bg-white/10">
+            <div className="bg-white/25" style={{ width: `${(13 / GESTATION_WEEKS) * 100}%` }} />
+            <div className="bg-white/35" style={{ width: `${(14 / GESTATION_WEEKS) * 100}%` }} />
+            <div className="bg-white/45" style={{ width: `${(13 / GESTATION_WEEKS) * 100}%` }} />
           </div>
+          {/* progresso */}
           <div
-            className="absolute inset-y-0 bg-[#d9d5ea]"
-            style={{ left: `${(13 / GESTATION_WEEKS) * 100}%`, width: `${(14 / GESTATION_WEEKS) * 100}%` }}
-          >
-            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-[#1a1557]">2º T</span>
-          </div>
+            className="absolute top-0 left-0 h-2 rounded-full bg-[#f0c040]"
+            style={{ width: `${progresso}%` }}
+          />
+          {/* hoje marker */}
           <div
-            className="absolute inset-y-0 bg-[#c4bedf]"
-            style={{ left: `${(27 / GESTATION_WEEKS) * 100}%`, right: 0 }}
-          >
-            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-semibold text-[#1a1557]">3º T</span>
-          </div>
-
+            className="absolute -top-1 h-4 w-4 rounded-full bg-[#f0c040] border-2 border-[#1a1557] shadow"
+            style={{ left: `calc(${progresso}% - 8px)` }}
+          />
+          {/* cadastro marker */}
           {semanaCadastro !== null && (
             <div
-              className="absolute top-0 bottom-0 w-px bg-[#1a1557]/40"
+              className="absolute top-0 h-2 w-px bg-white/60"
               style={{ left: `${(semanaCadastro / GESTATION_WEEKS) * 100}%` }}
               title="Cadastro"
             />
           )}
-          <div
-            className="absolute top-0 bottom-0 w-0.5 bg-[#f0c040]"
-            style={{ left: `${(semanaAtualNum / GESTATION_WEEKS) * 100}%` }}
-            title="Hoje"
-          />
-        </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-          <span>DUM {formatBRDate(dumDate)}</span>
-          <span className="font-semibold text-[#1a1557]">Hoje · sem {semanaAtual}</span>
-          <span>DPP {formatBRDate(dpp)}</span>
+
+          <div className="flex justify-between text-[9px] text-white/60 mt-2 font-medium">
+            <span>DUM<br/>{formatBRDate(dumDate).slice(0, 5)}</span>
+            <span className="text-center">13<br/>sem</span>
+            <span className="text-center">27<br/>sem</span>
+            <span className="text-right">DPP<br/>{formatBRDate(dpp).slice(0, 5)}</span>
+          </div>
         </div>
       </div>
 
-      {/* Peso */}
-      <div>
-        <h4 className="text-sm font-semibold text-foreground mb-2">Peso (kg)</h4>
-        {pesos.length === 0 ? (
-          <p className="text-xs text-muted-foreground">
-            Nenhuma medição de peso registrada ainda.
-          </p>
-        ) : (
-          <div className="h-44">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={pesoSeries} margin={{ top: 5, right: 8, bottom: 0, left: -16 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#00000010" />
-                <XAxis dataKey="semana" tick={{ fontSize: 10 }} interval={6} />
-                <YAxis tick={{ fontSize: 10 }} domain={["dataMin - 2", "dataMax + 2"]} />
-                <Tooltip
-                  contentStyle={{ fontSize: 11, borderRadius: 8 }}
-                  formatter={(v: any, name: any) => {
-                    if (v === null) return ["—", name];
-                    if (name === "faixaMin" || name === "faixaRange") return null as never;
-                    return [`${v} kg`, name === "peso" ? "Peso" : "Projeção"];
-                  }}
-                  labelFormatter={(l) => `Semana ${l}`}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="faixaMin"
-                  stackId="faixa"
-                  stroke="none"
-                  fill="transparent"
-                  legendType="none"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="faixaRange"
-                  stackId="faixa"
-                  stroke="none"
-                  fill={NAVY}
-                  fillOpacity={0.12}
-                  name="Faixa esperada"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="projecao"
-                  stroke={GOLD}
-                  strokeWidth={2}
-                  strokeDasharray="4 4"
-                  dot={false}
-                  name="Projeção"
-                  connectNulls
-                />
-                <Line
-                  type="monotone"
-                  dataKey="peso"
-                  stroke={NAVY}
-                  strokeWidth={2.5}
-                  dot={{ r: 3, fill: NAVY }}
-                  name="Peso"
-                  connectNulls
-                />
-                <ReferenceLine x={semanaAtual} stroke={GOLD} strokeWidth={1.5} />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-              </ComposedChart>
-            </ResponsiveContainer>
+      {/* Próximo marco */}
+      {proximoMarco && (
+        <div className="rounded-xl bg-[#faf8f3] border border-[#1a1557]/10 p-4 flex items-start gap-3">
+          <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-[#1a1557] text-[#f0c040] flex flex-col items-center justify-center">
+            <span className="text-[8px] uppercase tracking-wider opacity-70">sem</span>
+            <span className="font-display font-bold text-lg leading-none">{proximoMarco.week}</span>
           </div>
-        )}
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+              Próximo marco
+            </p>
+            <p className="font-display text-sm text-[#1a1557] mt-0.5">{proximoMarco.title}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{proximoMarco.detail}</p>
+          </div>
+          <span className="text-[10px] text-[#1a1557] font-semibold whitespace-nowrap">
+            em {Math.max(0, proximoMarco.week - semanaAtual)} sem
+          </span>
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 bg-[#1a1557]/5 rounded-xl">
+        {[
+          { k: "agenda", label: "Agenda" },
+          { k: "peso", label: "Peso" },
+          { k: "pressao", label: "Pressão" },
+        ].map((t) => (
+          <button
+            key={t.k}
+            type="button"
+            onClick={() => setTab(t.k as typeof tab)}
+            className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
+              tab === t.k
+                ? "bg-white text-[#1a1557] shadow-sm"
+                : "text-[#1a1557]/60 hover:text-[#1a1557]"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* PA */}
-      <div>
-        <h4 className="text-sm font-semibold text-foreground mb-2">Pressão arterial (mmHg)</h4>
-        {sistMap.size === 0 && diasMap.size === 0 ? (
-          <p className="text-xs text-muted-foreground">
-            Nenhuma aferição de pressão registrada ainda.
-          </p>
-        ) : (
-          <div className="h-44">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={paSeries} margin={{ top: 5, right: 8, bottom: 0, left: -16 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#00000010" />
-                <XAxis dataKey="semana" tick={{ fontSize: 10 }} interval={6} />
-                <YAxis tick={{ fontSize: 10 }} domain={[50, 140]} />
-                <Tooltip
-                  contentStyle={{ fontSize: 11, borderRadius: 8 }}
-                  formatter={(v: any, name: any) => {
-                    if (
-                      name === "sistMin" ||
-                      name === "sistRange" ||
-                      name === "diasMin" ||
-                      name === "diasRange"
-                    )
-                      return null as never;
-                    if (v === null) return ["—", name];
-                    return [`${v}`, name === "sistolica" ? "Sistólica" : "Diastólica"];
-                  }}
-                  labelFormatter={(l) => `Semana ${l}`}
-                />
-                <Area dataKey="sistMin" stackId="sist" stroke="none" fill="transparent" legendType="none" />
-                <Area
-                  dataKey="sistRange"
-                  stackId="sist"
-                  stroke="none"
-                  fill={NAVY}
-                  fillOpacity={0.08}
-                  name="Sistólica normal"
-                />
-                <Area dataKey="diasMin" stackId="dias" stroke="none" fill="transparent" legendType="none" />
-                <Area
-                  dataKey="diasRange"
-                  stackId="dias"
-                  stroke="none"
-                  fill={GOLD}
-                  fillOpacity={0.12}
-                  name="Diastólica normal"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="sistolica"
-                  stroke={NAVY}
-                  strokeWidth={2.5}
-                  dot={{ r: 3, fill: NAVY }}
-                  name="Sistólica"
-                  connectNulls
-                />
-                <Line
-                  type="monotone"
-                  dataKey="diastolica"
-                  stroke={GOLD}
-                  strokeWidth={2.5}
-                  dot={{ r: 3, fill: GOLD }}
-                  name="Diastólica"
-                  connectNulls
-                />
-                <ReferenceLine x={semanaAtual} stroke={GOLD} strokeWidth={1.5} />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </div>
+      {/* Tab content */}
+      {tab === "agenda" && (
+        <div className="space-y-2">
+          {MILESTONES.map((m) => {
+            const status =
+              m.week < semanaAtual ? "passado" : m.week === semanaAtual ? "agora" : "futuro";
+            const tri = trimesterOfWeek(m.week);
+            return (
+              <div
+                key={m.week}
+                className={`relative pl-10 pr-3 py-3 rounded-xl border transition-colors ${
+                  status === "agora"
+                    ? "bg-[#f0c040]/10 border-[#f0c040]/40"
+                    : status === "passado"
+                    ? "bg-white/40 border-[#1a1557]/5 opacity-60"
+                    : "bg-white border-[#1a1557]/10"
+                }`}
+              >
+                <div
+                  className={`absolute left-3 top-3 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                    status === "passado"
+                      ? "bg-[#1a1557]/20 text-[#1a1557]"
+                      : status === "agora"
+                      ? "bg-[#f0c040] text-[#1a1557]"
+                      : "bg-[#1a1557] text-[#f0c040]"
+                  }`}
+                >
+                  {status === "passado" ? "✓" : tri}
+                </div>
+                <div className="flex items-baseline justify-between gap-2">
+                  <p
+                    className={`font-display text-sm ${
+                      status === "passado" ? "line-through text-muted-foreground" : "text-[#1a1557]"
+                    }`}
+                  >
+                    {m.title}
+                  </p>
+                  <span className="text-[10px] font-semibold text-[#1a1557]/70 whitespace-nowrap">
+                    sem {m.week}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">{m.detail}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-      {loading && <p className="text-[10px] text-muted-foreground">Carregando medições…</p>}
-    </LiquidCard>
+      {tab === "peso" && (
+        <div className="rounded-xl bg-white border border-[#1a1557]/10 p-4">
+          <div className="flex items-baseline justify-between mb-3">
+            <div>
+              <p className="font-display text-sm text-[#1a1557]">Evolução do peso</p>
+              <p className="text-[10px] text-muted-foreground">kg por semana gestacional</p>
+            </div>
+            {pesoUltimo && (
+              <p className="font-display text-xl text-[#1a1557]">
+                {pesoUltimo.peso}
+                <span className="text-xs font-normal text-muted-foreground"> kg</span>
+              </p>
+            )}
+          </div>
+          {pesos.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-8 text-center">
+              Nenhuma medição de peso registrada ainda.
+            </p>
+          ) : (
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={pesoSeries} margin={{ top: 5, right: 8, bottom: 0, left: -20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#00000010" />
+                  <XAxis dataKey="semana" tick={{ fontSize: 10 }} interval={6} />
+                  <YAxis tick={{ fontSize: 10 }} domain={["dataMin - 2", "dataMax + 2"]} />
+                  <Tooltip
+                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                    formatter={(v: any, name: any) => {
+                      if (v === null) return ["—", name];
+                      if (name === "faixaMin" || name === "faixaRange") return null as never;
+                      return [`${v} kg`, name === "peso" ? "Peso" : "Projeção"];
+                    }}
+                    labelFormatter={(l) => `Semana ${l}`}
+                  />
+                  <Area dataKey="faixaMin" stackId="faixa" stroke="none" fill="transparent" />
+                  <Area
+                    dataKey="faixaRange"
+                    stackId="faixa"
+                    stroke="none"
+                    fill={NAVY}
+                    fillOpacity={0.12}
+                    name="Faixa esperada"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="projecao"
+                    stroke={GOLD}
+                    strokeWidth={2}
+                    strokeDasharray="4 4"
+                    dot={false}
+                    name="Projeção"
+                    connectNulls
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="peso"
+                    stroke={NAVY}
+                    strokeWidth={2.5}
+                    dot={{ r: 3, fill: NAVY }}
+                    name="Peso"
+                    connectNulls
+                  />
+                  <ReferenceLine x={semanaAtual} stroke={GOLD} strokeWidth={1.5} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+          <div className="flex gap-3 mt-3 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#1a1557]" /> Medido</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#f0c040]" style={{borderTop:'1px dashed #f0c040'}} /> Projeção</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-2 bg-[#1a1557]/15" /> Faixa esperada</span>
+          </div>
+        </div>
+      )}
+
+      {tab === "pressao" && (
+        <div className="rounded-xl bg-white border border-[#1a1557]/10 p-4">
+          <div className="flex items-baseline justify-between mb-3">
+            <div>
+              <p className="font-display text-sm text-[#1a1557]">Pressão arterial</p>
+              <p className="text-[10px] text-muted-foreground">mmHg por semana gestacional</p>
+            </div>
+            {sistMap.size > 0 && (
+              <p className="font-display text-xl text-[#1a1557]">
+                {Array.from(sistMap.values()).pop()}/{Array.from(diasMap.values()).pop() ?? "—"}
+              </p>
+            )}
+          </div>
+          {sistMap.size === 0 && diasMap.size === 0 ? (
+            <p className="text-xs text-muted-foreground py-8 text-center">
+              Nenhuma aferição de pressão registrada ainda.
+            </p>
+          ) : (
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={paSeries} margin={{ top: 5, right: 8, bottom: 0, left: -20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#00000010" />
+                  <XAxis dataKey="semana" tick={{ fontSize: 10 }} interval={6} />
+                  <YAxis tick={{ fontSize: 10 }} domain={[50, 140]} />
+                  <Tooltip
+                    contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                    formatter={(v: any, name: any) => {
+                      if (
+                        name === "sistMin" ||
+                        name === "sistRange" ||
+                        name === "diasMin" ||
+                        name === "diasRange"
+                      )
+                        return null as never;
+                      if (v === null) return ["—", name];
+                      return [`${v}`, name === "sistolica" ? "Sistólica" : "Diastólica"];
+                    }}
+                    labelFormatter={(l) => `Semana ${l}`}
+                  />
+                  <Area dataKey="sistMin" stackId="sist" stroke="none" fill="transparent" />
+                  <Area
+                    dataKey="sistRange"
+                    stackId="sist"
+                    stroke="none"
+                    fill={NAVY}
+                    fillOpacity={0.08}
+                  />
+                  <Area dataKey="diasMin" stackId="dias" stroke="none" fill="transparent" />
+                  <Area
+                    dataKey="diasRange"
+                    stackId="dias"
+                    stroke="none"
+                    fill={GOLD}
+                    fillOpacity={0.12}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="sistolica"
+                    stroke={NAVY}
+                    strokeWidth={2.5}
+                    dot={{ r: 3, fill: NAVY }}
+                    name="Sistólica"
+                    connectNulls
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="diastolica"
+                    stroke={GOLD}
+                    strokeWidth={2.5}
+                    dot={{ r: 3, fill: GOLD }}
+                    name="Diastólica"
+                    connectNulls
+                  />
+                  <ReferenceLine x={semanaAtual} stroke={GOLD} strokeWidth={1.5} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+          <div className="flex gap-3 mt-3 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#1a1557]" /> Sistólica</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#f0c040]" /> Diastólica</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-2 bg-[#1a1557]/10" /> Faixa normal</span>
+          </div>
+        </div>
+      )}
+
+      {loading && <p className="text-[10px] text-muted-foreground text-center">Carregando medições…</p>}
+    </div>
   );
 }
