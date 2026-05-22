@@ -498,38 +498,41 @@ export default function NovoConteudoModal({
               marginBottom: 6,
             }}
           >
-            Novo conteúdo
+            {editando ? "Editar conteúdo" : "Novo conteúdo"}
           </div>
           <h2 style={{ fontFamily: serif, fontSize: 30, fontWeight: 400, margin: "0 0 18px" }}>
-            Criar novo item do Atlas
+            {editando ? "Editar curso" : "Criar novo item do Atlas"}
           </h2>
 
-          <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
-            {(["curso", "material", "servico"] as Tipo[]).map((t) => {
-              const ativo = tipo === t;
-              return (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTipo(t)}
-                  style={{
-                    background: ativo ? c.sageDark : "white",
-                    color: ativo ? "white" : c.ink,
-                    border: `1px solid ${ativo ? c.sageDark : c.border}`,
-                    padding: "10px 22px",
-                    fontSize: 12,
-                    fontFamily: sans,
-                    fontWeight: 500,
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    cursor: "pointer",
-                  }}
-                >
-                  {t === "curso" ? "Curso" : t === "material" ? "Material" : "Serviço"}
-                </button>
-              );
-            })}
-          </div>
+          {!editando && (
+            <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
+              {(["curso", "material", "servico"] as Tipo[]).map((t) => {
+                const ativo = tipo === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTipo(t)}
+                    style={{
+                      background: ativo ? c.sageDark : "white",
+                      color: ativo ? "white" : c.ink,
+                      border: `1px solid ${ativo ? c.sageDark : c.border}`,
+                      padding: "10px 22px",
+                      fontSize: 12,
+                      fontFamily: sans,
+                      fontWeight: 500,
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {t === "curso" ? "Curso" : t === "material" ? "Material" : "Serviço"}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {editando && <div style={{ height: 18 }} />}
         </div>
 
         <div
