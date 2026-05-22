@@ -32,6 +32,7 @@ const GOLD = "#f0c040";
 
 export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
   const [medicoes, setMedicoes] = useState<Medicao[]>([]);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
