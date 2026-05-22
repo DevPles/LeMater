@@ -222,8 +222,6 @@ export default function NovoConteudoModal({
         area: (value("curso-acesso") || prev.area) as "gratis" | "pago",
         preco_centavos: parseInt(value("curso-preco-centavos")) || prev.preco_centavos,
         preco_label: value("curso-preco-label"),
-        link_compra_externo: value("curso-link-compra"),
-        plataforma_venda: value("curso-plataforma"),
         trailer_url: value("curso-trailer"),
         instrutor_nome: value("curso-instrutor-nome"),
         instrutor_foto: value("curso-instrutor-foto"),
