@@ -37,6 +37,9 @@ type Tab =
 
 const TAB_GROUPS: { label: string; tabs: { id: Tab; label: string }[] }[] = [
   { label: "Painel", tabs: [{ id: "dash", label: "Painel" }] },
+  { label: "Vendas", tabs: [
+    { id: "vendas", label: "Vendas & cupons" },
+  ]},
   { label: "Conteúdos", tabs: [
     { id: "atlas", label: "Atlas" },
   ]},
