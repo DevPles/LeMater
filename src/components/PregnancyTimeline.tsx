@@ -348,6 +348,101 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
       )}
 
       {tab === "peso" && (
+        <div className="space-y-3">
+          {/* Cards de detalhamento */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-xl bg-[#1a1557] text-white p-3">
+              <p className="text-[9px] uppercase tracking-wider text-[#f0c040]/90 font-semibold">
+                Peso atual
+              </p>
+              <p className="font-display text-xl leading-tight mt-1">
+                {pesoUltimo ? pesoUltimo.peso : "—"}
+                <span className="text-[10px] font-normal text-white/60"> kg</span>
+              </p>
+              <p className="text-[9px] text-white/60 mt-0.5">
+                {pesoInicial ? `inicial ${pesoInicial.peso} kg` : "sem registro"}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-white border border-[#1a1557]/10 p-3">
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Ganho total
+              </p>
+              <p className="font-display text-xl leading-tight mt-1 text-[#1a1557]">
+                {ganhoTotal !== null ? (ganhoTotal >= 0 ? "+" : "") + ganhoTotal.toFixed(1) : "—"}
+                <span className="text-[10px] font-normal text-muted-foreground"> kg</span>
+              </p>
+              <p className="text-[9px] text-muted-foreground mt-0.5">
+                {ganhoRecomendado
+                  ? `meta ${ganhoRecomendado.min}–${ganhoRecomendado.max} kg`
+                  : "informe altura"}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-white border border-[#1a1557]/10 p-3">
+              <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">
+                IMC atual
+              </p>
+              <p className="font-display text-xl leading-tight mt-1 text-[#1a1557]">
+                {imcAtual ? imcAtual.toFixed(1) : "—"}
+              </p>
+              <p
+                className="text-[9px] mt-0.5 font-semibold"
+                style={{ color: imcAtual ? classificaIMC(imcAtual).color : undefined }}
+              >
+                {imcAtual ? classificaIMC(imcAtual).label : "altura ausente"}
+              </p>
+            </div>
+          </div>
+
+          {/* Barra de progresso do ganho vs. meta */}
+          {ganhoRecomendado && ganhoTotal !== null && (
+            <div className="rounded-xl bg-[#faf8f3] border border-[#1a1557]/10 p-3">
+              <div className="flex items-baseline justify-between mb-2">
+                <p className="text-[11px] font-semibold text-[#1a1557]">
+                  Ganho recomendado · {ganhoRecomendado.categoria}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {ganhoRecomendado.min}–{ganhoRecomendado.max} kg
+                </p>
+              </div>
+              <div className="relative h-2 bg-[#1a1557]/10 rounded-full overflow-hidden">
+                <div
+                  className="absolute inset-y-0 bg-[#1a1557]/20"
+                  style={{
+                    left: `${(ganhoRecomendado.min / (ganhoRecomendado.max * 1.4)) * 100}%`,
+                    width: `${((ganhoRecomendado.max - ganhoRecomendado.min) / (ganhoRecomendado.max * 1.4)) * 100}%`,
+                  }}
+                />
+                <div
+                  className="absolute top-[-2px] h-3 w-1 rounded bg-[#f0c040] shadow"
+                  style={{
+                    left: `calc(${Math.min(100, (Math.max(0, ganhoTotal) / (ganhoRecomendado.max * 1.4)) * 100)}% - 2px)`,
+                  }}
+                />
+              </div>
+              <div className="flex justify-between text-[9px] text-muted-foreground mt-1">
+                <span>0 kg</span>
+                <span className="font-semibold text-[#1a1557]">
+                  você: {ganhoTotal >= 0 ? "+" : ""}{ganhoTotal.toFixed(1)} kg
+                </span>
+                <span>{(ganhoRecomendado.max * 1.4).toFixed(0)} kg</span>
+              </div>
+              {imcInicial && (
+                <p className="text-[10px] text-muted-foreground mt-2">
+                  IMC pré-gestacional: <strong className="text-[#1a1557]">{imcInicial.toFixed(1)}</strong>{" "}
+                  · altura {alturaM ? `${(alturaM * 100).toFixed(0)} cm` : "—"}
+                </p>
+              )}
+            </div>
+          )}
+
+          {!alturaM && (
+            <p className="text-[10px] text-center text-muted-foreground italic">
+              Cadastre sua altura nos dados clínicos para ver IMC e meta de ganho.
+            </p>
+          )}
+
         <div className="rounded-xl bg-white border border-[#1a1557]/10 p-4">
           <div className="flex items-baseline justify-between mb-3">
             <div>
