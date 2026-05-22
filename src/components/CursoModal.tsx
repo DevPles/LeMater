@@ -106,19 +106,20 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
           {data?.preco_label && (
             <div style={{ fontFamily: serif, fontSize: 26, color: c.sageDark, marginBottom: 16 }}>{data.preco_label}</div>
           )}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, justifyContent: "center", alignItems: "center", maxWidth: 360, margin: "0 auto" }}>
-            {linksCompra.length > 0 ? (
-              linksCompra.map((l, i) => (
+          {linksCompra.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, justifyContent: "center", alignItems: "center", maxWidth: 360, margin: "0 auto" }}>
+              {linksCompra.map((l, i) => (
                 <button key={i} onClick={() => comprarUrl(l.url)} style={btnPrimary(c.gold)}>
                   Comprar · {l.plataforma}
                 </button>
-              ))
-            ) : (
-              <button onClick={() => navigate({ to: "/atlas/$slug", params: { slug } })} style={btnPrimary(c.sageDark)}>
-                Ver detalhes do curso
-              </button>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
+          {linksCompra.length === 0 && (
+            <div style={{ fontSize: 12, color: c.muted, fontStyle: "italic" }}>
+              Link de compra ainda não configurado. Fale com a equipe Le Mater.
+            </div>
+          )}
         </div>
       )}
 
