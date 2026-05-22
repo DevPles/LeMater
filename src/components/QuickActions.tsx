@@ -4,10 +4,10 @@ import { motion } from "framer-motion";
 type IconKind = "play" | "stethoscope" | "card" | "bell" | null;
 
 const actions: { to: string; label: string; color: string; icon: IconKind }[] = [
-  { to: "/app/videos", label: "Cursos", color: "bg-coral-light text-primary", icon: "play" },
-  { to: "/app/videochamada", label: "Consulta", color: "bg-mint-light text-mint-dark", icon: "stethoscope" },
-  { to: "/app/cartao", label: "Cartão", color: "bg-blush text-blush-dark", icon: "card" },
-  { to: "/app/alertas", label: "Alertas", color: "bg-warm text-warm-dark", icon: "bell" },
+  { to: "/app/videos", label: "Cursos", color: "text-primary", icon: "play" },
+  { to: "/app/videochamada", label: "Consulta", color: "text-mint-dark", icon: "stethoscope" },
+  { to: "/app/cartao", label: "Cartão", color: "text-blush-dark", icon: "card" },
+  { to: "/app/alertas", label: "Alertas", color: "text-warm-dark", icon: "bell" },
 ];
 
 // Play minimalista moderno: traço se desenhando em loop contínuo
@@ -112,7 +112,7 @@ export function QuickActions() {
           transition={{ delay: 0.1 * i }}
         >
           <Link to={to} className="flex flex-col items-center gap-2">
-            <div className={`relative w-16 h-16 rounded-full ${color} flex flex-col items-center justify-center gap-0.5 shadow-sm overflow-hidden`}>
+            <div className={`relative w-16 h-16 rounded-full bg-transparent ${color} flex flex-col items-center justify-center gap-0.5 overflow-hidden`}>
               {icon === "play" && <PlayMark />}
               {icon === "stethoscope" && <StethoscopeMark />}
               {icon === "card" && <CardMark />}
