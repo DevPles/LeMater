@@ -173,24 +173,35 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
   })();
 
   return (
-    <Link to="/app/cronograma" className="block">
-      <LiquidCard
-        className="p-5 hover:scale-[1.01] transition-transform"
-        bgOpacity={0.85}
-      >
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="font-display font-semibold text-lg text-foreground">
-              Meu cronograma
-            </h3>
-            <p className="text-[11px] text-muted-foreground">
-              Toque para ver os gráficos completos
-            </p>
+    <>
+      <button type="button" onClick={() => setOpen(true)} className="block w-full text-left">
+        <LiquidCard
+          className="p-5 hover:scale-[1.01] transition-transform"
+          bgOpacity={0.85}
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="font-display font-semibold text-lg text-foreground">
+                Meu cronograma
+              </h3>
+              <p className="text-[11px] text-muted-foreground">
+                Toque para ver os gráficos completos
+              </p>
+            </div>
+            <span className="text-[#1a1557] font-bold text-xl leading-none">›</span>
           </div>
-          <span className="text-[#1a1557] font-bold text-xl leading-none">›</span>
-        </div>
-        {content}
-      </LiquidCard>
-    </Link>
+          {content}
+        </LiquidCard>
+      </button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display">Meu cronograma</DialogTitle>
+          </DialogHeader>
+          <PregnancyTimeline userId={userId} dum={dum} cadastroISO={cadastroISO} />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
