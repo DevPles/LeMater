@@ -187,10 +187,6 @@ function PerfilPage() {
     try {
       const telefoneDigits = telefone.replace(/\D/g, "");
       const cpfDigits = cpf.replace(/\D/g, "");
-      const toIntOrNull = (s: string) => {
-        const n = parseInt(s, 10);
-        return Number.isFinite(n) && n >= 0 ? n : null;
-      };
       const { error } = await supabase
         .from("profiles")
         .update({
