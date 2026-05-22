@@ -439,7 +439,7 @@ function PerfilPage() {
                   className="block w-6 h-6 rounded-full shadow-sm"
                   style={{
                     background:
-                      "linear-gradient(135deg, oklch(0.85 0.08 60), oklch(0.7 0.13 25))",
+                      "linear-gradient(135deg, oklch(0.9 0.07 90), oklch(0.5 0.1 150))",
                   }}
                   aria-hidden="true"
                 />
