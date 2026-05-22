@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { ResponsiveContainer, LineChart, Line, YAxis } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { LiquidCard } from "@/components/LiquidCard";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PregnancyTimeline } from "@/components/PregnancyTimeline";
 import {
   GESTATION_WEEKS,
   GESTATION_DAYS,
