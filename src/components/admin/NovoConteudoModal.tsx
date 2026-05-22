@@ -758,28 +758,52 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
         </Field>
       </div>
 
-      <Field label="Capa (imagem ou vídeo — fallback / poster do vídeo)">
+      <Field label={`Capa (imagem ou vídeo — fallback / poster do vídeo)${curso.capa_url && !curso.removerCapa ? " — atual" : ""}`}>
         <input
           {...noAuto}
           name="curso-capa"
           type="file"
           accept="image/*,video/mp4,video/webm,video/*"
-          onChange={(e) => updateCurso({ capa: e.target.files?.[0] ?? null })}
+          onChange={(e) => updateCurso({ capa: e.target.files?.[0] ?? null, removerCapa: false })}
           style={inp}
         />
+        {curso.capa_url && !curso.removerCapa && !curso.capa && (
+          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+            <img src={curso.capa_url} alt="capa atual" style={{ maxHeight: 100, border: `1px solid ${c.border}` }} />
+            <button
+              type="button"
+              onClick={() => updateCurso({ removerCapa: true, capa_url: "" })}
+              style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "6px 12px", cursor: "pointer", fontSize: 11, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}
+            >
+              Remover capa
+            </button>
+          </div>
+        )}
       </Field>
-      <Field label="Vídeo de capa (loop curto 3–6s, opcional — substitui a imagem na vitrine)">
+      <Field label={`Vídeo de capa em loop (opcional, mp4/webm)${curso.capa_video_url && !curso.removerCapaVideo ? " — atual" : ""}`}>
         <input
           {...noAuto}
           name="curso-capa-video"
           type="file"
           accept="video/mp4,video/webm"
-          onChange={(e) => updateCurso({ capaVideo: e.target.files?.[0] ?? null })}
+          onChange={(e) => updateCurso({ capaVideo: e.target.files?.[0] ?? null, removerCapaVideo: false })}
           style={inp}
         />
         {curso.capaVideo && (
           <div style={{ fontSize: 11, color: c.muted, marginTop: 6 }}>
             {curso.capaVideo.name} · {(curso.capaVideo.size / 1024 / 1024).toFixed(1)} MB
+          </div>
+        )}
+        {curso.capa_video_url && !curso.removerCapaVideo && !curso.capaVideo && (
+          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+            <video src={curso.capa_video_url} autoPlay muted loop playsInline style={{ maxHeight: 100, border: `1px solid ${c.border}` }} />
+            <button
+              type="button"
+              onClick={() => updateCurso({ removerCapaVideo: true, capa_video_url: "" })}
+              style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "6px 12px", cursor: "pointer", fontSize: 11, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}
+            >
+              Remover vídeo
+            </button>
           </div>
         )}
       </Field>
@@ -797,7 +821,7 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
       {curso.area === "pago" && (
         <>
           <div style={sectionTitle}>Venda</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <Field label="Preço (centavos)">
               <input
                 {...noAuto}
@@ -813,7 +837,7 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
                 style={inp}
               />
             </Field>
-            <Field label="Preço (texto)">
+            <Field label="Preço (texto exibido)">
               <input
                 {...noAuto}
                 name="curso-preco-label"
@@ -824,34 +848,69 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
                 placeholder="R$ 297"
               />
             </Field>
-            <Field label="Plataforma">
-              <select
-                {...noAuto}
-                name="curso-plataforma"
-                value={curso.plataforma_venda}
-                onInput={(e) => handleCursoInput({ plataforma_venda: e.currentTarget.value })}
-                onChange={(e) => handleCursoInput({ plataforma_venda: e.currentTarget.value })}
-                style={inp}
-              >
-                <option value="">—</option>
-                <option value="hotmart">Hotmart</option>
-                <option value="kiwify">Kiwify</option>
-                <option value="eduzz">Eduzz</option>
-                <option value="outro">Outro</option>
-              </select>
-            </Field>
           </div>
-          <Field label="Link de compra externo">
-            <input
-              {...noAuto}
-              name="curso-link-compra"
-              value={curso.link_compra_externo}
-              onInput={(e) => handleCursoInput({ link_compra_externo: e.currentTarget.value })}
-              onChange={(e) => handleCursoInput({ link_compra_externo: e.currentTarget.value })}
-              style={inp}
-              placeholder="https://…"
-            />
-          </Field>
+
+          <div style={{ marginTop: 6 }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 8 }}>
+              Opções de compra (país + plataforma) — aparecem como botões no card
+            </div>
+            {(curso.links_compra ?? []).map((l: any, i: number) => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "200px 1fr auto", gap: 8, marginBottom: 8 }}>
+                <select
+                  value={l.plataforma}
+                  onChange={(e) => {
+                    const arr = [...(curso.links_compra ?? [])];
+                    arr[i] = { ...arr[i], plataforma: e.target.value };
+                    updateCurso({ links_compra: arr });
+                  }}
+                  style={inp}
+                >
+                  <option value="">— país / plataforma —</option>
+                  <optgroup label="Brasil">
+                    <option value="Mercado Pago">Mercado Pago (Brasil)</option>
+                    <option value="InfinityPay">InfinityPay (Brasil)</option>
+                    <option value="Hotmart">Hotmart</option>
+                    <option value="Kiwify">Kiwify</option>
+                    <option value="Eduzz">Eduzz</option>
+                  </optgroup>
+                  <optgroup label="Internacional">
+                    <option value="Stripe">Stripe (internacional)</option>
+                    <option value="Teachable">Teachable</option>
+                    <option value="Paddle">Paddle</option>
+                  </optgroup>
+                  <option value="Outro">Outro</option>
+                </select>
+                <input
+                  value={l.url}
+                  onChange={(e) => {
+                    const arr = [...(curso.links_compra ?? [])];
+                    arr[i] = { ...arr[i], url: e.target.value };
+                    updateCurso({ links_compra: arr });
+                  }}
+                  placeholder="https://…"
+                  style={inp}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const arr = [...(curso.links_compra ?? [])];
+                    arr.splice(i, 1);
+                    updateCurso({ links_compra: arr });
+                  }}
+                  style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "0 12px", cursor: "pointer", fontSize: 12, fontFamily: sans }}
+                >
+                  Remover
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => updateCurso({ links_compra: [...(curso.links_compra ?? []), { plataforma: "", url: "" }] })}
+              style={{ background: c.warm, border: `1px solid ${c.border}`, color: c.sageDark, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontFamily: sans, letterSpacing: "0.08em", textTransform: "uppercase" }}
+            >
+              + Adicionar opção de compra
+            </button>
+          </div>
         </>
       )}
 
