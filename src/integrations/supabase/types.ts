@@ -304,6 +304,62 @@ export type Database = {
         }
         Relationships: []
       }
+      cupons: {
+        Row: {
+          ativo: boolean
+          codigo: string
+          created_at: string
+          curso_id: string | null
+          desconto_centavos: number | null
+          desconto_pct: number | null
+          descricao: string | null
+          id: string
+          max_usos: number | null
+          updated_at: string
+          usos: number
+          valido_ate: string | null
+          valido_de: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          codigo: string
+          created_at?: string
+          curso_id?: string | null
+          desconto_centavos?: number | null
+          desconto_pct?: number | null
+          descricao?: string | null
+          id?: string
+          max_usos?: number | null
+          updated_at?: string
+          usos?: number
+          valido_ate?: string | null
+          valido_de?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          codigo?: string
+          created_at?: string
+          curso_id?: string | null
+          desconto_centavos?: number | null
+          desconto_pct?: number | null
+          descricao?: string | null
+          id?: string
+          max_usos?: number | null
+          updated_at?: string
+          usos?: number
+          valido_ate?: string | null
+          valido_de?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cupons_curso_id_fkey"
+            columns: ["curso_id"]
+            isOneToOne: false
+            referencedRelation: "cursos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       curso_aulas: {
         Row: {
           conteudo_html: string | null
@@ -495,6 +551,7 @@ export type Database = {
           plataforma_venda: string | null
           preco_centavos: number
           preco_label: string | null
+          produto_externo_id: string | null
           publicado: boolean
           slug: string
           titulo: string
@@ -521,6 +578,7 @@ export type Database = {
           plataforma_venda?: string | null
           preco_centavos?: number
           preco_label?: string | null
+          produto_externo_id?: string | null
           publicado?: boolean
           slug: string
           titulo: string
@@ -547,6 +605,7 @@ export type Database = {
           plataforma_venda?: string | null
           preco_centavos?: number
           preco_label?: string | null
+          produto_externo_id?: string | null
           publicado?: boolean
           slug?: string
           titulo?: string
@@ -808,39 +867,59 @@ export type Database = {
       }
       hotmart_compras: {
         Row: {
+          cupom_codigo: string | null
+          curso_id: string | null
           email_comprador: string
           evento: string
           id: string
           nome_comprador: string | null
+          plataforma: string | null
           processado_em: string
           produto: string | null
           raw_payload: Json
           status: string
           transaction_id: string | null
+          valor_centavos: number | null
         }
         Insert: {
+          cupom_codigo?: string | null
+          curso_id?: string | null
           email_comprador: string
           evento: string
           id?: string
           nome_comprador?: string | null
+          plataforma?: string | null
           processado_em?: string
           produto?: string | null
           raw_payload: Json
           status: string
           transaction_id?: string | null
+          valor_centavos?: number | null
         }
         Update: {
+          cupom_codigo?: string | null
+          curso_id?: string | null
           email_comprador?: string
           evento?: string
           id?: string
           nome_comprador?: string | null
+          plataforma?: string | null
           processado_em?: string
           produto?: string | null
           raw_payload?: Json
           status?: string
           transaction_id?: string | null
+          valor_centavos?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "hotmart_compras_curso_id_fkey"
+            columns: ["curso_id"]
+            isOneToOne: false
+            referencedRelation: "cursos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       image_exam_results: {
         Row: {
@@ -1809,6 +1888,10 @@ export type Database = {
           _respostas: Json
           _token: string
         }
+        Returns: Json
+      }
+      validate_cupom: {
+        Args: { _codigo: string; _curso_id?: string }
         Returns: Json
       }
     }

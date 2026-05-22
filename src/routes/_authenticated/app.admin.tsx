@@ -16,6 +16,7 @@ import { AcessosUsuariosTab } from "@/components/admin/AcessosUsuariosTab";
 import { DadosClinicosTab } from "@/components/admin/DadosClinicosTab";
 import { ParametrosTab } from "@/components/admin/ParametrosTab";
 import { RelatoriosEpidemiologicosTab } from "@/components/admin/RelatoriosEpidemiologicosTab";
+import { VendasTab } from "@/components/admin/VendasTab";
 import lemateLogo from "@/assets/logo_monograma.png";
 
 export const Route = createFileRoute("/_authenticated/app/admin")({
@@ -32,10 +33,13 @@ type Tab =
   | "atlas"
   | "consultas" | "gravacoes" | "profissionais"
   | "dados" | "parametros" | "relatorios"
-  | "leads" | "alunos" | "usuarios" | "acessos" | "compras";
+  | "leads" | "alunos" | "usuarios" | "acessos" | "compras" | "vendas";
 
 const TAB_GROUPS: { label: string; tabs: { id: Tab; label: string }[] }[] = [
   { label: "Painel", tabs: [{ id: "dash", label: "Painel" }] },
+  { label: "Vendas", tabs: [
+    { id: "vendas", label: "Vendas & cupons" },
+  ]},
   { label: "Conteúdos", tabs: [
     { id: "atlas", label: "Atlas" },
   ]},
@@ -170,6 +174,7 @@ function AdminPage() {
           {tab === "usuarios" && <UsuariosTab />}
           {tab === "acessos" && <AcessosUsuariosTab />}
           {tab === "compras" && <ComprasTab />}
+          {tab === "vendas" && <VendasTab />}
         </main>
       </div>
 
