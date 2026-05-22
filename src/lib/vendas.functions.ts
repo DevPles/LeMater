@@ -107,7 +107,7 @@ export const validateCupomPublic = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { data: result, error } = await supabaseAdmin.rpc("validate_cupom", {
       _codigo: data.codigo,
-      _curso_id: data.curso_id ?? null,
+      ...(data.curso_id ? { _curso_id: data.curso_id } : {}),
     });
     if (error) throw new Error(error.message);
     return result as { valid: boolean; message?: string; codigo?: string; desconto_pct?: number; desconto_centavos?: number; preco_centavos?: number; desconto_aplicado_centavos?: number; total_centavos?: number };
