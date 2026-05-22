@@ -8,6 +8,7 @@ import {
   adminListMatriculas, adminLiberarMatricula, adminRevogarMatricula,
 } from "@/lib/cursos.functions";
 import { buscarUsuarios } from "@/lib/admin.functions";
+import NovoConteudoModal from "./NovoConteudoModal";
 
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48" };
 const serif = "'Cormorant Garamond', serif";
@@ -152,154 +153,12 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
       </div>
 
       {edit && (
-        <div onClick={() => setEdit(null)} style={modalBg}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "white", maxWidth: 820, width: "100%", padding: 32, border: `1px solid ${c.border}`, maxHeight: "92vh", overflow: "auto" }}>
-            <h2 style={h2}>{edit.id ? "Editar curso" : "Novo curso"}</h2>
-            <div style={{ display: "grid", gap: 14 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
-                <Field label="Título"><input value={edit.titulo ?? ""} onChange={(e) => setEdit({ ...edit, titulo: e.target.value })} style={inp} /></Field>
-                <Field label="Slug (URL)"><input value={edit.slug ?? ""} onChange={(e) => setEdit({ ...edit, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} style={inp} placeholder="meu-curso" /></Field>
-              </div>
-              <Field label="Descrição curta (aparece na vitrine)"><textarea value={edit.descricao_curta ?? ""} onChange={(e) => setEdit({ ...edit, descricao_curta: e.target.value })} style={{ ...inp, minHeight: 60 }} /></Field>
-              <Field label="Descrição longa (página de vendas)"><textarea value={edit.descricao_longa ?? ""} onChange={(e) => setEdit({ ...edit, descricao_longa: e.target.value })} style={{ ...inp, minHeight: 140 }} /></Field>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-                <Field label="Categoria"><input value={edit.categoria ?? ""} onChange={(e) => setEdit({ ...edit, categoria: e.target.value })} style={inp} /></Field>
-                <Field label="Nível"><select value={edit.nivel ?? "iniciante"} onChange={(e) => setEdit({ ...edit, nivel: e.target.value })} style={inp}><option value="iniciante">Iniciante</option><option value="intermediario">Intermediário</option><option value="avancado">Avançado</option></select></Field>
-                <Field label="Carga horária (min)"><input type="number" value={edit.carga_horaria_min ?? 0} onChange={(e) => setEdit({ ...edit, carga_horaria_min: parseInt(e.target.value) || 0 })} style={inp} /></Field>
-              </div>
-
-              <Field label={`Capa ${edit.capa_url ? "(atual)" : ""}`}>
-                <input id="cursoCapa" type="file" accept="image/*" style={inp} />
-                {edit.capa_url && <img src={edit.capa_url} alt="capa" style={{ marginTop: 8, maxHeight: 120, border: `1px solid ${c.border}` }} />}
-              </Field>
-              <Field label={`Vídeo de capa em loop (opcional, mp4/webm, máx 25 MB) ${(edit as any).capa_video_url ? "(atual)" : ""}`}>
-                <input id="cursoCapaVideo" type="file" accept="video/mp4,video/webm" style={inp} />
-                {(edit as any).capa_video_url && (
-                  <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
-                    <video src={(edit as any).capa_video_url} autoPlay muted loop playsInline style={{ maxHeight: 120, border: `1px solid ${c.border}` }} />
-                    <button type="button" onClick={() => setEdit({ ...edit, capa_video_url: "" } as any)} style={{ background: "transparent", border: "none", color: c.danger, cursor: "pointer", fontSize: 12, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                      Remover vídeo
-                    </button>
-                  </div>
-                )}
-              </Field>
-              <Field label="Trailer (URL YouTube/Vimeo, opcional)"><input value={edit.trailer_url ?? ""} onChange={(e) => setEdit({ ...edit, trailer_url: e.target.value })} style={inp} /></Field>
-
-
-              <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 14 }}>
-                <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>Venda</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-                  <Field label="Preço (centavos)"><input type="number" value={edit.preco_centavos ?? 0} onChange={(e) => setEdit({ ...edit, preco_centavos: parseInt(e.target.value) || 0 })} style={inp} /></Field>
-                  <Field label="Preço (texto)"><input value={edit.preco_label ?? ""} onChange={(e) => setEdit({ ...edit, preco_label: e.target.value })} style={inp} placeholder="R$ 297" /></Field>
-                  <Field label="Plataforma"><select value={edit.plataforma_venda ?? ""} onChange={(e) => setEdit({ ...edit, plataforma_venda: e.target.value })} style={inp}>
-                    <option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option>
-                  </select></Field>
-                </div>
-                <Field label="Link de compra externo (único, legado — opcional)"><input value={edit.link_compra_externo ?? ""} onChange={(e) => setEdit({ ...edit, link_compra_externo: e.target.value })} style={inp} placeholder="https://..." /></Field>
-
-                <div style={{ marginTop: 14 }}>
-                  <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 8 }}>
-                    Links de compra (vários — aparecem como botões no card e na página do curso)
-                  </div>
-                  {(((edit as any).links_compra ?? []) as { plataforma: string; url: string }[]).map((l, i) => (
-                    <div key={i} style={{ display: "grid", gridTemplateColumns: "180px 1fr auto", gap: 8, marginBottom: 8 }}>
-                      <select
-                        value={l.plataforma}
-                        onChange={(e) => {
-                          const arr = [...((edit as any).links_compra ?? [])];
-                          arr[i] = { ...arr[i], plataforma: e.target.value };
-                          setEdit({ ...edit, links_compra: arr } as any);
-                        }}
-                        style={inp}
-                      >
-                        <option value="">— plataforma —</option>
-                        <option value="Stripe">Stripe (internacional)</option>
-                        <option value="InfinityPay">InfinityPay (Brasil)</option>
-                        <option value="Hotmart">Hotmart</option>
-                        <option value="Kiwify">Kiwify</option>
-                        <option value="Teachable">Teachable</option>
-                        <option value="Eduzz">Eduzz</option>
-                        <option value="Outro">Outro</option>
-                      </select>
-                      <input
-                        value={l.url}
-                        onChange={(e) => {
-                          const arr = [...((edit as any).links_compra ?? [])];
-                          arr[i] = { ...arr[i], url: e.target.value };
-                          setEdit({ ...edit, links_compra: arr } as any);
-                        }}
-                        placeholder="https://..."
-                        style={inp}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const arr = [...((edit as any).links_compra ?? [])];
-                          arr.splice(i, 1);
-                          setEdit({ ...edit, links_compra: arr } as any);
-                        }}
-                        style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "0 12px", cursor: "pointer", fontSize: 12, fontFamily: sans }}
-                      >
-                        Remover
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => setEdit({ ...edit, links_compra: [...(((edit as any).links_compra) ?? []), { plataforma: "", url: "" }] } as any)}
-                    style={{ background: c.warm, border: `1px solid ${c.border}`, color: c.sageDark, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontFamily: sans, letterSpacing: "0.08em", textTransform: "uppercase" }}
-                  >
-                    + Adicionar link de compra
-                  </button>
-                </div>
-              </div>
-
-
-              <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 14 }}>
-                <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>Instrutor</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                  <Field label="Nome"><input value={edit.instrutor_nome ?? ""} onChange={(e) => setEdit({ ...edit, instrutor_nome: e.target.value })} style={inp} /></Field>
-                  <Field label="Foto (URL)"><input value={edit.instrutor_foto ?? ""} onChange={(e) => setEdit({ ...edit, instrutor_foto: e.target.value })} style={inp} /></Field>
-                </div>
-                <Field label="Bio"><textarea value={edit.instrutor_bio ?? ""} onChange={(e) => setEdit({ ...edit, instrutor_bio: e.target.value })} style={{ ...inp, minHeight: 60 }} /></Field>
-              </div>
-
-              <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 14 }}>
-                <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>
-                  Materiais grátis para download (PDFs visíveis na página do curso)
-                </div>
-                <Field label="Adicionar novos PDFs">
-                  <input id="cursoMateriais" type="file" accept="application/pdf,.pdf" multiple style={inp} />
-                </Field>
-                {Array.isArray((edit as any).materiais_gratis) && (edit as any).materiais_gratis.length > 0 && (
-                  <ul style={{ listStyle: "none", padding: 0, margin: "8px 0 0", display: "grid", gap: 6 }}>
-                    {(edit as any).materiais_gratis.map((m: { nome: string; path: string }, i: number) => (
-                      <li key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", background: c.warm, border: `1px solid ${c.border}`, fontSize: 13 }}>
-                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.nome}</span>
-                        <button
-                          onClick={() => setEdit({ ...edit, materiais_gratis: (edit as any).materiais_gratis.filter((_: any, j: number) => j !== i) } as any)}
-                          style={{ background: "transparent", border: "none", color: "#B23A48", cursor: "pointer", fontSize: 12, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}
-                        >
-                          Remover
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <Field label="Ordem"><input type="number" value={edit.ordem ?? 0} onChange={(e) => setEdit({ ...edit, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
-                <Field label="Publicado"><label style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 0" }}><input type="checkbox" checked={!!edit.publicado} onChange={(e) => setEdit({ ...edit, publicado: e.target.checked })} /> Visível para o público</label></Field>
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 24 }}>
-              <button onClick={() => setEdit(null)} style={btn(c.muted)}>Cancelar</button>
-              <button onClick={salvar} disabled={busy} style={{ ...btn(c.sageDark), opacity: busy ? 0.6 : 1 }}>{busy ? "Salvando…" : "Salvar"}</button>
-            </div>
-          </div>
-        </div>
+        <NovoConteudoModal
+          tipoInicial="curso"
+          cursoEdit={edit.id ? edit : undefined}
+          onClose={() => setEdit(null)}
+          onSaved={() => { setEdit(null); reload(); }}
+        />
       )}
 
       {openEditor && (

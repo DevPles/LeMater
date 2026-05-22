@@ -125,14 +125,17 @@ const aulaVazia = (): AulaLocal => ({
 
 export default function NovoConteudoModal({
   tipoInicial = "curso",
+  cursoEdit,
   onClose,
   onSaved,
 }: {
   tipoInicial?: Tipo;
+  cursoEdit?: any;
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [tipo, setTipo] = useState<Tipo>(tipoInicial);
+  const editando = !!cursoEdit?.id;
+  const [tipo, setTipo] = useState<Tipo>(editando ? "curso" : tipoInicial);
   const [busy, setBusy] = useState(false);
   const [busyMsg, setBusyMsg] = useState("");
 
@@ -141,28 +144,38 @@ export default function NovoConteudoModal({
   const upModulo = useServerFn(adminUpsertModulo);
   const upAula = useServerFn(adminUpsertAula);
 
-  const [curso, setCurso] = useState({
-    titulo: "",
-    slug: "",
-    descricao_curta: "",
-    descricao_longa: "",
-    capa: null as File | null,
-    capaVideo: null as File | null,
-    trailer_url: "",
-    categoria: "geral",
-    nivel: "iniciante",
-    carga_horaria_min: 0,
-    area: "gratis" as "gratis" | "pago",
-    preco_centavos: 0,
-    preco_label: "",
-    link_compra_externo: "",
-    plataforma_venda: "",
-    instrutor_nome: "",
-    instrutor_bio: "",
-    instrutor_foto: "",
-    pdfsGratis: [] as File[],
-    publicado: false,
-    ordem: 0,
+  const [curso, setCurso] = useState(() => {
+    const e = cursoEdit ?? {};
+    const ehPago = !!(e.preco_centavos > 0 || e.link_compra_externo || (Array.isArray(e.links_compra) && e.links_compra.length > 0));
+    return {
+      id: e.id ?? null as string | null,
+      titulo: e.titulo ?? "",
+      slug: e.slug ?? "",
+      descricao_curta: e.descricao_curta ?? "",
+      descricao_longa: e.descricao_longa ?? "",
+      capa: null as File | null,
+      capaVideo: null as File | null,
+      capa_url: e.capa_url ?? "",
+      capa_video_url: e.capa_video_url ?? "",
+      removerCapa: false,
+      removerCapaVideo: false,
+      trailer_url: e.trailer_url ?? "",
+      categoria: e.categoria ?? "geral",
+      nivel: e.nivel ?? "iniciante",
+      carga_horaria_min: e.carga_horaria_min ?? 0,
+      area: (editando ? (ehPago ? "pago" : "gratis") : "gratis") as "gratis" | "pago",
+      preco_centavos: e.preco_centavos ?? 0,
+      preco_label: e.preco_label ?? "",
+      link_compra_externo: e.link_compra_externo ?? "",
+      plataforma_venda: e.plataforma_venda ?? "",
+      links_compra: Array.isArray(e.links_compra) ? e.links_compra : [] as { plataforma: string; url: string }[],
+      instrutor_nome: e.instrutor_nome ?? "",
+      instrutor_bio: e.instrutor_bio ?? "",
+      instrutor_foto: e.instrutor_foto ?? "",
+      pdfsGratis: [] as File[],
+      publicado: e.publicado ?? false,
+      ordem: e.ordem ?? 0,
+    };
   });
   const [aulas, setAulas] = useState<AulaLocal[]>([aulaVazia()]);
 
@@ -209,8 +222,6 @@ export default function NovoConteudoModal({
         area: (value("curso-acesso") || prev.area) as "gratis" | "pago",
         preco_centavos: parseInt(value("curso-preco-centavos")) || prev.preco_centavos,
         preco_label: value("curso-preco-label"),
-        link_compra_externo: value("curso-link-compra"),
-        plataforma_venda: value("curso-plataforma"),
         trailer_url: value("curso-trailer"),
         instrutor_nome: value("curso-instrutor-nome"),
         instrutor_foto: value("curso-instrutor-foto"),
@@ -269,8 +280,8 @@ export default function NovoConteudoModal({
 
     // 1. Upload capa / vídeo selecionado no campo de capa
     setBusyMsg("Enviando capa…");
-    let capa_url: string | null = null;
-    let capa_video_url: string | null = null;
+    let capa_url: string | null = curso.removerCapa ? null : (curso.capa_url || null);
+    let capa_video_url: string | null = curso.removerCapaVideo ? null : (curso.capa_video_url || null);
     if (curso.capa) {
       const path = `cursos/${Date.now()}-${curso.capa.name.replace(/[^\w.-]/g, "_")}`;
       const { data: up, error } = await supabase.storage
@@ -309,34 +320,37 @@ export default function NovoConteudoModal({
     }
 
     // 3. Upsert curso
-    setBusyMsg("Criando curso…");
+    setBusyMsg(editando ? "Salvando curso…" : "Criando curso…");
     const ehGratis = curso.area === "gratis";
-    const cursoRow = await upCurso({
-      data: {
-        titulo: curso.titulo,
-        slug: curso.slug,
-        descricao_curta: curso.descricao_curta || null,
-        descricao_longa: curso.descricao_longa || null,
-        capa_url,
-        capa_video_url,
-        trailer_url: curso.trailer_url || null,
-        categoria: curso.categoria,
-        nivel: curso.nivel,
-        carga_horaria_min: Number(curso.carga_horaria_min) || 0,
-        preco_centavos: ehGratis ? 0 : Number(curso.preco_centavos) || 0,
-        preco_label: ehGratis ? "Grátis" : curso.preco_label || null,
-        link_compra_externo: ehGratis ? null : curso.link_compra_externo || null,
-        plataforma_venda: ehGratis ? null : curso.plataforma_venda || null,
-        publicado: curso.publicado,
-        ordem: Number(curso.ordem) || 0,
-        instrutor_nome: curso.instrutor_nome || null,
-        instrutor_bio: curso.instrutor_bio || null,
-        instrutor_foto: curso.instrutor_foto || null,
-        materiais_gratis,
-      },
-    });
+    const linksLimpos = (curso.links_compra ?? []).filter((l: any) => l?.plataforma?.trim() && l?.url?.trim());
+    const payload: any = {
+      titulo: curso.titulo,
+      slug: curso.slug,
+      descricao_curta: curso.descricao_curta || null,
+      descricao_longa: curso.descricao_longa || null,
+      capa_url,
+      capa_video_url,
+      trailer_url: curso.trailer_url || null,
+      categoria: curso.categoria,
+      nivel: curso.nivel,
+      carga_horaria_min: Number(curso.carga_horaria_min) || 0,
+      preco_centavos: ehGratis ? 0 : Number(curso.preco_centavos) || 0,
+      preco_label: ehGratis ? "Grátis" : curso.preco_label || null,
+      link_compra_externo: ehGratis ? null : curso.link_compra_externo || null,
+      plataforma_venda: ehGratis ? null : curso.plataforma_venda || null,
+      links_compra: ehGratis ? [] : linksLimpos,
+      publicado: curso.publicado,
+      ordem: Number(curso.ordem) || 0,
+      instrutor_nome: curso.instrutor_nome || null,
+      instrutor_bio: curso.instrutor_bio || null,
+      instrutor_foto: curso.instrutor_foto || null,
+      ...(materiais_gratis.length > 0 ? { materiais_gratis } : {}),
+    };
+    if (curso.id) payload.id = curso.id;
+    const cursoRow = await upCurso({ data: payload });
 
-    // 4. Criar módulo padrão "Conteúdo" se houver aulas
+    // 4. Aulas: só na criação inicial
+    if (editando) return;
     const aulasValidas = aulas.filter((a) => a.titulo.trim());
     if (aulasValidas.length === 0) return;
     setBusyMsg("Criando módulo…");
@@ -482,38 +496,41 @@ export default function NovoConteudoModal({
               marginBottom: 6,
             }}
           >
-            Novo conteúdo
+            {editando ? "Editar conteúdo" : "Novo conteúdo"}
           </div>
           <h2 style={{ fontFamily: serif, fontSize: 30, fontWeight: 400, margin: "0 0 18px" }}>
-            Criar novo item do Atlas
+            {editando ? "Editar curso" : "Criar novo item do Atlas"}
           </h2>
 
-          <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
-            {(["curso", "material", "servico"] as Tipo[]).map((t) => {
-              const ativo = tipo === t;
-              return (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTipo(t)}
-                  style={{
-                    background: ativo ? c.sageDark : "white",
-                    color: ativo ? "white" : c.ink,
-                    border: `1px solid ${ativo ? c.sageDark : c.border}`,
-                    padding: "10px 22px",
-                    fontSize: 12,
-                    fontFamily: sans,
-                    fontWeight: 500,
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    cursor: "pointer",
-                  }}
-                >
-                  {t === "curso" ? "Curso" : t === "material" ? "Material" : "Serviço"}
-                </button>
-              );
-            })}
-          </div>
+          {!editando && (
+            <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
+              {(["curso", "material", "servico"] as Tipo[]).map((t) => {
+                const ativo = tipo === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTipo(t)}
+                    style={{
+                      background: ativo ? c.sageDark : "white",
+                      color: ativo ? "white" : c.ink,
+                      border: `1px solid ${ativo ? c.sageDark : c.border}`,
+                      padding: "10px 22px",
+                      fontSize: 12,
+                      fontFamily: sans,
+                      fontWeight: 500,
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {t === "curso" ? "Curso" : t === "material" ? "Material" : "Serviço"}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {editando && <div style={{ height: 18 }} />}
         </div>
 
         <div
@@ -527,7 +544,7 @@ export default function NovoConteudoModal({
         >
           <div style={{ padding: "20px 32px 24px", overflow: "auto" }}>
             {tipo === "curso" && (
-              <FormCurso curso={curso} setCurso={setCurso} aulas={aulas} setAulas={setAulas} />
+              <FormCurso curso={curso} setCurso={setCurso} aulas={aulas} setAulas={setAulas} editando={editando} />
             )}
             {tipo === "material" && (
               <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria />
@@ -613,7 +630,7 @@ export default function NovoConteudoModal({
 }
 
 // ================= FORM CURSO =================
-function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
+function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
   const updateCurso = (patch: Record<string, unknown>) =>
     setCurso((prev: any) => ({ ...prev, ...patch }));
   const handleCursoInput = (patch: Record<string, unknown>) => {
@@ -739,28 +756,52 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
         </Field>
       </div>
 
-      <Field label="Capa (imagem ou vídeo — fallback / poster do vídeo)">
+      <Field label={`Capa (imagem ou vídeo — fallback / poster do vídeo)${curso.capa_url && !curso.removerCapa ? " — atual" : ""}`}>
         <input
           {...noAuto}
           name="curso-capa"
           type="file"
           accept="image/*,video/mp4,video/webm,video/*"
-          onChange={(e) => updateCurso({ capa: e.target.files?.[0] ?? null })}
+          onChange={(e) => updateCurso({ capa: e.target.files?.[0] ?? null, removerCapa: false })}
           style={inp}
         />
+        {curso.capa_url && !curso.removerCapa && !curso.capa && (
+          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+            <img src={curso.capa_url} alt="capa atual" style={{ maxHeight: 100, border: `1px solid ${c.border}` }} />
+            <button
+              type="button"
+              onClick={() => updateCurso({ removerCapa: true, capa_url: "" })}
+              style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "6px 12px", cursor: "pointer", fontSize: 11, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}
+            >
+              Remover capa
+            </button>
+          </div>
+        )}
       </Field>
-      <Field label="Vídeo de capa (loop curto 3–6s, opcional — substitui a imagem na vitrine)">
+      <Field label={`Vídeo de capa em loop (opcional, mp4/webm)${curso.capa_video_url && !curso.removerCapaVideo ? " — atual" : ""}`}>
         <input
           {...noAuto}
           name="curso-capa-video"
           type="file"
           accept="video/mp4,video/webm"
-          onChange={(e) => updateCurso({ capaVideo: e.target.files?.[0] ?? null })}
+          onChange={(e) => updateCurso({ capaVideo: e.target.files?.[0] ?? null, removerCapaVideo: false })}
           style={inp}
         />
         {curso.capaVideo && (
           <div style={{ fontSize: 11, color: c.muted, marginTop: 6 }}>
             {curso.capaVideo.name} · {(curso.capaVideo.size / 1024 / 1024).toFixed(1)} MB
+          </div>
+        )}
+        {curso.capa_video_url && !curso.removerCapaVideo && !curso.capaVideo && (
+          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
+            <video src={curso.capa_video_url} autoPlay muted loop playsInline style={{ maxHeight: 100, border: `1px solid ${c.border}` }} />
+            <button
+              type="button"
+              onClick={() => updateCurso({ removerCapaVideo: true, capa_video_url: "" })}
+              style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "6px 12px", cursor: "pointer", fontSize: 11, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}
+            >
+              Remover vídeo
+            </button>
           </div>
         )}
       </Field>
@@ -778,7 +819,7 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
       {curso.area === "pago" && (
         <>
           <div style={sectionTitle}>Venda</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <Field label="Preço (centavos)">
               <input
                 {...noAuto}
@@ -794,7 +835,7 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
                 style={inp}
               />
             </Field>
-            <Field label="Preço (texto)">
+            <Field label="Preço (texto exibido)">
               <input
                 {...noAuto}
                 name="curso-preco-label"
@@ -805,34 +846,69 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
                 placeholder="R$ 297"
               />
             </Field>
-            <Field label="Plataforma">
-              <select
-                {...noAuto}
-                name="curso-plataforma"
-                value={curso.plataforma_venda}
-                onInput={(e) => handleCursoInput({ plataforma_venda: e.currentTarget.value })}
-                onChange={(e) => handleCursoInput({ plataforma_venda: e.currentTarget.value })}
-                style={inp}
-              >
-                <option value="">—</option>
-                <option value="hotmart">Hotmart</option>
-                <option value="kiwify">Kiwify</option>
-                <option value="eduzz">Eduzz</option>
-                <option value="outro">Outro</option>
-              </select>
-            </Field>
           </div>
-          <Field label="Link de compra externo">
-            <input
-              {...noAuto}
-              name="curso-link-compra"
-              value={curso.link_compra_externo}
-              onInput={(e) => handleCursoInput({ link_compra_externo: e.currentTarget.value })}
-              onChange={(e) => handleCursoInput({ link_compra_externo: e.currentTarget.value })}
-              style={inp}
-              placeholder="https://…"
-            />
-          </Field>
+
+          <div style={{ marginTop: 6 }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 8 }}>
+              Opções de compra (país + plataforma) — aparecem como botões no card
+            </div>
+            {(curso.links_compra ?? []).map((l: any, i: number) => (
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "200px 1fr auto", gap: 8, marginBottom: 8 }}>
+                <select
+                  value={l.plataforma}
+                  onChange={(e) => {
+                    const arr = [...(curso.links_compra ?? [])];
+                    arr[i] = { ...arr[i], plataforma: e.target.value };
+                    updateCurso({ links_compra: arr });
+                  }}
+                  style={inp}
+                >
+                  <option value="">— país / plataforma —</option>
+                  <optgroup label="Brasil">
+                    <option value="Mercado Pago">Mercado Pago (Brasil)</option>
+                    <option value="InfinityPay">InfinityPay (Brasil)</option>
+                    <option value="Hotmart">Hotmart</option>
+                    <option value="Kiwify">Kiwify</option>
+                    <option value="Eduzz">Eduzz</option>
+                  </optgroup>
+                  <optgroup label="Internacional">
+                    <option value="Stripe">Stripe (internacional)</option>
+                    <option value="Teachable">Teachable</option>
+                    <option value="Paddle">Paddle</option>
+                  </optgroup>
+                  <option value="Outro">Outro</option>
+                </select>
+                <input
+                  value={l.url}
+                  onChange={(e) => {
+                    const arr = [...(curso.links_compra ?? [])];
+                    arr[i] = { ...arr[i], url: e.target.value };
+                    updateCurso({ links_compra: arr });
+                  }}
+                  placeholder="https://…"
+                  style={inp}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const arr = [...(curso.links_compra ?? [])];
+                    arr.splice(i, 1);
+                    updateCurso({ links_compra: arr });
+                  }}
+                  style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "0 12px", cursor: "pointer", fontSize: 12, fontFamily: sans }}
+                >
+                  Remover
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => updateCurso({ links_compra: [...(curso.links_compra ?? []), { plataforma: "", url: "" }] })}
+              style={{ background: c.warm, border: `1px solid ${c.border}`, color: c.sageDark, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontFamily: sans, letterSpacing: "0.08em", textTransform: "uppercase" }}
+            >
+              + Adicionar opção de compra
+            </button>
+          </div>
         </>
       )}
 
@@ -893,7 +969,8 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
         </ul>
       )}
 
-      <div style={sectionTitle}>Aulas — adicione quantas precisar</div>
+      {!editando && <div style={sectionTitle}>Aulas — adicione quantas precisar</div>}
+      {!editando && (
       <div style={{ display: "grid", gap: 14 }}>
         {aulas.map((a: AulaLocal, i: number) => (
           <div
@@ -1044,6 +1121,7 @@ function FormCurso({ curso, setCurso, aulas, setAulas }: any) {
           + Adicionar aula
         </button>
       </div>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 8 }}>
         <Field label="Ordem">
