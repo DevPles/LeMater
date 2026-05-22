@@ -125,14 +125,17 @@ const aulaVazia = (): AulaLocal => ({
 
 export default function NovoConteudoModal({
   tipoInicial = "curso",
+  cursoEdit,
   onClose,
   onSaved,
 }: {
   tipoInicial?: Tipo;
+  cursoEdit?: any;
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const [tipo, setTipo] = useState<Tipo>(tipoInicial);
+  const editando = !!cursoEdit?.id;
+  const [tipo, setTipo] = useState<Tipo>(editando ? "curso" : tipoInicial);
   const [busy, setBusy] = useState(false);
   const [busyMsg, setBusyMsg] = useState("");
 
@@ -141,28 +144,38 @@ export default function NovoConteudoModal({
   const upModulo = useServerFn(adminUpsertModulo);
   const upAula = useServerFn(adminUpsertAula);
 
-  const [curso, setCurso] = useState({
-    titulo: "",
-    slug: "",
-    descricao_curta: "",
-    descricao_longa: "",
-    capa: null as File | null,
-    capaVideo: null as File | null,
-    trailer_url: "",
-    categoria: "geral",
-    nivel: "iniciante",
-    carga_horaria_min: 0,
-    area: "gratis" as "gratis" | "pago",
-    preco_centavos: 0,
-    preco_label: "",
-    link_compra_externo: "",
-    plataforma_venda: "",
-    instrutor_nome: "",
-    instrutor_bio: "",
-    instrutor_foto: "",
-    pdfsGratis: [] as File[],
-    publicado: false,
-    ordem: 0,
+  const [curso, setCurso] = useState(() => {
+    const e = cursoEdit ?? {};
+    const ehPago = !!(e.preco_centavos > 0 || e.link_compra_externo || (Array.isArray(e.links_compra) && e.links_compra.length > 0));
+    return {
+      id: e.id ?? null as string | null,
+      titulo: e.titulo ?? "",
+      slug: e.slug ?? "",
+      descricao_curta: e.descricao_curta ?? "",
+      descricao_longa: e.descricao_longa ?? "",
+      capa: null as File | null,
+      capaVideo: null as File | null,
+      capa_url: e.capa_url ?? "",
+      capa_video_url: e.capa_video_url ?? "",
+      removerCapa: false,
+      removerCapaVideo: false,
+      trailer_url: e.trailer_url ?? "",
+      categoria: e.categoria ?? "geral",
+      nivel: e.nivel ?? "iniciante",
+      carga_horaria_min: e.carga_horaria_min ?? 0,
+      area: (editando ? (ehPago ? "pago" : "gratis") : "gratis") as "gratis" | "pago",
+      preco_centavos: e.preco_centavos ?? 0,
+      preco_label: e.preco_label ?? "",
+      link_compra_externo: e.link_compra_externo ?? "",
+      plataforma_venda: e.plataforma_venda ?? "",
+      links_compra: Array.isArray(e.links_compra) ? e.links_compra : [] as { plataforma: string; url: string }[],
+      instrutor_nome: e.instrutor_nome ?? "",
+      instrutor_bio: e.instrutor_bio ?? "",
+      instrutor_foto: e.instrutor_foto ?? "",
+      pdfsGratis: [] as File[],
+      publicado: e.publicado ?? false,
+      ordem: e.ordem ?? 0,
+    };
   });
   const [aulas, setAulas] = useState<AulaLocal[]>([aulaVazia()]);
 
