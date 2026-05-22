@@ -130,31 +130,6 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
           </div>
         </div>
 
-        {/* Stats com sparkline embutido */}
-        <div className="grid grid-cols-2 gap-2">
-          <StatTile
-            label="Peso"
-            value={pesoUltimo != null ? pesoUltimo.toFixed(1) : "—"}
-            unit="kg"
-            delta={
-              pesoDelta != null
-                ? `${pesoDelta >= 0 ? "+" : ""}${pesoDelta.toFixed(1)}kg`
-                : null
-            }
-            data={pesoData}
-            color={NAVY}
-            gradId="pesoGrad"
-          />
-          <StatTile
-            label="Pressão"
-            value={sistUltimo != null ? String(sistUltimo) : "—"}
-            unit="mmHg"
-            delta={null}
-            data={sistData}
-            color={GOLD}
-            gradId="paGrad"
-          />
-        </div>
       </div>
     );
   })();
