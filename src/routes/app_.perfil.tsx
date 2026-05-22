@@ -214,8 +214,6 @@ function PerfilPage() {
           data_nascimento: dataNasc || null,
         })
         .eq("user_id", session.user.id);
-        })
-        .eq("user_id", session.user.id);
       if (error) throw error;
       setMsg({ type: "ok", text: "Perfil atualizado com sucesso." });
     } catch (err: any) {
