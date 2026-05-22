@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate } from "@tanstack/react-router";
 import { getCursoBySlug, getAulaPlayer, type CursoDetalhe, type AulaPlayer } from "@/lib/cursos.functions";
+import { startCursoCheckout } from "@/lib/vendas.functions";
 import { useAuth } from "@/hooks/useAuth";
 
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", gold: "#B8923A" };
@@ -23,6 +24,7 @@ function useIsMobile() {
 export function CursoModal({ slug, onClose }: { slug: string; onClose: () => void }) {
   const fn = useServerFn(getCursoBySlug);
   const playerFn = useServerFn(getAulaPlayer);
+  const checkoutFn = useServerFn(startCursoCheckout);
   const { user } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -32,6 +34,9 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const [player, setPlayer] = useState<AulaPlayer | null>(null);
   const [playerErr, setPlayerErr] = useState<string | null>(null);
   const [bloqueioInfo, setBloqueioInfo] = useState<{ titulo: string } | null>(null);
+  const [paisCompra, setPaisCompra] = useState("Brasil");
+  const [tipoCompra, setTipoCompra] = useState<"curso" | "passe">("curso");
+  const [checkoutErr, setCheckoutErr] = useState<string | null>(null);
 
   useEffect(() => {
     fn({ data: { slug } })
@@ -69,9 +74,19 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
     const arr = data?.links_compra ?? [];
     if (arr.length > 0) return arr;
     if (data?.link_compra_externo) return [{ plataforma: data.plataforma_venda || "Comprar", url: data.link_compra_externo }];
-    return [] as { plataforma: string; url: string }[];
+    return [] as { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | null }[];
   })();
-  const comprarUrl = (url: string) => window.open(url, "_blank", "noopener,noreferrer");
+  const linksFiltrados = linksCompra.filter((l) => (!l.pais || l.pais === paisCompra) && (!l.tipo || l.tipo === tipoCompra));
+  const comprar = async (link: { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | null }) => {
+    setCheckoutErr(null);
+    if (!user) { navigate({ to: "/app" }); return; }
+    try {
+      const r = await checkoutFn({ data: { curso_id: data!.id, plataforma: link.plataforma, pais: link.pais ?? paisCompra, tipo: link.tipo ?? tipoCompra } });
+      window.open((r as any).url ?? link.url, "_blank", "noopener,noreferrer");
+    } catch (e: any) {
+      setCheckoutErr(e?.message ?? "Não foi possível iniciar a compra");
+    }
+  };
 
   const abrirAula = (id: string, bloqueada: boolean, titulo: string) => {
     if (bloqueada) {
