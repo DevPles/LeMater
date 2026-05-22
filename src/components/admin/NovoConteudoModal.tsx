@@ -969,7 +969,8 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
         </ul>
       )}
 
-      <div style={sectionTitle}>Aulas — adicione quantas precisar</div>
+      {!editando && <div style={sectionTitle}>Aulas — adicione quantas precisar</div>}
+      {!editando && (
       <div style={{ display: "grid", gap: 14 }}>
         {aulas.map((a: AulaLocal, i: number) => (
           <div
