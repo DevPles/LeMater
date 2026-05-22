@@ -113,6 +113,47 @@ export const validateCupomPublic = createServerFn({ method: "POST" })
     return result as { valid: boolean; message?: string; codigo?: string; desconto_pct?: number; desconto_centavos?: number; preco_centavos?: number; desconto_aplicado_centavos?: number; total_centavos?: number };
   });
 
+export const startCursoCheckout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    curso_id: z.string().uuid(),
+    plataforma: z.string().min(1).max(60),
+    tipo: z.enum(["curso", "passe"]).default("curso"),
+    pais: z.string().max(40).optional().nullable(),
+    cupom_codigo: z.string().max(40).optional().nullable(),
+  }).parse(d))
+  .handler(async ({ context, data }) => {
+    const { data: curso, error } = await supabaseAdmin
+      .from("cursos")
+      .select("id, titulo, preco_centavos, links_compra, link_compra_externo, plataforma_venda")
+      .eq("id", data.curso_id)
+      .maybeSingle();
+    if (error || !curso) throw new Error("Curso não encontrado");
+
+    const links = Array.isArray((curso as any).links_compra) ? (curso as any).links_compra as any[] : [];
+    const escolhido = links.find((l) =>
+      String(l?.plataforma ?? "") === data.plataforma &&
+      (!data.pais || !l?.pais || String(l.pais) === data.pais) &&
+      (!l?.tipo || String(l.tipo) === data.tipo)
+    ) ?? (curso.link_compra_externo ? { url: curso.link_compra_externo, plataforma: curso.plataforma_venda ?? data.plataforma } : null);
+    if (!escolhido?.url) throw new Error("Link de compra não configurado para este curso");
+
+    await supabaseAdmin.from("hotmart_compras").insert({
+      email_comprador: String((context.claims as any)?.email ?? ""),
+      nome_comprador: String((context.claims as any)?.user_metadata?.nome ?? ""),
+      produto: curso.titulo,
+      evento: "CHECKOUT_STARTED",
+      status: "pendente",
+      raw_payload: { curso_id: data.curso_id, plataforma: data.plataforma, tipo: data.tipo, pais: data.pais ?? null },
+      curso_id: data.curso_id,
+      cupom_codigo: data.cupom_codigo || null,
+      valor_centavos: curso.preco_centavos ?? null,
+      plataforma: data.plataforma,
+    });
+
+    return { url: String(escolhido.url) };
+  });
+
 // ---------- CURSOS DROPDOWN ----------
 export const listCursosBasic = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

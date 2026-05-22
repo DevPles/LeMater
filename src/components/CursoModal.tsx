@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate } from "@tanstack/react-router";
 import { getCursoBySlug, getAulaPlayer, type CursoDetalhe, type AulaPlayer } from "@/lib/cursos.functions";
+import { startCursoCheckout } from "@/lib/vendas.functions";
 import { useAuth } from "@/hooks/useAuth";
 
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", gold: "#B8923A" };
@@ -23,6 +24,7 @@ function useIsMobile() {
 export function CursoModal({ slug, onClose }: { slug: string; onClose: () => void }) {
   const fn = useServerFn(getCursoBySlug);
   const playerFn = useServerFn(getAulaPlayer);
+  const checkoutFn = useServerFn(startCursoCheckout);
   const { user } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -32,6 +34,9 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const [player, setPlayer] = useState<AulaPlayer | null>(null);
   const [playerErr, setPlayerErr] = useState<string | null>(null);
   const [bloqueioInfo, setBloqueioInfo] = useState<{ titulo: string } | null>(null);
+  const [paisCompra, setPaisCompra] = useState("Brasil");
+  const [tipoCompra, setTipoCompra] = useState<"curso" | "passe">("curso");
+  const [checkoutErr, setCheckoutErr] = useState<string | null>(null);
 
   useEffect(() => {
     fn({ data: { slug } })
@@ -69,9 +74,19 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
     const arr = data?.links_compra ?? [];
     if (arr.length > 0) return arr;
     if (data?.link_compra_externo) return [{ plataforma: data.plataforma_venda || "Comprar", url: data.link_compra_externo }];
-    return [] as { plataforma: string; url: string }[];
+    return [] as { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | null }[];
   })();
-  const comprarUrl = (url: string) => window.open(url, "_blank", "noopener,noreferrer");
+  const linksFiltrados = linksCompra.filter((l) => (!l.pais || l.pais === paisCompra) && (!l.tipo || l.tipo === tipoCompra));
+  const comprar = async (link: { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | null }) => {
+    setCheckoutErr(null);
+    if (!user) { navigate({ to: "/app" }); return; }
+    try {
+      const r = await checkoutFn({ data: { curso_id: data!.id, plataforma: link.plataforma, pais: link.pais ?? paisCompra, tipo: link.tipo ?? tipoCompra } });
+      window.open((r as any).url ?? link.url, "_blank", "noopener,noreferrer");
+    } catch (e: any) {
+      setCheckoutErr(e?.message ?? "Não foi possível iniciar a compra");
+    }
+  };
 
   const abrirAula = (id: string, bloqueada: boolean, titulo: string) => {
     if (bloqueada) {
@@ -108,11 +123,22 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
           )}
           {linksCompra.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 10, justifyContent: "center", alignItems: "center", maxWidth: 360, margin: "0 auto" }}>
-              {linksCompra.map((l, i) => (
-                <button key={i} onClick={() => comprarUrl(l.url)} style={btnPrimary(c.gold)}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%" }}>
+                <select value={paisCompra} onChange={(e) => setPaisCompra(e.target.value)} style={selectBox}>
+                  <option value="Brasil">Brasil</option>
+                  <option value="Internacional">Internacional</option>
+                </select>
+                <select value={tipoCompra} onChange={(e) => setTipoCompra(e.target.value as "curso" | "passe")} style={selectBox}>
+                  <option value="curso">Curso avulso</option>
+                  <option value="passe">Passe completo</option>
+                </select>
+              </div>
+              {(linksFiltrados.length > 0 ? linksFiltrados : linksCompra).map((l, i) => (
+                <button key={i} onClick={() => comprar(l)} style={btnPrimary(c.gold)}>
                   Comprar · {l.plataforma}
                 </button>
               ))}
+              {checkoutErr && <div style={{ fontSize: 12, color: "#B23A48" }}>{checkoutErr}</div>}
             </div>
           )}
           {linksCompra.length === 0 && (
@@ -334,6 +360,7 @@ const modal = (isMobile: boolean): CSSProperties => ({
   overflow: "hidden",
 });
 const closeBtn: CSSProperties = { position: "absolute", top: 10, right: 14, background: "rgba(255,255,255,0.95)", border: `1px solid ${c.border}`, width: 36, height: 36, borderRadius: "50%", cursor: "pointer", fontSize: 22, color: c.ink, zIndex: 10, fontFamily: sans, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" };
+const selectBox: CSSProperties = { width: "100%", background: "white", border: `1px solid ${c.border}`, color: c.ink, padding: "10px 8px", fontFamily: sans, fontSize: 12 };
 
 function btnPrimary(bg: string): CSSProperties {
   return { background: bg, color: "white", fontSize: 12, fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase", padding: "12px 22px", border: "none", cursor: "pointer", fontFamily: sans, width: "100%" };

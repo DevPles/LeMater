@@ -51,10 +51,11 @@ export type CursoDetalhe = {
   categoria: string;
   nivel: string;
   carga_horaria_min: number;
+  preco_centavos: number;
   preco_label: string | null;
   link_compra_externo: string | null;
   plataforma_venda: string | null;
-  links_compra: { plataforma: string; url: string }[];
+  links_compra: { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | null }[];
   instrutor_nome: string | null;
   instrutor_bio: string | null;
   instrutor_foto: string | null;
@@ -209,13 +210,19 @@ export const getCursoBySlug = createServerFn({ method: "GET" })
       capa_url: c.capa_url, trailer_url: toEmbed(c.trailer_url),
       categoria: c.categoria, nivel: c.nivel,
       carga_horaria_min: c.carga_horaria_min,
+      preco_centavos: c.preco_centavos ?? 0,
       preco_label: c.preco_label,
       link_compra_externo: c.link_compra_externo,
       plataforma_venda: c.plataforma_venda,
       links_compra: Array.isArray((c as any).links_compra)
         ? ((c as any).links_compra as any[])
             .filter((l) => l && typeof l.url === "string" && l.url.trim())
-            .map((l) => ({ plataforma: String(l.plataforma ?? "").trim() || "Comprar", url: String(l.url).trim() }))
+            .map((l) => ({
+              plataforma: String(l.plataforma ?? "").trim() || "Comprar",
+              url: String(l.url).trim(),
+              pais: l.pais ? String(l.pais) : null,
+              tipo: l.tipo === "passe" ? "passe" : l.tipo === "curso" ? "curso" : null,
+            }))
         : [],
       instrutor_nome: c.instrutor_nome, instrutor_bio: c.instrutor_bio, instrutor_foto: c.instrutor_foto,
       publicado: c.publicado, modulos, materiais_gratis, matriculado, admin,
