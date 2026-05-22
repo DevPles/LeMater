@@ -40,13 +40,6 @@ function PerfilPage() {
   const [telefone, setTelefone] = useState("");
   const [cpf, setCpf] = useState("");
   const [dataNasc, setDataNasc] = useState("");
-  const [cidade, setCidade] = useState("");
-  const [bairro, setBairro] = useState("");
-  const [ubs, setUbs] = useState("");
-  const [dum, setDum] = useState("");
-  const [numeroGestacoes, setNumeroGestacoes] = useState<string>("");
-  const [numeroPartos, setNumeroPartos] = useState<string>("");
-  const [numeroAbortos, setNumeroAbortos] = useState<string>("");
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
   const [bebeSexo, setBebeSexo] = useState<"masculino" | "feminino" | "neutro">("neutro");
   const [saving, setSaving] = useState(false);
