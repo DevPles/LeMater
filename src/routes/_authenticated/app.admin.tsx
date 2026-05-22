@@ -174,6 +174,7 @@ function AdminPage() {
           {tab === "usuarios" && <UsuariosTab />}
           {tab === "acessos" && <AcessosUsuariosTab />}
           {tab === "compras" && <ComprasTab />}
+          {tab === "vendas" && <VendasTab />}
         </main>
       </div>
 
