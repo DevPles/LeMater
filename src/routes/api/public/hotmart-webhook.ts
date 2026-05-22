@@ -55,13 +55,10 @@ export const Route = createFileRoute("/api/public/hotmart-webhook")({
 
         // Incrementa uso do cupom (se houver) em compras aprovadas
         if (APROVADOS.has(evento) && cupom_codigo) {
-          await supabaseAdmin.rpc("noop" as any, {}).catch(() => {});
-          await supabaseAdmin
-            .from("cupons")
-            .update({ usos: (await supabaseAdmin.from("cupons").select("usos").ilike("codigo", cupom_codigo).maybeSingle()).data?.usos
-              ? ((await supabaseAdmin.from("cupons").select("usos").ilike("codigo", cupom_codigo).maybeSingle()).data!.usos as number) + 1
-              : 1 })
-            .ilike("codigo", cupom_codigo);
+          const { data: cup } = await supabaseAdmin.from("cupons").select("id, usos").ilike("codigo", cupom_codigo).maybeSingle();
+          if (cup?.id) {
+            await supabaseAdmin.from("cupons").update({ usos: (cup.usos ?? 0) + 1 }).eq("id", cup.id);
+          }
         }
 
         // Buscar/criar usuário
