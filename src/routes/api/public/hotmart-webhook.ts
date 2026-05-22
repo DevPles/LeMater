@@ -25,17 +25,44 @@ export const Route = createFileRoute("/api/public/hotmart-webhook")({
         const nome: string | undefined = buyer.name ?? undefined;
         const transaction_id: string | undefined = purchase.transaction ?? purchase.order_ref ?? undefined;
         const produto: string | undefined = product.name ?? undefined;
+        const produto_id: string | undefined = product.id ? String(product.id) : product.ucode ?? undefined;
+        const valor_centavos: number | undefined = purchase.price?.value ? Math.round(Number(purchase.price.value) * 100) : undefined;
+        const cupom_codigo: string | undefined = purchase.offer?.code ?? purchase.coupon?.code ?? payload.data?.coupon?.code ?? undefined;
 
         const status = APROVADOS.has(evento) ? "ativo" : REVOGAR.has(evento) ? "cancelado" : "outro";
+
+        // Tenta encontrar curso específico por produto_externo_id (id ou nome)
+        let curso_id: string | null = null;
+        if (produto_id || produto) {
+          const { data: curso } = await supabaseAdmin
+            .from("cursos")
+            .select("id")
+            .or(`produto_externo_id.eq.${produto_id ?? ""},produto_externo_id.eq.${produto ?? ""}`)
+            .maybeSingle();
+          curso_id = curso?.id ?? null;
+        }
 
         if (email) {
           await supabaseAdmin.from("hotmart_compras").insert({
             email_comprador: email, nome_comprador: nome ?? null, transaction_id: transaction_id ?? null,
             produto: produto ?? null, evento, status, raw_payload: payload,
+            curso_id, cupom_codigo: cupom_codigo ?? null, valor_centavos: valor_centavos ?? null,
+            plataforma: payload.platform ?? "hotmart",
           });
         }
 
         if (!email) return new Response("ok", { status: 200 });
+
+        // Incrementa uso do cupom (se houver) em compras aprovadas
+        if (APROVADOS.has(evento) && cupom_codigo) {
+          await supabaseAdmin.rpc("noop" as any, {}).catch(() => {});
+          await supabaseAdmin
+            .from("cupons")
+            .update({ usos: (await supabaseAdmin.from("cupons").select("usos").ilike("codigo", cupom_codigo).maybeSingle()).data?.usos
+              ? ((await supabaseAdmin.from("cupons").select("usos").ilike("codigo", cupom_codigo).maybeSingle()).data!.usos as number) + 1
+              : 1 })
+            .ilike("codigo", cupom_codigo);
+        }
 
         // Buscar/criar usuário
         const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
@@ -59,14 +86,28 @@ export const Route = createFileRoute("/api/public/hotmart-webhook")({
               { user_id: user.id, role: "aluno" as any },
               { onConflict: "user_id,role" },
             );
-            await supabaseAdmin.from("app_acesso_pago").upsert(
-              { user_id: user.id, ativo: true, origem: "hotmart" },
-              { onConflict: "user_id" },
-            );
+
+            if (curso_id) {
+              // Liberação por curso individual
+              await supabaseAdmin.from("curso_matriculas").upsert(
+                { user_id: user.id, curso_id, ativo: true, origem: "hotmart" },
+                { onConflict: "user_id,curso_id" } as any,
+              );
+            } else {
+              // Passe completo
+              await supabaseAdmin.from("app_acesso_pago").upsert(
+                { user_id: user.id, ativo: true, origem: "hotmart" },
+                { onConflict: "user_id" },
+              );
+            }
             await supabaseAdmin.auth.admin.generateLink({ type: "recovery", email });
           }
         } else if (REVOGAR.has(evento) && user) {
-          await supabaseAdmin.from("app_acesso_pago").update({ ativo: false }).eq("user_id", user.id);
+          if (curso_id) {
+            await supabaseAdmin.from("curso_matriculas").update({ ativo: false }).eq("user_id", user.id).eq("curso_id", curso_id);
+          } else {
+            await supabaseAdmin.from("app_acesso_pago").update({ ativo: false }).eq("user_id", user.id);
+          }
         }
 
         return new Response("ok", { status: 200 });
