@@ -99,21 +99,24 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
           <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.gold, marginBottom: 10 }}>CONTEÚDO EXCLUSIVO</div>
           <h3 style={{ fontFamily: serif, fontSize: isMobile ? 22 : 30, fontWeight: 400, margin: "0 0 10px" }}>{bloqueioInfo.titulo}</h3>
           <p style={{ color: c.muted, fontSize: 14, lineHeight: 1.6, margin: "0 auto 20px", maxWidth: 460 }}>
-            Esta aula faz parte do conteúdo pago. Entre na área de aluna para acessar o Atlas Materno completo.
+            {linksCompra.length > 0
+              ? "Esta aula faz parte do conteúdo pago. Adquira o Atlas Materno para liberar o acesso completo."
+              : "Esta aula faz parte do conteúdo pago. Em breve disponibilizaremos o link de compra."}
           </p>
+          {data?.preco_label && (
+            <div style={{ fontFamily: serif, fontSize: 26, color: c.sageDark, marginBottom: 16 }}>{data.preco_label}</div>
+          )}
           <div style={{ display: "flex", flexDirection: "column", gap: 10, justifyContent: "center", alignItems: "center", maxWidth: 360, margin: "0 auto" }}>
-            <button onClick={irParaCadastro} style={btnPrimary(c.sageDark)}>
-              {user ? "Ir para minha área" : "Entrar"}
-            </button>
-            {linksCompra.length > 0 && (
-              <>
-                <div style={{ fontSize: 10, letterSpacing: "0.18em", color: c.muted, marginTop: 6 }}>OU COMPRE POR</div>
-                {linksCompra.map((l, i) => (
-                  <button key={i} onClick={() => comprarUrl(l.url)} style={btnPrimary(c.gold)}>
-                    {l.plataforma}
-                  </button>
-                ))}
-              </>
+            {linksCompra.length > 0 ? (
+              linksCompra.map((l, i) => (
+                <button key={i} onClick={() => comprarUrl(l.url)} style={btnPrimary(c.gold)}>
+                  Comprar · {l.plataforma}
+                </button>
+              ))
+            ) : (
+              <button onClick={() => navigate({ to: "/atlas/$slug", params: { slug } })} style={btnPrimary(c.sageDark)}>
+                Ver detalhes do curso
+              </button>
             )}
           </div>
         </div>
