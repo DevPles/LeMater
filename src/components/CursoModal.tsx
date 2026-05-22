@@ -360,6 +360,7 @@ const modal = (isMobile: boolean): CSSProperties => ({
   overflow: "hidden",
 });
 const closeBtn: CSSProperties = { position: "absolute", top: 10, right: 14, background: "rgba(255,255,255,0.95)", border: `1px solid ${c.border}`, width: 36, height: 36, borderRadius: "50%", cursor: "pointer", fontSize: 22, color: c.ink, zIndex: 10, fontFamily: sans, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" };
+const selectBox: CSSProperties = { width: "100%", background: "white", border: `1px solid ${c.border}`, color: c.ink, padding: "10px 8px", fontFamily: sans, fontSize: 12 };
 
 function btnPrimary(bg: string): CSSProperties {
   return { background: bg, color: "white", fontSize: 12, fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase", padding: "12px 22px", border: "none", cursor: "pointer", fontFamily: sans, width: "100%" };
