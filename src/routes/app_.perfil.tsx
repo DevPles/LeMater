@@ -212,13 +212,8 @@ function PerfilPage() {
           telefone: telefoneDigits || null,
           cpf: cpfDigits || null,
           data_nascimento: dataNasc || null,
-          cidade: cidade.trim() || null,
-          bairro: bairro.trim() || null,
-          unidade_saude: ubs.trim() || null,
-          dum: dum || null,
-          numero_gestacoes: toIntOrNull(numeroGestacoes),
-          numero_partos: toIntOrNull(numeroPartos),
-          numero_abortos: toIntOrNull(numeroAbortos),
+        })
+        .eq("user_id", session.user.id);
         })
         .eq("user_id", session.user.id);
       if (error) throw error;
