@@ -282,8 +282,8 @@ export default function NovoConteudoModal({
 
     // 1. Upload capa / vídeo selecionado no campo de capa
     setBusyMsg("Enviando capa…");
-    let capa_url: string | null = null;
-    let capa_video_url: string | null = null;
+    let capa_url: string | null = curso.removerCapa ? null : (curso.capa_url || null);
+    let capa_video_url: string | null = curso.removerCapaVideo ? null : (curso.capa_video_url || null);
     if (curso.capa) {
       const path = `cursos/${Date.now()}-${curso.capa.name.replace(/[^\w.-]/g, "_")}`;
       const { data: up, error } = await supabase.storage
@@ -322,34 +322,37 @@ export default function NovoConteudoModal({
     }
 
     // 3. Upsert curso
-    setBusyMsg("Criando curso…");
+    setBusyMsg(editando ? "Salvando curso…" : "Criando curso…");
     const ehGratis = curso.area === "gratis";
-    const cursoRow = await upCurso({
-      data: {
-        titulo: curso.titulo,
-        slug: curso.slug,
-        descricao_curta: curso.descricao_curta || null,
-        descricao_longa: curso.descricao_longa || null,
-        capa_url,
-        capa_video_url,
-        trailer_url: curso.trailer_url || null,
-        categoria: curso.categoria,
-        nivel: curso.nivel,
-        carga_horaria_min: Number(curso.carga_horaria_min) || 0,
-        preco_centavos: ehGratis ? 0 : Number(curso.preco_centavos) || 0,
-        preco_label: ehGratis ? "Grátis" : curso.preco_label || null,
-        link_compra_externo: ehGratis ? null : curso.link_compra_externo || null,
-        plataforma_venda: ehGratis ? null : curso.plataforma_venda || null,
-        publicado: curso.publicado,
-        ordem: Number(curso.ordem) || 0,
-        instrutor_nome: curso.instrutor_nome || null,
-        instrutor_bio: curso.instrutor_bio || null,
-        instrutor_foto: curso.instrutor_foto || null,
-        materiais_gratis,
-      },
-    });
+    const linksLimpos = (curso.links_compra ?? []).filter((l: any) => l?.plataforma?.trim() && l?.url?.trim());
+    const payload: any = {
+      titulo: curso.titulo,
+      slug: curso.slug,
+      descricao_curta: curso.descricao_curta || null,
+      descricao_longa: curso.descricao_longa || null,
+      capa_url,
+      capa_video_url,
+      trailer_url: curso.trailer_url || null,
+      categoria: curso.categoria,
+      nivel: curso.nivel,
+      carga_horaria_min: Number(curso.carga_horaria_min) || 0,
+      preco_centavos: ehGratis ? 0 : Number(curso.preco_centavos) || 0,
+      preco_label: ehGratis ? "Grátis" : curso.preco_label || null,
+      link_compra_externo: ehGratis ? null : curso.link_compra_externo || null,
+      plataforma_venda: ehGratis ? null : curso.plataforma_venda || null,
+      links_compra: ehGratis ? [] : linksLimpos,
+      publicado: curso.publicado,
+      ordem: Number(curso.ordem) || 0,
+      instrutor_nome: curso.instrutor_nome || null,
+      instrutor_bio: curso.instrutor_bio || null,
+      instrutor_foto: curso.instrutor_foto || null,
+      ...(materiais_gratis.length > 0 ? { materiais_gratis } : {}),
+    };
+    if (curso.id) payload.id = curso.id;
+    const cursoRow = await upCurso({ data: payload });
 
-    // 4. Criar módulo padrão "Conteúdo" se houver aulas
+    // 4. Aulas: só na criação inicial
+    if (editando) return;
     const aulasValidas = aulas.filter((a) => a.titulo.trim());
     if (aulasValidas.length === 0) return;
     setBusyMsg("Criando módulo…");
