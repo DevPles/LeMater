@@ -515,6 +515,7 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
             <span className="flex items-center gap-1"><span className="w-3 h-2 bg-[#1a1557]/15" /> Faixa esperada</span>
           </div>
         </div>
+        </div>
       )}
 
       {tab === "pressao" && (
