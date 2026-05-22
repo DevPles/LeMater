@@ -16,6 +16,7 @@ import { AcessosUsuariosTab } from "@/components/admin/AcessosUsuariosTab";
 import { DadosClinicosTab } from "@/components/admin/DadosClinicosTab";
 import { ParametrosTab } from "@/components/admin/ParametrosTab";
 import { RelatoriosEpidemiologicosTab } from "@/components/admin/RelatoriosEpidemiologicosTab";
+import { VendasTab } from "@/components/admin/VendasTab";
 import lemateLogo from "@/assets/logo_monograma.png";
 
 export const Route = createFileRoute("/_authenticated/app/admin")({
