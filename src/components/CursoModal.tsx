@@ -123,11 +123,22 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
           )}
           {linksCompra.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 10, justifyContent: "center", alignItems: "center", maxWidth: 360, margin: "0 auto" }}>
-              {linksCompra.map((l, i) => (
-                <button key={i} onClick={() => comprarUrl(l.url)} style={btnPrimary(c.gold)}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%" }}>
+                <select value={paisCompra} onChange={(e) => setPaisCompra(e.target.value)} style={selectBox}>
+                  <option value="Brasil">Brasil</option>
+                  <option value="Internacional">Internacional</option>
+                </select>
+                <select value={tipoCompra} onChange={(e) => setTipoCompra(e.target.value as "curso" | "passe")} style={selectBox}>
+                  <option value="curso">Curso avulso</option>
+                  <option value="passe">Passe completo</option>
+                </select>
+              </div>
+              {(linksFiltrados.length > 0 ? linksFiltrados : linksCompra).map((l, i) => (
+                <button key={i} onClick={() => comprar(l)} style={btnPrimary(c.gold)}>
                   Comprar · {l.plataforma}
                 </button>
               ))}
+              {checkoutErr && <div style={{ fontSize: 12, color: "#B23A48" }}>{checkoutErr}</div>}
             </div>
           )}
           {linksCompra.length === 0 && (
