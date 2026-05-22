@@ -46,22 +46,17 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
     const progresso = (semanaAtualNum / GESTATION_WEEKS) * 100;
 
     return (
-      <div className="space-y-5">
+      <div className="space-y-3">
         {/* Hero: semana grande */}
         <div className="flex items-end justify-between">
-          <div>
-            <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
-              Semana
+          <div className="flex items-baseline gap-2">
+            <span className="font-display text-5xl font-light leading-none text-[#1a1557]">
+              {semanaAtual}
             </span>
-            <div className="flex items-baseline gap-2 mt-0.5">
-              <span className="font-display text-6xl font-light leading-none text-[#1a1557]">
-                {semanaAtual}
-              </span>
-              <span className="text-base text-muted-foreground font-light">/ 40</span>
-            </div>
+            <span className="text-sm text-muted-foreground font-light">/ 40 sem</span>
           </div>
-          <div className="text-right space-y-1">
-            <span className="inline-block text-[10px] uppercase tracking-wider font-semibold px-2.5 py-1 rounded-full bg-[#f0c040]/15 text-[#a87a10]">
+          <div className="text-right flex flex-col items-end gap-1">
+            <span className="inline-block text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-[#f0c040]/15 text-[#a87a10]">
               {trimestre}º trimestre
             </span>
             <p className="text-[10px] text-muted-foreground">DPP {formatBRDate(dpp)}</p>
@@ -83,7 +78,7 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
               style={{ left: `calc(${progresso}% - 6px)`, borderColor: GOLD }}
             />
           </div>
-          <div className="flex justify-between text-[9px] text-muted-foreground/70 mt-2 uppercase tracking-wider">
+          <div className="flex justify-between text-[9px] text-muted-foreground/70 mt-1.5 uppercase tracking-wider">
             <span>DUM</span>
             <span>DPP</span>
           </div>
@@ -98,7 +93,7 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
         type="button"
         onClick={() => setOpen(true)}
         whileTap={{ scale: 0.985 }}
-        className="block w-full text-left group relative overflow-hidden rounded-3xl p-5"
+        className="block w-full text-left group relative overflow-hidden rounded-2xl px-4 py-3.5"
         style={{
           background: "linear-gradient(135deg, #ffffff 0%, #faf8f3 100%)",
           boxShadow:
@@ -116,16 +111,16 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
         />
 
         <div className="relative">
-          <div className="flex items-start justify-between mb-5">
-            <div>
-              <span className="text-[10px] uppercase tracking-[0.22em] text-[#1a1557]/60 font-semibold">
-                Cronograma
-              </span>
-              <h3 className="font-display font-medium text-2xl text-[#1a1557] leading-tight mt-0.5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-baseline gap-2">
+              <h3 className="font-display font-medium text-lg text-[#1a1557] leading-tight">
                 Sua jornada
               </h3>
+              <span className="text-[9px] uppercase tracking-[0.18em] text-[#1a1557]/50 font-semibold">
+                Cronograma
+              </span>
             </div>
-            <span className="text-[#1a1557] text-2xl leading-none transition-transform group-hover:translate-x-0.5">
+            <span className="text-[#1a1557] text-xl leading-none transition-transform group-hover:translate-x-0.5">
               ›
             </span>
           </div>
