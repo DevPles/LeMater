@@ -111,7 +111,7 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
 
   // Peso
   const pesos = medicoes
-    .filter((m) => m.parametro === "peso")
+    .filter((m) => m.parametro === "peso" || m.parametro === "Peso")
     .map((m) => ({
       semana: m.semana_gestacional ?? Math.round(weeksBetween(dumDate, new Date(m.data_medicao))),
       peso: Number(m.valor),
@@ -121,6 +121,34 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
 
   const pesoInicial = pesos[0];
   const pesoUltimo = pesos[pesos.length - 1];
+  const ganhoTotal = pesoInicial && pesoUltimo ? pesoUltimo.peso - pesoInicial.peso : null;
+
+  // Altura (em metros — vem em cm ou m)
+  const alturaMed = medicoes.find((m) => m.parametro === "altura" || m.parametro === "Altura");
+  const alturaM = alturaMed
+    ? Number(alturaMed.valor) > 3
+      ? Number(alturaMed.valor) / 100
+      : Number(alturaMed.valor)
+    : null;
+
+  const imcInicial = alturaM && pesoInicial ? pesoInicial.peso / (alturaM * alturaM) : null;
+  const imcAtual = alturaM && pesoUltimo ? pesoUltimo.peso / (alturaM * alturaM) : null;
+
+  // Faixa de ganho recomendada (IOM) com base no IMC pré-gestacional
+  let ganhoRecomendado: { min: number; max: number; categoria: string } | null = null;
+  if (imcInicial) {
+    if (imcInicial < 18.5) ganhoRecomendado = { min: 12.5, max: 18, categoria: "Baixo peso" };
+    else if (imcInicial < 25) ganhoRecomendado = { min: 11.5, max: 16, categoria: "Eutrófica" };
+    else if (imcInicial < 30) ganhoRecomendado = { min: 7, max: 11.5, categoria: "Sobrepeso" };
+    else ganhoRecomendado = { min: 5, max: 9, categoria: "Obesidade" };
+  }
+
+  const classificaIMC = (imc: number) => {
+    if (imc < 18.5) return { label: "Baixo peso", color: "#3b82f6" };
+    if (imc < 25) return { label: "Eutrófica", color: "#16a34a" };
+    if (imc < 30) return { label: "Sobrepeso", color: "#f59e0b" };
+    return { label: "Obesidade", color: "#dc2626" };
+  };
 
   const pesoSeries = useMemo(() => {
     return Array.from({ length: GESTATION_WEEKS + 1 }, (_, w) => {
