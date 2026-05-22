@@ -81,7 +81,7 @@ const SECOES: Record<Especialidade, Secao[]> = {
     {
       titulo: "Acompanhamento da gestação (hoje)",
       campos: [
-        { key: "como_se_sente", label: "Como a gestante está se sentindo? (relato subjetivo)", type: "textarea", full: true },
+        { key: "como_se_sente", label: "Como a gestante está se sentindo?", type: "textarea", full: true },
         { key: "queixas_desconfortos", label: "Queixas e desconfortos do período", type: "textarea", full: true, hint: "Náuseas, azia, lombalgia, edema, contrações, sangramento, perdas, redução de movimentos fetais, etc." },
         { key: "intercorrencias_periodo", label: "Intercorrências desde a última consulta", type: "textarea", full: true },
       ],
