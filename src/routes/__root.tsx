@@ -91,7 +91,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { translating } = useAutoTranslate();
   const location = useLocation();
-  const showAppNav = /^\/app\/(home|videos|videochamada|cartao|alertas)(\/|$)/.test(location.pathname);
+  const showAppNav = /^\/app\/(home|videos|videochamada|cartao|alertas|gestacao|perfil|cronograma)(\/|$)/.test(location.pathname);
 
   return (
     <>
