@@ -61,13 +61,6 @@ function PerfilPage() {
       setTelefone(profile.telefone ? formatPhone(profile.telefone) : "");
       setCpf(profile.cpf ?? "");
       setDataNasc(profile.data_nascimento ?? "");
-      setCidade(profile.cidade ?? "");
-      setBairro(profile.bairro ?? "");
-      setUbs(profile.unidade_saude ?? "");
-      setDum(profile.dum ?? "");
-      setNumeroGestacoes(profile.numero_gestacoes != null ? String(profile.numero_gestacoes) : "");
-      setNumeroPartos(profile.numero_partos != null ? String(profile.numero_partos) : "");
-      setNumeroAbortos(profile.numero_abortos != null ? String(profile.numero_abortos) : "");
       setFotoUrl(profile.foto_url ?? null);
       setBebeSexo((profile.bebe_sexo as "masculino" | "feminino" | "neutro") ?? "neutro");
     }
