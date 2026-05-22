@@ -71,7 +71,7 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
         .from("clinical_measurements")
         .select("parametro,valor,data_medicao,semana_gestacional")
         .eq("gestante_id", userId)
-        .in("parametro", ["peso", "pa_sistolica", "pa_diastolica"])
+        .in("parametro", ["peso", "Peso", "pa_sistolica", "pa_diastolica", "altura", "Altura"])
         .order("data_medicao", { ascending: true });
       if (!active) return;
       setMedicoes((data ?? []) as Medicao[]);
