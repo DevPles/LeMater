@@ -32,7 +32,7 @@ type Tab =
   | "atlas"
   | "consultas" | "gravacoes" | "profissionais"
   | "dados" | "parametros" | "relatorios"
-  | "leads" | "alunos" | "usuarios" | "acessos" | "compras";
+  | "leads" | "alunos" | "usuarios" | "acessos" | "compras" | "vendas";
 
 const TAB_GROUPS: { label: string; tabs: { id: Tab; label: string }[] }[] = [
   { label: "Painel", tabs: [{ id: "dash", label: "Painel" }] },
