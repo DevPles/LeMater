@@ -195,19 +195,30 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
             {/* Métodos de pagamento */}
             <div style={{ padding: "16px 18px", borderBottom: `1px solid ${c.border}`, textAlign: "left" }}>
               <div style={{ fontSize: 10, letterSpacing: "0.22em", color: c.muted, marginBottom: 10, fontFamily: sans }}>FORMA DE PAGAMENTO</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {opcoesCompra.map((l) => {
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {opcoesCompra.map((l, idx) => {
                   const ativo = (metodoAtivo ?? "") === l.plataforma;
+                  const desc = l.plataforma === "Mercado Pago" ? "Pix, cartão e boleto · processado no app"
+                    : l.plataforma === "InfinityPay" ? "Cartão e Pix com taxas reduzidas"
+                    : l.plataforma === "Hotmart" ? "Cartão internacional e parcelamento"
+                    : l.plataforma === "Kiwify" ? "Checkout simplificado em reais"
+                    : l.plataforma === "Eduzz" ? "Cartão, boleto e Pix"
+                    : l.plataforma === "Stripe" ? "Pagamentos globais em USD/EUR"
+                    : l.plataforma === "Paddle" ? "Merchant of record global"
+                    : "Redirecionamento seguro";
                   return (
                     <button key={l.plataforma} onClick={() => setMetodoSel(l.plataforma)}
-                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "12px 14px", background: ativo ? c.warm : "white", border: `1px solid ${ativo ? c.sageDark : c.border}`, cursor: "pointer", fontFamily: sans }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <span style={{ width: 16, height: 16, borderRadius: "50%", border: `1.5px solid ${ativo ? c.sageDark : c.border}`, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                          {ativo && <span style={{ width: 8, height: 8, borderRadius: "50%", background: c.sageDark }} />}
-                        </span>
-                        <span style={{ fontSize: 13, color: c.ink, fontWeight: 500 }}>{l.plataforma}</span>
+                      style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 12px", background: ativo ? c.warm : "transparent", border: "none", borderTop: idx === 0 ? "none" : `1px solid ${c.border}`, cursor: "pointer", fontFamily: sans, textAlign: "left", width: "100%" }}>
+                      <span style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${ativo ? c.sageDark : c.border}`, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        {ativo && <span style={{ width: 9, height: 9, borderRadius: "50%", background: c.sageDark }} />}
                       </span>
-                      <span style={{ fontSize: 10, letterSpacing: "0.14em", color: c.muted }}>{l.url ? "DIRETO" : "REDIRECT"}</span>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, color: c.ink, fontWeight: 500 }}>{l.plataforma}</div>
+                        <div style={{ fontSize: 11, color: c.muted, marginTop: 2 }}>{desc}</div>
+                      </span>
+                      {l.plataforma === "Mercado Pago" && (
+                        <span style={{ fontSize: 9, letterSpacing: "0.14em", color: c.sageDark, background: "white", border: `1px solid ${c.sageDark}`, padding: "3px 6px" }}>RECOMENDADO</span>
+                      )}
                     </button>
                   );
                 })}
@@ -216,6 +227,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                     Nenhuma forma de pagamento disponível para esta combinação.
                   </div>
                 )}
+
               </div>
             </div>
 
