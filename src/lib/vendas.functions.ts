@@ -136,7 +136,6 @@ export const startCursoCheckout = createServerFn({ method: "POST" })
       (!data.pais || !l?.pais || String(l.pais) === data.pais) &&
       (!l?.tipo || String(l.tipo) === data.tipo)
     ) ?? (curso.link_compra_externo ? { url: curso.link_compra_externo, plataforma: curso.plataforma_venda ?? data.plataforma } : null);
-    if (!escolhido?.url) throw new Error("Link de compra não configurado para este curso");
 
     await supabaseAdmin.from("hotmart_compras").insert({
       email_comprador: String((context.claims as any)?.email ?? ""),
@@ -151,7 +150,7 @@ export const startCursoCheckout = createServerFn({ method: "POST" })
       plataforma: data.plataforma,
     });
 
-    return { url: String(escolhido.url) };
+    return { url: escolhido?.url ? String(escolhido.url) : null, pendente: !escolhido?.url };
   });
 
 // ---------- CURSOS DROPDOWN ----------
