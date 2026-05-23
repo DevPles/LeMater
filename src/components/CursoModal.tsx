@@ -98,6 +98,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const comprar = async (link: CompraLink) => {
     setCheckoutErr(null);
     if (!user) { navigate({ to: "/app" }); return; }
+    setComprando(true);
     try {
       const r = await checkoutFn({ data: { curso_id: data!.id, plataforma: link.plataforma, pais: link.pais ?? paisCompra, tipo: link.tipo ?? tipoCompra } });
       const url = (r as any).url ?? link.url;
@@ -105,8 +106,11 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       else setCheckoutErr("Compra registrada. Falta configurar o link desta plataforma no painel admin.");
     } catch (e: any) {
       setCheckoutErr(e?.message ?? "Não foi possível iniciar a compra");
+    } finally {
+      setComprando(false);
     }
   };
+
 
   const abrirAula = (id: string, bloqueada: boolean, titulo: string) => {
     if (bloqueada) {
