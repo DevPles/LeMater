@@ -363,6 +363,8 @@ const CursoSchema = z.object({
   links_compra: z.array(z.object({
     plataforma: z.string().trim().min(1).max(40),
     url: z.string().trim().url().max(500),
+    pais: z.string().trim().max(40).nullable().optional(),
+    tipo: z.enum(["curso", "passe"]).nullable().optional(),
   })).max(10).optional(),
   publicado: z.boolean().default(false),
   ordem: z.number().int().default(0),

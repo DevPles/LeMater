@@ -168,7 +168,7 @@ export default function NovoConteudoModal({
       preco_label: e.preco_label ?? "",
       link_compra_externo: e.link_compra_externo ?? "",
       plataforma_venda: e.plataforma_venda ?? "",
-      links_compra: Array.isArray(e.links_compra) ? e.links_compra : [] as { plataforma: string; url: string }[],
+      links_compra: Array.isArray(e.links_compra) ? e.links_compra : [] as { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | null }[],
       instrutor_nome: e.instrutor_nome ?? "",
       instrutor_bio: e.instrutor_bio ?? "",
       instrutor_foto: e.instrutor_foto ?? "",
@@ -322,7 +322,14 @@ export default function NovoConteudoModal({
     // 3. Upsert curso
     setBusyMsg(editando ? "Salvando curso…" : "Criando curso…");
     const ehGratis = curso.area === "gratis";
-    const linksLimpos = (curso.links_compra ?? []).filter((l: any) => l?.plataforma?.trim() && l?.url?.trim());
+    const linksLimpos = (curso.links_compra ?? [])
+      .filter((l: any) => l?.plataforma?.trim() && l?.url?.trim())
+      .map((l: any) => ({
+        plataforma: String(l.plataforma).trim(),
+        url: String(l.url).trim(),
+        pais: l.pais || (String(l.plataforma).toLowerCase().includes("stripe") || String(l.plataforma).toLowerCase().includes("paddle") || String(l.plataforma).toLowerCase().includes("teachable") ? "Internacional" : "Brasil"),
+        tipo: l.tipo === "passe" ? "passe" : "curso",
+      }));
     const payload: any = {
       titulo: curso.titulo,
       slug: curso.slug,
@@ -853,7 +860,31 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
               Opções de compra (país + plataforma) — aparecem como botões no card
             </div>
             {(curso.links_compra ?? []).map((l: any, i: number) => (
-              <div key={i} style={{ display: "grid", gridTemplateColumns: "200px 1fr auto", gap: 8, marginBottom: 8 }}>
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "130px 130px 180px 1fr auto", gap: 8, marginBottom: 8 }}>
+                <select
+                  value={l.pais ?? "Brasil"}
+                  onChange={(e) => {
+                    const arr = [...(curso.links_compra ?? [])];
+                    arr[i] = { ...arr[i], pais: e.target.value };
+                    updateCurso({ links_compra: arr });
+                  }}
+                  style={inp}
+                >
+                  <option value="Brasil">Brasil</option>
+                  <option value="Internacional">Internacional</option>
+                </select>
+                <select
+                  value={l.tipo ?? "curso"}
+                  onChange={(e) => {
+                    const arr = [...(curso.links_compra ?? [])];
+                    arr[i] = { ...arr[i], tipo: e.target.value as "curso" | "passe" };
+                    updateCurso({ links_compra: arr });
+                  }}
+                  style={inp}
+                >
+                  <option value="curso">Curso avulso</option>
+                  <option value="passe">Passe completo</option>
+                </select>
                 <select
                   value={l.plataforma}
                   onChange={(e) => {
@@ -903,7 +934,7 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
             ))}
             <button
               type="button"
-              onClick={() => updateCurso({ links_compra: [...(curso.links_compra ?? []), { plataforma: "", url: "" }] })}
+              onClick={() => updateCurso({ links_compra: [...(curso.links_compra ?? []), { pais: "Brasil", tipo: "curso", plataforma: "", url: "" }] })}
               style={{ background: c.warm, border: `1px solid ${c.border}`, color: c.sageDark, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontFamily: sans, letterSpacing: "0.08em", textTransform: "uppercase" }}
             >
               + Adicionar opção de compra
