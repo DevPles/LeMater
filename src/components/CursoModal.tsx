@@ -131,38 +131,34 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
           <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.gold, marginBottom: 10 }}>CONTEÚDO EXCLUSIVO</div>
           <h3 style={{ fontFamily: serif, fontSize: isMobile ? 22 : 30, fontWeight: 400, margin: "0 0 10px" }}>{bloqueioInfo.titulo}</h3>
           <p style={{ color: c.muted, fontSize: 14, lineHeight: 1.6, margin: "0 auto 20px", maxWidth: 460 }}>
-            {linksCompra.length > 0
-              ? "Esta aula faz parte do conteúdo pago. Adquira o Atlas Materno para liberar o acesso completo."
-              : "Esta aula faz parte do conteúdo pago. Em breve disponibilizaremos o link de compra."}
+            Esta aula faz parte do conteúdo pago. Selecione país, tipo de compra e método de pagamento para liberar o acesso.
           </p>
-          {data?.preco_label && (
+          {data?.preco_label && !precoGratis && (
             <div style={{ fontFamily: serif, fontSize: 26, color: c.sageDark, marginBottom: 16 }}>{data.preco_label}</div>
           )}
-          {linksCompra.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, justifyContent: "center", alignItems: "center", maxWidth: 360, margin: "0 auto" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%" }}>
-                <select value={paisCompra} onChange={(e) => setPaisCompra(e.target.value)} style={selectBox}>
-                  <option value="Brasil">Brasil</option>
-                  <option value="Internacional">Internacional</option>
-                </select>
-                <select value={tipoCompra} onChange={(e) => setTipoCompra(e.target.value as "curso" | "passe")} style={selectBox}>
-                  <option value="curso">Curso avulso</option>
-                  <option value="passe">Passe completo</option>
-                </select>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, justifyContent: "center", alignItems: "center", maxWidth: 360, margin: "0 auto" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%" }}>
+              <select value={paisCompra} onChange={(e) => setPaisCompra(e.target.value)} style={selectBox}>
+                <option value="Brasil">Brasil</option>
+                <option value="Internacional">Internacional</option>
+              </select>
+              <select value={tipoCompra} onChange={(e) => setTipoCompra(e.target.value as "curso" | "passe")} style={selectBox}>
+                <option value="curso">Curso avulso</option>
+                <option value="passe">Passe completo</option>
+              </select>
+            </div>
+            {opcoesCompra.map((l, i) => (
+              <button key={`${l.plataforma}-${i}`} onClick={() => comprar(l)} style={btnPrimary(c.gold)}>
+                Comprar · {l.plataforma}
+              </button>
+            ))}
+            {linksCompra.length === 0 && (
+              <div style={{ fontSize: 12, color: c.muted, fontStyle: "italic" }}>
+                Link direto ainda não configurado; a tentativa será registrada para acompanhamento no relatório de vendas.
               </div>
-              {(linksFiltrados.length > 0 ? linksFiltrados : linksCompra).map((l, i) => (
-                <button key={i} onClick={() => comprar(l)} style={btnPrimary(c.gold)}>
-                  Comprar · {l.plataforma}
-                </button>
-              ))}
-              {checkoutErr && <div style={{ fontSize: 12, color: "#B23A48" }}>{checkoutErr}</div>}
-            </div>
-          )}
-          {linksCompra.length === 0 && (
-            <div style={{ fontSize: 12, color: c.muted, fontStyle: "italic" }}>
-              Link de compra ainda não configurado. Fale com a equipe Le Mater.
-            </div>
-          )}
+            )}
+            {checkoutErr && <div style={{ fontSize: 12, color: "#B23A48" }}>{checkoutErr}</div>}
+          </div>
         </div>
       )}
 
