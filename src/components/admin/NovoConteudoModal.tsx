@@ -168,7 +168,7 @@ export default function NovoConteudoModal({
       preco_label: e.preco_label ?? "",
       link_compra_externo: e.link_compra_externo ?? "",
       plataforma_venda: e.plataforma_venda ?? "",
-      links_compra: Array.isArray(e.links_compra) ? e.links_compra : [] as { plataforma: string; url: string }[],
+      links_compra: Array.isArray(e.links_compra) ? e.links_compra : [] as { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | null }[],
       instrutor_nome: e.instrutor_nome ?? "",
       instrutor_bio: e.instrutor_bio ?? "",
       instrutor_foto: e.instrutor_foto ?? "",
@@ -322,7 +322,14 @@ export default function NovoConteudoModal({
     // 3. Upsert curso
     setBusyMsg(editando ? "Salvando curso…" : "Criando curso…");
     const ehGratis = curso.area === "gratis";
-    const linksLimpos = (curso.links_compra ?? []).filter((l: any) => l?.plataforma?.trim() && l?.url?.trim());
+    const linksLimpos = (curso.links_compra ?? [])
+      .filter((l: any) => l?.plataforma?.trim() && l?.url?.trim())
+      .map((l: any) => ({
+        plataforma: String(l.plataforma).trim(),
+        url: String(l.url).trim(),
+        pais: l.pais || (String(l.plataforma).toLowerCase().includes("stripe") || String(l.plataforma).toLowerCase().includes("paddle") || String(l.plataforma).toLowerCase().includes("teachable") ? "Internacional" : "Brasil"),
+        tipo: l.tipo === "passe" ? "passe" : "curso",
+      }));
     const payload: any = {
       titulo: curso.titulo,
       slug: curso.slug,
