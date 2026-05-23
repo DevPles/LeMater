@@ -49,7 +49,10 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const [bloqueioInfo, setBloqueioInfo] = useState<{ titulo: string } | null>(null);
   const [paisCompra, setPaisCompra] = useState("Brasil");
   const [tipoCompra, setTipoCompra] = useState<"curso" | "passe">("curso");
+  const [metodoSel, setMetodoSel] = useState<string | null>(null);
   const [checkoutErr, setCheckoutErr] = useState<string | null>(null);
+  const [comprando, setComprando] = useState(false);
+
 
   useEffect(() => {
     fn({ data: { slug } })
@@ -95,6 +98,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const comprar = async (link: CompraLink) => {
     setCheckoutErr(null);
     if (!user) { navigate({ to: "/app" }); return; }
+    setComprando(true);
     try {
       const r = await checkoutFn({ data: { curso_id: data!.id, plataforma: link.plataforma, pais: link.pais ?? paisCompra, tipo: link.tipo ?? tipoCompra } });
       const url = (r as any).url ?? link.url;
@@ -102,8 +106,11 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       else setCheckoutErr("Compra registrada. Falta configurar o link desta plataforma no painel admin.");
     } catch (e: any) {
       setCheckoutErr(e?.message ?? "Não foi possível iniciar a compra");
+    } finally {
+      setComprando(false);
     }
   };
+
 
   const abrirAula = (id: string, bloqueada: boolean, titulo: string) => {
     if (bloqueada) {
@@ -126,41 +133,118 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   // Player block (vídeo + título + anexos) — usado tanto desktop quanto mobile
   const renderPlayer = () => (
     <div>
-      {bloqueioInfo && (
-        <div style={{ padding: isMobile ? 20 : 40, textAlign: "center", background: c.warm, border: `1px solid ${c.border}` }}>
-          <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.gold, marginBottom: 10 }}>CONTEÚDO EXCLUSIVO</div>
-          <h3 style={{ fontFamily: serif, fontSize: isMobile ? 22 : 30, fontWeight: 400, margin: "0 0 10px" }}>{bloqueioInfo.titulo}</h3>
-          <p style={{ color: c.muted, fontSize: 14, lineHeight: 1.6, margin: "0 auto 20px", maxWidth: 460 }}>
-            Esta aula faz parte do conteúdo pago. Selecione país, tipo de compra e método de pagamento para liberar o acesso.
-          </p>
-          {data?.preco_label && !precoGratis && (
-            <div style={{ fontFamily: serif, fontSize: 26, color: c.sageDark, marginBottom: 16 }}>{data.preco_label}</div>
-          )}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, justifyContent: "center", alignItems: "center", maxWidth: 360, margin: "0 auto" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%" }}>
-              <select value={paisCompra} onChange={(e) => setPaisCompra(e.target.value)} style={selectBox}>
-                <option value="Brasil">Brasil</option>
-                <option value="Internacional">Internacional</option>
-              </select>
-              <select value={tipoCompra} onChange={(e) => setTipoCompra(e.target.value as "curso" | "passe")} style={selectBox}>
-                <option value="curso">Curso avulso</option>
-                <option value="passe">Passe completo</option>
-              </select>
+      {bloqueioInfo && (() => {
+        const metodoAtivo = metodoSel && opcoesCompra.find((o) => o.plataforma === metodoSel)
+          ? metodoSel
+          : (opcoesCompra[0]?.plataforma ?? null);
+        const linkAtivo = opcoesCompra.find((o) => o.plataforma === metodoAtivo);
+        const precoTexto = !precoGratis && data?.preco_label ? data.preco_label : (tipoCompra === "passe" ? "Passe completo" : "Curso avulso");
+        return (
+          <div style={{ background: "white", border: `1px solid ${c.border}`, overflow: "hidden" }}>
+            {/* Header tipo "Sua compra" */}
+            <div style={{ padding: "14px 18px", borderBottom: `1px solid ${c.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: c.warm }}>
+              <span style={{ fontSize: 10, letterSpacing: "0.22em", color: c.sageDark, fontFamily: sans, fontWeight: 600 }}>SUA COMPRA</span>
+              <span style={{ fontSize: 10, letterSpacing: "0.18em", color: c.gold, fontFamily: sans }}>CHECKOUT SEGURO</span>
             </div>
-            {opcoesCompra.map((l, i) => (
-              <button key={`${l.plataforma}-${i}`} onClick={() => comprar(l)} style={btnPrimary(c.gold)}>
-                Comprar · {l.plataforma}
-              </button>
-            ))}
-            {linksCompra.length === 0 && (
-              <div style={{ fontSize: 12, color: c.muted, fontStyle: "italic" }}>
-                Link direto ainda não configurado; a tentativa será registrada para acompanhamento no relatório de vendas.
+
+            {/* Item */}
+            <div style={{ padding: "18px", display: "flex", gap: 14, alignItems: "flex-start", borderBottom: `1px solid ${c.border}` }}>
+              {data?.capa_url ? (
+                <img src={data.capa_url} alt="" style={{ width: 72, height: 72, objectFit: "cover", flexShrink: 0, background: c.warm }} />
+              ) : (
+                <div style={{ width: 72, height: 72, background: c.warm, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: serif, fontSize: 22, color: c.sageDark }}>LM</div>
+              )}
+              <div style={{ flex: 1, textAlign: "left", minWidth: 0 }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.18em", color: c.gold, marginBottom: 4 }}>CONTEÚDO EXCLUSIVO</div>
+                <div style={{ fontFamily: serif, fontSize: 18, color: c.ink, lineHeight: 1.25, marginBottom: 4 }}>{data?.titulo}</div>
+                <div style={{ fontSize: 12, color: c.muted, fontFamily: sans }}>{bloqueioInfo.titulo}</div>
               </div>
-            )}
-            {checkoutErr && <div style={{ fontSize: 12, color: "#B23A48" }}>{checkoutErr}</div>}
+            </div>
+
+            {/* Modalidade */}
+            <div style={{ padding: "16px 18px", borderBottom: `1px solid ${c.border}`, textAlign: "left" }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.22em", color: c.muted, marginBottom: 10, fontFamily: sans }}>MODALIDADE</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+                {([
+                  { v: "curso" as const, label: "Curso avulso", sub: "Acesso a esta aula" },
+                  { v: "passe" as const, label: "Passe completo", sub: "Todos os cursos" },
+                ]).map((opt) => {
+                  const ativo = tipoCompra === opt.v;
+                  return (
+                    <button key={opt.v} onClick={() => { setTipoCompra(opt.v); setMetodoSel(null); }}
+                      style={{ padding: "12px 10px", background: ativo ? c.sageDark : "white", color: ativo ? "white" : c.ink, border: `1px solid ${ativo ? c.sageDark : c.border}`, cursor: "pointer", fontFamily: sans, textAlign: "left" }}>
+                      <div style={{ fontSize: 13, fontWeight: 500 }}>{opt.label}</div>
+                      <div style={{ fontSize: 11, opacity: 0.75, marginTop: 2 }}>{opt.sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {(["Brasil", "Internacional"]).map((p) => {
+                  const ativo = paisCompra === p;
+                  return (
+                    <button key={p} onClick={() => { setPaisCompra(p); setMetodoSel(null); }}
+                      style={{ flex: 1, padding: "8px 10px", background: ativo ? c.ink : "transparent", color: ativo ? "white" : c.muted, border: `1px solid ${ativo ? c.ink : c.border}`, cursor: "pointer", fontFamily: sans, fontSize: 11, letterSpacing: "0.12em" }}>
+                      {p.toUpperCase()}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Métodos de pagamento */}
+            <div style={{ padding: "16px 18px", borderBottom: `1px solid ${c.border}`, textAlign: "left" }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.22em", color: c.muted, marginBottom: 10, fontFamily: sans }}>FORMA DE PAGAMENTO</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {opcoesCompra.map((l) => {
+                  const ativo = (metodoAtivo ?? "") === l.plataforma;
+                  return (
+                    <button key={l.plataforma} onClick={() => setMetodoSel(l.plataforma)}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "12px 14px", background: ativo ? c.warm : "white", border: `1px solid ${ativo ? c.sageDark : c.border}`, cursor: "pointer", fontFamily: sans }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <span style={{ width: 16, height: 16, borderRadius: "50%", border: `1.5px solid ${ativo ? c.sageDark : c.border}`, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                          {ativo && <span style={{ width: 8, height: 8, borderRadius: "50%", background: c.sageDark }} />}
+                        </span>
+                        <span style={{ fontSize: 13, color: c.ink, fontWeight: 500 }}>{l.plataforma}</span>
+                      </span>
+                      <span style={{ fontSize: 10, letterSpacing: "0.14em", color: c.muted }}>{l.url ? "DIRETO" : "REDIRECT"}</span>
+                    </button>
+                  );
+                })}
+                {opcoesCompra.length === 0 && (
+                  <div style={{ fontSize: 12, color: c.muted, fontStyle: "italic", padding: "8px 0" }}>
+                    Nenhuma forma de pagamento disponível para esta combinação.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Total + CTA */}
+            <div style={{ padding: "18px", background: c.warm }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
+                <span style={{ fontSize: 11, letterSpacing: "0.22em", color: c.muted, fontFamily: sans }}>TOTAL</span>
+                <span style={{ fontFamily: serif, fontSize: 28, color: c.sageDark }}>{precoTexto}</span>
+              </div>
+              <button onClick={() => linkAtivo && comprar(linkAtivo)} disabled={!linkAtivo || comprando}
+                style={{ width: "100%", background: c.gold, color: "white", fontFamily: sans, fontSize: 13, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", padding: "16px", border: "none", cursor: linkAtivo && !comprando ? "pointer" : "not-allowed", opacity: linkAtivo && !comprando ? 1 : 0.6 }}>
+                {comprando ? "Processando…" : `Finalizar compra${metodoAtivo ? " · " + metodoAtivo : ""}`}
+              </button>
+              <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 12, fontSize: 10, letterSpacing: "0.16em", color: c.muted, fontFamily: sans }}>
+                <span>PAGAMENTO SEGURO</span>
+                <span>·</span>
+                <span>ACESSO IMEDIATO</span>
+              </div>
+              {linksCompra.length === 0 && (
+                <div style={{ fontSize: 11, color: c.muted, fontStyle: "italic", marginTop: 10, textAlign: "center" }}>
+                  Link direto ainda não configurado — sua intenção de compra será registrada para acompanhamento.
+                </div>
+              )}
+              {checkoutErr && <div style={{ fontSize: 12, color: "#B23A48", marginTop: 10, textAlign: "center" }}>{checkoutErr}</div>}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
+
 
       {!aulaSel && !bloqueioInfo && (
         <div style={{ color: c.muted, padding: 30, textAlign: "center", background: c.warm, border: `1px solid ${c.border}` }}>
