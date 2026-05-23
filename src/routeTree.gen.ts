@@ -28,6 +28,7 @@ import { Route as AppCronogramaRouteImport } from './routes/app_.cronograma'
 import { Route as AppCartaoRouteImport } from './routes/app_.cartao'
 import { Route as AppAlertasRouteImport } from './routes/app_.alertas'
 import { Route as AppSalaRoomIdRouteImport } from './routes/app_.sala.$roomId'
+import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago-webhook'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
 import { Route as AuthenticatedAppMembroRouteImport } from './routes/_authenticated/app.membro'
 import { Route as AuthenticatedAppAdminRouteImport } from './routes/_authenticated/app.admin'
@@ -127,6 +128,12 @@ const AppSalaRoomIdRoute = AppSalaRoomIdRouteImport.update({
   path: '/app/sala/$roomId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicMercadopagoWebhookRoute =
+  ApiPublicMercadopagoWebhookRouteImport.update({
+    id: '/api/public/mercadopago-webhook',
+    path: '/api/public/mercadopago-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHotmartWebhookRoute = ApiPublicHotmartWebhookRouteImport.update({
   id: '/api/public/hotmart-webhook',
   path: '/api/public/hotmart-webhook',
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/app/admin': typeof AuthenticatedAppAdminRoute
   '/app/membro': typeof AuthenticatedAppMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
+  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/app/sala/$roomId': typeof AppSalaRoomIdRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
 }
@@ -194,6 +202,7 @@ export interface FileRoutesByTo {
   '/app/admin': typeof AuthenticatedAppAdminRoute
   '/app/membro': typeof AuthenticatedAppMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
+  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/app/sala/$roomId': typeof AppSalaRoomIdRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
 }
@@ -220,6 +229,7 @@ export interface FileRoutesById {
   '/_authenticated/app/admin': typeof AuthenticatedAppAdminRoute
   '/_authenticated/app/membro': typeof AuthenticatedAppMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
+  '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/app_/sala/$roomId': typeof AppSalaRoomIdRoute
   '/_authenticated/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
 }
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/app/admin'
     | '/app/membro'
     | '/api/public/hotmart-webhook'
+    | '/api/public/mercadopago-webhook'
     | '/app/sala/$roomId'
     | '/atlas/$slug/aprender'
   fileRoutesByTo: FileRoutesByTo
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/app/admin'
     | '/app/membro'
     | '/api/public/hotmart-webhook'
+    | '/api/public/mercadopago-webhook'
     | '/app/sala/$roomId'
     | '/atlas/$slug/aprender'
   id:
@@ -295,6 +307,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/admin'
     | '/_authenticated/app/membro'
     | '/api/public/hotmart-webhook'
+    | '/api/public/mercadopago-webhook'
     | '/app_/sala/$roomId'
     | '/_authenticated/atlas/$slug/aprender'
   fileRoutesById: FileRoutesById
@@ -318,6 +331,7 @@ export interface RootRouteChildren {
   AppVideosRoute: typeof AppVideosRoute
   AvaliacaoTokenRoute: typeof AvaliacaoTokenRoute
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
+  ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
   AppSalaRoomIdRoute: typeof AppSalaRoomIdRoute
 }
 
@@ -456,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSalaRoomIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/mercadopago-webhook': {
+      id: '/api/public/mercadopago-webhook'
+      path: '/api/public/mercadopago-webhook'
+      fullPath: '/api/public/mercadopago-webhook'
+      preLoaderRoute: typeof ApiPublicMercadopagoWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hotmart-webhook': {
       id: '/api/public/hotmart-webhook'
       path: '/api/public/hotmart-webhook'
@@ -532,6 +553,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppVideosRoute: AppVideosRoute,
   AvaliacaoTokenRoute: AvaliacaoTokenRoute,
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
+  ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
   AppSalaRoomIdRoute: AppSalaRoomIdRoute,
 }
 export const routeTree = rootRouteImport
