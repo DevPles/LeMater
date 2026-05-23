@@ -192,43 +192,57 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
               </div>
             </div>
 
-            {/* Métodos de pagamento */}
+            {/* Métodos de pagamento — dropdown */}
             <div style={{ padding: "16px 18px", borderBottom: `1px solid ${c.border}`, textAlign: "left" }}>
               <div style={{ fontSize: 10, letterSpacing: "0.22em", color: c.muted, marginBottom: 10, fontFamily: sans }}>FORMA DE PAGAMENTO</div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                {opcoesCompra.map((l, idx) => {
-                  const ativo = (metodoAtivo ?? "") === l.plataforma;
-                  const desc = l.plataforma === "Mercado Pago" ? "Pix, cartão e boleto · processado no app"
-                    : l.plataforma === "InfinityPay" ? "Cartão e Pix com taxas reduzidas"
-                    : l.plataforma === "Hotmart" ? "Cartão internacional e parcelamento"
-                    : l.plataforma === "Kiwify" ? "Checkout simplificado em reais"
-                    : l.plataforma === "Eduzz" ? "Cartão, boleto e Pix"
-                    : l.plataforma === "Stripe" ? "Pagamentos globais em USD/EUR"
-                    : l.plataforma === "Paddle" ? "Merchant of record global"
-                    : "Redirecionamento seguro";
-                  return (
-                    <button key={l.plataforma} onClick={() => setMetodoSel(l.plataforma)}
-                      style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 12px", background: ativo ? c.warm : "transparent", border: "none", borderTop: idx === 0 ? "none" : `1px solid ${c.border}`, cursor: "pointer", fontFamily: sans, textAlign: "left", width: "100%" }}>
-                      <span style={{ width: 18, height: 18, borderRadius: "50%", border: `1.5px solid ${ativo ? c.sageDark : c.border}`, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        {ativo && <span style={{ width: 9, height: 9, borderRadius: "50%", background: c.sageDark }} />}
-                      </span>
-                      <span style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, color: c.ink, fontWeight: 500 }}>{l.plataforma}</div>
-                        <div style={{ fontSize: 11, color: c.muted, marginTop: 2 }}>{desc}</div>
-                      </span>
-                      {l.plataforma === "Mercado Pago" && (
-                        <span style={{ fontSize: 9, letterSpacing: "0.14em", color: c.sageDark, background: "white", border: `1px solid ${c.sageDark}`, padding: "3px 6px" }}>RECOMENDADO</span>
-                      )}
-                    </button>
-                  );
-                })}
-                {opcoesCompra.length === 0 && (
-                  <div style={{ fontSize: 12, color: c.muted, fontStyle: "italic", padding: "8px 0" }}>
-                    Nenhuma forma de pagamento disponível para esta combinação.
+              {opcoesCompra.length === 0 ? (
+                <div style={{ fontSize: 12, color: c.muted, fontStyle: "italic", padding: "8px 0" }}>
+                  Nenhuma forma de pagamento disponível para esta combinação.
+                </div>
+              ) : (() => {
+                const descricoes: Record<string, string> = {
+                  "Mercado Pago": "Pix, cartão e boleto · processado no app",
+                  "InfinityPay": "Cartão e Pix com taxas reduzidas",
+                  "Hotmart": "Cartão internacional e parcelamento",
+                  "Kiwify": "Checkout simplificado em reais",
+                  "Eduzz": "Cartão, boleto e Pix",
+                  "Stripe": "Pagamentos globais em USD/EUR",
+                  "Paddle": "Merchant of record global",
+                };
+                const descAtiva = metodoAtivo ? (descricoes[metodoAtivo] ?? "Redirecionamento seguro") : "";
+                return (
+                  <div style={{ position: "relative" }}>
+                    <select
+                      value={metodoAtivo ?? ""}
+                      onChange={(e) => setMetodoSel(e.target.value)}
+                      style={{
+                        width: "100%",
+                        appearance: "none",
+                        WebkitAppearance: "none",
+                        background: c.warm,
+                        border: `1px solid ${c.border}`,
+                        padding: "14px 38px 14px 14px",
+                        fontFamily: sans,
+                        fontSize: 13,
+                        color: c.ink,
+                        fontWeight: 500,
+                        cursor: "pointer",
+                        borderRadius: 0,
+                      }}
+                    >
+                      {opcoesCompra.map((l) => (
+                        <option key={l.plataforma} value={l.plataforma}>
+                          {l.plataforma}{l.plataforma === "Mercado Pago" ? "  — Recomendado" : ""}
+                        </option>
+                      ))}
+                    </select>
+                    <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: c.muted, fontSize: 12, fontFamily: sans }}>▾</span>
+                    {descAtiva && (
+                      <div style={{ fontSize: 11, color: c.muted, marginTop: 8, fontFamily: sans }}>{descAtiva}</div>
+                    )}
                   </div>
-                )}
-
-              </div>
+                );
+              })()}
             </div>
 
             {/* Total + CTA */}
