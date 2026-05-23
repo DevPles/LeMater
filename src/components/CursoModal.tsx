@@ -49,7 +49,10 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const [bloqueioInfo, setBloqueioInfo] = useState<{ titulo: string } | null>(null);
   const [paisCompra, setPaisCompra] = useState("Brasil");
   const [tipoCompra, setTipoCompra] = useState<"curso" | "passe">("curso");
+  const [metodoSel, setMetodoSel] = useState<string | null>(null);
   const [checkoutErr, setCheckoutErr] = useState<string | null>(null);
+  const [comprando, setComprando] = useState(false);
+
 
   useEffect(() => {
     fn({ data: { slug } })
