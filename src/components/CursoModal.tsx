@@ -8,6 +8,19 @@ import { useAuth } from "@/hooks/useAuth";
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", gold: "#B8923A" };
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
+type CompraLink = { plataforma: string; url?: string | null; pais?: string | null; tipo?: "curso" | "passe" | null };
+const metodosPadrao: CompraLink[] = [
+  { pais: "Brasil", tipo: "curso", plataforma: "Mercado Pago" },
+  { pais: "Brasil", tipo: "curso", plataforma: "InfinityPay" },
+  { pais: "Brasil", tipo: "curso", plataforma: "Hotmart" },
+  { pais: "Brasil", tipo: "curso", plataforma: "Kiwify" },
+  { pais: "Brasil", tipo: "curso", plataforma: "Eduzz" },
+  { pais: "Brasil", tipo: "passe", plataforma: "Mercado Pago" },
+  { pais: "Brasil", tipo: "passe", plataforma: "Hotmart" },
+  { pais: "Internacional", tipo: "curso", plataforma: "Stripe" },
+  { pais: "Internacional", tipo: "curso", plataforma: "Paddle" },
+  { pais: "Internacional", tipo: "passe", plataforma: "Stripe" },
+];
 
 function useIsMobile() {
   const [m, setM] = useState(false);
@@ -70,19 +83,23 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
 
   const fechar = () => onClose();
   const irParaCadastro = () => navigate({ to: "/app" });
-  const linksCompra = (() => {
+  const linksCompra: CompraLink[] = (() => {
     const arr = data?.links_compra ?? [];
     if (arr.length > 0) return arr;
     if (data?.link_compra_externo) return [{ plataforma: data.plataforma_venda || "Comprar", url: data.link_compra_externo }];
-    return [] as { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | null }[];
+    return [];
   })();
   const linksFiltrados = linksCompra.filter((l) => (!l.pais || l.pais === paisCompra) && (!l.tipo || l.tipo === tipoCompra));
-  const comprar = async (link: { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | null }) => {
+  const opcoesCompra = linksFiltrados.length > 0 ? linksFiltrados : metodosPadrao.filter((l) => l.pais === paisCompra && l.tipo === tipoCompra);
+  const precoGratis = data?.preco_label?.trim().toLowerCase() === "grátis" || data?.preco_label?.trim().toLowerCase() === "gratis";
+  const comprar = async (link: CompraLink) => {
     setCheckoutErr(null);
     if (!user) { navigate({ to: "/app" }); return; }
     try {
       const r = await checkoutFn({ data: { curso_id: data!.id, plataforma: link.plataforma, pais: link.pais ?? paisCompra, tipo: link.tipo ?? tipoCompra } });
-      window.open((r as any).url ?? link.url, "_blank", "noopener,noreferrer");
+      const url = (r as any).url ?? link.url;
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
+      else setCheckoutErr("Compra registrada. Falta configurar o link desta plataforma no painel admin.");
     } catch (e: any) {
       setCheckoutErr(e?.message ?? "Não foi possível iniciar a compra");
     }
