@@ -860,7 +860,31 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
               Opções de compra (país + plataforma) — aparecem como botões no card
             </div>
             {(curso.links_compra ?? []).map((l: any, i: number) => (
-              <div key={i} style={{ display: "grid", gridTemplateColumns: "200px 1fr auto", gap: 8, marginBottom: 8 }}>
+              <div key={i} style={{ display: "grid", gridTemplateColumns: "130px 130px 180px 1fr auto", gap: 8, marginBottom: 8 }}>
+                <select
+                  value={l.pais ?? "Brasil"}
+                  onChange={(e) => {
+                    const arr = [...(curso.links_compra ?? [])];
+                    arr[i] = { ...arr[i], pais: e.target.value };
+                    updateCurso({ links_compra: arr });
+                  }}
+                  style={inp}
+                >
+                  <option value="Brasil">Brasil</option>
+                  <option value="Internacional">Internacional</option>
+                </select>
+                <select
+                  value={l.tipo ?? "curso"}
+                  onChange={(e) => {
+                    const arr = [...(curso.links_compra ?? [])];
+                    arr[i] = { ...arr[i], tipo: e.target.value as "curso" | "passe" };
+                    updateCurso({ links_compra: arr });
+                  }}
+                  style={inp}
+                >
+                  <option value="curso">Curso avulso</option>
+                  <option value="passe">Passe completo</option>
+                </select>
                 <select
                   value={l.plataforma}
                   onChange={(e) => {
@@ -910,7 +934,7 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
             ))}
             <button
               type="button"
-              onClick={() => updateCurso({ links_compra: [...(curso.links_compra ?? []), { plataforma: "", url: "" }] })}
+              onClick={() => updateCurso({ links_compra: [...(curso.links_compra ?? []), { pais: "Brasil", tipo: "curso", plataforma: "", url: "" }] })}
               style={{ background: c.warm, border: `1px solid ${c.border}`, color: c.sageDark, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontFamily: sans, letterSpacing: "0.08em", textTransform: "uppercase" }}
             >
               + Adicionar opção de compra
