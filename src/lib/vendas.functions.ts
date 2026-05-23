@@ -125,7 +125,7 @@ export const startCursoCheckout = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const { data: curso, error } = await supabaseAdmin
       .from("cursos")
-      .select("id, titulo, preco_centavos, links_compra, link_compra_externo, plataforma_venda")
+      .select("id, titulo, descricao_curta, capa_url, preco_centavos, links_compra, link_compra_externo, plataforma_venda")
       .eq("id", data.curso_id)
       .maybeSingle();
     if (error || !curso) throw new Error("Curso não encontrado");
@@ -137,21 +137,89 @@ export const startCursoCheckout = createServerFn({ method: "POST" })
       (!l?.tipo || String(l.tipo) === data.tipo)
     ) ?? (curso.link_compra_externo ? { url: curso.link_compra_externo, plataforma: curso.plataforma_venda ?? data.plataforma } : null);
 
+    // Aplica cupom para calcular valor final
+    let valorFinal = curso.preco_centavos ?? 0;
+    if (data.cupom_codigo) {
+      const { data: cupResult } = await supabaseAdmin.rpc("validate_cupom", {
+        _codigo: data.cupom_codigo,
+        _curso_id: data.curso_id,
+      });
+      const c = cupResult as any;
+      if (c?.valid && typeof c.total_centavos === "number") valorFinal = c.total_centavos;
+    }
+
+    const emailComprador = String((context.claims as any)?.email ?? "");
+    const nomeComprador = String((context.claims as any)?.user_metadata?.nome ?? "");
+
+    let urlCheckout: string | null = escolhido?.url ? String(escolhido.url) : null;
+    let referenciaExterna: string | null = null;
+
+    // Integração nativa Mercado Pago (Brasil)
+    if (data.plataforma === "Mercado Pago" && valorFinal > 0) {
+      const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+      if (mpToken) {
+        try {
+          referenciaExterna = `curso_${data.curso_id}_${context.userId}_${Date.now()}`;
+          const reqHeaders = (await import("@tanstack/react-start/server")).getRequest();
+          const origin = reqHeaders.headers.get("origin") ?? `https://${reqHeaders.headers.get("host") ?? "lemater.com"}`;
+          const body = {
+            items: [{
+              id: data.curso_id,
+              title: `${curso.titulo}${data.tipo === "passe" ? " · Passe completo" : ""}`,
+              description: curso.descricao_curta ?? undefined,
+              picture_url: curso.capa_url ?? undefined,
+              category_id: "education",
+              quantity: 1,
+              currency_id: "BRL",
+              unit_price: Math.round(valorFinal) / 100,
+            }],
+            payer: emailComprador ? { email: emailComprador, name: nomeComprador || undefined } : undefined,
+            external_reference: referenciaExterna,
+            statement_descriptor: "LEMATER",
+            back_urls: {
+              success: `${origin}/app/videos?compra=sucesso`,
+              pending: `${origin}/app/videos?compra=pendente`,
+              failure: `${origin}/app/videos?compra=falha`,
+            },
+            auto_return: "approved",
+            notification_url: `${origin}/api/public/mercadopago-webhook`,
+            metadata: { curso_id: data.curso_id, user_id: context.userId, tipo: data.tipo },
+          };
+          const r = await fetch("https://api.mercadopago.com/checkout/preferences", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${mpToken}` },
+            body: JSON.stringify(body),
+          });
+          const j: any = await r.json();
+          if (!r.ok) {
+            console.error("[MP] preference error", j);
+            throw new Error(j?.message ?? "Falha ao criar pagamento Mercado Pago");
+          }
+          urlCheckout = (mpToken.startsWith("TEST-") ? j.sandbox_init_point : j.init_point) ?? j.init_point;
+        } catch (e: any) {
+          console.error("[MP] exception", e);
+          throw new Error("Não foi possível abrir o Mercado Pago: " + (e?.message ?? "erro"));
+        }
+      }
+    }
+
     await supabaseAdmin.from("hotmart_compras").insert({
-      email_comprador: String((context.claims as any)?.email ?? ""),
-      nome_comprador: String((context.claims as any)?.user_metadata?.nome ?? ""),
+      email_comprador: emailComprador,
+      nome_comprador: nomeComprador,
       produto: curso.titulo,
       evento: "CHECKOUT_STARTED",
       status: "pendente",
-      raw_payload: { curso_id: data.curso_id, plataforma: data.plataforma, tipo: data.tipo, pais: data.pais ?? null },
+      transaction_id: referenciaExterna,
+      raw_payload: { curso_id: data.curso_id, plataforma: data.plataforma, tipo: data.tipo, pais: data.pais ?? null, valor_final_centavos: valorFinal },
       curso_id: data.curso_id,
       cupom_codigo: data.cupom_codigo || null,
-      valor_centavos: curso.preco_centavos ?? null,
+      valor_centavos: valorFinal,
       plataforma: data.plataforma,
     });
 
-    return { url: escolhido?.url ? String(escolhido.url) : null, pendente: !escolhido?.url };
+    return { url: urlCheckout, pendente: !urlCheckout };
   });
+
 
 // ---------- CURSOS DROPDOWN ----------
 export const listCursosBasic = createServerFn({ method: "GET" })
