@@ -98,13 +98,21 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const comprar = async (link: CompraLink) => {
     setCheckoutErr(null);
     if (!user) { navigate({ to: "/app" }); return; }
+    const checkoutWindow = window.open("about:blank", "_blank");
+    if (checkoutWindow) checkoutWindow.opener = null;
     setComprando(true);
     try {
       const r = await checkoutFn({ data: { curso_id: data!.id, plataforma: link.plataforma, pais: link.pais ?? paisCompra, tipo: link.tipo ?? tipoCompra } });
       const url = (r as any).url ?? link.url;
-      if (url) window.open(url, "_blank", "noopener,noreferrer");
-      else setCheckoutErr((r as any).message ?? "Este método ainda não possui checkout ativo.");
+      if (url) {
+        if (checkoutWindow) checkoutWindow.location.href = url;
+        else window.location.href = url;
+      } else {
+        checkoutWindow?.close();
+        setCheckoutErr((r as any).message ?? "Este método ainda não possui checkout ativo.");
+      }
     } catch (e: any) {
+      checkoutWindow?.close();
       setCheckoutErr(e?.message ?? "Não foi possível iniciar a compra");
     } finally {
       setComprando(false);
