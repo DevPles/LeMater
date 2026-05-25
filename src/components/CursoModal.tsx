@@ -9,6 +9,7 @@ const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 type CompraLink = { plataforma: string; url?: string | null; pais?: string | null; tipo?: "curso" | "passe" | null };
+type CheckoutResponse = { url?: string | null; message?: string | null };
 const metodosPadrao: CompraLink[] = [
   { pais: "Brasil", tipo: "curso", plataforma: "Mercado Pago" },
   { pais: "Brasil", tipo: "curso", plataforma: "InfinityPay" },
@@ -102,18 +103,18 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
     if (checkoutWindow) checkoutWindow.opener = null;
     setComprando(true);
     try {
-      const r = await checkoutFn({ data: { curso_id: data!.id, plataforma: link.plataforma, pais: link.pais ?? paisCompra, tipo: link.tipo ?? tipoCompra } });
-      const url = (r as any).url ?? link.url;
+      const r = await checkoutFn({ data: { curso_id: data!.id, plataforma: link.plataforma, pais: link.pais ?? paisCompra, tipo: link.tipo ?? tipoCompra } }) as CheckoutResponse;
+      const url = r.url ?? link.url;
       if (url) {
         if (checkoutWindow) checkoutWindow.location.href = url;
         else window.location.href = url;
       } else {
         checkoutWindow?.close();
-        setCheckoutErr((r as any).message ?? "Este método ainda não possui checkout ativo.");
+        setCheckoutErr(r.message ?? "Este método ainda não possui checkout ativo.");
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       checkoutWindow?.close();
-      setCheckoutErr(e?.message ?? "Não foi possível iniciar a compra");
+      setCheckoutErr(e instanceof Error ? e.message : "Não foi possível iniciar a compra");
     } finally {
       setComprando(false);
     }
