@@ -412,6 +412,18 @@ export default function NovoConteudoModal({
         materiais_extras.push({ nome: f.name, path });
       }
 
+      const aulaPaga = !ehGratis && !a.previa_gratis;
+      const linksLimpos = aulaPaga
+        ? (a.links_compra ?? [])
+            .filter((l) => l?.plataforma?.trim() && l?.url?.trim())
+            .map((l) => ({
+              plataforma: String(l.plataforma).trim(),
+              url: String(l.url).trim(),
+              pais: l.pais || "Brasil",
+              tipo: l.tipo || "aula",
+            }))
+        : [];
+
       await upAula({
         data: {
           modulo_id: moduloRow.id,
@@ -425,8 +437,12 @@ export default function NovoConteudoModal({
           ordem: i,
           previa_gratis: ehGratis ? true : a.previa_gratis,
           materiais_extras,
+          preco_centavos: aulaPaga ? Number(a.preco_centavos) || 0 : 0,
+          preco_label: aulaPaga ? a.preco_label || null : null,
+          links_compra: linksLimpos,
         },
       });
+
     }
   };
 
