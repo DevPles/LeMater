@@ -217,7 +217,7 @@ export const startCursoCheckout = createServerFn({ method: "POST" })
           console.error("[MP] preference error", j);
           throw new Error(j?.message ?? "Falha ao criar pagamento Mercado Pago");
         }
-        urlCheckout = (mpToken.startsWith("TEST-") ? j.sandbox_init_point : j.init_point) ?? j.init_point;
+        urlCheckout = (mpToken.startsWith("TEST-") ? j.sandbox_init_point : j.init_point) ?? j.init_point ?? null;
       } catch (e: unknown) {
         console.error("[MP] exception", e);
         throw new Error("Não foi possível abrir o Mercado Pago: " + (e instanceof Error ? e.message : "erro"));
