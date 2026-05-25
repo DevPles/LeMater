@@ -103,7 +103,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       const r = await checkoutFn({ data: { curso_id: data!.id, plataforma: link.plataforma, pais: link.pais ?? paisCompra, tipo: link.tipo ?? tipoCompra } });
       const url = (r as any).url ?? link.url;
       if (url) window.open(url, "_blank", "noopener,noreferrer");
-      else setCheckoutErr("Compra registrada. Falta configurar o link desta plataforma no painel admin.");
+      else setCheckoutErr((r as any).message ?? "Este método ainda não possui checkout ativo.");
     } catch (e: any) {
       setCheckoutErr(e?.message ?? "Não foi possível iniciar a compra");
     } finally {
@@ -260,9 +260,9 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                 <span>·</span>
                 <span>ACESSO IMEDIATO</span>
               </div>
-              {linksCompra.length === 0 && (
+              {linksCompra.length === 0 && metodoAtivo !== "Mercado Pago" && (
                 <div style={{ fontSize: 11, color: c.muted, fontStyle: "italic", marginTop: 10, textAlign: "center" }}>
-                  Link direto ainda não configurado — sua intenção de compra será registrada para acompanhamento.
+                  Este método precisa de um link direto para abrir o checkout.
                 </div>
               )}
               {checkoutErr && <div style={{ fontSize: 12, color: "#B23A48", marginTop: 10, textAlign: "center" }}>{checkoutErr}</div>}
