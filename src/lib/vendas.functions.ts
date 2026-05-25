@@ -8,6 +8,24 @@ async function assertAdmin(userId: string) {
   if (!data) throw new Error("forbidden");
 }
 
+function getMercadoPagoAccessToken() {
+  const token = process.env.MERCADOPAGO_ACCESS_TOKEN?.trim();
+  if (!token) {
+    throw new Error("Mercado Pago não está conectado. Configure o Access Token nos segredos do projeto.");
+  }
+  if (/^APP_USR-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) {
+    throw new Error("A credencial do Mercado Pago está como Public Key. Use o Access Token de produção no segredo MERCADOPAGO_ACCESS_TOKEN.");
+  }
+  if (!token.startsWith("APP_USR-") && !token.startsWith("TEST-")) {
+    throw new Error("A credencial do Mercado Pago não é um Access Token válido. Use o campo Access Token, não Client Secret nem Client ID.");
+  }
+  return token;
+}
+
+type CompraLinkRow = { plataforma?: unknown; pais?: unknown; tipo?: unknown; url?: unknown };
+type CupomResult = { valid?: boolean; total_centavos?: number };
+type MercadoPagoPreferenceResponse = { init_point?: string; sandbox_init_point?: string; message?: string };
+
 // ---------- VENDAS ----------
 export const listVendas = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -130,7 +148,8 @@ export const startCursoCheckout = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error || !curso) throw new Error("Curso não encontrado");
 
-    const links = Array.isArray((curso as any).links_compra) ? (curso as any).links_compra as any[] : [];
+    const linksRaw: unknown = curso.links_compra;
+    const links: CompraLinkRow[] = Array.isArray(linksRaw) ? linksRaw.filter((l): l is CompraLinkRow => typeof l === "object" && l !== null) : [];
     const escolhido = links.find((l) =>
       String(l?.plataforma ?? "") === data.plataforma &&
       (!data.pais || !l?.pais || String(l.pais) === data.pais) &&
@@ -144,62 +163,64 @@ export const startCursoCheckout = createServerFn({ method: "POST" })
         _codigo: data.cupom_codigo,
         _curso_id: data.curso_id,
       });
-      const c = cupResult as any;
+      const c = cupResult as CupomResult | null;
       if (c?.valid && typeof c.total_centavos === "number") valorFinal = c.total_centavos;
     }
 
-    const emailComprador = String((context.claims as any)?.email ?? "");
-    const nomeComprador = String((context.claims as any)?.user_metadata?.nome ?? "");
+    const claims = context.claims as { email?: unknown; user_metadata?: { nome?: unknown } } | null;
+    const emailComprador = typeof claims?.email === "string" ? claims.email : "";
+    const nomeComprador = typeof claims?.user_metadata?.nome === "string" ? claims.user_metadata.nome : "";
 
     let urlCheckout: string | null = escolhido?.url ? String(escolhido.url) : null;
     let referenciaExterna: string | null = null;
 
     // Integração nativa Mercado Pago (Brasil)
-    if (data.plataforma === "Mercado Pago" && valorFinal > 0) {
-      const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
-      if (mpToken) {
-        try {
-          referenciaExterna = `curso_${data.curso_id}_${context.userId}_${Date.now()}`;
-          const reqHeaders = (await import("@tanstack/react-start/server")).getRequest();
-          const origin = reqHeaders.headers.get("origin") ?? `https://${reqHeaders.headers.get("host") ?? "lemater.com"}`;
-          const body = {
-            items: [{
-              id: data.curso_id,
-              title: `${curso.titulo}${data.tipo === "passe" ? " · Passe completo" : ""}`,
-              description: curso.descricao_curta ?? undefined,
-              picture_url: curso.capa_url ?? undefined,
-              category_id: "education",
-              quantity: 1,
-              currency_id: "BRL",
-              unit_price: Math.round(valorFinal) / 100,
-            }],
-            payer: emailComprador ? { email: emailComprador, name: nomeComprador || undefined } : undefined,
-            external_reference: referenciaExterna,
-            statement_descriptor: "LEMATER",
-            back_urls: {
-              success: `${origin}/app/videos?compra=sucesso`,
-              pending: `${origin}/app/videos?compra=pendente`,
-              failure: `${origin}/app/videos?compra=falha`,
-            },
-            auto_return: "approved",
-            notification_url: `${origin}/api/public/mercadopago-webhook`,
-            metadata: { curso_id: data.curso_id, user_id: context.userId, tipo: data.tipo },
-          };
-          const r = await fetch("https://api.mercadopago.com/checkout/preferences", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${mpToken}` },
-            body: JSON.stringify(body),
-          });
-          const j: any = await r.json();
-          if (!r.ok) {
-            console.error("[MP] preference error", j);
-            throw new Error(j?.message ?? "Falha ao criar pagamento Mercado Pago");
-          }
-          urlCheckout = (mpToken.startsWith("TEST-") ? j.sandbox_init_point : j.init_point) ?? j.init_point;
-        } catch (e: any) {
-          console.error("[MP] exception", e);
-          throw new Error("Não foi possível abrir o Mercado Pago: " + (e?.message ?? "erro"));
+    if (data.plataforma === "Mercado Pago") {
+      if (valorFinal <= 0) {
+        throw new Error("Para abrir uma compra real no Mercado Pago, cadastre um preço maior que R$ 0 para este curso.");
+      }
+      const mpToken = getMercadoPagoAccessToken();
+      try {
+        referenciaExterna = `curso_${data.curso_id}_${context.userId}_${Date.now()}`;
+        const reqHeaders = (await import("@tanstack/react-start/server")).getRequest();
+        const origin = reqHeaders.headers.get("origin") ?? `https://${reqHeaders.headers.get("host") ?? "lemater.com"}`;
+        const body = {
+          items: [{
+            id: data.curso_id,
+            title: `${curso.titulo}${data.tipo === "passe" ? " · Passe completo" : ""}`,
+            description: curso.descricao_curta ?? undefined,
+            picture_url: curso.capa_url ?? undefined,
+            category_id: "education",
+            quantity: 1,
+            currency_id: "BRL",
+            unit_price: Math.round(valorFinal) / 100,
+          }],
+          payer: emailComprador ? { email: emailComprador, name: nomeComprador || undefined } : undefined,
+          external_reference: referenciaExterna,
+          statement_descriptor: "LEMATER",
+          back_urls: {
+            success: `${origin}/app/videos?compra=sucesso`,
+            pending: `${origin}/app/videos?compra=pendente`,
+            failure: `${origin}/app/videos?compra=falha`,
+          },
+          auto_return: "approved",
+          notification_url: `${origin}/api/public/mercadopago-webhook`,
+          metadata: { curso_id: data.curso_id, user_id: context.userId, tipo: data.tipo },
+        };
+        const r = await fetch("https://api.mercadopago.com/checkout/preferences", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${mpToken}` },
+          body: JSON.stringify(body),
+        });
+        const j = (await r.json()) as MercadoPagoPreferenceResponse;
+        if (!r.ok) {
+          console.error("[MP] preference error", j);
+          throw new Error(j?.message ?? "Falha ao criar pagamento Mercado Pago");
         }
+        urlCheckout = (mpToken.startsWith("TEST-") ? j.sandbox_init_point : j.init_point) ?? j.init_point ?? null;
+      } catch (e: unknown) {
+        console.error("[MP] exception", e);
+        throw new Error("Não foi possível abrir o Mercado Pago: " + (e instanceof Error ? e.message : "erro"));
       }
     }
 
@@ -217,7 +238,7 @@ export const startCursoCheckout = createServerFn({ method: "POST" })
       plataforma: data.plataforma,
     });
 
-    return { url: urlCheckout, pendente: !urlCheckout };
+    return { url: urlCheckout, pendente: !urlCheckout, message: urlCheckout ? null : "Método de pagamento sem checkout configurado." };
   });
 
 
