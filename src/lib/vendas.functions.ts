@@ -22,6 +22,10 @@ function getMercadoPagoAccessToken() {
   return token;
 }
 
+type CompraLinkRow = { plataforma?: unknown; pais?: unknown; tipo?: unknown; url?: unknown };
+type CupomResult = { valid?: boolean; total_centavos?: number };
+type MercadoPagoPreferenceResponse = { init_point?: string; sandbox_init_point?: string; message?: string };
+
 // ---------- VENDAS ----------
 export const listVendas = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -144,7 +148,8 @@ export const startCursoCheckout = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error || !curso) throw new Error("Curso não encontrado");
 
-    const links = Array.isArray((curso as any).links_compra) ? (curso as any).links_compra as any[] : [];
+    const linksRaw: unknown = curso.links_compra;
+    const links: CompraLinkRow[] = Array.isArray(linksRaw) ? linksRaw.filter((l): l is CompraLinkRow => typeof l === "object" && l !== null) : [];
     const escolhido = links.find((l) =>
       String(l?.plataforma ?? "") === data.plataforma &&
       (!data.pais || !l?.pais || String(l.pais) === data.pais) &&
@@ -158,12 +163,13 @@ export const startCursoCheckout = createServerFn({ method: "POST" })
         _codigo: data.cupom_codigo,
         _curso_id: data.curso_id,
       });
-      const c = cupResult as any;
+      const c = cupResult as CupomResult | null;
       if (c?.valid && typeof c.total_centavos === "number") valorFinal = c.total_centavos;
     }
 
-    const emailComprador = String((context.claims as any)?.email ?? "");
-    const nomeComprador = String((context.claims as any)?.user_metadata?.nome ?? "");
+    const claims = context.claims as { email?: unknown; user_metadata?: { nome?: unknown } } | null;
+    const emailComprador = typeof claims?.email === "string" ? claims.email : "";
+    const nomeComprador = typeof claims?.user_metadata?.nome === "string" ? claims.user_metadata.nome : "";
 
     let urlCheckout: string | null = escolhido?.url ? String(escolhido.url) : null;
     let referenciaExterna: string | null = null;
@@ -206,15 +212,15 @@ export const startCursoCheckout = createServerFn({ method: "POST" })
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${mpToken}` },
           body: JSON.stringify(body),
         });
-        const j: any = await r.json();
+        const j = (await r.json()) as MercadoPagoPreferenceResponse;
         if (!r.ok) {
           console.error("[MP] preference error", j);
           throw new Error(j?.message ?? "Falha ao criar pagamento Mercado Pago");
         }
         urlCheckout = (mpToken.startsWith("TEST-") ? j.sandbox_init_point : j.init_point) ?? j.init_point;
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error("[MP] exception", e);
-        throw new Error("Não foi possível abrir o Mercado Pago: " + (e?.message ?? "erro"));
+        throw new Error("Não foi possível abrir o Mercado Pago: " + (e instanceof Error ? e.message : "erro"));
       }
     }
 
