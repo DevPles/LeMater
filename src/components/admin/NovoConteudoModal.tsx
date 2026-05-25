@@ -1097,6 +1097,101 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
                 </Field>
               </div>
 
+              {!a.previa_gratis && (
+                <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: 12 }}>
+                  <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 8 }}>
+                    Venda desta aula
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                    <Field label="Preço (centavos)">
+                      <input
+                        type="number"
+                        min={0}
+                        value={a.preco_centavos}
+                        onChange={(e) => updateAula(i, { preco_centavos: Math.max(0, parseInt(e.target.value) || 0) })}
+                        style={inp}
+                      />
+                    </Field>
+                    <Field label="Preço (texto exibido)">
+                      <input
+                        value={a.preco_label}
+                        onChange={(e) => updateAula(i, { preco_label: e.target.value })}
+                        placeholder="R$ 47"
+                        style={inp}
+                      />
+                    </Field>
+                  </div>
+                  <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: c.muted, marginBottom: 6 }}>
+                    Métodos de pagamento
+                  </div>
+                  {(a.links_compra ?? []).map((l, k) => (
+                    <div key={k} style={{ display: "grid", gridTemplateColumns: "120px 180px 1fr auto", gap: 6, marginBottom: 6 }}>
+                      <select
+                        value={l.pais ?? "Brasil"}
+                        onChange={(e) => {
+                          const arr = [...a.links_compra]; arr[k] = { ...arr[k], pais: e.target.value };
+                          updateAula(i, { links_compra: arr });
+                        }}
+                        style={inp}
+                      >
+                        <option value="Brasil">Brasil</option>
+                        <option value="Internacional">Internacional</option>
+                      </select>
+                      <select
+                        value={l.plataforma}
+                        onChange={(e) => {
+                          const arr = [...a.links_compra]; arr[k] = { ...arr[k], plataforma: e.target.value };
+                          updateAula(i, { links_compra: arr });
+                        }}
+                        style={inp}
+                      >
+                        <option value="">— escolha o método —</option>
+                        <optgroup label="Brasil">
+                          <option value="Mercado Pago">Mercado Pago</option>
+                          <option value="InfinityPay">InfinityPay</option>
+                          <option value="Hotmart">Hotmart</option>
+                          <option value="Kiwify">Kiwify</option>
+                          <option value="Eduzz">Eduzz</option>
+                        </optgroup>
+                        <optgroup label="Internacional">
+                          <option value="Stripe">Stripe</option>
+                          <option value="Paddle">Paddle</option>
+                          <option value="Teachable">Teachable</option>
+                        </optgroup>
+                        <option value="Outro">Outro</option>
+                      </select>
+                      <input
+                        value={l.url}
+                        onChange={(e) => {
+                          const arr = [...a.links_compra]; arr[k] = { ...arr[k], url: e.target.value };
+                          updateAula(i, { links_compra: arr });
+                        }}
+                        placeholder="https://… (deixe em branco para Mercado Pago nativo)"
+                        style={inp}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const arr = [...a.links_compra]; arr.splice(k, 1);
+                          updateAula(i, { links_compra: arr });
+                        }}
+                        style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "0 10px", cursor: "pointer", fontSize: 12, fontFamily: sans }}
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => updateAula(i, { links_compra: [...(a.links_compra ?? []), { pais: "Brasil", tipo: "aula", plataforma: "", url: "" }] })}
+                    style={{ background: "white", border: `1px solid ${c.border}`, color: c.sageDark, padding: "6px 12px", cursor: "pointer", fontSize: 11, fontFamily: sans, letterSpacing: "0.08em", textTransform: "uppercase" }}
+                  >
+                    + Adicionar método de pagamento
+                  </button>
+                </div>
+              )}
+
+
               {a.tipo === "video" && (
                 <>
                   <Field label="URL do vídeo (YouTube/Vimeo)">
