@@ -97,6 +97,7 @@ const sectionTitle: CSSProperties = {
 
 type Tipo = "curso" | "material" | "servico";
 
+type LinkCompra = { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | "aula" | null };
 type AulaLocal = {
   titulo: string;
   descricao: string;
@@ -108,6 +109,10 @@ type AulaLocal = {
   duracao_min: number;
   previa_gratis: boolean;
   anexos: File[]; // múltiplos PDFs/arquivos para download
+  // Venda por aula (quando previa_gratis = false)
+  preco_centavos: number;
+  preco_label: string;
+  links_compra: LinkCompra[];
 };
 
 const aulaVazia = (): AulaLocal => ({
@@ -119,9 +124,13 @@ const aulaVazia = (): AulaLocal => ({
   pdfFile: null,
   conteudo_html: "",
   duracao_min: 0,
-  previa_gratis: false,
+  previa_gratis: true,
   anexos: [],
+  preco_centavos: 0,
+  preco_label: "",
+  links_compra: [],
 });
+
 
 export default function NovoConteudoModal({
   tipoInicial = "curso",
