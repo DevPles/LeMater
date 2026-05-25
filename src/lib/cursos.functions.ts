@@ -458,6 +458,14 @@ const AulaSchema = z.object({
   ordem: z.number().int().default(0),
   previa_gratis: z.boolean().default(false),
   materiais_extras: z.array(z.object({ nome: z.string().min(1).max(200), path: z.string().min(1).max(500) })).optional(),
+  preco_centavos: z.number().int().min(0).default(0).optional(),
+  preco_label: z.string().max(60).nullable().optional(),
+  links_compra: z.array(z.object({
+    plataforma: z.string().min(1).max(60),
+    url: z.string().max(500),
+    pais: z.string().max(40).nullable().optional(),
+    tipo: z.enum(["curso", "passe", "aula"]).nullable().optional(),
+  })).optional(),
 });
 
 export const adminUpsertAula = createServerFn({ method: "POST" })

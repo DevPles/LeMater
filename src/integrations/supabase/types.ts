@@ -367,10 +367,15 @@ export type Database = {
           descricao: string | null
           duracao_min: number
           id: string
+          link_compra_externo: string | null
+          links_compra: Json
           materiais_extras: Json
           modulo_id: string
           ordem: number
           pdf_url: string | null
+          plataforma_venda: string | null
+          preco_centavos: number
+          preco_label: string | null
           previa_gratis: boolean
           tipo: string
           titulo: string
@@ -383,10 +388,15 @@ export type Database = {
           descricao?: string | null
           duracao_min?: number
           id?: string
+          link_compra_externo?: string | null
+          links_compra?: Json
           materiais_extras?: Json
           modulo_id: string
           ordem?: number
           pdf_url?: string | null
+          plataforma_venda?: string | null
+          preco_centavos?: number
+          preco_label?: string | null
           previa_gratis?: boolean
           tipo?: string
           titulo: string
@@ -399,10 +409,15 @@ export type Database = {
           descricao?: string | null
           duracao_min?: number
           id?: string
+          link_compra_externo?: string | null
+          links_compra?: Json
           materiais_extras?: Json
           modulo_id?: string
           ordem?: number
           pdf_url?: string | null
+          plataforma_venda?: string | null
+          preco_centavos?: number
+          preco_label?: string | null
           previa_gratis?: boolean
           tipo?: string
           titulo?: string
