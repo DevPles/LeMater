@@ -115,6 +115,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const [offerSel, setOfferSel] = useState<string | null>(null);
   const [checkoutErr, setCheckoutErr] = useState<string | null>(null);
   const [comprando, setComprando] = useState(false);
+  const [modulosAbertos, setModulosAbertos] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     fn({ data: { slug } })
