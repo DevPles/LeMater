@@ -102,8 +102,6 @@ function IntegracoesView() {
     { nome: "Kiwify", url: `${base}/api/public/hooks/kiwify`, segredo: "KIWIFY_WEBHOOK_SECRET", instrucoes: "Kiwify → Configurações → Webhooks → adicionar URL e Secret." },
     { nome: "Eduzz", url: `${base}/api/public/hooks/eduzz?api_key=SEU_SECRET`, segredo: "EDUZZ_WEBHOOK_SECRET", instrucoes: "Myeduzz → Integrações → Postback → cole URL com api_key." },
     { nome: "Stripe", url: `${base}/api/public/hooks/stripe`, segredo: "STRIPE_WEBHOOK_SECRET (whsec_...)", instrucoes: "Stripe → Developers → Webhooks → Add endpoint. Eventos: checkout.session.completed, charge.refunded. Coloque product_external_id no metadata do Checkout/PaymentLink." },
-    { nome: "Teachable", url: `${base}/api/public/hooks/teachable`, segredo: "TEACHABLE_WEBHOOK_SECRET", instrucoes: "Teachable → Settings → Webhooks → Sale Created / Enrollment Created / Sale Refunded." },
-    { nome: "Gumroad", url: `${base}/api/public/hooks/gumroad?secret=SEU_SECRET`, segredo: "GUMROAD_WEBHOOK_SECRET", instrucoes: "Gumroad → Settings → Advanced → Ping URL com ?secret=..." },
   ];
   return (
     <div className="space-y-3">

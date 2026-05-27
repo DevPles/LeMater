@@ -8,8 +8,6 @@ export type Plataforma =
   | "kiwify"
   | "eduzz"
   | "stripe"
-  | "teachable"
-  | "gumroad"
   | "manual";
 export type OrderStatus = "pendente" | "aprovado" | "recusado" | "reembolsado" | "cancelado";
 

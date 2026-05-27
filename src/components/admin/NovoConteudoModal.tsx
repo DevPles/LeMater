@@ -336,7 +336,7 @@ export default function NovoConteudoModal({
       .map((l: any) => ({
         plataforma: String(l.plataforma).trim(),
         url: String(l.url).trim(),
-        pais: l.pais || (String(l.plataforma).toLowerCase().includes("stripe") || String(l.plataforma).toLowerCase().includes("paddle") || String(l.plataforma).toLowerCase().includes("teachable") ? "Internacional" : "Brasil"),
+        pais: l.pais || (String(l.plataforma).toLowerCase().includes("stripe") ? "Internacional" : "Brasil"),
         tipo: l.tipo === "passe" ? "passe" : "curso",
       }));
     const payload: any = {
@@ -929,8 +929,6 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
                   </optgroup>
                   <optgroup label="Internacional">
                     <option value="Stripe">Stripe (internacional)</option>
-                    <option value="Teachable">Teachable</option>
-                    <option value="Paddle">Paddle</option>
                   </optgroup>
                   <option value="Outro">Outro</option>
                 </select>
@@ -1155,8 +1153,6 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
                         </optgroup>
                         <optgroup label="Internacional">
                           <option value="Stripe">Stripe</option>
-                          <option value="Paddle">Paddle</option>
-                          <option value="Teachable">Teachable</option>
                         </optgroup>
                         <option value="Outro">Outro</option>
                       </select>

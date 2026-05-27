@@ -11,7 +11,7 @@ import lemateLogo from "@/assets/logo_oficial.png";
 import appStoresBadges from "@/assets/app-stores.png";
 import appIcon from "@/assets/app-icon.png";
 import { LiquidCard } from "@/components/LiquidCard";
-import { InstagramIcon, YouTubeIcon, TikTokIcon, HotmartIcon, KiwifyIcon, TeachableIcon, SpotifyIcon } from "@/components/SocialIcons";
+import { InstagramIcon, YouTubeIcon, TikTokIcon, HotmartIcon, KiwifyIcon, SpotifyIcon } from "@/components/SocialIcons";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { translateBatch } from "@/lib/translate.functions";
 import { useLang, FLAG_TO_LANG, isTranslatable, type Lang } from "@/lib/translate.context";
@@ -588,7 +588,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                   { Icon: SpotifyIcon, href: "https://open.spotify.com/show/033jqPe7sPvtV5guDHer2G", label: "Spotify" },
                   { Icon: HotmartIcon, href: "https://hotmart.com", label: "Hotmart" },
                   { Icon: KiwifyIcon, href: "https://kiwify.com.br", label: "Kiwify" },
-                  { Icon: TeachableIcon, href: "https://teachable.com", label: "Teachable" },
+                  
                 ].map(({ Icon, href, label }) => (
                   <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} title={label} style={{ lineHeight: 0, display: "inline-flex", transition: "transform 150ms, opacity 150ms", opacity: 0.92 }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.opacity = "1"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.opacity = "0.92"; }}>
                     <Icon size={26} />
