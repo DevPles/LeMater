@@ -376,6 +376,13 @@ export default function NovoConteudoModal({
     if (curso.id) payload.id = curso.id;
     const cursoRow = await upCurso({ data: payload });
 
+    // 3b. Persistir ofertas e áudios do curso (cria/atualiza usando o id)
+    setBusyMsg("Salvando ofertas e áudios do curso…");
+    await Promise.all([
+      ofertasCursoRef.current?.flush(cursoRow.id),
+      audiosCursoRef.current?.flush(cursoRow.id),
+    ]);
+
     // 4. Aulas: só na criação inicial
     if (editando) return;
     const aulasValidas = aulas.filter((a) => a.titulo.trim());
