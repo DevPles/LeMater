@@ -34,6 +34,7 @@ import { Route as AuthenticatedAppMembroRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppAdminRouteImport } from './routes/_authenticated/app.admin'
 import { Route as ApiPublicHooksKiwifyRouteImport } from './routes/api/public/hooks/kiwify'
 import { Route as ApiPublicHooksHotmartRouteImport } from './routes/api/public/hooks/hotmart'
+import { Route as ApiPublicHooksEduzzRouteImport } from './routes/api/public/hooks/eduzz'
 import { Route as AuthenticatedAtlasSlugAprenderRouteImport } from './routes/_authenticated/atlas.$slug.aprender'
 
 const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
@@ -161,6 +162,11 @@ const ApiPublicHooksHotmartRoute = ApiPublicHooksHotmartRouteImport.update({
   path: '/api/public/hooks/hotmart',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksEduzzRoute = ApiPublicHooksEduzzRouteImport.update({
+  id: '/api/public/hooks/eduzz',
+  path: '/api/public/hooks/eduzz',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAtlasSlugAprenderRoute =
   AuthenticatedAtlasSlugAprenderRouteImport.update({
     id: '/atlas/$slug/aprender',
@@ -192,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/app/sala/$roomId': typeof AppSalaRoomIdRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
+  '/api/public/hooks/eduzz': typeof ApiPublicHooksEduzzRoute
   '/api/public/hooks/hotmart': typeof ApiPublicHooksHotmartRoute
   '/api/public/hooks/kiwify': typeof ApiPublicHooksKiwifyRoute
 }
@@ -219,6 +226,7 @@ export interface FileRoutesByTo {
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/app/sala/$roomId': typeof AppSalaRoomIdRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
+  '/api/public/hooks/eduzz': typeof ApiPublicHooksEduzzRoute
   '/api/public/hooks/hotmart': typeof ApiPublicHooksHotmartRoute
   '/api/public/hooks/kiwify': typeof ApiPublicHooksKiwifyRoute
 }
@@ -248,6 +256,7 @@ export interface FileRoutesById {
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/app_/sala/$roomId': typeof AppSalaRoomIdRoute
   '/_authenticated/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
+  '/api/public/hooks/eduzz': typeof ApiPublicHooksEduzzRoute
   '/api/public/hooks/hotmart': typeof ApiPublicHooksHotmartRoute
   '/api/public/hooks/kiwify': typeof ApiPublicHooksKiwifyRoute
 }
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/api/public/mercadopago-webhook'
     | '/app/sala/$roomId'
     | '/atlas/$slug/aprender'
+    | '/api/public/hooks/eduzz'
     | '/api/public/hooks/hotmart'
     | '/api/public/hooks/kiwify'
   fileRoutesByTo: FileRoutesByTo
@@ -304,6 +314,7 @@ export interface FileRouteTypes {
     | '/api/public/mercadopago-webhook'
     | '/app/sala/$roomId'
     | '/atlas/$slug/aprender'
+    | '/api/public/hooks/eduzz'
     | '/api/public/hooks/hotmart'
     | '/api/public/hooks/kiwify'
   id:
@@ -332,6 +343,7 @@ export interface FileRouteTypes {
     | '/api/public/mercadopago-webhook'
     | '/app_/sala/$roomId'
     | '/_authenticated/atlas/$slug/aprender'
+    | '/api/public/hooks/eduzz'
     | '/api/public/hooks/hotmart'
     | '/api/public/hooks/kiwify'
   fileRoutesById: FileRoutesById
@@ -357,6 +369,7 @@ export interface RootRouteChildren {
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
   AppSalaRoomIdRoute: typeof AppSalaRoomIdRoute
+  ApiPublicHooksEduzzRoute: typeof ApiPublicHooksEduzzRoute
   ApiPublicHooksHotmartRoute: typeof ApiPublicHooksHotmartRoute
   ApiPublicHooksKiwifyRoute: typeof ApiPublicHooksKiwifyRoute
 }
@@ -538,6 +551,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksHotmartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/eduzz': {
+      id: '/api/public/hooks/eduzz'
+      path: '/api/public/hooks/eduzz'
+      fullPath: '/api/public/hooks/eduzz'
+      preLoaderRoute: typeof ApiPublicHooksEduzzRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/atlas/$slug/aprender': {
       id: '/_authenticated/atlas/$slug/aprender'
       path: '/atlas/$slug/aprender'
@@ -595,9 +615,20 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
   AppSalaRoomIdRoute: AppSalaRoomIdRoute,
+  ApiPublicHooksEduzzRoute: ApiPublicHooksEduzzRoute,
   ApiPublicHooksHotmartRoute: ApiPublicHooksHotmartRoute,
   ApiPublicHooksKiwifyRoute: ApiPublicHooksKiwifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
