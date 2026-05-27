@@ -27,7 +27,7 @@ const btn = (variant: "primary" | "ghost" | "danger" = "primary"): CSSProperties
   border: variant === "primary" ? `1px solid ${navy}` : variant === "danger" ? `1px solid #b23a48` : `1px solid ${border}`,
 });
 
-type SubTab = "modules" | "lessons" | "entitlements";
+type SubTab = "modules" | "lessons" | "pathways" | "bundles" | "offers" | "entitlements";
 
 type ModuleRow = Awaited<ReturnType<typeof listModules>>[number];
 type LessonRow = Awaited<ReturnType<typeof listLessons>>[number];
