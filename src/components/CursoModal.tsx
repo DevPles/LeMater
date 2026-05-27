@@ -564,7 +564,7 @@ function OfferRow({ offer, ativo, onClick }: { offer: Offer; ativo: boolean; onC
         <div style={{ fontSize: 13, fontWeight: 500 }}>{platLabel(offer.plataforma)}</div>
         {offer.label && <div style={{ fontSize: 11, opacity: 0.75, marginTop: 2 }}>{offer.label}</div>}
       </div>
-      <div style={{ fontFamily: serif, fontSize: 18, whiteSpace: "nowrap" }}>{fmtPreco(offer.preco_centavos, offer.moeda)}</div>
+      <div style={{ fontFamily: sans, fontSize: 17, fontWeight: 600, whiteSpace: "nowrap", fontVariantNumeric: "lining-nums tabular-nums" }}>{fmtPreco(offer.preco_centavos, offer.moeda)}</div>
     </button>
   );
 }
