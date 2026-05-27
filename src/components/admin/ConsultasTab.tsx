@@ -116,9 +116,54 @@ export function ConsultasTab() {
     setLoading(false);
   };
 
+  const loadProfs = async () => {
+    const { data } = await supabase
+      .from("professionals")
+      .select("id, nome, especialidade, ativo")
+      .order("nome", { ascending: true });
+    setTodosProfs(((data ?? []) as ProfissionalLite[]).filter((p) => p.ativo));
+  };
+
   useEffect(() => {
     load();
+    loadProfs();
   }, []);
+
+  const criarSlot = async () => {
+    setCriarMsg(null);
+    if (!novoSlot.professional_id) return setCriarMsg("Selecione o profissional.");
+    if (!novoSlot.data || !novoSlot.hora) return setCriarMsg("Informe data e hora.");
+    if (!novoSlot.titulo.trim()) return setCriarMsg("Informe um título.");
+    const dt = new Date(`${novoSlot.data}T${novoSlot.hora}:00`);
+    if (isNaN(dt.getTime())) return setCriarMsg("Data/hora inválida.");
+    setCriando(true);
+    const { error } = await supabase.from("appointment_slots").insert({
+      professional_id: novoSlot.professional_id,
+      data_hora: dt.toISOString(),
+      duracao_min: novoSlot.duracao_min,
+      modalidade: novoSlot.modalidade,
+      status: "disponivel",
+      titulo: novoSlot.titulo.trim().slice(0, 120),
+      descricao: novoSlot.descricao.trim().slice(0, 500) || null,
+      tipo_atendimento: novoSlot.tipo_atendimento,
+    });
+    setCriando(false);
+    if (error) return setCriarMsg("Erro: " + error.message);
+    setCriarAberto(false);
+    setNovoSlot({
+      professional_id: "",
+      data: "",
+      hora: "",
+      duracao_min: 30,
+      modalidade: "videochamada",
+      tipo_atendimento: TIPOS_ATENDIMENTO[0],
+      titulo: "",
+      descricao: "",
+    });
+    await load();
+  };
+
+
 
   const profissionais = useMemo(() => {
     const m = new Map<string, string>();
