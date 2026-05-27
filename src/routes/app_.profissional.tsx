@@ -371,6 +371,7 @@ function Dashboard({ session }: { session: Session }) {
           </motion.div>
         )}
 
+        {aba === "agenda" && (
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           <div className="px-4 py-2 bg-muted/40 border-b border-border flex items-center justify-between gap-2 flex-wrap">
             <p className="text-xs font-bold uppercase tracking-wide">Minha agenda ({filtered.length})</p>
@@ -408,23 +409,28 @@ function Dashboard({ session }: { session: Session }) {
                         : "bg-muted text-muted-foreground";
                 const podeAbrir = !!s.gestante_id;
                 return (
-                  <li key={s.id} className="p-3 flex items-center justify-between gap-3 flex-wrap">
+                  <li key={s.id} className="p-3 space-y-3">
                     <button
                       type="button"
                       onClick={() => podeAbrir && setSlotDetalhe(s)}
                       disabled={!podeAbrir}
-                      className={`text-xs flex-1 min-w-[200px] text-left ${
+                      className={`text-xs w-full text-left ${
                         podeAbrir ? "cursor-pointer hover:bg-muted/30 rounded-lg -m-1 p-1 transition-colors" : "cursor-default"
                       }`}
                       title={podeAbrir ? "Ver dados clínicos da gestante" : undefined}
                     >
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColor}`}>
+                          {s.status}
+                        </span>
+                        {s.tipo_atendimento && (
+                          <span className="text-[10px] uppercase tracking-wide font-semibold text-primary">
+                            {s.tipo_atendimento}
+                          </span>
+                        )}
+                      </div>
                       {s.titulo && (
                         <p className="font-bold text-foreground text-sm mb-0.5">{s.titulo}</p>
-                      )}
-                      {s.tipo_atendimento && (
-                        <p className="text-[10px] uppercase tracking-wide font-semibold text-primary mb-1">
-                          {s.tipo_atendimento}
-                        </p>
                       )}
                       <p className="font-semibold text-foreground">
                         {dt.toLocaleDateString("pt-BR")} às{" "}
@@ -432,6 +438,9 @@ function Dashboard({ session }: { session: Session }) {
                       </p>
                       <p className="text-muted-foreground">
                         {s.duracao_min} min • {s.modalidade === "videochamada" ? "Vídeo" : "Presencial"}
+                        {s.gestante_id && gestanteNomes[s.gestante_id] && (
+                          <> • <span className="font-semibold text-foreground">{gestanteNomes[s.gestante_id]}</span></>
+                        )}
                       </p>
                       {s.descricao && (
                         <p className="text-muted-foreground mt-1 line-clamp-2">{s.descricao}</p>
@@ -443,13 +452,10 @@ function Dashboard({ session }: { session: Session }) {
                       )}
                     </button>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColor}`}>
-                        {s.status}
-                      </span>
                       {podeEntrarSala(s) && (
                         <button
                           onClick={() => navigate({ to: "/app/sala/$roomId", params: { roomId: s.room_id! } })}
-                          className="text-[10px] font-bold bg-primary text-primary-foreground px-3 py-1 rounded-full hover:opacity-90"
+                          className="text-[11px] font-bold bg-primary text-primary-foreground px-3 py-1.5 rounded-full hover:opacity-90"
                         >
                           Entrar na sala
                         </button>
@@ -457,7 +463,7 @@ function Dashboard({ session }: { session: Session }) {
                       {s.status === "reservado" && (
                         <button
                           onClick={() => marcarRealizado(s.id)}
-                          className="text-[10px] font-semibold text-green-700 hover:text-green-900"
+                          className="text-[11px] font-semibold bg-green-100 text-green-800 border border-green-200 px-3 py-1.5 rounded-full hover:bg-green-200"
                         >
                           Marcar realizado
                         </button>
@@ -465,7 +471,7 @@ function Dashboard({ session }: { session: Session }) {
                       {s.status === "reservado" && (
                         <button
                           onClick={() => cancelarSlot(s.id)}
-                          className="text-[10px] font-semibold text-red-700 hover:text-red-900"
+                          className="text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-200"
                         >
                           Cancelar
                         </button>
@@ -473,7 +479,7 @@ function Dashboard({ session }: { session: Session }) {
                       {podeAbrir && (
                         <button
                           onClick={() => setProntuarioId(s.id)}
-                          className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+                          className="text-[11px] font-semibold bg-[#1a1557] text-white px-3 py-1.5 rounded-full hover:bg-[#241e7a]"
                           title="Ver prontuário compilado da consulta"
                         >
                           Prontuário
@@ -481,7 +487,7 @@ function Dashboard({ session }: { session: Session }) {
                       )}
                       <button
                         onClick={() => removerSlot(s.id)}
-                        className="text-[10px] font-semibold text-red-700 hover:text-red-900"
+                        className="text-[11px] font-semibold bg-red-100 text-red-800 border border-red-200 px-3 py-1.5 rounded-full hover:bg-red-200"
                         title="Excluir definitivamente"
                       >
                         Excluir
@@ -494,7 +500,18 @@ function Dashboard({ session }: { session: Session }) {
             </div>
           )}
         </div>
+        )}
+
+        {aba === "historico" && (
+          <HistoricoCard
+            slots={historico}
+            gestanteNomes={gestanteNomes}
+            onProntuario={(id) => setProntuarioId(id)}
+            loading={loading}
+          />
+        )}
       </div>
+
 
       {slotDetalhe && (
         <GestanteDetalheModal slot={slotDetalhe} onClose={() => setSlotDetalhe(null)} />
