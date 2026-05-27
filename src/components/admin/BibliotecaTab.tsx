@@ -4,6 +4,9 @@ import {
   listModules, upsertModule, deleteModule,
   listLessons, upsertLesson, deleteLesson,
   listEntitlements, grantEntitlement, revokeEntitlement,
+  listPathways, upsertPathway, deletePathway,
+  listBundles, upsertBundle, deleteBundle,
+  listOffers, upsertOffer, deleteOffer,
 } from "@/lib/biblioteca.functions";
 
 const navy = "#1a1557";
