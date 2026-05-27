@@ -1229,7 +1229,7 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando, ofertasCursoRef
 }
 
 // ================= FORM MATERIAL / SERVIÇO =================
-function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = false }: any) {
+function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = false, ofertasServicoRef }: any) {
   const updateMaterial = (patch: Record<string, unknown>) =>
     setMaterial((prev: any) => ({ ...prev, ...patch }));
   return (
