@@ -49,7 +49,7 @@ export async function upsertOrderFromWebhook(input: UpsertOrderInput) {
 
   const { data, error } = await supabaseAdmin
     .from("orders")
-    .upsert(row, { onConflict: "plataforma,transaction_id_externo" })
+    .upsert([row], { onConflict: "plataforma,transaction_id_externo" })
     .select("id, status")
     .single();
   if (error) {
