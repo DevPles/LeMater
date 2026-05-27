@@ -170,10 +170,10 @@ export const getCursoBySlug = createServerFn({ method: "GET" })
     const aulasByMod: Record<string, any[]> = {};
     if (modIds.length) {
       const { data: aulas } = await supabaseAdmin.from("curso_aulas")
-        .select("id, modulo_id, titulo, descricao, tipo, duracao_min, ordem, previa_gratis")
+        .select("id, modulo_id, titulo, descricao, tipo, duracao_min, ordem, previa_gratis, preco_centavos, preco_label, links_compra")
         .in("modulo_id", modIds).order("ordem");
       for (const a of aulas ?? []) {
-        (aulasByMod[a.modulo_id] ||= []).push(a);
+        (aulasByMod[(a as any).modulo_id] ||= []).push(a);
       }
     }
 
@@ -191,6 +191,9 @@ export const getCursoBySlug = createServerFn({ method: "GET" })
         id: a.id, titulo: a.titulo, descricao: a.descricao,
         tipo: a.tipo, duracao_min: a.duracao_min, ordem: a.ordem,
         previa_gratis: a.previa_gratis,
+        preco_centavos: a.preco_centavos ?? null,
+        preco_label: a.preco_label ?? null,
+        links_compra: Array.isArray(a.links_compra) ? a.links_compra : [],
         concluida: concluidasSet.has(a.id),
         bloqueada: !matriculado && !a.previa_gratis,
       })),
