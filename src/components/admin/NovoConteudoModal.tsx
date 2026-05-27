@@ -853,121 +853,22 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
 
       {curso.area === "pago" && (
         <>
-          <div style={sectionTitle}>Venda</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-            <Field label="Preço (centavos)">
-              <input
-                {...noAuto}
-                name="curso-preco-centavos"
-                type="number"
-                value={curso.preco_centavos}
-                onInput={(e) =>
-                  handleCursoInput({ preco_centavos: parseInt(e.currentTarget.value) || 0 })
-                }
-                onChange={(e) =>
-                  handleCursoInput({ preco_centavos: parseInt(e.currentTarget.value) || 0 })
-                }
-                style={inp}
-              />
-            </Field>
-            <Field label="Preço (texto exibido)">
-              <input
-                {...noAuto}
-                name="curso-preco-label"
-                value={curso.preco_label}
-                onInput={(e) => handleCursoInput({ preco_label: e.currentTarget.value })}
-                onChange={(e) => handleCursoInput({ preco_label: e.currentTarget.value })}
-                style={inp}
-                placeholder="R$ 297"
-              />
-            </Field>
+          <div style={sectionTitle}>Venda do curso completo</div>
+          <div style={{ fontSize: 12, color: c.muted, marginBottom: 10, fontFamily: sans }}>
+            Configure preço por país e plataforma de pagamento. O usuário verá apenas as ofertas do país dele.
           </div>
-
-          <div style={{ marginTop: 6 }}>
-            <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 8 }}>
-              Opções de compra (país + plataforma) — aparecem como botões no card
-            </div>
-            {(curso.links_compra ?? []).map((l: any, i: number) => (
-              <div key={i} style={{ display: "grid", gridTemplateColumns: "130px 130px 180px 1fr auto", gap: 8, marginBottom: 8 }}>
-                <select
-                  value={l.pais ?? "Brasil"}
-                  onChange={(e) => {
-                    const arr = [...(curso.links_compra ?? [])];
-                    arr[i] = { ...arr[i], pais: e.target.value };
-                    updateCurso({ links_compra: arr });
-                  }}
-                  style={inp}
-                >
-                  <option value="Brasil">Brasil</option>
-                  <option value="Internacional">Internacional</option>
-                </select>
-                <select
-                  value={l.tipo ?? "curso"}
-                  onChange={(e) => {
-                    const arr = [...(curso.links_compra ?? [])];
-                    arr[i] = { ...arr[i], tipo: e.target.value as "curso" | "passe" };
-                    updateCurso({ links_compra: arr });
-                  }}
-                  style={inp}
-                >
-                  <option value="curso">Curso avulso</option>
-                  <option value="passe">Passe completo</option>
-                </select>
-                <select
-                  value={l.plataforma}
-                  onChange={(e) => {
-                    const arr = [...(curso.links_compra ?? [])];
-                    arr[i] = { ...arr[i], plataforma: e.target.value };
-                    updateCurso({ links_compra: arr });
-                  }}
-                  style={inp}
-                >
-                  <option value="">— país / plataforma —</option>
-                  <optgroup label="Brasil">
-                    <option value="Mercado Pago">Mercado Pago (Brasil)</option>
-                    <option value="InfinityPay">InfinityPay (Brasil)</option>
-                    <option value="Hotmart">Hotmart</option>
-                    <option value="Kiwify">Kiwify</option>
-                    <option value="Eduzz">Eduzz</option>
-                  </optgroup>
-                  <optgroup label="Internacional">
-                    <option value="Stripe">Stripe (internacional)</option>
-                  </optgroup>
-                  <option value="Outro">Outro</option>
-                </select>
-                <input
-                  value={l.url}
-                  onChange={(e) => {
-                    const arr = [...(curso.links_compra ?? [])];
-                    arr[i] = { ...arr[i], url: e.target.value };
-                    updateCurso({ links_compra: arr });
-                  }}
-                  placeholder="https://…"
-                  style={inp}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const arr = [...(curso.links_compra ?? [])];
-                    arr.splice(i, 1);
-                    updateCurso({ links_compra: arr });
-                  }}
-                  style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "0 12px", cursor: "pointer", fontSize: 12, fontFamily: sans }}
-                >
-                  Remover
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => updateCurso({ links_compra: [...(curso.links_compra ?? []), { pais: "Brasil", tipo: "curso", plataforma: "", url: "" }] })}
-              style={{ background: c.warm, border: `1px solid ${c.border}`, color: c.sageDark, padding: "8px 14px", cursor: "pointer", fontSize: 12, fontFamily: sans, letterSpacing: "0.08em", textTransform: "uppercase" }}
-            >
-              + Adicionar opção de compra
-            </button>
-          </div>
+          <OfertasEditor
+            ref={ofertasCursoRef}
+            produtoTipo="curso"
+            produtoId={curso.id}
+            titulo="Ofertas do curso (país × plataforma)"
+          />
         </>
       )}
+
+      <div style={sectionTitle}>Ouça também (áudios vinculados)</div>
+      <AudiosEditor ref={audiosCursoRef} vinculoTipo="curso" vinculoId={curso.id} />
+
 
       <div style={sectionTitle}>Instrutor</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
