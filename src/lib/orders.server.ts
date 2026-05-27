@@ -43,13 +43,13 @@ export async function upsertOrderFromWebhook(input: UpsertOrderInput) {
     valor_centavos: input.valor_centavos ?? 0,
     moeda: input.moeda ?? "BRL",
     pais: input.pais ?? null,
-    raw_payload: input.raw_payload ?? {},
+    raw_payload: (input.raw_payload ?? {}) as never,
     aprovado_em: input.status === "aprovado" ? new Date().toISOString() : null,
   };
 
   const { data, error } = await supabaseAdmin
     .from("orders")
-    .upsert([row], { onConflict: "plataforma,transaction_id_externo" })
+    .upsert(row as never, { onConflict: "plataforma,transaction_id_externo" })
     .select("id, status")
     .single();
   if (error) {
