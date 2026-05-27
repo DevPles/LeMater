@@ -20,7 +20,7 @@ export const getPublicOffers = createServerFn({ method: "POST" })
     const { data: rows, error } = await supabaseAdmin.rpc("get_public_offers", {
       _tipo: data.produto_tipo,
       _id: data.produto_id,
-      _pais: data.pais ?? null,
+      _pais: data.pais ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { offers: rows ?? [] };
