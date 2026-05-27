@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { createRef, useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { adminUpsertCurso, adminUpsertModulo, adminUpsertAula } from "@/lib/cursos.functions";
