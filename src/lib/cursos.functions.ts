@@ -30,6 +30,9 @@ export type CursoAula = {
   previa_gratis: boolean;
   concluida: boolean;
   bloqueada: boolean;
+  preco_centavos: number;
+  preco_label: string | null;
+  links_compra: { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | "aula" | null }[];
 };
 
 export type CursoModuloFull = {
