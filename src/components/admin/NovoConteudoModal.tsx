@@ -1116,6 +1116,24 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando, ofertasCursoRef
                 </div>
               )}
 
+              {!a.previa_gratis && (
+                <OfertasEditor
+                  ref={a.ofertasRef}
+                  produtoTipo="aula"
+                  produtoId={a.id ?? null}
+                  titulo="Ofertas desta aula (país × plataforma)"
+                />
+              )}
+
+              <AudiosEditor
+                ref={a.audiosRef}
+                vinculoTipo="aula"
+                vinculoId={a.id ?? null}
+                titulo="Áudios vinculados a esta aula"
+              />
+
+
+
 
               {a.tipo === "video" && (
                 <>
