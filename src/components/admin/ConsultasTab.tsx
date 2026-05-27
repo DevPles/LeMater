@@ -521,6 +521,168 @@ export function ConsultasTab() {
           onClose={() => setProntuarioId(null)}
         />
       )}
+
+      {criarAberto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => !criando && setCriarAberto(false)}
+        >
+          <div
+            className="bg-card border border-border rounded-2xl shadow-xl max-w-lg w-full p-5 space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h2 className="text-lg font-bold text-foreground">Novo horário disponível</h2>
+                <p className="text-xs text-muted-foreground">
+                  Aparecerá em /app/videochamada na aba Disponíveis.
+                </p>
+              </div>
+              <button
+                onClick={() => !criando && setCriarAberto(false)}
+                className="text-muted-foreground hover:text-foreground text-xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2">
+              <label className="text-xs font-semibold text-foreground">
+                Profissional
+                <select
+                  value={novoSlot.professional_id}
+                  onChange={(e) =>
+                    setNovoSlot((s) => ({ ...s, professional_id: e.target.value }))
+                  }
+                  className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                >
+                  <option value="">Selecione...</option>
+                  {todosProfs.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nome} — {p.especialidade}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="grid grid-cols-2 gap-2">
+                <label className="text-xs font-semibold text-foreground">
+                  Data
+                  <input
+                    type="date"
+                    value={novoSlot.data}
+                    onChange={(e) => setNovoSlot((s) => ({ ...s, data: e.target.value }))}
+                    className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                  />
+                </label>
+                <label className="text-xs font-semibold text-foreground">
+                  Hora
+                  <input
+                    type="time"
+                    value={novoSlot.hora}
+                    onChange={(e) => setNovoSlot((s) => ({ ...s, hora: e.target.value }))}
+                    className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                  />
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <label className="text-xs font-semibold text-foreground">
+                  Duração (min)
+                  <input
+                    type="number"
+                    min={10}
+                    max={180}
+                    value={novoSlot.duracao_min}
+                    onChange={(e) =>
+                      setNovoSlot((s) => ({ ...s, duracao_min: Number(e.target.value) || 30 }))
+                    }
+                    className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                  />
+                </label>
+                <label className="text-xs font-semibold text-foreground">
+                  Modalidade
+                  <select
+                    value={novoSlot.modalidade}
+                    onChange={(e) =>
+                      setNovoSlot((s) => ({
+                        ...s,
+                        modalidade: e.target.value as "videochamada" | "presencial",
+                      }))
+                    }
+                    className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                  >
+                    <option value="videochamada">Videochamada</option>
+                    <option value="presencial">Presencial</option>
+                  </select>
+                </label>
+              </div>
+
+              <label className="text-xs font-semibold text-foreground">
+                Tipo de atendimento
+                <select
+                  value={novoSlot.tipo_atendimento}
+                  onChange={(e) =>
+                    setNovoSlot((s) => ({ ...s, tipo_atendimento: e.target.value }))
+                  }
+                  className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                >
+                  {TIPOS_ATENDIMENTO.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="text-xs font-semibold text-foreground">
+                Título
+                <input
+                  type="text"
+                  value={novoSlot.titulo}
+                  onChange={(e) => setNovoSlot((s) => ({ ...s, titulo: e.target.value }))}
+                  placeholder="Ex: Consulta de pré-natal"
+                  className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                />
+              </label>
+
+              <label className="text-xs font-semibold text-foreground">
+                Descrição (opcional)
+                <textarea
+                  value={novoSlot.descricao}
+                  onChange={(e) => setNovoSlot((s) => ({ ...s, descricao: e.target.value }))}
+                  rows={2}
+                  className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                />
+              </label>
+            </div>
+
+            {criarMsg && (
+              <p className="text-xs font-semibold text-rose-600">{criarMsg}</p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setCriarAberto(false)}
+                disabled={criando}
+                className="text-xs font-semibold px-3 py-2 rounded-full text-muted-foreground hover:text-foreground"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={criarSlot}
+                disabled={criando}
+                className="bg-[#1a1557] text-white text-xs font-bold px-4 py-2 rounded-full hover:opacity-90 disabled:opacity-50"
+              >
+                {criando ? "Publicando..." : "Publicar horário"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
