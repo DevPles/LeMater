@@ -189,6 +189,9 @@ export default function NovoConteudoModal({
     };
   });
   const [aulas, setAulas] = useState<AulaLocal[]>([aulaVazia()]);
+  const ofertasCursoRef = useRef<OfertasEditorHandle>(null);
+  const audiosCursoRef = useRef<AudiosEditorHandle>(null);
+  const ofertasServicoRef = useRef<OfertasEditorHandle>(null);
 
   // ---- MATERIAL / SERVIÇO ----
   const upMaterial = useServerFn(upsertMaterial);
