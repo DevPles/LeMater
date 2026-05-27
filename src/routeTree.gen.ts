@@ -36,6 +36,7 @@ import { Route as ApiPublicHooksTeachableRouteImport } from './routes/api/public
 import { Route as ApiPublicHooksStripeRouteImport } from './routes/api/public/hooks/stripe'
 import { Route as ApiPublicHooksKiwifyRouteImport } from './routes/api/public/hooks/kiwify'
 import { Route as ApiPublicHooksHotmartRouteImport } from './routes/api/public/hooks/hotmart'
+import { Route as ApiPublicHooksGumroadRouteImport } from './routes/api/public/hooks/gumroad'
 import { Route as ApiPublicHooksEduzzRouteImport } from './routes/api/public/hooks/eduzz'
 import { Route as AuthenticatedAtlasSlugAprenderRouteImport } from './routes/_authenticated/atlas.$slug.aprender'
 
@@ -174,6 +175,11 @@ const ApiPublicHooksHotmartRoute = ApiPublicHooksHotmartRouteImport.update({
   path: '/api/public/hooks/hotmart',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksGumroadRoute = ApiPublicHooksGumroadRouteImport.update({
+  id: '/api/public/hooks/gumroad',
+  path: '/api/public/hooks/gumroad',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksEduzzRoute = ApiPublicHooksEduzzRouteImport.update({
   id: '/api/public/hooks/eduzz',
   path: '/api/public/hooks/eduzz',
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/app/sala/$roomId': typeof AppSalaRoomIdRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
   '/api/public/hooks/eduzz': typeof ApiPublicHooksEduzzRoute
+  '/api/public/hooks/gumroad': typeof ApiPublicHooksGumroadRoute
   '/api/public/hooks/hotmart': typeof ApiPublicHooksHotmartRoute
   '/api/public/hooks/kiwify': typeof ApiPublicHooksKiwifyRoute
   '/api/public/hooks/stripe': typeof ApiPublicHooksStripeRoute
@@ -241,6 +248,7 @@ export interface FileRoutesByTo {
   '/app/sala/$roomId': typeof AppSalaRoomIdRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
   '/api/public/hooks/eduzz': typeof ApiPublicHooksEduzzRoute
+  '/api/public/hooks/gumroad': typeof ApiPublicHooksGumroadRoute
   '/api/public/hooks/hotmart': typeof ApiPublicHooksHotmartRoute
   '/api/public/hooks/kiwify': typeof ApiPublicHooksKiwifyRoute
   '/api/public/hooks/stripe': typeof ApiPublicHooksStripeRoute
@@ -273,6 +281,7 @@ export interface FileRoutesById {
   '/app_/sala/$roomId': typeof AppSalaRoomIdRoute
   '/_authenticated/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
   '/api/public/hooks/eduzz': typeof ApiPublicHooksEduzzRoute
+  '/api/public/hooks/gumroad': typeof ApiPublicHooksGumroadRoute
   '/api/public/hooks/hotmart': typeof ApiPublicHooksHotmartRoute
   '/api/public/hooks/kiwify': typeof ApiPublicHooksKiwifyRoute
   '/api/public/hooks/stripe': typeof ApiPublicHooksStripeRoute
@@ -305,6 +314,7 @@ export interface FileRouteTypes {
     | '/app/sala/$roomId'
     | '/atlas/$slug/aprender'
     | '/api/public/hooks/eduzz'
+    | '/api/public/hooks/gumroad'
     | '/api/public/hooks/hotmart'
     | '/api/public/hooks/kiwify'
     | '/api/public/hooks/stripe'
@@ -335,6 +345,7 @@ export interface FileRouteTypes {
     | '/app/sala/$roomId'
     | '/atlas/$slug/aprender'
     | '/api/public/hooks/eduzz'
+    | '/api/public/hooks/gumroad'
     | '/api/public/hooks/hotmart'
     | '/api/public/hooks/kiwify'
     | '/api/public/hooks/stripe'
@@ -366,6 +377,7 @@ export interface FileRouteTypes {
     | '/app_/sala/$roomId'
     | '/_authenticated/atlas/$slug/aprender'
     | '/api/public/hooks/eduzz'
+    | '/api/public/hooks/gumroad'
     | '/api/public/hooks/hotmart'
     | '/api/public/hooks/kiwify'
     | '/api/public/hooks/stripe'
@@ -394,6 +406,7 @@ export interface RootRouteChildren {
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
   AppSalaRoomIdRoute: typeof AppSalaRoomIdRoute
   ApiPublicHooksEduzzRoute: typeof ApiPublicHooksEduzzRoute
+  ApiPublicHooksGumroadRoute: typeof ApiPublicHooksGumroadRoute
   ApiPublicHooksHotmartRoute: typeof ApiPublicHooksHotmartRoute
   ApiPublicHooksKiwifyRoute: typeof ApiPublicHooksKiwifyRoute
   ApiPublicHooksStripeRoute: typeof ApiPublicHooksStripeRoute
@@ -591,6 +604,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksHotmartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/gumroad': {
+      id: '/api/public/hooks/gumroad'
+      path: '/api/public/hooks/gumroad'
+      fullPath: '/api/public/hooks/gumroad'
+      preLoaderRoute: typeof ApiPublicHooksGumroadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/eduzz': {
       id: '/api/public/hooks/eduzz'
       path: '/api/public/hooks/eduzz'
@@ -656,6 +676,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
   AppSalaRoomIdRoute: AppSalaRoomIdRoute,
   ApiPublicHooksEduzzRoute: ApiPublicHooksEduzzRoute,
+  ApiPublicHooksGumroadRoute: ApiPublicHooksGumroadRoute,
   ApiPublicHooksHotmartRoute: ApiPublicHooksHotmartRoute,
   ApiPublicHooksKiwifyRoute: ApiPublicHooksKiwifyRoute,
   ApiPublicHooksStripeRoute: ApiPublicHooksStripeRoute,
