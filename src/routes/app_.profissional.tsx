@@ -587,7 +587,11 @@ function HistoricoItem({
       .from("consultation-recordings")
       .createSignedUrl(slot.recording_path, 60 * 60);
     setLoadingAudio(false);
-    if (!error && data?.signedUrl) setAudioUrl(data.signedUrl);
+    if (error || !data?.signedUrl) {
+      alert("Não foi possível carregar a gravação: " + (error?.message ?? "erro desconhecido"));
+      return;
+    }
+    setAudioUrl(data.signedUrl);
   };
 
   return (
