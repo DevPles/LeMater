@@ -214,7 +214,11 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       }
     } catch (e: unknown) {
       win?.close();
-      setCheckoutErr(e instanceof Error ? e.message : "Não foi possível iniciar a compra");
+      const msg =
+        e instanceof Error ? e.message :
+        (typeof e === "object" && e && "message" in e) ? String((e as { message: unknown }).message) :
+        "Não foi possível iniciar a compra";
+      setCheckoutErr(msg);
     } finally {
       setComprando(false);
     }
