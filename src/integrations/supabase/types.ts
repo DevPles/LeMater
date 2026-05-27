@@ -1963,7 +1963,7 @@ export type Database = {
           observacao: string | null
           pais: string | null
           plataforma: string
-          produto_id: string
+          produto_id: string | null
           produto_tipo: string
           raw_payload: Json
           status: string
@@ -1985,7 +1985,7 @@ export type Database = {
           observacao?: string | null
           pais?: string | null
           plataforma: string
-          produto_id: string
+          produto_id?: string | null
           produto_tipo: string
           raw_payload?: Json
           status?: string
@@ -2007,7 +2007,7 @@ export type Database = {
           observacao?: string | null
           pais?: string | null
           plataforma?: string
-          produto_id?: string
+          produto_id?: string | null
           produto_tipo?: string
           raw_payload?: Json
           status?: string
