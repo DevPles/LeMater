@@ -233,6 +233,7 @@ function EstruturaTab({ cursoId, modulos, aulas, onChanged }: { cursoId: string;
     modulo_id, titulo: "", descricao: "", tipo: "video",
     video_url: "", pdf_url: "", conteudo_html: "",
     duracao_min: 0, ordem, previa_gratis: false, materiais_extras: [],
+    preco_centavos: 0, preco_label: "", links_compra: [],
   });
 
   const salvarAula = async () => {
