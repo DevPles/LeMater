@@ -357,6 +357,63 @@ export type Database = {
         }
         Relationships: []
       }
+      course_audios: {
+        Row: {
+          ativo: boolean
+          audio_url: string | null
+          capa_url: string | null
+          created_at: string
+          descricao: string | null
+          duracao_seg: number
+          gratuito: boolean
+          id: string
+          liberacao: string
+          ordem: number
+          spotify_url: string | null
+          tipo_audio: string
+          titulo: string
+          updated_at: string
+          vinculo_id: string
+          vinculo_tipo: string
+        }
+        Insert: {
+          ativo?: boolean
+          audio_url?: string | null
+          capa_url?: string | null
+          created_at?: string
+          descricao?: string | null
+          duracao_seg?: number
+          gratuito?: boolean
+          id?: string
+          liberacao?: string
+          ordem?: number
+          spotify_url?: string | null
+          tipo_audio?: string
+          titulo: string
+          updated_at?: string
+          vinculo_id: string
+          vinculo_tipo: string
+        }
+        Update: {
+          ativo?: boolean
+          audio_url?: string | null
+          capa_url?: string | null
+          created_at?: string
+          descricao?: string | null
+          duracao_seg?: number
+          gratuito?: boolean
+          id?: string
+          liberacao?: string
+          ordem?: number
+          spotify_url?: string | null
+          tipo_audio?: string
+          titulo?: string
+          updated_at?: string
+          vinculo_id?: string
+          vinculo_tipo?: string
+        }
+        Relationships: []
+      }
       cupons: {
         Row: {
           ativo: boolean
@@ -600,6 +657,7 @@ export type Database = {
       }
       cursos: {
         Row: {
+          audio_apresentacao_url: string | null
           capa_url: string | null
           capa_video_url: string | null
           carga_horaria_min: number
@@ -622,11 +680,15 @@ export type Database = {
           produto_externo_id: string | null
           publicado: boolean
           slug: string
+          subtitulo: string | null
+          thumbnail_url: string | null
           titulo: string
+          titulo_comercial: string | null
           trailer_url: string | null
           updated_at: string
         }
         Insert: {
+          audio_apresentacao_url?: string | null
           capa_url?: string | null
           capa_video_url?: string | null
           carga_horaria_min?: number
@@ -649,11 +711,15 @@ export type Database = {
           produto_externo_id?: string | null
           publicado?: boolean
           slug: string
+          subtitulo?: string | null
+          thumbnail_url?: string | null
           titulo: string
+          titulo_comercial?: string | null
           trailer_url?: string | null
           updated_at?: string
         }
         Update: {
+          audio_apresentacao_url?: string | null
           capa_url?: string | null
           capa_video_url?: string | null
           carga_horaria_min?: number
@@ -676,7 +742,10 @@ export type Database = {
           produto_externo_id?: string | null
           publicado?: boolean
           slug?: string
+          subtitulo?: string | null
+          thumbnail_url?: string | null
           titulo?: string
+          titulo_comercial?: string | null
           trailer_url?: string | null
           updated_at?: string
         }
@@ -2033,6 +2102,20 @@ export type Database = {
         Returns: Json
       }
       get_evaluation_request_public: { Args: { _token: string }; Returns: Json }
+      get_public_offers: {
+        Args: { _id: string; _pais?: string; _tipo: string }
+        Returns: {
+          id: string
+          label: string
+          moeda: string
+          ordem: number
+          pais: string
+          plataforma: string
+          preco_centavos: number
+          tipo_link: string
+          url_externo: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
