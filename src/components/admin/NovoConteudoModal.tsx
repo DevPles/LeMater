@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { adminUpsertCurso, adminUpsertModulo, adminUpsertAula } from "@/lib/cursos.functions";
 import { upsertMaterial } from "@/lib/admin.functions";
 import { ContentCard } from "@/components/ContentCard";
+import OfertasEditor, { type OfertasEditorHandle } from "@/components/admin/OfertasEditor";
+import AudiosEditor, { type AudiosEditorHandle } from "@/components/admin/AudiosEditor";
 
 const c = {
   cream: "#FAF5EE",
