@@ -41,6 +41,8 @@ type Slot = {
   titulo: string | null;
   descricao: string | null;
   tipo_atendimento: string | null;
+  recording_path: string | null;
+  recording_duration_seg: number | null;
 };
 
 const TIPOS_ATENDIMENTO = [
