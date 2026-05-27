@@ -17,6 +17,7 @@ import { DadosClinicosTab } from "@/components/admin/DadosClinicosTab";
 import { ParametrosTab } from "@/components/admin/ParametrosTab";
 import { RelatoriosEpidemiologicosTab } from "@/components/admin/RelatoriosEpidemiologicosTab";
 import { VendasTab } from "@/components/admin/VendasTab";
+import BibliotecaTab from "@/components/admin/BibliotecaTab";
 import lemateLogo from "@/assets/logo_monograma.png";
 
 export const Route = createFileRoute("/_authenticated/app/admin")({
@@ -48,6 +49,7 @@ const sans = "'DM Sans', sans-serif";
 type Tab =
   | "dash"
   | "atlas"
+  | "biblioteca"
   | "consultas" | "gravacoes" | "profissionais"
   | "dados" | "parametros" | "relatorios"
   | "leads" | "alunos" | "usuarios" | "acessos" | "compras" | "vendas";
@@ -58,6 +60,7 @@ const TAB_GROUPS: { label: string; tabs: { id: Tab; label: string }[] }[] = [
     { id: "vendas", label: "Vendas & cupons" },
   ]},
   { label: "Conteúdos", tabs: [
+    { id: "biblioteca", label: "Biblioteca" },
     { id: "atlas", label: "Atlas" },
   ]},
   { label: "Operação", tabs: [
@@ -180,6 +183,7 @@ function AdminPage() {
         <main style={{ maxWidth: 1280, width: "100%", margin: "0 auto", padding: "28px 24px 80px", flex: 1 }}>
           {tab === "dash" && <DashboardTab onGoTo={setTab} />}
           {tab === "atlas" && <AtlasContentTab />}
+          {tab === "biblioteca" && <BibliotecaTab />}
           {tab === "consultas" && <ConsultasTab />}
           {tab === "gravacoes" && <GravacoesTab />}
           {tab === "profissionais" && <ProfissionaisTab />}

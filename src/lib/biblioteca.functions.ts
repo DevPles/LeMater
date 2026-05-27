@@ -271,3 +271,206 @@ export const revokeEntitlement = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ===================== PATHWAYS =====================
+export const listPathways = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await ensureAdmin(context.userId);
+    const [pwRes, plRes] = await Promise.all([
+      supabaseAdmin.from("pathways").select("*").order("order", { ascending: true }).order("created_at", { ascending: false }),
+      supabaseAdmin.from("pathway_lessons").select("pathway_id, lesson_id, order"),
+    ]);
+    if (pwRes.error) throw new Error(pwRes.error.message);
+    if (plRes.error) throw new Error(plRes.error.message);
+    const map: Record<string, string[]> = {};
+    for (const l of plRes.data ?? []) (map[l.pathway_id] ||= []).push(l.lesson_id);
+    return (pwRes.data ?? []).map((p) => ({ ...p, lesson_ids: map[p.id] ?? [] }));
+  });
+
+const PathwayInput = z.object({
+  id: z.string().uuid().optional().nullable(),
+  slug: z.string().max(120).optional().nullable(),
+  title: z.string().min(1).max(200),
+  subtitle: z.string().max(300).optional().nullable(),
+  description: z.string().max(5000).optional().nullable(),
+  audience: z.string().max(300).optional().nullable(),
+  cover_image: z.string().max(2000).optional().nullable(),
+  cover_video: z.string().max(2000).optional().nullable(),
+  color: z.string().max(40).optional().nullable(),
+  order: z.number().int().default(0),
+  price_centavos: z.number().int().min(0).default(0),
+  currency: z.string().min(3).max(4).default("BRL"),
+  recommended_week_min: z.number().int().min(0).max(45).optional().nullable(),
+  recommended_week_max: z.number().int().min(0).max(45).optional().nullable(),
+  visibility: z.enum(["public", "premium", "hidden"]).default("public"),
+  active: z.boolean().default(true),
+  seo_title: z.string().max(200).optional().nullable(),
+  seo_description: z.string().max(400).optional().nullable(),
+  lesson_ids: z.array(z.string().uuid()).max(100).default([]),
+});
+
+export const upsertPathway = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => PathwayInput.parse(d))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context.userId);
+    const { lesson_ids, id, ...rest } = data;
+    const row = { ...rest, slug: rest.slug?.trim() || slugify(rest.title) };
+    let pathwayId = id ?? null;
+    if (pathwayId) {
+      const { error } = await supabaseAdmin.from("pathways").update(row).eq("id", pathwayId);
+      if (error) throw new Error(error.message);
+    } else {
+      const { data: created, error } = await supabaseAdmin.from("pathways").insert(row).select("id").single();
+      if (error) throw new Error(error.message);
+      pathwayId = created.id;
+    }
+    await supabaseAdmin.from("pathway_lessons").delete().eq("pathway_id", pathwayId);
+    if (lesson_ids.length) {
+      const rows = lesson_ids.map((l, idx) => ({ pathway_id: pathwayId!, lesson_id: l, order: idx }));
+      const { error } = await supabaseAdmin.from("pathway_lessons").insert(rows);
+      if (error) throw new Error(error.message);
+    }
+    return { id: pathwayId };
+  });
+
+export const deletePathway = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("pathways").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ===================== BUNDLES =====================
+export const listBundles = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await ensureAdmin(context.userId);
+    const [bRes, biRes] = await Promise.all([
+      supabaseAdmin.from("bundles").select("*").order("order", { ascending: true }).order("created_at", { ascending: false }),
+      supabaseAdmin.from("bundle_items").select("bundle_id, item_type, item_id, order"),
+    ]);
+    if (bRes.error) throw new Error(bRes.error.message);
+    if (biRes.error) throw new Error(biRes.error.message);
+    const map: Record<string, { item_type: string; item_id: string }[]> = {};
+    for (const r of biRes.data ?? []) (map[r.bundle_id] ||= []).push({ item_type: r.item_type, item_id: r.item_id });
+    return (bRes.data ?? []).map((b) => ({ ...b, items: map[b.id] ?? [] }));
+  });
+
+const BundleItem = z.object({
+  item_type: z.enum(["lesson", "module", "pathway"]),
+  item_id: z.string().uuid(),
+});
+
+const BundleInput = z.object({
+  id: z.string().uuid().optional().nullable(),
+  slug: z.string().max(120).optional().nullable(),
+  title: z.string().min(1).max(200),
+  subtitle: z.string().max(300).optional().nullable(),
+  description: z.string().max(5000).optional().nullable(),
+  cover_image: z.string().max(2000).optional().nullable(),
+  order: z.number().int().default(0),
+  price_centavos: z.number().int().min(0).default(0),
+  currency: z.string().min(3).max(4).default("BRL"),
+  visibility: z.enum(["public", "premium", "hidden"]).default("public"),
+  active: z.boolean().default(true),
+  items: z.array(BundleItem).max(100).default([]),
+});
+
+export const upsertBundle = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => BundleInput.parse(d))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context.userId);
+    const { items, id, ...rest } = data;
+    const row = { ...rest, slug: rest.slug?.trim() || slugify(rest.title) };
+    let bundleId = id ?? null;
+    if (bundleId) {
+      const { error } = await supabaseAdmin.from("bundles").update(row).eq("id", bundleId);
+      if (error) throw new Error(error.message);
+    } else {
+      const { data: created, error } = await supabaseAdmin.from("bundles").insert(row).select("id").single();
+      if (error) throw new Error(error.message);
+      bundleId = created.id;
+    }
+    await supabaseAdmin.from("bundle_items").delete().eq("bundle_id", bundleId);
+    if (items.length) {
+      const rows = items.map((it, idx) => ({ bundle_id: bundleId!, item_type: it.item_type, item_id: it.item_id, order: idx }));
+      const { error } = await supabaseAdmin.from("bundle_items").insert(rows);
+      if (error) throw new Error(error.message);
+    }
+    return { id: bundleId };
+  });
+
+export const deleteBundle = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("bundles").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ===================== OFFERS (multi-gateway) =====================
+export const listOffers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    produto_tipo: z.enum(["lesson", "module", "pathway", "bundle", "curso", "aula", "material", "servico"]).optional(),
+    produto_id: z.string().uuid().optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context.userId);
+    let q = supabaseAdmin.from("product_offers").select("*").order("produto_tipo").order("ordem", { ascending: true });
+    if (data.produto_tipo) q = q.eq("produto_tipo", data.produto_tipo);
+    if (data.produto_id) q = q.eq("produto_id", data.produto_id);
+    const { data: rows, error } = await q.limit(500);
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+const OfferInput = z.object({
+  id: z.string().uuid().optional().nullable(),
+  produto_tipo: z.enum(["lesson", "module", "pathway", "bundle", "curso", "aula", "material", "servico"]),
+  produto_id: z.string().uuid(),
+  plataforma: z.enum(["mercadopago", "stripe", "hotmart", "kiwify", "eduzz", "teachable", "gumroad", "interno", "externo"]),
+  tipo_link: z.enum(["interno", "externo"]).default("externo"),
+  url_externo: z.string().max(2000).optional().nullable(),
+  produto_externo_id: z.string().max(200).optional().nullable(),
+  preco_centavos: z.number().int().min(0).default(0),
+  moeda: z.string().min(3).max(4).default("BRL"),
+  pais: z.string().min(2).max(4).default("BR"),
+  label: z.string().max(120).optional().nullable(),
+  ordem: z.number().int().default(0),
+  ativo: z.boolean().default(true),
+});
+
+export const upsertOffer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => OfferInput.parse(d))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context.userId);
+    const { id, ...rest } = data;
+    if (id) {
+      const { error } = await supabaseAdmin.from("product_offers").update(rest).eq("id", id);
+      if (error) throw new Error(error.message);
+      return { id };
+    }
+    const { data: created, error } = await supabaseAdmin.from("product_offers").insert(rest).select("id").single();
+    if (error) throw new Error(error.message);
+    return { id: created.id };
+  });
+
+export const deleteOffer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await ensureAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("product_offers").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
