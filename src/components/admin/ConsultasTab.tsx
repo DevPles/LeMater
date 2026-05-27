@@ -62,6 +62,22 @@ export function ConsultasTab() {
   const [busca, setBusca] = useState("");
   const [apenasGravadas, setApenasGravadas] = useState(false);
 
+  // criação de horário
+  const [todosProfs, setTodosProfs] = useState<ProfissionalLite[]>([]);
+  const [criarAberto, setCriarAberto] = useState(false);
+  const [criando, setCriando] = useState(false);
+  const [criarMsg, setCriarMsg] = useState<string | null>(null);
+  const [novoSlot, setNovoSlot] = useState({
+    professional_id: "",
+    data: "",
+    hora: "",
+    duracao_min: 30,
+    modalidade: "videochamada" as "videochamada" | "presencial",
+    tipo_atendimento: TIPOS_ATENDIMENTO[0] as string,
+    titulo: "",
+    descricao: "",
+  });
+
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -71,6 +87,7 @@ export function ConsultasTab() {
       )
       .order("data_hora", { ascending: false })
       .limit(1000);
+
 
     if (error) {
       console.error(error);
