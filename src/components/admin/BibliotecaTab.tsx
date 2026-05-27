@@ -455,3 +455,389 @@ function EntitlementsSection() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><span style={lbl}>{label}</span>{children}</div>;
 }
+
+// =================== TRILHAS ===================
+type PathwayRow = Awaited<ReturnType<typeof listPathways>>[number];
+
+function PathwaysSection() {
+  const list = useServerFn(listPathways);
+  const listL = useServerFn(listLessons);
+  const save = useServerFn(upsertPathway);
+  const remove = useServerFn(deletePathway);
+  const [rows, setRows] = useState<PathwayRow[]>([]);
+  const [lessons, setLessons] = useState<LessonRow[]>([]);
+  const [editing, setEditing] = useState<Partial<PathwayRow> | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const refresh = async () => { setLoading(true); try {
+    const [a, b] = await Promise.all([list({} as never), listL({} as never)]);
+    setRows(a); setLessons(b);
+  } finally { setLoading(false); } };
+  useEffect(() => { refresh(); /* eslint-disable-next-line */ }, []);
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: editing ? "1.1fr 1.4fr" : "1fr", gap: 20 }}>
+      <div style={card}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <h3 style={{ font: `600 18px ${serif}`, color: navy, margin: 0 }}>Trilhas curadas</h3>
+          <button style={btn("primary")} onClick={() => setEditing({ title: "", visibility: "public", active: true, currency: "BRL", price_centavos: 0, lesson_ids: [] })}>Nova trilha</button>
+        </div>
+        {loading ? <p style={{ color: muted, font: `13px ${sans}` }}>Carregando…</p> : rows.length === 0 ? (
+          <p style={{ color: muted, font: `13px ${sans}` }}>Nenhuma trilha criada ainda.</p>
+        ) : (
+          <div style={{ display: "grid", gap: 10 }}>
+            {rows.map((r) => (
+              <button key={r.id} onClick={() => setEditing(r)} style={{ textAlign: "left", background: "#fff", border: `1px solid ${border}`, borderRadius: 12, padding: 12, cursor: "pointer" }}>
+                <div style={{ font: `600 14px ${sans}`, color: navy }}>{r.title}</div>
+                <div style={{ font: `12px ${sans}`, color: muted, marginTop: 4 }}>
+                  {r.lesson_ids.length} aula(s) · {(r.price_centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: r.currency || "BRL" })}
+                  {r.recommended_week_min != null || r.recommended_week_max != null ? ` · semana ${r.recommended_week_min ?? "?"}–${r.recommended_week_max ?? "?"}` : ""}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {editing && (
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h3 style={{ font: `600 18px ${serif}`, color: navy, margin: 0 }}>{editing.id ? "Editar trilha" : "Nova trilha"}</h3>
+            <button style={btn("ghost")} onClick={() => setEditing(null)}>Fechar</button>
+          </div>
+          <div style={{ display: "grid", gap: 12 }}>
+            <Field label="Título"><input style={inp} value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })} /></Field>
+            <Field label="Subtítulo"><input style={inp} value={editing.subtitle ?? ""} onChange={(e) => setEditing({ ...editing, subtitle: e.target.value })} /></Field>
+            <Field label="Descrição"><textarea style={{ ...inp, minHeight: 90 }} value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></Field>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+              <Field label="Preço (centavos)"><input type="number" style={inp} value={editing.price_centavos ?? 0} onChange={(e) => setEditing({ ...editing, price_centavos: Number(e.target.value) || 0 })} /></Field>
+              <Field label="Semana mín."><input type="number" style={inp} value={editing.recommended_week_min ?? ""} onChange={(e) => setEditing({ ...editing, recommended_week_min: e.target.value ? Number(e.target.value) : null })} /></Field>
+              <Field label="Semana máx."><input type="number" style={inp} value={editing.recommended_week_max ?? ""} onChange={(e) => setEditing({ ...editing, recommended_week_max: e.target.value ? Number(e.target.value) : null })} /></Field>
+            </div>
+            <Field label="Capa (URL)"><input style={inp} value={editing.cover_image ?? ""} onChange={(e) => setEditing({ ...editing, cover_image: e.target.value })} /></Field>
+            <Field label="Visibilidade">
+              <select style={inp} value={editing.visibility ?? "public"} onChange={(e) => setEditing({ ...editing, visibility: e.target.value as "public" | "premium" | "hidden" })}>
+                <option value="public">Pública</option><option value="premium">Premium</option><option value="hidden">Oculta</option>
+              </select>
+            </Field>
+            <Field label="Aulas da trilha (ordem importa)">
+              <div style={{ display: "grid", gap: 6, maxHeight: 240, overflow: "auto", border: `1px solid ${border}`, borderRadius: 10, padding: 10 }}>
+                {lessons.map((l) => {
+                  const ids = editing.lesson_ids ?? [];
+                  const idx = ids.indexOf(l.id);
+                  const checked = idx >= 0;
+                  return (
+                    <label key={l.id} style={{ display: "flex", alignItems: "center", gap: 8, font: `13px ${sans}`, color: navy }}>
+                      <input type="checkbox" checked={checked} onChange={(e) => {
+                        const next = [...ids];
+                        if (e.target.checked) next.push(l.id);
+                        else next.splice(idx, 1);
+                        setEditing({ ...editing, lesson_ids: next });
+                      }} />
+                      <span>{l.title}</span>
+                      {checked && <span style={{ marginLeft: "auto", font: `11px ${sans}`, color: muted }}>#{idx + 1}</span>}
+                    </label>
+                  );
+                })}
+                {lessons.length === 0 && <span style={{ color: muted, font: `12px ${sans}` }}>Cadastre aulas antes.</span>}
+              </div>
+            </Field>
+            <div style={{ display: "flex", gap: 10, justifyContent: "space-between" }}>
+              {editing.id && <button style={btn("danger")} onClick={async () => { if (confirm("Excluir trilha?")) { await remove({ data: { id: editing.id! } }); setEditing(null); refresh(); } }}>Excluir</button>}
+              <button style={btn("primary")} onClick={async () => {
+                if (!editing.title) return alert("Título obrigatório");
+                await save({ data: {
+                  id: editing.id ?? null, slug: editing.slug ?? null, title: editing.title!,
+                  subtitle: editing.subtitle ?? null, description: editing.description ?? null,
+                  audience: editing.audience ?? null, cover_image: editing.cover_image ?? null,
+                  cover_video: editing.cover_video ?? null, color: editing.color ?? null,
+                  order: editing.order ?? 0, price_centavos: editing.price_centavos ?? 0,
+                  currency: editing.currency ?? "BRL",
+                  recommended_week_min: editing.recommended_week_min ?? null,
+                  recommended_week_max: editing.recommended_week_max ?? null,
+                  visibility: (editing.visibility ?? "public") as "public" | "premium" | "hidden",
+                  active: editing.active ?? true,
+                  seo_title: editing.seo_title ?? null, seo_description: editing.seo_description ?? null,
+                  lesson_ids: editing.lesson_ids ?? [],
+                } });
+                setEditing(null); refresh();
+              }}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =================== PACOTES (BUNDLES) ===================
+type BundleRow = Awaited<ReturnType<typeof listBundles>>[number];
+
+function BundlesSection() {
+  const list = useServerFn(listBundles);
+  const listL = useServerFn(listLessons);
+  const listM = useServerFn(listModules);
+  const listP = useServerFn(listPathways);
+  const save = useServerFn(upsertBundle);
+  const remove = useServerFn(deleteBundle);
+  const [rows, setRows] = useState<BundleRow[]>([]);
+  const [lessons, setLessons] = useState<LessonRow[]>([]);
+  const [modules, setModules] = useState<ModuleRow[]>([]);
+  const [pathways, setPathways] = useState<PathwayRow[]>([]);
+  const [editing, setEditing] = useState<Partial<BundleRow> | null>(null);
+
+  const refresh = async () => {
+    const [a, b, c, d] = await Promise.all([list({} as never), listL({} as never), listM({} as never), listP({} as never)]);
+    setRows(a); setLessons(b); setModules(c); setPathways(d);
+  };
+  useEffect(() => { refresh(); /* eslint-disable-next-line */ }, []);
+
+  const renderPicker = () => {
+    const items = editing?.items ?? [];
+    const toggle = (type: "lesson" | "module" | "pathway", id: string) => {
+      const idx = items.findIndex((it) => it.item_type === type && it.item_id === id);
+      const next = [...items];
+      if (idx >= 0) next.splice(idx, 1); else next.push({ item_type: type, item_id: id });
+      setEditing({ ...editing!, items: next });
+    };
+    const Section = ({ title, list, type }: { title: string; list: { id: string; title: string }[]; type: "lesson" | "module" | "pathway" }) => (
+      <div>
+        <div style={{ font: `600 11px ${sans}`, textTransform: "uppercase", letterSpacing: 1, color: muted, margin: "10px 0 6px" }}>{title}</div>
+        <div style={{ display: "grid", gap: 4 }}>
+          {list.map((x) => {
+            const checked = items.some((it) => it.item_type === type && it.item_id === x.id);
+            return (
+              <label key={x.id} style={{ display: "flex", alignItems: "center", gap: 8, font: `13px ${sans}`, color: navy }}>
+                <input type="checkbox" checked={checked} onChange={() => toggle(type, x.id)} />
+                {x.title}
+              </label>
+            );
+          })}
+          {list.length === 0 && <span style={{ color: muted, font: `12px ${sans}` }}>Nenhum item.</span>}
+        </div>
+      </div>
+    );
+    return (
+      <div style={{ display: "grid", gap: 6, maxHeight: 320, overflow: "auto", border: `1px solid ${border}`, borderRadius: 10, padding: 12 }}>
+        <Section title="Aulas" list={lessons} type="lesson" />
+        <Section title="Módulos" list={modules} type="module" />
+        <Section title="Trilhas" list={pathways} type="pathway" />
+      </div>
+    );
+  };
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: editing ? "1fr 1.4fr" : "1fr", gap: 20 }}>
+      <div style={card}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+          <h3 style={{ font: `600 18px ${serif}`, color: navy, margin: 0 }}>Pacotes</h3>
+          <button style={btn("primary")} onClick={() => setEditing({ title: "", visibility: "public", active: true, currency: "BRL", price_centavos: 0, items: [] })}>Novo pacote</button>
+        </div>
+        {rows.length === 0 ? <p style={{ color: muted, font: `13px ${sans}` }}>Nenhum pacote criado.</p> : (
+          <div style={{ display: "grid", gap: 10 }}>
+            {rows.map((r) => (
+              <button key={r.id} onClick={() => setEditing(r)} style={{ textAlign: "left", background: "#fff", border: `1px solid ${border}`, borderRadius: 12, padding: 12, cursor: "pointer" }}>
+                <div style={{ font: `600 14px ${sans}`, color: navy }}>{r.title}</div>
+                <div style={{ font: `12px ${sans}`, color: muted, marginTop: 4 }}>
+                  {r.items.length} item(ns) · {(r.price_centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: r.currency || "BRL" })}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {editing && (
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h3 style={{ font: `600 18px ${serif}`, color: navy, margin: 0 }}>{editing.id ? "Editar pacote" : "Novo pacote"}</h3>
+            <button style={btn("ghost")} onClick={() => setEditing(null)}>Fechar</button>
+          </div>
+          <div style={{ display: "grid", gap: 12 }}>
+            <Field label="Título"><input style={inp} value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })} /></Field>
+            <Field label="Subtítulo"><input style={inp} value={editing.subtitle ?? ""} onChange={(e) => setEditing({ ...editing, subtitle: e.target.value })} /></Field>
+            <Field label="Descrição"><textarea style={{ ...inp, minHeight: 80 }} value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></Field>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <Field label="Preço (centavos)"><input type="number" style={inp} value={editing.price_centavos ?? 0} onChange={(e) => setEditing({ ...editing, price_centavos: Number(e.target.value) || 0 })} /></Field>
+              <Field label="Visibilidade">
+                <select style={inp} value={editing.visibility ?? "public"} onChange={(e) => setEditing({ ...editing, visibility: e.target.value })}>
+                  <option value="public">Pública</option><option value="premium">Premium</option><option value="hidden">Oculta</option>
+                </select>
+              </Field>
+            </div>
+            <Field label="Capa (URL)"><input style={inp} value={editing.cover_image ?? ""} onChange={(e) => setEditing({ ...editing, cover_image: e.target.value })} /></Field>
+            <Field label={`Itens incluídos (${(editing.items ?? []).length})`}>{renderPicker()}</Field>
+            <div style={{ display: "flex", gap: 10, justifyContent: "space-between" }}>
+              {editing.id && <button style={btn("danger")} onClick={async () => { if (confirm("Excluir pacote?")) { await remove({ data: { id: editing.id! } }); setEditing(null); refresh(); } }}>Excluir</button>}
+              <button style={btn("primary")} onClick={async () => {
+                if (!editing.title) return alert("Título obrigatório");
+                await save({ data: {
+                  id: editing.id ?? null, slug: editing.slug ?? null, title: editing.title!,
+                  subtitle: editing.subtitle ?? null, description: editing.description ?? null,
+                  cover_image: editing.cover_image ?? null, order: editing.order ?? 0,
+                  price_centavos: editing.price_centavos ?? 0, currency: editing.currency ?? "BRL",
+                  visibility: (editing.visibility ?? "public") as "public" | "premium" | "hidden",
+                  active: editing.active ?? true,
+                  items: (editing.items ?? []).map((it) => ({ item_type: it.item_type as "lesson" | "module" | "pathway", item_id: it.item_id })),
+                } });
+                setEditing(null); refresh();
+              }}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =================== OFERTAS MULTI-GATEWAY ===================
+type OfferRow = Awaited<ReturnType<typeof listOffers>>[number];
+const PLATAFORMAS = ["mercadopago", "stripe", "hotmart", "kiwify", "eduzz", "teachable", "gumroad", "interno", "externo"] as const;
+const PRODUTO_TIPOS = ["lesson", "module", "pathway", "bundle", "curso", "aula", "material", "servico"] as const;
+
+function OffersSection() {
+  const list = useServerFn(listOffers);
+  const save = useServerFn(upsertOffer);
+  const remove = useServerFn(deleteOffer);
+  const listL = useServerFn(listLessons);
+  const listM = useServerFn(listModules);
+  const listP = useServerFn(listPathways);
+  const listB = useServerFn(listBundles);
+  const [rows, setRows] = useState<OfferRow[]>([]);
+  const [lessons, setLessons] = useState<LessonRow[]>([]);
+  const [modules, setModules] = useState<ModuleRow[]>([]);
+  const [pathways, setPathways] = useState<PathwayRow[]>([]);
+  const [bundles, setBundles] = useState<BundleRow[]>([]);
+  const [editing, setEditing] = useState<Partial<OfferRow> | null>(null);
+  const [filterType, setFilterType] = useState<string>("");
+
+  const refresh = async () => {
+    const [o, l, m, p, b] = await Promise.all([
+      list({ data: filterType ? { produto_tipo: filterType as "lesson" } : {} }),
+      listL({} as never), listM({} as never), listP({} as never), listB({} as never),
+    ]);
+    setRows(o); setLessons(l); setModules(m); setPathways(p); setBundles(b);
+  };
+  useEffect(() => { refresh(); /* eslint-disable-next-line */ }, [filterType]);
+
+  const productOptions = useMemo(() => {
+    const map: Record<string, { id: string; title: string }[]> = {
+      lesson: lessons.map((x) => ({ id: x.id, title: x.title })),
+      module: modules.map((x) => ({ id: x.id, title: x.title })),
+      pathway: pathways.map((x) => ({ id: x.id, title: x.title })),
+      bundle: bundles.map((x) => ({ id: x.id, title: x.title })),
+    };
+    return map;
+  }, [lessons, modules, pathways, bundles]);
+
+  const labelFor = (r: OfferRow) => {
+    const opts = productOptions[r.produto_tipo] ?? [];
+    return opts.find((x) => x.id === r.produto_id)?.title ?? r.produto_id.slice(0, 8);
+  };
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: editing ? "1.2fr 1.2fr" : "1fr", gap: 20 }}>
+      <div style={card}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, gap: 10, flexWrap: "wrap" }}>
+          <h3 style={{ font: `600 18px ${serif}`, color: navy, margin: 0 }}>Ofertas multi-gateway</h3>
+          <div style={{ display: "flex", gap: 8 }}>
+            <select style={{ ...inp, width: 160 }} value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+              <option value="">Todos os tipos</option>
+              {PRODUTO_TIPOS.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <button style={btn("primary")} onClick={() => setEditing({ produto_tipo: "lesson", plataforma: "mercadopago", tipo_link: "externo", pais: "BR", moeda: "BRL", ativo: true, preco_centavos: 0, ordem: 0 })}>Nova oferta</button>
+          </div>
+        </div>
+        {rows.length === 0 ? <p style={{ color: muted, font: `13px ${sans}` }}>Nenhuma oferta cadastrada.</p> : (
+          <div style={{ display: "grid", gap: 8 }}>
+            {rows.map((r) => (
+              <button key={r.id} onClick={() => setEditing(r)} style={{ textAlign: "left", background: "#fff", border: `1px solid ${border}`, borderRadius: 10, padding: "10px 12px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+                <div>
+                  <div style={{ font: `600 13px ${sans}`, color: navy }}>{r.plataforma.toUpperCase()} · {r.produto_tipo} · {labelFor(r)}</div>
+                  <div style={{ font: `12px ${sans}`, color: muted, marginTop: 3 }}>
+                    {r.pais} · {(r.preco_centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: r.moeda || "BRL" })} · {r.tipo_link}
+                  </div>
+                </div>
+                <span style={{ font: `11px ${sans}`, color: r.ativo ? "#1f7a4a" : muted, textTransform: "uppercase", letterSpacing: 1 }}>{r.ativo ? "Ativa" : "Inativa"}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      {editing && (
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h3 style={{ font: `600 18px ${serif}`, color: navy, margin: 0 }}>{editing.id ? "Editar oferta" : "Nova oferta"}</h3>
+            <button style={btn("ghost")} onClick={() => setEditing(null)}>Fechar</button>
+          </div>
+          <div style={{ display: "grid", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <Field label="Tipo de produto">
+                <select style={inp} value={editing.produto_tipo ?? "lesson"} onChange={(e) => setEditing({ ...editing, produto_tipo: e.target.value, produto_id: undefined })}>
+                  {PRODUTO_TIPOS.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </Field>
+              <Field label="Plataforma">
+                <select style={inp} value={editing.plataforma ?? "mercadopago"} onChange={(e) => setEditing({ ...editing, plataforma: e.target.value })}>
+                  {PLATAFORMAS.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </Field>
+            </div>
+            <Field label="Produto">
+              {productOptions[editing.produto_tipo ?? ""] ? (
+                <select style={inp} value={editing.produto_id ?? ""} onChange={(e) => setEditing({ ...editing, produto_id: e.target.value })}>
+                  <option value="">— selecione —</option>
+                  {(productOptions[editing.produto_tipo!] ?? []).map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
+                </select>
+              ) : (
+                <input style={inp} placeholder="ID do produto (UUID)" value={editing.produto_id ?? ""} onChange={(e) => setEditing({ ...editing, produto_id: e.target.value })} />
+              )}
+            </Field>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+              <Field label="País"><input style={inp} value={editing.pais ?? "BR"} onChange={(e) => setEditing({ ...editing, pais: e.target.value })} /></Field>
+              <Field label="Moeda"><input style={inp} value={editing.moeda ?? "BRL"} onChange={(e) => setEditing({ ...editing, moeda: e.target.value })} /></Field>
+              <Field label="Preço (centavos)"><input type="number" style={inp} value={editing.preco_centavos ?? 0} onChange={(e) => setEditing({ ...editing, preco_centavos: Number(e.target.value) || 0 })} /></Field>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 10 }}>
+              <Field label="Tipo de link">
+                <select style={inp} value={editing.tipo_link ?? "externo"} onChange={(e) => setEditing({ ...editing, tipo_link: e.target.value })}>
+                  <option value="externo">Externo</option><option value="interno">Interno</option>
+                </select>
+              </Field>
+              <Field label="URL externo"><input style={inp} placeholder="https://..." value={editing.url_externo ?? ""} onChange={(e) => setEditing({ ...editing, url_externo: e.target.value })} /></Field>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+              <Field label="ID externo"><input style={inp} value={editing.produto_externo_id ?? ""} onChange={(e) => setEditing({ ...editing, produto_externo_id: e.target.value })} /></Field>
+              <Field label="Rótulo"><input style={inp} placeholder="ex.: Promo, Boleto" value={editing.label ?? ""} onChange={(e) => setEditing({ ...editing, label: e.target.value })} /></Field>
+              <Field label="Ordem"><input type="number" style={inp} value={editing.ordem ?? 0} onChange={(e) => setEditing({ ...editing, ordem: Number(e.target.value) || 0 })} /></Field>
+            </div>
+            <label style={{ display: "flex", gap: 8, alignItems: "center", font: `13px ${sans}`, color: navy }}>
+              <input type="checkbox" checked={editing.ativo ?? true} onChange={(e) => setEditing({ ...editing, ativo: e.target.checked })} />
+              Oferta ativa
+            </label>
+            <div style={{ display: "flex", gap: 10, justifyContent: "space-between" }}>
+              {editing.id && <button style={btn("danger")} onClick={async () => { if (confirm("Excluir oferta?")) { await remove({ data: { id: editing.id! } }); setEditing(null); refresh(); } }}>Excluir</button>}
+              <button style={btn("primary")} onClick={async () => {
+                if (!editing.produto_id) return alert("Selecione o produto");
+                await save({ data: {
+                  id: editing.id ?? null,
+                  produto_tipo: editing.produto_tipo as "lesson",
+                  produto_id: editing.produto_id!,
+                  plataforma: (editing.plataforma ?? "mercadopago") as "mercadopago",
+                  tipo_link: (editing.tipo_link ?? "externo") as "externo",
+                  url_externo: editing.url_externo ?? null,
+                  produto_externo_id: editing.produto_externo_id ?? null,
+                  preco_centavos: editing.preco_centavos ?? 0,
+                  moeda: editing.moeda ?? "BRL",
+                  pais: editing.pais ?? "BR",
+                  label: editing.label ?? null,
+                  ordem: editing.ordem ?? 0,
+                  ativo: editing.ativo ?? true,
+                } });
+                setEditing(null); refresh();
+              }}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
