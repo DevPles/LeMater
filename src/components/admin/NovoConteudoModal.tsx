@@ -579,7 +579,7 @@ export default function NovoConteudoModal({
         >
           <div style={{ padding: "20px 32px 24px", overflow: "auto" }}>
             {tipo === "curso" && (
-              <FormCurso curso={curso} setCurso={setCurso} aulas={aulas} setAulas={setAulas} editando={editando} />
+              <FormCurso curso={curso} setCurso={setCurso} aulas={aulas} setAulas={setAulas} editando={editando} ofertasCursoRef={ofertasCursoRef} audiosCursoRef={audiosCursoRef} />
             )}
             {tipo === "material" && (
               <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria />
@@ -665,7 +665,7 @@ export default function NovoConteudoModal({
 }
 
 // ================= FORM CURSO =================
-function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
+function FormCurso({ curso, setCurso, aulas, setAulas, editando, ofertasCursoRef, audiosCursoRef }: any) {
   const updateCurso = (patch: Record<string, unknown>) =>
     setCurso((prev: any) => ({ ...prev, ...patch }));
   const handleCursoInput = (patch: Record<string, unknown>) => {
