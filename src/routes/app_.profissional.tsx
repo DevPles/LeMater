@@ -245,7 +245,23 @@ function Dashboard({ session }: { session: Session }) {
           </div>
         )}
 
-        {prof && (
+        <div className="flex gap-2">
+          {(["agenda", "historico"] as const).map((a) => (
+            <button
+              key={a}
+              onClick={() => setAba(a)}
+              className={`flex-1 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
+                aba === a
+                  ? "bg-[#1a1557] text-white"
+                  : "bg-card text-muted-foreground border border-border hover:text-foreground"
+              }`}
+            >
+              {a === "agenda" ? "Agenda" : "Histórico"}
+            </button>
+          ))}
+        </div>
+
+        {prof && aba === "agenda" && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
