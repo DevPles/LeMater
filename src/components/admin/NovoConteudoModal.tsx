@@ -665,7 +665,7 @@ export default function NovoConteudoModal({
 }
 
 // ================= FORM CURSO =================
-function FormCurso({ curso, setCurso, aulas, setAulas, editando }: any) {
+function FormCurso({ curso, setCurso, aulas, setAulas, editando, ofertasCursoRef, audiosCursoRef }: any) {
   const updateCurso = (patch: Record<string, unknown>) =>
     setCurso((prev: any) => ({ ...prev, ...patch }));
   const handleCursoInput = (patch: Record<string, unknown>) => {
