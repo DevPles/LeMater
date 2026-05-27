@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  dashboardStats, dashboardOverview, listLeads, listAlunos, listCompras,
+  dashboardOverview, listLeads, listAlunos, listCompras,
   liberarAcessoManual, revogarAcesso, reativarAcesso, enviarResetSenha,
 } from "@/lib/admin.functions";
 import AtlasContentTab from "@/components/admin/AtlasContentTab";
