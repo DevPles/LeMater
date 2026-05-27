@@ -288,6 +288,116 @@ export type Database = {
           },
         ]
       }
+      bundle_items: {
+        Row: {
+          bundle_id: string
+          created_at: string
+          id: string
+          item_id: string
+          item_type: string
+          order: number
+        }
+        Insert: {
+          bundle_id: string
+          created_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          order?: number
+        }
+        Update: {
+          bundle_id?: string
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bundle_items_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bundles: {
+        Row: {
+          active: boolean
+          cover_image: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          order: number
+          price_centavos: number
+          slug: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          active?: boolean
+          cover_image?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          order?: number
+          price_centavos?: number
+          slug: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          active?: boolean
+          cover_image?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          order?: number
+          price_centavos?: number
+          slug?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
+      cart_items: {
+        Row: {
+          added_at: string
+          id: string
+          item_id: string
+          item_type: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       clinical_measurements: {
         Row: {
           appointment_id: string | null
@@ -796,6 +906,54 @@ export type Database = {
         }
         Relationships: []
       }
+      entitlements: {
+        Row: {
+          active: boolean
+          created_at: string
+          expires_at: string | null
+          granted_at: string
+          granted_by: string | null
+          id: string
+          item_id: string | null
+          item_type: string
+          notes: string | null
+          source: string
+          source_ref: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          item_id?: string | null
+          item_type: string
+          notes?: string | null
+          source: string
+          source_ref?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          item_id?: string | null
+          item_type?: string
+          notes?: string | null
+          source?: string
+          source_ref?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       evaluation_requests: {
         Row: {
           appointment_id: string | null
@@ -1174,6 +1332,208 @@ export type Database = {
           },
         ]
       }
+      lesson_modules: {
+        Row: {
+          created_at: string
+          id: string
+          lesson_id: string
+          module_id: string
+          order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lesson_id: string
+          module_id: string
+          order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          module_id?: string
+          order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_modules_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_modules_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          id: string
+          lesson_id: string
+          progress_pct: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          id?: string
+          lesson_id: string
+          progress_pct?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          id?: string
+          lesson_id?: string
+          progress_pct?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_views: {
+        Row: {
+          id: string
+          lesson_id: string
+          source: string | null
+          user_id: string | null
+          viewed_at: string
+          watched_sec: number
+        }
+        Insert: {
+          id?: string
+          lesson_id: string
+          source?: string | null
+          user_id?: string | null
+          viewed_at?: string
+          watched_sec?: number
+        }
+        Update: {
+          id?: string
+          lesson_id?: string
+          source?: string | null
+          user_id?: string | null
+          viewed_at?: string
+          watched_sec?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_views_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lessons: {
+        Row: {
+          active: boolean
+          audience: string | null
+          benefits: Json
+          cover_image: string | null
+          cover_video_url: string | null
+          created_at: string
+          currency: string
+          difficulty: string
+          duration_sec: number
+          free_or_paid: string
+          full_description: string | null
+          id: string
+          individual_price_centavos: number
+          objectives: Json
+          preview_enabled: boolean
+          seo_description: string | null
+          seo_title: string | null
+          short_description: string | null
+          slug: string
+          subtitle: string | null
+          tags: string[]
+          thumbnail: string | null
+          title: string
+          trailer_url: string | null
+          transformation: string | null
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          active?: boolean
+          audience?: string | null
+          benefits?: Json
+          cover_image?: string | null
+          cover_video_url?: string | null
+          created_at?: string
+          currency?: string
+          difficulty?: string
+          duration_sec?: number
+          free_or_paid?: string
+          full_description?: string | null
+          id?: string
+          individual_price_centavos?: number
+          objectives?: Json
+          preview_enabled?: boolean
+          seo_description?: string | null
+          seo_title?: string | null
+          short_description?: string | null
+          slug: string
+          subtitle?: string | null
+          tags?: string[]
+          thumbnail?: string | null
+          title: string
+          trailer_url?: string | null
+          transformation?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          active?: boolean
+          audience?: string | null
+          benefits?: Json
+          cover_image?: string | null
+          cover_video_url?: string | null
+          created_at?: string
+          currency?: string
+          difficulty?: string
+          duration_sec?: number
+          free_or_paid?: string
+          full_description?: string | null
+          id?: string
+          individual_price_centavos?: number
+          objectives?: Json
+          preview_enabled?: boolean
+          seo_description?: string | null
+          seo_title?: string | null
+          short_description?: string | null
+          slug?: string
+          subtitle?: string | null
+          tags?: string[]
+          thumbnail?: string | null
+          title?: string
+          trailer_url?: string | null
+          transformation?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
       materiais: {
         Row: {
           acesso: string
@@ -1261,6 +1621,135 @@ export type Database = {
           liberado_por?: string | null
           material_id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      media_items: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          duration_sec: number | null
+          embed_url: string | null
+          id: string
+          lesson_id: string | null
+          module_id: string | null
+          order: number
+          provider: string | null
+          thumbnail: string | null
+          title: string | null
+          type: string
+          updated_at: string
+          url: string | null
+          visibility: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          duration_sec?: number | null
+          embed_url?: string | null
+          id?: string
+          lesson_id?: string | null
+          module_id?: string | null
+          order?: number
+          provider?: string | null
+          thumbnail?: string | null
+          title?: string | null
+          type: string
+          updated_at?: string
+          url?: string | null
+          visibility?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          duration_sec?: number | null
+          embed_url?: string | null
+          id?: string
+          lesson_id?: string | null
+          module_id?: string | null
+          order?: number
+          provider?: string | null
+          thumbnail?: string | null
+          title?: string | null
+          type?: string
+          updated_at?: string
+          url?: string | null
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_items_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "media_items_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      modules: {
+        Row: {
+          active: boolean
+          color: string | null
+          cover_image: string | null
+          cover_video: string | null
+          created_at: string
+          description: string | null
+          emotional_context: string | null
+          id: string
+          order: number
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          active?: boolean
+          color?: string | null
+          cover_image?: string | null
+          cover_video?: string | null
+          created_at?: string
+          description?: string | null
+          emotional_context?: string | null
+          id?: string
+          order?: number
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          active?: boolean
+          color?: string | null
+          cover_image?: string | null
+          cover_video?: string | null
+          created_at?: string
+          description?: string | null
+          emotional_context?: string | null
+          id?: string
+          order?: number
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+          visibility?: string
         }
         Relationships: []
       }
@@ -1420,6 +1909,45 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          item_id: string
+          item_type: string
+          metadata: Json
+          order_id: string
+          quantity: number
+          title: string | null
+          unit_price_centavos: number
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          item_id: string
+          item_type: string
+          metadata?: Json
+          order_id: string
+          quantity?: number
+          title?: string | null
+          unit_price_centavos?: number
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          metadata?: Json
+          order_id?: string
+          quantity?: number
+          title?: string | null
+          unit_price_centavos?: number
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           aprovacao_manual: boolean
@@ -1486,6 +2014,200 @@ export type Database = {
           transaction_id_externo?: string | null
           updated_at?: string
           valor_centavos?: number
+        }
+        Relationships: []
+      }
+      pathway_lessons: {
+        Row: {
+          created_at: string
+          id: string
+          lesson_id: string
+          order: number
+          pathway_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lesson_id: string
+          order?: number
+          pathway_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          order?: number
+          pathway_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pathway_lessons_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pathway_lessons_pathway_id_fkey"
+            columns: ["pathway_id"]
+            isOneToOne: false
+            referencedRelation: "pathways"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pathways: {
+        Row: {
+          active: boolean
+          audience: string | null
+          color: string | null
+          cover_image: string | null
+          cover_video: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          order: number
+          price_centavos: number
+          recommended_week_max: number | null
+          recommended_week_min: number | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          active?: boolean
+          audience?: string | null
+          color?: string | null
+          cover_image?: string | null
+          cover_video?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          order?: number
+          price_centavos?: number
+          recommended_week_max?: number | null
+          recommended_week_min?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          active?: boolean
+          audience?: string | null
+          color?: string | null
+          cover_image?: string | null
+          cover_video?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          order?: number
+          price_centavos?: number
+          recommended_week_max?: number | null
+          recommended_week_min?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
+      payment_events: {
+        Row: {
+          event_type: string
+          gateway: string
+          id: string
+          payment_id: string | null
+          raw_payload: Json
+          received_at: string
+        }
+        Insert: {
+          event_type: string
+          gateway: string
+          id?: string
+          payment_id?: string | null
+          raw_payload: Json
+          received_at?: string
+        }
+        Update: {
+          event_type?: string
+          gateway?: string
+          id?: string
+          payment_id?: string | null
+          raw_payload?: Json
+          received_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount_centavos: number
+          checkout_url: string | null
+          created_at: string
+          currency: string
+          external_id: string | null
+          gateway: string
+          id: string
+          order_id: string
+          payer_email: string | null
+          payer_name: string | null
+          raw_payload: Json | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_centavos?: number
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          external_id?: string | null
+          gateway: string
+          id?: string
+          order_id: string
+          payer_email?: string | null
+          payer_name?: string | null
+          raw_payload?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_centavos?: number
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          external_id?: string | null
+          gateway?: string
+          id?: string
+          order_id?: string
+          payer_email?: string | null
+          payer_name?: string | null
+          raw_payload?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1902,6 +2624,131 @@ export type Database = {
         }
         Relationships: []
       }
+      service_products: {
+        Row: {
+          active: boolean
+          bookable: boolean
+          cover_image: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          duration_min: number | null
+          id: string
+          price_centavos: number
+          professional_id: string | null
+          slug: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          active?: boolean
+          bookable?: boolean
+          cover_image?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          duration_min?: number | null
+          id?: string
+          price_centavos?: number
+          professional_id?: string | null
+          slug: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          active?: boolean
+          bookable?: boolean
+          cover_image?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          duration_min?: number | null
+          id?: string
+          price_centavos?: number
+          professional_id?: string | null
+          slug?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
+      user_journey_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          item_type: string
+          journey_id: string
+          order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          journey_id: string
+          order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          journey_id?: string
+          order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_journey_items_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "user_journeys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_journeys: {
+        Row: {
+          cover_image: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          share_slug: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          share_slug?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          share_slug?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -2116,6 +2963,10 @@ export type Database = {
           url_externo: string
         }[]
       }
+      has_entitlement: {
+        Args: { _id: string; _type: string; _user: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2125,6 +2976,10 @@ export type Database = {
       }
       is_professional_of_gestante: {
         Args: { _gestante_id: string; _prof_user_id: string }
+        Returns: boolean
+      }
+      lesson_access: {
+        Args: { _lesson: string; _user: string }
         Returns: boolean
       }
       liberar_acesso_por_pedido: { Args: { _order_id: string }; Returns: Json }
@@ -2154,6 +3009,13 @@ export type Database = {
       promote_to_professional: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      recommend_lessons: {
+        Args: { _limit?: number; _user: string }
+        Returns: {
+          lesson_id: string
+          score: number
+        }[]
       }
       resolve_login_email_by_cpf: { Args: { _cpf: string }; Returns: string }
       resolve_login_email_by_registro: {
