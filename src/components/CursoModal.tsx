@@ -563,7 +563,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   );
 }
 
-function OfferRow({ offer, ativo, onClick }: { offer: Offer; ativo: boolean; onClick: () => void }) {
+function OfferRow({ offer, secao, ativo, onClick }: { offer: Offer; secao: "aula" | "curso"; ativo: boolean; onClick: () => void }) {
   return (
     <button onClick={onClick}
       style={{
@@ -574,9 +574,21 @@ function OfferRow({ offer, ativo, onClick }: { offer: Offer; ativo: boolean; onC
         border: `1px solid ${ativo ? c.sageDark : c.border}`,
         cursor: "pointer", fontFamily: sans, textAlign: "left",
       }}>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 500 }}>{platLabel(offer.plataforma)}</div>
-        {offer.label && <div style={{ fontSize: 11, opacity: 0.75, marginTop: 2 }}>{offer.label}</div>}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+        <span aria-hidden style={{
+          width: 14, height: 14, borderRadius: "50%", flexShrink: 0,
+          border: `1.5px solid ${ativo ? "white" : c.muted}`,
+          background: ativo ? "white" : "transparent",
+          boxShadow: ativo ? `inset 0 0 0 3px ${c.sageDark}` : "none",
+        }} />
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 500 }}>
+            {secao === "aula" ? "Apenas esta aula" : "Curso completo"}
+          </div>
+          <div style={{ fontSize: 11, opacity: 0.75, marginTop: 2 }}>
+            {platLabel(offer.plataforma)}{offer.label ? ` · ${offer.label}` : ""}
+          </div>
+        </div>
       </div>
       <div style={{ fontFamily: sans, fontSize: 17, fontWeight: 600, whiteSpace: "nowrap", fontVariantNumeric: "lining-nums tabular-nums" }}>{fmtPreco(offer.preco_centavos, offer.moeda)}</div>
     </button>
