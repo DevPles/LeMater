@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  dashboardStats, listLeads, listAlunos, listCompras,
+  dashboardOverview, listLeads, listAlunos, listCompras,
   liberarAcessoManual, revogarAcesso, reativarAcesso, enviarResetSenha,
 } from "@/lib/admin.functions";
 import AtlasContentTab from "@/components/admin/AtlasContentTab";
@@ -20,13 +20,30 @@ import { VendasTab } from "@/components/admin/VendasTab";
 import lemateLogo from "@/assets/logo_monograma.png";
 
 export const Route = createFileRoute("/_authenticated/app/admin")({
-  head: () => ({ meta: [{ title: "Admin · Le Mater" }], links: [{ rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" }] }),
+  head: () => ({ meta: [{ title: "Admin · Le Mater" }] }),
   component: AdminPage,
 });
 
-const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48" };
-const serif = "'Cormorant Garamond', serif";
+// Paleta da marca (navy + gold + cream) — alinhada ao resto do app
+const c = {
+  cream: "#faf8f3",
+  warm: "#f3eddf",
+  navy: "#1a1557",
+  navyDark: "#120f3f",
+  gold: "#f0c040",
+  goldDark: "#d4a52a",
+  ink: "#1a1557",
+  muted: "#6b6883",
+  border: "#e8e3d4",
+  danger: "#b23a48",
+  ok: "#2f7a4e",
+  // aliases mantidos para retrocompatibilidade dos componentes existentes
+  sage: "#1a1557",
+  sageDark: "#1a1557",
+};
+const serif = "'Playfair Display', serif";
 const sans = "'DM Sans', sans-serif";
+
 
 type Tab =
   | "dash"
@@ -161,7 +178,7 @@ function AdminPage() {
           </div>
         </header>
         <main style={{ maxWidth: 1280, width: "100%", margin: "0 auto", padding: "28px 24px 80px", flex: 1 }}>
-          {tab === "dash" && <DashboardTab />}
+          {tab === "dash" && <DashboardTab onGoTo={setTab} />}
           {tab === "atlas" && <AtlasContentTab />}
           {tab === "consultas" && <ConsultasTab />}
           {tab === "gravacoes" && <GravacoesTab />}
@@ -189,30 +206,237 @@ function AdminPage() {
   );
 }
 
-function DashboardTab() {
-  const fn = useServerFn(dashboardStats);
-  const [s, setS] = useState<{ leads: number; alunos_ativos: number; materiais_publicados: number } | null>(null);
-  useEffect(() => { fn().then(setS); }, []);
+type DashboardData = Awaited<ReturnType<typeof dashboardOverview>>;
+
+function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
+  const fn = useServerFn(dashboardOverview);
+  const [d, setD] = useState<DashboardData | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  useEffect(() => {
+    fn().then(setD).catch((e: unknown) => setErr(e instanceof Error ? e.message : "Falha ao carregar"));
+  }, []);
+
+  if (err) return <div style={{ color: c.danger }}>Erro: {err}</div>;
+  if (!d) return <div style={{ color: c.muted, fontSize: 13 }}>Carregando indicadores…</div>;
+
+  const k = d.kpis;
+  const fmtBRL = (cents: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format((cents ?? 0) / 100);
+  const deltaPct = (a: number, b: number) => (b === 0 ? (a > 0 ? 100 : 0) : Math.round(((a - b) / b) * 100));
+  const dReceita = deltaPct(k.receita_mes_centavos, k.receita_mes_ant_centavos);
+  const dPedidos = deltaPct(k.pedidos_mes, k.pedidos_mes_ant);
+
   return (
     <div>
-      <h1 style={h1}>Dashboard</h1>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20 }}>
-        <Stat label="Leads grátis" value={s?.leads ?? "…"} />
-        <Stat label="Alunos com acesso ativo" value={s?.alunos_ativos ?? "…"} />
-        <Stat label="Materiais publicados" value={s?.materiais_publicados ?? "…"} />
+      <h1 style={h1}>Painel geral</h1>
+
+      <div style={kpiGrid}>
+        <Kpi label="Receita do mês" value={fmtBRL(k.receita_mes_centavos)} hint={`${dReceita >= 0 ? "+" : ""}${dReceita}% vs mês ant.`} tone={dReceita >= 0 ? "ok" : "danger"} accent />
+        <Kpi label="Pedidos pagos no mês" value={k.pedidos_mes} hint={`${dPedidos >= 0 ? "+" : ""}${dPedidos}% vs mês ant.`} tone={dPedidos >= 0 ? "ok" : "danger"} onClick={() => onGoTo?.("vendas")} />
+        <Kpi label="Alunos com acesso ativo" value={k.alunos_ativos} onClick={() => onGoTo?.("alunos")} />
+        <Kpi label="Gestantes cadastradas" value={k.gestantes} onClick={() => onGoTo?.("usuarios")} />
+        <Kpi label="Leads grátis" value={k.leads_total} hint={`+${k.leads_7d} últimos 7 dias`} onClick={() => onGoTo?.("leads")} />
+        <Kpi label="Matrículas ativas" value={k.matriculas_ativas} />
+        <Kpi label="Cursos publicados" value={k.cursos_publicados} />
+        <Kpi label="Materiais publicados" value={k.materiais_publicados} />
+      </div>
+
+      <div style={chartsGrid}>
+        <Panel title="Pedidos pagos · últimos 14 dias">
+          <DailyBars data={d.series.pedidos_14d} color={c.navy} />
+        </Panel>
+        <Panel title="Receita diária (R$) · últimos 14 dias">
+          <DailyBars data={d.series.receita_14d} color={c.gold} />
+        </Panel>
+        <Panel title="Novos leads · últimos 14 dias">
+          <DailyBars data={d.series.leads_14d} color={c.goldDark} />
+        </Panel>
+        <Panel title="Vendas por plataforma (mês)">
+          <PlatformList items={d.plataformas} />
+        </Panel>
+      </div>
+
+      <div style={listsGrid}>
+        <Panel
+          title="Pedidos recentes"
+          action={<button onClick={() => onGoTo?.("vendas")} style={linkBtn}>Ver tudo</button>}
+        >
+          {d.pedidos_recentes.length === 0 ? (
+            <Empty>Nenhum pedido ainda.</Empty>
+          ) : (
+            <table style={mini}>
+              <thead>
+                <tr>
+                  <ThMini>Data</ThMini>
+                  <ThMini>Comprador</ThMini>
+                  <ThMini>Produto</ThMini>
+                  <ThMini>Plataforma</ThMini>
+                  <ThMini>Valor</ThMini>
+                  <ThMini>Status</ThMini>
+                </tr>
+              </thead>
+              <tbody>
+                {d.pedidos_recentes.map((o: any) => (
+                  <tr key={o.id} style={{ borderTop: `1px solid ${c.border}` }}>
+                    <TdMini>{new Date(o.created_at).toLocaleDateString("pt-BR")}</TdMini>
+                    <TdMini>{o.comprador_nome ?? o.comprador_email}</TdMini>
+                    <TdMini>{o.produto_tipo}</TdMini>
+                    <TdMini>{o.plataforma}</TdMini>
+                    <TdMini>{new Intl.NumberFormat("pt-BR", { style: "currency", currency: o.moeda || "BRL" }).format((o.valor_centavos ?? 0) / 100)}</TdMini>
+                    <TdMini><StatusBadge status={o.status} /></TdMini>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Panel>
+
+        <Panel
+          title="Leads recentes"
+          action={<button onClick={() => onGoTo?.("leads")} style={linkBtn}>Ver tudo</button>}
+        >
+          {d.leads_recentes.length === 0 ? (
+            <Empty>Nenhum lead ainda.</Empty>
+          ) : (
+            <table style={mini}>
+              <thead>
+                <tr><ThMini>Data</ThMini><ThMini>Nome</ThMini><ThMini>E-mail</ThMini><ThMini>Material</ThMini></tr>
+              </thead>
+              <tbody>
+                {d.leads_recentes.map((l: any) => (
+                  <tr key={l.id} style={{ borderTop: `1px solid ${c.border}` }}>
+                    <TdMini>{new Date(l.created_at).toLocaleDateString("pt-BR")}</TdMini>
+                    <TdMini>{l.nome}</TdMini>
+                    <TdMini>{l.email}</TdMini>
+                    <TdMini>{l.materiais?.titulo ?? "—"}</TdMini>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Panel>
       </div>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: number | string }) {
+const kpiGrid: CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14, marginBottom: 22 };
+const chartsGrid: CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 14, marginBottom: 22 };
+const listsGrid: CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 14 };
+const linkBtn: CSSProperties = { background: "transparent", color: c.navy, border: `1px solid ${c.border}`, padding: "5px 10px", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", fontFamily: sans, borderRadius: 6 };
+const mini: CSSProperties = { width: "100%", borderCollapse: "collapse", fontSize: 13 };
+
+function Kpi({ label, value, hint, tone, accent, onClick }: { label: string; value: number | string; hint?: string; tone?: "ok" | "danger"; accent?: boolean; onClick?: () => void }) {
+  const hintColor = tone === "danger" ? c.danger : tone === "ok" ? c.ok : c.muted;
   return (
-    <div style={{ background: "white", border: `1px solid ${c.border}`, padding: 28 }}>
-      <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>{label}</div>
-      <div style={{ fontFamily: serif, fontSize: 44, fontWeight: 300 }}>{value}</div>
+    <div
+      onClick={onClick}
+      style={{
+        background: accent ? c.navy : "white",
+        color: accent ? "white" : c.ink,
+        border: `1px solid ${accent ? c.navy : c.border}`,
+        padding: 18,
+        borderRadius: 10,
+        cursor: onClick ? "pointer" : "default",
+        transition: "transform 0.15s, box-shadow 0.15s",
+        boxShadow: accent ? "0 6px 18px -10px rgba(26,21,87,0.5)" : "0 1px 0 rgba(0,0,0,0.02)",
+      }}
+    >
+      <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: accent ? "rgba(255,255,255,0.7)" : c.muted, fontWeight: 600, marginBottom: 8 }}>{label}</div>
+      <div style={{ fontFamily: serif, fontSize: 30, fontWeight: 500, color: accent ? c.gold : c.navy, lineHeight: 1.1 }}>{value}</div>
+      {hint && <div style={{ fontSize: 11, color: accent ? "rgba(255,255,255,0.7)" : hintColor, marginTop: 8, fontWeight: 500 }}>{hint}</div>}
     </div>
   );
 }
+
+function Panel({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div style={{ background: "white", border: `1px solid ${c.border}`, borderRadius: 10, padding: 18 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, fontWeight: 700 }}>{title}</div>
+        {action}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Empty({ children }: { children: React.ReactNode }) {
+  return <div style={{ fontSize: 13, color: c.muted, padding: "20px 0", textAlign: "center" }}>{children}</div>;
+}
+
+function DailyBars({ data, color }: { data: { dia: string; valor: number }[]; color: string }) {
+  const max = Math.max(1, ...data.map((d) => d.valor));
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 110 }}>
+        {data.map((p, i) => {
+          const h = Math.max(2, Math.round((p.valor / max) * 100));
+          return (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }} title={`${p.dia}: ${p.valor}`}>
+              <div style={{ width: "100%", height: `${h}%`, background: color, borderRadius: 3, opacity: p.valor === 0 ? 0.18 : 1 }} />
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: c.muted, marginTop: 6, letterSpacing: "0.05em" }}>
+        <span>{data[0]?.dia}</span>
+        <span>{data[Math.floor(data.length / 2)]?.dia}</span>
+        <span>{data[data.length - 1]?.dia}</span>
+      </div>
+      <div style={{ fontSize: 11, color: c.muted, marginTop: 6 }}>
+        Total: <b style={{ color: c.ink }}>{data.reduce((a, b) => a + b.valor, 0).toLocaleString("pt-BR")}</b>
+      </div>
+    </div>
+  );
+}
+
+function PlatformList({ items }: { items: { name: string; value: number }[] }) {
+  if (items.length === 0) return <Empty>Sem vendas neste mês.</Empty>;
+  const total = items.reduce((a, b) => a + b.value, 0);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      {items.map((it) => {
+        const pct = Math.round((it.value / total) * 100);
+        return (
+          <div key={it.name}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 4 }}>
+              <span style={{ textTransform: "capitalize", color: c.ink, fontWeight: 600 }}>{it.name}</span>
+              <span style={{ color: c.muted }}>{it.value} · {pct}%</span>
+            </div>
+            <div style={{ height: 6, background: c.warm, borderRadius: 3, overflow: "hidden" }}>
+              <div style={{ width: `${pct}%`, height: "100%", background: c.navy }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const bg =
+    status === "aprovado" ? "#e6f3ec" :
+    status === "pendente" ? "#fff4d6" :
+    status === "cancelado" || status === "recusado" ? "#fbe6e8" : c.warm;
+  const fg =
+    status === "aprovado" ? c.ok :
+    status === "pendente" ? c.goldDark :
+    status === "cancelado" || status === "recusado" ? c.danger : c.muted;
+  return (
+    <span style={{ background: bg, color: fg, padding: "3px 8px", borderRadius: 999, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+      {status}
+    </span>
+  );
+}
+
+function ThMini({ children }: { children: any }) {
+  return <th style={{ textAlign: "left", padding: "8px 10px", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, fontWeight: 600, background: c.cream }}>{children}</th>;
+}
+function TdMini({ children }: { children: any }) {
+  return <td style={{ padding: "8px 10px", color: c.ink, fontSize: 12 }}>{children}</td>;
+}
+
 
 // MateriaisTab foi extraído para src/components/admin/MateriaisTab.tsx (usado via ConteudosTab).
 
