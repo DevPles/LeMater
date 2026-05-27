@@ -1,53 +1,55 @@
-## Objetivo
+## Problema
 
-Reformular `NovoConteudoModal` (curso) trocando o formulário longo de scroll único por um **fluxo sequencial em passos**, mantendo **todos os campos atuais** (dados, capa, vídeo loop, trailer, ofertas país×plataforma, áudios, instrutor, PDFs grátis, aulas, ofertas por aula, áudios por aula, ordem/publicado). Material/Serviço continuam no formulário atual (sem mudança).
+1. **Cores fora da identidade**: o conteúdo do `/app/admin` usa uma paleta creme/sage/Cormorant Garamond, que não bate com o resto do sistema (navy `#1a1557` + gold `#f0c040`, Playfair Display + DM Sans). Só a sidebar está na marca.
+2. **Painel vazio**: o Dashboard mostra apenas 3 contadores estáticos (Leads, Alunos ativos, Materiais). Sem tendências, sem receita, sem vendas, sem listas recentes.
 
-## Novo fluxo (Curso)
+## Escopo do redesenho
 
-Stepper no topo, navegação Voltar / Avançar / Salvar fixos no rodapé. O painel "Prévia do card" continua à direita.
+### 1. Alinhamento visual de `/app/admin` (`src/routes/_authenticated/app.admin.tsx`)
 
-```text
-[1 Identidade] → [2 Mídia] → [3 Acesso & Ofertas] → [4 Instrutor & PDFs] → [5 Aulas] → [6 Publicação]
-```
+- Remover o objeto `c` com sage/cream e o `Cormorant Garamond`. Passar a usar:
+  - **Fundo**: `#faf8f3` (mesmo do `AdminLayout` interno e do `app/admin` atual da sidebar).
+  - **Acento navy** `#1a1557` e **gold** `#f0c040` para títulos, botões primários, badges.
+  - **Bordas**: `#e8ddd2` / `border-border`.
+  - **Tipografia**: `Playfair Display` (h1/h2) + `DM Sans` (corpo) — já carregadas globalmente.
+- Header, botões (`btn`, `btnSm`), `Stat`, tabelas, modais, inputs passam a usar essa paleta.
+- Remover link `<link rel="stylesheet">` do Cormorant no `head()` da rota.
 
-1. **Identidade** — Título, Slug, Descrição curta, Descrição longa, Categoria, Nível, Carga.
-2. **Mídia** — Capa (imagem/vídeo fallback), Vídeo de capa em loop, Trailer URL.
-3. **Acesso & Ofertas do curso** — `Acesso (grátis/pago)`. Se `pago`: `OfertasEditor` do curso inline (país × plataforma, mesmo componente atual).
-4. **Instrutor & PDFs grátis** — Nome, Foto, Bio, PDFs grátis (download), Áudios vinculados ao curso (`AudiosEditor` atual).
-5. **Aulas — sequencial** — Sub-wizard interno. Lista compacta à esquerda (Aula 1, Aula 2, …, **+ Adicionar aula**, Remover). À direita, a aula **selecionada** é editada com todos os campos atuais agrupados em três blocos colapsáveis:
-   - **Conteúdo da aula**: Título, Descrição, Tipo, Duração, Acesso, e o input específico do tipo (URL vídeo / upload vídeo / PDF / HTML), Anexos.
-   - **Venda desta aula** (se acesso = pago): preço (centavos), preço (texto), métodos de pagamento legados (lista atual de `links_compra` com país/plataforma/url/remover), e **`OfertasEditor` da aula** abaixo.
-   - **Áudios desta aula**: `AudiosEditor` da aula.
-   Navegação interna: "Aula anterior" / "Próxima aula" + indicador "Aula X de N".
-6. **Publicação** — Ordem, Publicado (visível ao público), resumo final (contagem de aulas, total de ofertas, pago/grátis) e botão **Salvar** (mesmo `salvarCurso` atual, com flush de ofertas/áudios já existente).
+### 2. Dashboard com informação de verdade
 
-## Regras de UX
+Novo server fn `dashboardOverview` em `src/lib/admin.functions.ts` (mantém o `dashboardStats` antigo para não quebrar nada). Retorna em uma única chamada:
 
-- Stepper clicável: cada passo pode ser pulado livremente (sem validação bloqueante além das que já existem no save).
-- Estado: **um único `useState` por curso e por lista de aulas** (já existe). Adicionar `useState<number>` para `stepAtual` no shell e `useState<number>` para `aulaSelecionada` no passo 5.
-- Rodapé fixo dentro do modal com `Voltar` (desabilita no passo 1), `Avançar` (vira `Salvar` no último passo) e `Cancelar`.
-- A coluna de prévia continua existindo em todos os passos, sem alteração.
-- No modo edição (`editando=true`) o passo 5 (Aulas) é ocultado — mantém o comportamento atual em que aulas só são criadas na criação inicial.
+- **KPIs (cards)**:
+  - Gestantes cadastradas (profiles com role gestante)
+  - Alunos com acesso pago ativo
+  - Leads grátis (total) + delta últimos 7 dias
+  - Pedidos pagos no mês + variação vs mês anterior
+  - Receita no mês (soma `valor_centavos` status pago, em BRL)
+  - Cursos publicados / Materiais publicados
+  - Matrículas ativas em cursos
+  - Compras Hotmart processadas (total)
+- **Gráficos** (Recharts, já no projeto):
+  - Barras: pedidos pagos por dia (últimos 14 dias)
+  - Barras: leads por dia (últimos 14 dias)
+  - Pizza: vendas por plataforma (hotmart / mercadopago / manual / outros)
+- **Listas**:
+  - Últimos 8 pedidos (data, comprador, produto, plataforma, valor, status) — com badge de status colorido.
+  - Últimos 8 leads (data, nome, email, material).
+
+Tudo navegável: cada card/lista tem botão "Ver tudo" que chama `setTab(...)` para a aba correspondente (vendas, leads, alunos, etc.).
+
+### 3. Implementação
+
+- **Backend**: agregações em paralelo via `supabaseAdmin` (`count + head`, `select` com `gte` para janelas, agrupamento client-side para a série diária — dados pequenos).
+- **Frontend**: novo componente `DashboardTab` reescrito no mesmo arquivo, usando `Recharts` para os gráficos e tokens de cor da marca.
+- **Sem mudanças** em RLS, em outras abas, na sidebar `AdminLayout` separado (`src/components/admin/AdminLayout.tsx`), ou no fluxo de auth.
 
 ## Arquivos afetados
 
-- `src/components/admin/NovoConteudoModal.tsx`
-  - Manter `NovoConteudoModal` (shell, tabs Curso/Material/Serviço, salvarCurso/upAula/salvarMaterial, refs).
-  - Substituir `FormCurso` por uma versão wizard. Extrair em sub-componentes locais no mesmo arquivo:
-    - `StepIdentidade`, `StepMidia`, `StepAcessoOfertas`, `StepInstrutorPdfs`, `StepAulas`, `StepPublicacao`.
-    - `AulaEditor` interno para o passo 5 (recebe `aula`, `index`, `updateAula`, `removeAula`).
-  - Adicionar barra de progresso (texto + traços, sem ícones).
-  - Manter `FormMaterial` intacto.
-- Sem mudanças em `OfertasEditor.tsx`, `AudiosEditor.tsx`, server functions, banco, ou prévia (`CursoPreview`).
+- `src/lib/admin.functions.ts` — adiciona `dashboardOverview`.
+- `src/routes/_authenticated/app.admin.tsx` — repalleta tudo + reescreve `DashboardTab` + atualiza estilos compartilhados (`btn`, `Th`, `Td`, `inp`, `modalBg`, `h1`).
 
-## Estilo
+## Observações
 
-- Tipografia atual (Cormorant Garamond + DM Sans), paleta atual (`c.sage`, `c.gold`, `c.warm`, `c.border`, `c.muted`).
-- Sem ícones (regra do projeto). Stepper feito com numerais + rótulo + traço entre passos.
-- Sem mudanças de cor, sem novas dependências.
-
-## Riscos / fora de escopo
-
-- Não altera schema, server functions, fluxo de pagamento, nem `CursoModal` da vitrine pública.
-- Não altera Material/Serviço.
-- Não toca em validação de submit (continua o mesmo `salvarCurso`).
+- A regra de não usar ícones (memória do projeto) será respeitada — sem Lucide, sem SVG icon libs. Indicadores usam texto, badges coloridos e gráficos Recharts.
+- Permanece consistente com a sidebar navy/gold já existente, dando coesão à tela inteira.
