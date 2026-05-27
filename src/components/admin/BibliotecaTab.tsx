@@ -247,11 +247,11 @@ function LessonsSection() {
             <Field label="Transformação prometida"><textarea style={{ ...inp, minHeight: 80 }} value={editing.transformation ?? ""} onChange={(e) => setEditing({ ...editing, transformation: e.target.value })} /></Field>
 
             <Field label="Você aprenderá (1 por linha)">
-              <textarea style={{ ...inp, minHeight: 80 }} value={(editing.objectives ?? []).join("\n")}
+              <textarea style={{ ...inp, minHeight: 80 }} value={((editing.objectives as string[] | undefined) ?? []).join("\n")}
                 onChange={(e) => setEditing({ ...editing, objectives: e.target.value.split("\n").map(s => s.trim()).filter(Boolean) })} />
             </Field>
             <Field label="Como isso ajuda você (1 por linha)">
-              <textarea style={{ ...inp, minHeight: 80 }} value={(editing.benefits ?? []).join("\n")}
+              <textarea style={{ ...inp, minHeight: 80 }} value={((editing.benefits as string[] | undefined) ?? []).join("\n")}
                 onChange={(e) => setEditing({ ...editing, benefits: e.target.value.split("\n").map(s => s.trim()).filter(Boolean) })} />
             </Field>
 
