@@ -60,6 +60,7 @@ const TAB_GROUPS: { label: string; tabs: { id: Tab; label: string }[] }[] = [
     { id: "vendas", label: "Vendas & cupons" },
   ]},
   { label: "Conteúdos", tabs: [
+    { id: "biblioteca", label: "Biblioteca" },
     { id: "atlas", label: "Atlas" },
   ]},
   { label: "Operação", tabs: [
