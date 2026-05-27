@@ -122,7 +122,6 @@ export const startOfferCheckout = createServerFn({ method: "POST" })
           pending: `${origin}/app/videos?compra=pendente`,
           failure: `${origin}/app/videos?compra=falha`,
         },
-        auto_return: "approved",
         notification_url: `${origin}/api/public/mercadopago-webhook`,
         metadata: {
           offer_id: offer.id,
@@ -137,10 +136,13 @@ export const startOfferCheckout = createServerFn({ method: "POST" })
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(body),
       });
-      const j = (await r.json()) as MPResp;
+      const rawText = await r.text();
+      let j: MPResp & { error?: string; cause?: unknown } = {};
+      try { j = JSON.parse(rawText); } catch { /* keep rawText */ }
       if (!r.ok) {
-        console.error("[MP] preference error", j);
-        throw new Error(j?.message ?? "Falha ao criar pagamento Mercado Pago");
+        console.error("[MP] preference error", r.status, rawText);
+        const detail = j?.message || j?.error || rawText || `HTTP ${r.status}`;
+        throw new Error(`Mercado Pago: ${detail}`);
       }
       urlCheckout = (token.startsWith("TEST-") ? j.sandbox_init_point : j.init_point) ?? j.init_point ?? null;
     }
