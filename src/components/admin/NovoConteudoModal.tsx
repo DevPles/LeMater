@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { createRef, useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { adminUpsertCurso, adminUpsertModulo, adminUpsertAula } from "@/lib/cursos.functions";
@@ -101,6 +101,7 @@ type Tipo = "curso" | "material" | "servico";
 
 type LinkCompra = { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | "aula" | null };
 type AulaLocal = {
+  id?: string;
   titulo: string;
   descricao: string;
   tipo: "video" | "pdf" | "texto";
@@ -115,9 +116,12 @@ type AulaLocal = {
   preco_centavos: number;
   preco_label: string;
   links_compra: LinkCompra[];
+  ofertasRef: RefObject<OfertasEditorHandle | null>;
+  audiosRef: RefObject<AudiosEditorHandle | null>;
 };
 
 const aulaVazia = (): AulaLocal => ({
+  id: undefined,
   titulo: "",
   descricao: "",
   tipo: "video",
@@ -131,6 +135,8 @@ const aulaVazia = (): AulaLocal => ({
   preco_centavos: 0,
   preco_label: "",
   links_compra: [],
+  ofertasRef: createRef<OfertasEditorHandle>(),
+  audiosRef: createRef<AudiosEditorHandle>(),
 });
 
 
@@ -370,6 +376,13 @@ export default function NovoConteudoModal({
     if (curso.id) payload.id = curso.id;
     const cursoRow = await upCurso({ data: payload });
 
+    // 3b. Persistir ofertas e áudios do curso (cria/atualiza usando o id)
+    setBusyMsg("Salvando ofertas e áudios do curso…");
+    await Promise.all([
+      ofertasCursoRef.current?.flush(cursoRow.id),
+      audiosCursoRef.current?.flush(cursoRow.id),
+    ]);
+
     // 4. Aulas: só na criação inicial
     if (editando) return;
     const aulasValidas = aulas.filter((a) => a.titulo.trim());
@@ -429,7 +442,7 @@ export default function NovoConteudoModal({
             }))
         : [];
 
-      await upAula({
+      const aulaRow = await upAula({
         data: {
           modulo_id: moduloRow.id,
           titulo: a.titulo,
@@ -447,6 +460,12 @@ export default function NovoConteudoModal({
           links_compra: linksLimpos,
         },
       });
+
+      // Persistir ofertas e áudios desta aula
+      await Promise.all([
+        a.ofertasRef.current?.flush(aulaRow.id),
+        a.audiosRef.current?.flush(aulaRow.id),
+      ]);
 
     }
   };
@@ -475,7 +494,7 @@ export default function NovoConteudoModal({
     }
 
     setBusyMsg("Salvando…");
-    await upMaterial({
+    const matRes = await upMaterial({
       data: {
         titulo: material.titulo,
         descricao: material.descricao || null,
@@ -494,6 +513,11 @@ export default function NovoConteudoModal({
         publicado: material.publicado,
       },
     });
+
+    if (isServico && matRes?.id) {
+      setBusyMsg("Salvando ofertas do serviço…");
+      await ofertasServicoRef.current?.flush(matRes.id);
+    }
   };
 
   // ===== UI =====
@@ -590,6 +614,7 @@ export default function NovoConteudoModal({
                 setMaterial={setMaterial}
                 mostrarCategoria={false}
                 isServico
+                ofertasServicoRef={ofertasServicoRef}
               />
             )}
           </div>
@@ -1091,6 +1116,24 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando, ofertasCursoRef
                 </div>
               )}
 
+              {!a.previa_gratis && (
+                <OfertasEditor
+                  ref={a.ofertasRef}
+                  produtoTipo="aula"
+                  produtoId={a.id ?? null}
+                  titulo="Ofertas desta aula (país × plataforma)"
+                />
+              )}
+
+              <AudiosEditor
+                ref={a.audiosRef}
+                vinculoTipo="aula"
+                vinculoId={a.id ?? null}
+                titulo="Áudios vinculados a esta aula"
+              />
+
+
+
 
               {a.tipo === "video" && (
                 <>
@@ -1204,7 +1247,7 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando, ofertasCursoRef
 }
 
 // ================= FORM MATERIAL / SERVIÇO =================
-function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = false }: any) {
+function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = false, ofertasServicoRef }: any) {
   const updateMaterial = (patch: Record<string, unknown>) =>
     setMaterial((prev: any) => ({ ...prev, ...patch }));
   return (
@@ -1351,8 +1394,23 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
         />
       </Field>
 
+      {isServico && (
+        <>
+          <div style={sectionTitle}>Venda do serviço (país × plataforma)</div>
+          <div style={{ fontSize: 12, color: c.muted, marginBottom: 10, fontFamily: sans }}>
+            Configure preço e plataforma de pagamento por país. Salve o serviço — depois reabra para ajustar ofertas.
+          </div>
+          <OfertasEditor
+            ref={ofertasServicoRef}
+            produtoTipo="servico"
+            produtoId={material.id ?? null}
+            titulo="Ofertas do serviço"
+          />
+        </>
+      )}
+
       <div style={sectionTitle}>
-        {isServico ? "Compra / agendamento" : "Venda externa (opcional)"}
+        {isServico ? "Link alternativo (opcional)" : "Venda externa (opcional)"}
       </div>
       <Field label="Link">
         <input
