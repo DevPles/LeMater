@@ -614,6 +614,7 @@ export default function NovoConteudoModal({
                 setMaterial={setMaterial}
                 mostrarCategoria={false}
                 isServico
+                ofertasServicoRef={ofertasServicoRef}
               />
             )}
           </div>
