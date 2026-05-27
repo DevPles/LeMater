@@ -11,10 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RedefinirSenhaRouteImport } from './routes/redefinir-senha'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as BibliotecaRouteImport } from './routes/biblioteca'
 import { Route as AtlasRouteImport } from './routes/atlas'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BibliotecaSlugRouteImport } from './routes/biblioteca.$slug'
 import { Route as AvaliacaoTokenRouteImport } from './routes/avaliacao.$token'
 import { Route as AtlasSlugRouteImport } from './routes/atlas.$slug'
 import { Route as AppVideosRouteImport } from './routes/app_.videos'
@@ -49,6 +51,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BibliotecaRoute = BibliotecaRouteImport.update({
+  id: '/biblioteca',
+  path: '/biblioteca',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AtlasRoute = AtlasRouteImport.update({
   id: '/atlas',
   path: '/atlas',
@@ -67,6 +74,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const BibliotecaSlugRoute = BibliotecaSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BibliotecaRoute,
 } as any)
 const AvaliacaoTokenRoute = AvaliacaoTokenRouteImport.update({
   id: '/avaliacao/$token',
@@ -190,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/atlas': typeof AtlasRouteWithChildren
+  '/biblioteca': typeof BibliotecaRouteWithChildren
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/carrinho': typeof AuthenticatedCarrinhoRoute
@@ -205,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/app/videos': typeof AppVideosRoute
   '/atlas/$slug': typeof AtlasSlugRoute
   '/avaliacao/$token': typeof AvaliacaoTokenRoute
+  '/biblioteca/$slug': typeof BibliotecaSlugRoute
   '/app/admin': typeof AuthenticatedAppAdminRoute
   '/app/membro': typeof AuthenticatedAppMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
@@ -220,6 +234,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/atlas': typeof AtlasRouteWithChildren
+  '/biblioteca': typeof BibliotecaRouteWithChildren
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/carrinho': typeof AuthenticatedCarrinhoRoute
@@ -235,6 +250,7 @@ export interface FileRoutesByTo {
   '/app/videos': typeof AppVideosRoute
   '/atlas/$slug': typeof AtlasSlugRoute
   '/avaliacao/$token': typeof AvaliacaoTokenRoute
+  '/biblioteca/$slug': typeof BibliotecaSlugRoute
   '/app/admin': typeof AuthenticatedAppAdminRoute
   '/app/membro': typeof AuthenticatedAppMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
@@ -252,6 +268,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/app': typeof AppRoute
   '/atlas': typeof AtlasRouteWithChildren
+  '/biblioteca': typeof BibliotecaRouteWithChildren
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
   '/_authenticated/carrinho': typeof AuthenticatedCarrinhoRoute
@@ -267,6 +284,7 @@ export interface FileRoutesById {
   '/app_/videos': typeof AppVideosRoute
   '/atlas/$slug': typeof AtlasSlugRoute
   '/avaliacao/$token': typeof AvaliacaoTokenRoute
+  '/biblioteca/$slug': typeof BibliotecaSlugRoute
   '/_authenticated/app/admin': typeof AuthenticatedAppAdminRoute
   '/_authenticated/app/membro': typeof AuthenticatedAppMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
@@ -284,6 +302,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/atlas'
+    | '/biblioteca'
     | '/login'
     | '/redefinir-senha'
     | '/carrinho'
@@ -299,6 +318,7 @@ export interface FileRouteTypes {
     | '/app/videos'
     | '/atlas/$slug'
     | '/avaliacao/$token'
+    | '/biblioteca/$slug'
     | '/app/admin'
     | '/app/membro'
     | '/api/public/hotmart-webhook'
@@ -314,6 +334,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/atlas'
+    | '/biblioteca'
     | '/login'
     | '/redefinir-senha'
     | '/carrinho'
@@ -329,6 +350,7 @@ export interface FileRouteTypes {
     | '/app/videos'
     | '/atlas/$slug'
     | '/avaliacao/$token'
+    | '/biblioteca/$slug'
     | '/app/admin'
     | '/app/membro'
     | '/api/public/hotmart-webhook'
@@ -345,6 +367,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/app'
     | '/atlas'
+    | '/biblioteca'
     | '/login'
     | '/redefinir-senha'
     | '/_authenticated/carrinho'
@@ -360,6 +383,7 @@ export interface FileRouteTypes {
     | '/app_/videos'
     | '/atlas/$slug'
     | '/avaliacao/$token'
+    | '/biblioteca/$slug'
     | '/_authenticated/app/admin'
     | '/_authenticated/app/membro'
     | '/api/public/hotmart-webhook'
@@ -377,6 +401,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AppRoute: typeof AppRoute
   AtlasRoute: typeof AtlasRouteWithChildren
+  BibliotecaRoute: typeof BibliotecaRouteWithChildren
   LoginRoute: typeof LoginRoute
   RedefinirSenhaRoute: typeof RedefinirSenhaRoute
   AppAlertasRoute: typeof AppAlertasRoute
@@ -415,6 +440,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/biblioteca': {
+      id: '/biblioteca'
+      path: '/biblioteca'
+      fullPath: '/biblioteca'
+      preLoaderRoute: typeof BibliotecaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/atlas': {
       id: '/atlas'
       path: '/atlas'
@@ -442,6 +474,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/biblioteca/$slug': {
+      id: '/biblioteca/$slug'
+      path: '/$slug'
+      fullPath: '/biblioteca/$slug'
+      preLoaderRoute: typeof BibliotecaSlugRouteImport
+      parentRoute: typeof BibliotecaRoute
     }
     '/avaliacao/$token': {
       id: '/avaliacao/$token'
@@ -635,11 +674,24 @@ const AtlasRouteChildren: AtlasRouteChildren = {
 
 const AtlasRouteWithChildren = AtlasRoute._addFileChildren(AtlasRouteChildren)
 
+interface BibliotecaRouteChildren {
+  BibliotecaSlugRoute: typeof BibliotecaSlugRoute
+}
+
+const BibliotecaRouteChildren: BibliotecaRouteChildren = {
+  BibliotecaSlugRoute: BibliotecaSlugRoute,
+}
+
+const BibliotecaRouteWithChildren = BibliotecaRoute._addFileChildren(
+  BibliotecaRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AppRoute: AppRoute,
   AtlasRoute: AtlasRouteWithChildren,
+  BibliotecaRoute: BibliotecaRouteWithChildren,
   LoginRoute: LoginRoute,
   RedefinirSenhaRoute: RedefinirSenhaRoute,
   AppAlertasRoute: AppAlertasRoute,
@@ -664,13 +716,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
