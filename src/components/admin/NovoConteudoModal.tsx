@@ -497,8 +497,6 @@ export default function NovoConteudoModal({
       <form
         autoComplete="off"
         onSubmit={(e) => e.preventDefault()}
-        onInputCapture={(e) => syncPreviewFromForm(e.currentTarget)}
-        onChangeCapture={(e) => syncPreviewFromForm(e.currentTarget)}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: c.cream,
