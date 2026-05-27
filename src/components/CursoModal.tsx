@@ -319,7 +319,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
           <div style={{ padding: "18px", background: c.warm }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
               <span style={{ fontSize: 11, letterSpacing: "0.22em", color: c.muted, fontFamily: sans }}>TOTAL</span>
-              <span style={{ fontFamily: serif, fontSize: 28, color: c.sageDark }}>{fmtPreco(offerAtiva.offer.preco_centavos, offerAtiva.offer.moeda)}</span>
+              <span style={{ fontFamily: sans, fontSize: 26, fontWeight: 500, color: c.sageDark, fontVariantNumeric: "lining-nums tabular-nums" }}>{fmtPreco(offerAtiva.offer.preco_centavos, offerAtiva.offer.moeda)}</span>
             </div>
             <button onClick={comprar} disabled={comprando}
               style={{ width: "100%", background: c.gold, color: "white", fontFamily: sans, fontSize: 13, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", padding: "16px", border: "none", cursor: comprando ? "not-allowed" : "pointer", opacity: comprando ? 0.6 : 1 }}>
