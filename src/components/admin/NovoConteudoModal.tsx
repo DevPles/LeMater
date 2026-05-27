@@ -579,7 +579,7 @@ export default function NovoConteudoModal({
         >
           <div style={{ padding: "20px 32px 24px", overflow: "auto" }}>
             {tipo === "curso" && (
-              <FormCurso curso={curso} setCurso={setCurso} aulas={aulas} setAulas={setAulas} editando={editando} />
+              <FormCurso curso={curso} setCurso={setCurso} aulas={aulas} setAulas={setAulas} editando={editando} ofertasCursoRef={ofertasCursoRef} audiosCursoRef={audiosCursoRef} />
             )}
             {tipo === "material" && (
               <FormMaterial material={material} setMaterial={setMaterial} mostrarCategoria />
