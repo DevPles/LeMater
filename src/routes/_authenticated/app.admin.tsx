@@ -213,7 +213,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
   const [d, setD] = useState<DashboardData | null>(null);
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => {
-    fn().then(setD).catch((e) => setErr(e?.message ?? "Falha ao carregar"));
+    fn().then(setD).catch((e: unknown) => setErr(e instanceof Error ? e.message : "Falha ao carregar"));
   }, []);
 
   if (err) return <div style={{ color: c.danger }}>Erro: {err}</div>;
