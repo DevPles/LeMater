@@ -116,8 +116,8 @@ type AulaLocal = {
   preco_centavos: number;
   preco_label: string;
   links_compra: LinkCompra[];
-  ofertasRef: RefObject<OfertasEditorHandle>;
-  audiosRef: RefObject<AudiosEditorHandle>;
+  ofertasRef: RefObject<OfertasEditorHandle | null>;
+  audiosRef: RefObject<AudiosEditorHandle | null>;
 };
 
 const aulaVazia = (): AulaLocal => ({
