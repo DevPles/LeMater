@@ -178,7 +178,7 @@ function AdminPage() {
           </div>
         </header>
         <main style={{ maxWidth: 1280, width: "100%", margin: "0 auto", padding: "28px 24px 80px", flex: 1 }}>
-          {tab === "dash" && <DashboardTab />}
+          {tab === "dash" && <DashboardTab onGoTo={setTab} />}
           {tab === "atlas" && <AtlasContentTab />}
           {tab === "consultas" && <ConsultasTab />}
           {tab === "gravacoes" && <GravacoesTab />}
