@@ -494,7 +494,7 @@ export default function NovoConteudoModal({
     }
 
     setBusyMsg("Salvando…");
-    await upMaterial({
+    const matRes = await upMaterial({
       data: {
         titulo: material.titulo,
         descricao: material.descricao || null,
@@ -513,6 +513,11 @@ export default function NovoConteudoModal({
         publicado: material.publicado,
       },
     });
+
+    if (isServico && matRes?.id) {
+      setBusyMsg("Salvando ofertas do serviço…");
+      await ofertasServicoRef.current?.flush(matRes.id);
+    }
   };
 
   // ===== UI =====
