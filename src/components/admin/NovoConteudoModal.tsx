@@ -101,6 +101,7 @@ type Tipo = "curso" | "material" | "servico";
 
 type LinkCompra = { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | "aula" | null };
 type AulaLocal = {
+  id?: string;
   titulo: string;
   descricao: string;
   tipo: "video" | "pdf" | "texto";
@@ -115,9 +116,12 @@ type AulaLocal = {
   preco_centavos: number;
   preco_label: string;
   links_compra: LinkCompra[];
+  ofertasRef: RefObject<OfertasEditorHandle>;
+  audiosRef: RefObject<AudiosEditorHandle>;
 };
 
 const aulaVazia = (): AulaLocal => ({
+  id: undefined,
   titulo: "",
   descricao: "",
   tipo: "video",
@@ -131,6 +135,8 @@ const aulaVazia = (): AulaLocal => ({
   preco_centavos: 0,
   preco_label: "",
   links_compra: [],
+  ofertasRef: createRef<OfertasEditorHandle>(),
+  audiosRef: createRef<AudiosEditorHandle>(),
 });
 
 
