@@ -362,3 +362,104 @@ export const getMaterialPagoSignedUrl = createServerFn({ method: "POST" })
     if (signedErr) throw new Error(signedErr.message);
     return { url: signed.signedUrl };
   });
+
+// ============================================================
+// Dashboard overview — KPIs, séries diárias e listas recentes
+// ============================================================
+export const dashboardOverview = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+
+    const now = new Date();
+    const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const startPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+    const startThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const start14 = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString();
+    const start7 = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+
+    const [
+      leadsTotal,
+      leads7d,
+      leadsSerie,
+      alunosAtivos,
+      gestantes,
+      materiaisPub,
+      cursosPub,
+      matriculasAtivas,
+      hotmartTotal,
+      ordersMes,
+      ordersMesAnt,
+      ordersSerie,
+      ordersRecentes,
+      leadsRecentes,
+    ] = await Promise.all([
+      supabaseAdmin.from("leads_gratis").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("leads_gratis").select("*", { count: "exact", head: true }).gte("created_at", start7),
+      supabaseAdmin.from("leads_gratis").select("created_at").gte("created_at", start14),
+      supabaseAdmin.from("app_acesso_pago").select("*", { count: "exact", head: true }).eq("ativo", true),
+      supabaseAdmin.from("user_roles").select("*", { count: "exact", head: true }).eq("role", "gestante"),
+      supabaseAdmin.from("materiais").select("*", { count: "exact", head: true }).eq("publicado", true),
+      supabaseAdmin.from("cursos").select("*", { count: "exact", head: true }).eq("publicado", true),
+      supabaseAdmin.from("curso_matriculas").select("*", { count: "exact", head: true }).eq("ativo", true),
+      supabaseAdmin.from("hotmart_compras").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("orders").select("valor_centavos, plataforma").eq("status", "aprovado").gte("created_at", startThisMonth),
+      supabaseAdmin.from("orders").select("valor_centavos").eq("status", "aprovado").gte("created_at", startPrevMonth).lt("created_at", startMonth),
+      supabaseAdmin.from("orders").select("created_at, valor_centavos, plataforma, status").gte("created_at", start14),
+      supabaseAdmin.from("orders").select("id, created_at, comprador_nome, comprador_email, produto_tipo, plataforma, valor_centavos, moeda, status").order("created_at", { ascending: false }).limit(8),
+      supabaseAdmin.from("leads_gratis").select("id, created_at, nome, email, materiais(titulo)").order("created_at", { ascending: false }).limit(8),
+    ]);
+
+    const receitaMes = (ordersMes.data ?? []).reduce((acc, o) => acc + (o.valor_centavos ?? 0), 0);
+    const receitaMesAnt = (ordersMesAnt.data ?? []).reduce((acc, o) => acc + (o.valor_centavos ?? 0), 0);
+    const pedidosMes = (ordersMes.data ?? []).length;
+    const pedidosMesAnt = (ordersMesAnt.data ?? []).length;
+
+    // Vendas por plataforma (mês atual, aprovados)
+    const porPlataforma: Record<string, number> = {};
+    (ordersMes.data ?? []).forEach((o) => {
+      const k = o.plataforma || "outros";
+      porPlataforma[k] = (porPlataforma[k] ?? 0) + 1;
+    });
+
+    // Séries diárias (14 dias)
+    const buildSerie = (rows: Array<{ created_at: string }>, valueFn?: (r: any) => number) => {
+      const map = new Map<string, number>();
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 24 * 3600 * 1000);
+        map.set(d.toISOString().slice(0, 10), 0);
+      }
+      rows.forEach((r) => {
+        const k = r.created_at.slice(0, 10);
+        if (map.has(k)) map.set(k, (map.get(k) ?? 0) + (valueFn ? valueFn(r) : 1));
+      });
+      return Array.from(map.entries()).map(([dia, valor]) => ({ dia: dia.slice(5), valor }));
+    };
+
+    const aprovados = (ordersSerie.data ?? []).filter((o: any) => o.status === "aprovado");
+
+    return {
+      kpis: {
+        gestantes: gestantes.count ?? 0,
+        alunos_ativos: alunosAtivos.count ?? 0,
+        leads_total: leadsTotal.count ?? 0,
+        leads_7d: leads7d.count ?? 0,
+        materiais_publicados: materiaisPub.count ?? 0,
+        cursos_publicados: cursosPub.count ?? 0,
+        matriculas_ativas: matriculasAtivas.count ?? 0,
+        hotmart_total: hotmartTotal.count ?? 0,
+        pedidos_mes: pedidosMes,
+        pedidos_mes_ant: pedidosMesAnt,
+        receita_mes_centavos: receitaMes,
+        receita_mes_ant_centavos: receitaMesAnt,
+      },
+      series: {
+        pedidos_14d: buildSerie(aprovados),
+        receita_14d: buildSerie(aprovados, (r) => (r.valor_centavos ?? 0) / 100),
+        leads_14d: buildSerie((leadsSerie.data ?? []) as Array<{ created_at: string }>),
+      },
+      plataformas: Object.entries(porPlataforma).map(([name, value]) => ({ name, value })),
+      pedidos_recentes: ordersRecentes.data ?? [],
+      leads_recentes: leadsRecentes.data ?? [],
+    };
+  });
