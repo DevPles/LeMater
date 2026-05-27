@@ -405,6 +405,32 @@ function EstruturaTab({ cursoId, modulos, aulas, onChanged }: { cursoId: string;
                   <small style={{ color: c.muted, fontSize: 11 }}>Aceita múltiplos arquivos (PDF, DOC, imagens etc.) — ficam disponíveis para download dentro da aula.</small>
                 </div>
               </Field>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, paddingTop: 12, borderTop: `1px solid ${c.border}` }}>
+                <Field label="Preço da aula (centavos)">
+                  <input type="number" min={0} value={editAula.preco_centavos ?? 0} onChange={(e) => setEditAula({ ...editAula, preco_centavos: parseInt(e.target.value) || 0 })} style={inp} placeholder="Ex.: 4990 = R$ 49,90" />
+                </Field>
+                <Field label="Rótulo de preço (opcional)">
+                  <input value={editAula.preco_label ?? ""} onChange={(e) => setEditAula({ ...editAula, preco_label: e.target.value })} style={inp} placeholder="Ex.: R$ 49,90 ou Grátis" />
+                </Field>
+              </div>
+              <Field label="Links de compra externos (por plataforma/país)">
+                <div style={{ display: "grid", gap: 8 }}>
+                  {(Array.isArray(editAula.links_compra) ? editAula.links_compra : []).map((l: any, i: number) => (
+                    <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr auto auto", gap: 6, alignItems: "center", background: c.warm, padding: 8 }}>
+                      <input placeholder="Plataforma (Hotmart...)" value={l.plataforma ?? ""} onChange={(e) => { const arr = [...editAula.links_compra]; arr[i] = { ...arr[i], plataforma: e.target.value }; setEditAula({ ...editAula, links_compra: arr }); }} style={{ ...inp, fontSize: 13 }} />
+                      <input placeholder="País (BR, US...)" value={l.pais ?? ""} onChange={(e) => { const arr = [...editAula.links_compra]; arr[i] = { ...arr[i], pais: e.target.value }; setEditAula({ ...editAula, links_compra: arr }); }} style={{ ...inp, fontSize: 13 }} />
+                      <input placeholder="https://..." value={l.url ?? ""} onChange={(e) => { const arr = [...editAula.links_compra]; arr[i] = { ...arr[i], url: e.target.value }; setEditAula({ ...editAula, links_compra: arr }); }} style={{ ...inp, fontSize: 13 }} />
+                      <select value={l.tipo ?? "aula"} onChange={(e) => { const arr = [...editAula.links_compra]; arr[i] = { ...arr[i], tipo: e.target.value }; setEditAula({ ...editAula, links_compra: arr }); }} style={{ ...inp, fontSize: 13 }}>
+                        <option value="aula">Aula</option>
+                        <option value="curso">Curso</option>
+                        <option value="passe">Passe</option>
+                      </select>
+                      <button type="button" onClick={() => setEditAula({ ...editAula, links_compra: editAula.links_compra.filter((_: any, j: number) => j !== i) })} style={{ background: "transparent", border: "none", color: c.danger, cursor: "pointer", fontSize: 12 }}>Remover</button>
+                    </div>
+                  ))}
+                  <button type="button" onClick={() => setEditAula({ ...editAula, links_compra: [...(editAula.links_compra ?? []), { plataforma: "", pais: "", url: "", tipo: "aula" }] })} style={btnSm(c.sage)}>+ Adicionar link</button>
+                </div>
+              </Field>
               <Field label="Prévia"><label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}><input type="checkbox" checked={!!editAula.previa_gratis} onChange={(e) => setEditAula({ ...editAula, previa_gratis: e.target.checked })} /> Liberar como prévia gratuita (visível antes da compra)</label></Field>
             </div>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
