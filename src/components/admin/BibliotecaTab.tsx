@@ -50,6 +50,9 @@ export default function BibliotecaTab() {
         {([
           { id: "modules", label: "Módulos" },
           { id: "lessons", label: "Aulas" },
+          { id: "pathways", label: "Trilhas" },
+          { id: "bundles", label: "Pacotes" },
+          { id: "offers", label: "Ofertas" },
           { id: "entitlements", label: "Acessos liberados" },
         ] as { id: SubTab; label: string }[]).map((t) => (
           <button key={t.id} onClick={() => setSub(t.id)} style={{
@@ -63,6 +66,9 @@ export default function BibliotecaTab() {
 
       {sub === "modules" && <ModulesSection />}
       {sub === "lessons" && <LessonsSection />}
+      {sub === "pathways" && <PathwaysSection />}
+      {sub === "bundles" && <BundlesSection />}
+      {sub === "offers" && <OffersSection />}
       {sub === "entitlements" && <EntitlementsSection />}
     </div>
   );
