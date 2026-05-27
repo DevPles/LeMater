@@ -635,7 +635,16 @@ function HistoricoItem({
         )}
         {slot.recording_path ? (
           audioUrl ? (
-            <audio controls src={audioUrl} className="h-9 w-full max-w-xs" />
+            <div className="flex items-center gap-2 w-full max-w-xs">
+              <audio controls src={audioUrl} className="h-9 flex-1" />
+              <a
+                href={audioUrl}
+                download={`gravacao-${slot.id}.webm`}
+                className="text-[11px] font-semibold bg-[#f0c040] text-[#1a1557] px-3 py-1.5 rounded-full hover:opacity-90 whitespace-nowrap"
+              >
+                Baixar
+              </a>
+            </div>
           ) : (
             <button
               onClick={carregarAudio}
