@@ -2,6 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProntuarioConsultaModal } from "@/components/ProntuarioConsultaModal";
 
+const TIPOS_ATENDIMENTO = [
+  "Consulta médica obstétrica",
+  "Consulta de enfermagem",
+  "Visita do agente comunitário de saúde",
+  "Orientação nutricional",
+  "Orientação psicológica",
+  "Orientação sobre amamentação",
+  "Orientação geral pré-natal",
+  "Outro",
+] as const;
+
+type ProfissionalLite = { id: string; nome: string; especialidade: string; ativo: boolean };
+
+
 type Slot = {
   id: string;
   data_hora: string;
