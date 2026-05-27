@@ -330,14 +330,15 @@ function SalaPage() {
               {conectando ? "Conectando..." : "Entrar na sala"}
             </Button>
 
-            <button
+            <Button
+              variant="outline"
               onClick={() =>
                 navigate({ to: isProfDono ? "/app/profissional" : "/app/videochamada" })
               }
-              className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="w-full mt-3 h-11 text-sm font-semibold"
             >
-              Voltar
-            </button>
+              ← Voltar
+            </Button>
           </div>
         </div>
       </div>
