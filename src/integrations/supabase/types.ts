@@ -235,6 +235,50 @@ export type Database = {
         }
         Relationships: []
       }
+      aula_matriculas: {
+        Row: {
+          ativo: boolean
+          aula_id: string
+          created_at: string
+          expira_em: string | null
+          id: string
+          liberado_por: string | null
+          origem: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          aula_id: string
+          created_at?: string
+          expira_em?: string | null
+          id?: string
+          liberado_por?: string | null
+          origem?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean
+          aula_id?: string
+          created_at?: string
+          expira_em?: string | null
+          id?: string
+          liberado_por?: string | null
+          origem?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aula_matriculas_aula_id_fkey"
+            columns: ["aula_id"]
+            isOneToOne: false
+            referencedRelation: "curso_aulas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinical_measurements: {
         Row: {
           appointment_id: string | null
