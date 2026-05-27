@@ -189,7 +189,7 @@ export default function MateriaisTab({
                   <Field label="Plataforma">
                     <select value={edit.plataforma_venda ?? ""} onChange={(e) => setEdit({ ...edit, plataforma_venda: e.target.value })} style={inp}>
                       <option value="">—</option><option value="hotmart">Hotmart</option><option value="kiwify">Kiwify</option>
-                      <option value="teachable">Teachable</option><option value="eduzz">Eduzz</option><option value="outro">Outro</option>
+                      <option value="eduzz">Eduzz</option><option value="stripe">Stripe</option><option value="outro">Outro</option>
                     </select>
                   </Field>
                   <Field label="Preço (texto)"><input value={edit.preco_label ?? ""} onChange={(e) => setEdit({ ...edit, preco_label: e.target.value })} style={inp} placeholder="R$ 197" /></Field>
