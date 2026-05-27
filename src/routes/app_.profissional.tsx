@@ -41,6 +41,8 @@ type Slot = {
   titulo: string | null;
   descricao: string | null;
   tipo_atendimento: string | null;
+  recording_path: string | null;
+  recording_duration_seg: number | null;
 };
 
 const TIPOS_ATENDIMENTO = [
@@ -115,6 +117,8 @@ function Dashboard({ session }: { session: Session }) {
   });
   const [msg, setMsg] = useState<string | null>(null);
   const [filtroStatus, setFiltroStatus] = useState<"todos" | "disponivel" | "reservado" | "realizado">("todos");
+  const [aba, setAba] = useState<"agenda" | "historico">("agenda");
+  const [gestanteNomes, setGestanteNomes] = useState<Record<string, string>>({});
   const [slotDetalhe, setSlotDetalhe] = useState<Slot | null>(null);
   const [prontuarioId, setProntuarioId] = useState<string | null>(null);
 
@@ -133,7 +137,23 @@ function Dashboard({ session }: { session: Session }) {
         .select("*")
         .eq("professional_id", (p as Professional).id)
         .order("data_hora", { ascending: false });
-      if (s) setSlots(s as Slot[]);
+      if (s) {
+        setSlots(s as Slot[]);
+        const ids = Array.from(
+          new Set((s as Slot[]).map((x) => x.gestante_id).filter(Boolean) as string[]),
+        );
+        if (ids.length) {
+          const { data: profs } = await supabase
+            .from("profiles")
+            .select("user_id, nome")
+            .in("user_id", ids);
+          const map: Record<string, string> = {};
+          (profs ?? []).forEach((p) => {
+            map[(p as { user_id: string }).user_id] = (p as { nome: string | null }).nome ?? "Gestante";
+          });
+          setGestanteNomes(map);
+        }
+      }
     }
     setLoading(false);
   };
@@ -199,6 +219,7 @@ function Dashboard({ session }: { session: Session }) {
   };
 
   const filtered = filtroStatus === "todos" ? slots : slots.filter((s) => s.status === filtroStatus);
+  const historico = slots.filter((s) => s.status === "realizado" || s.status === "cancelado");
 
   return (
     <div className="min-h-screen bg-background">
@@ -224,7 +245,23 @@ function Dashboard({ session }: { session: Session }) {
           </div>
         )}
 
-        {prof && (
+        <div className="flex gap-2">
+          {(["agenda", "historico"] as const).map((a) => (
+            <button
+              key={a}
+              onClick={() => setAba(a)}
+              className={`flex-1 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
+                aba === a
+                  ? "bg-[#1a1557] text-white"
+                  : "bg-card text-muted-foreground border border-border hover:text-foreground"
+              }`}
+            >
+              {a === "agenda" ? "Agenda" : "Histórico"}
+            </button>
+          ))}
+        </div>
+
+        {prof && aba === "agenda" && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -334,6 +371,7 @@ function Dashboard({ session }: { session: Session }) {
           </motion.div>
         )}
 
+        {aba === "agenda" && (
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           <div className="px-4 py-2 bg-muted/40 border-b border-border flex items-center justify-between gap-2 flex-wrap">
             <p className="text-xs font-bold uppercase tracking-wide">Minha agenda ({filtered.length})</p>
@@ -371,23 +409,28 @@ function Dashboard({ session }: { session: Session }) {
                         : "bg-muted text-muted-foreground";
                 const podeAbrir = !!s.gestante_id;
                 return (
-                  <li key={s.id} className="p-3 flex items-center justify-between gap-3 flex-wrap">
+                  <li key={s.id} className="p-3 space-y-3">
                     <button
                       type="button"
                       onClick={() => podeAbrir && setSlotDetalhe(s)}
                       disabled={!podeAbrir}
-                      className={`text-xs flex-1 min-w-[200px] text-left ${
+                      className={`text-xs w-full text-left ${
                         podeAbrir ? "cursor-pointer hover:bg-muted/30 rounded-lg -m-1 p-1 transition-colors" : "cursor-default"
                       }`}
                       title={podeAbrir ? "Ver dados clínicos da gestante" : undefined}
                     >
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColor}`}>
+                          {s.status}
+                        </span>
+                        {s.tipo_atendimento && (
+                          <span className="text-[10px] uppercase tracking-wide font-semibold text-primary">
+                            {s.tipo_atendimento}
+                          </span>
+                        )}
+                      </div>
                       {s.titulo && (
                         <p className="font-bold text-foreground text-sm mb-0.5">{s.titulo}</p>
-                      )}
-                      {s.tipo_atendimento && (
-                        <p className="text-[10px] uppercase tracking-wide font-semibold text-primary mb-1">
-                          {s.tipo_atendimento}
-                        </p>
                       )}
                       <p className="font-semibold text-foreground">
                         {dt.toLocaleDateString("pt-BR")} às{" "}
@@ -395,6 +438,9 @@ function Dashboard({ session }: { session: Session }) {
                       </p>
                       <p className="text-muted-foreground">
                         {s.duracao_min} min • {s.modalidade === "videochamada" ? "Vídeo" : "Presencial"}
+                        {s.gestante_id && gestanteNomes[s.gestante_id] && (
+                          <> • <span className="font-semibold text-foreground">{gestanteNomes[s.gestante_id]}</span></>
+                        )}
                       </p>
                       {s.descricao && (
                         <p className="text-muted-foreground mt-1 line-clamp-2">{s.descricao}</p>
@@ -406,13 +452,10 @@ function Dashboard({ session }: { session: Session }) {
                       )}
                     </button>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColor}`}>
-                        {s.status}
-                      </span>
                       {podeEntrarSala(s) && (
                         <button
                           onClick={() => navigate({ to: "/app/sala/$roomId", params: { roomId: s.room_id! } })}
-                          className="text-[10px] font-bold bg-primary text-primary-foreground px-3 py-1 rounded-full hover:opacity-90"
+                          className="text-[11px] font-bold bg-primary text-primary-foreground px-3 py-1.5 rounded-full hover:opacity-90"
                         >
                           Entrar na sala
                         </button>
@@ -420,7 +463,7 @@ function Dashboard({ session }: { session: Session }) {
                       {s.status === "reservado" && (
                         <button
                           onClick={() => marcarRealizado(s.id)}
-                          className="text-[10px] font-semibold text-green-700 hover:text-green-900"
+                          className="text-[11px] font-semibold bg-green-100 text-green-800 border border-green-200 px-3 py-1.5 rounded-full hover:bg-green-200"
                         >
                           Marcar realizado
                         </button>
@@ -428,7 +471,7 @@ function Dashboard({ session }: { session: Session }) {
                       {s.status === "reservado" && (
                         <button
                           onClick={() => cancelarSlot(s.id)}
-                          className="text-[10px] font-semibold text-red-700 hover:text-red-900"
+                          className="text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-200"
                         >
                           Cancelar
                         </button>
@@ -436,7 +479,7 @@ function Dashboard({ session }: { session: Session }) {
                       {podeAbrir && (
                         <button
                           onClick={() => setProntuarioId(s.id)}
-                          className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+                          className="text-[11px] font-semibold bg-[#1a1557] text-white px-3 py-1.5 rounded-full hover:bg-[#241e7a]"
                           title="Ver prontuário compilado da consulta"
                         >
                           Prontuário
@@ -444,7 +487,7 @@ function Dashboard({ session }: { session: Session }) {
                       )}
                       <button
                         onClick={() => removerSlot(s.id)}
-                        className="text-[10px] font-semibold text-red-700 hover:text-red-900"
+                        className="text-[11px] font-semibold bg-red-100 text-red-800 border border-red-200 px-3 py-1.5 rounded-full hover:bg-red-200"
                         title="Excluir definitivamente"
                       >
                         Excluir
@@ -457,7 +500,18 @@ function Dashboard({ session }: { session: Session }) {
             </div>
           )}
         </div>
+        )}
+
+        {aba === "historico" && (
+          <HistoricoCard
+            slots={historico}
+            gestanteNomes={gestanteNomes}
+            onProntuario={(id) => setProntuarioId(id)}
+            loading={loading}
+          />
+        )}
       </div>
+
 
       {slotDetalhe && (
         <GestanteDetalheModal slot={slotDetalhe} onClose={() => setSlotDetalhe(null)} />
@@ -471,3 +525,134 @@ function Dashboard({ session }: { session: Session }) {
     </div>
   );
 }
+
+function HistoricoCard({
+  slots,
+  gestanteNomes,
+  onProntuario,
+  loading,
+}: {
+  slots: Slot[];
+  gestanteNomes: Record<string, string>;
+  onProntuario: (id: string) => void;
+  loading: boolean;
+}) {
+  return (
+    <div className="bg-card border border-border rounded-2xl overflow-hidden">
+      <div className="px-4 py-2 bg-muted/40 border-b border-border">
+        <p className="text-xs font-bold uppercase tracking-wide">
+          Histórico de consultas ({slots.length})
+        </p>
+      </div>
+      {loading ? (
+        <LoadingMessage />
+      ) : slots.length === 0 ? (
+        <p className="p-6 text-sm text-center text-muted-foreground">
+          Ainda não há consultas realizadas.
+        </p>
+      ) : (
+        <ul className="divide-y divide-border max-h-[60dvh] overflow-y-auto">
+          {slots.map((s) => (
+            <HistoricoItem
+              key={s.id}
+              slot={s}
+              gestanteNome={s.gestante_id ? gestanteNomes[s.gestante_id] : undefined}
+              onProntuario={onProntuario}
+            />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function HistoricoItem({
+  slot,
+  gestanteNome,
+  onProntuario,
+}: {
+  slot: Slot;
+  gestanteNome: string | undefined;
+  onProntuario: (id: string) => void;
+}) {
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [loadingAudio, setLoadingAudio] = useState(false);
+  const dt = new Date(slot.data_hora);
+  const realizado = slot.status === "realizado";
+
+  const carregarAudio = async () => {
+    if (!slot.recording_path || audioUrl) return;
+    setLoadingAudio(true);
+    const { data, error } = await supabase.storage
+      .from("consultation-recordings")
+      .createSignedUrl(slot.recording_path, 60 * 60);
+    setLoadingAudio(false);
+    if (!error && data?.signedUrl) setAudioUrl(data.signedUrl);
+  };
+
+  return (
+    <li className="p-3 space-y-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span
+          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+            realizado ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          {slot.status}
+        </span>
+        {slot.tipo_atendimento && (
+          <span className="text-[10px] uppercase tracking-wide font-semibold text-primary">
+            {slot.tipo_atendimento}
+          </span>
+        )}
+      </div>
+      {slot.titulo && (
+        <p className="font-bold text-foreground text-sm">{slot.titulo}</p>
+      )}
+      <p className="text-xs font-semibold text-foreground">
+        {dt.toLocaleDateString("pt-BR")} às{" "}
+        {dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+      </p>
+      <p className="text-xs text-muted-foreground">
+        {slot.duracao_min} min • {slot.modalidade === "videochamada" ? "Vídeo" : "Presencial"}
+        {gestanteNome && (
+          <> • <span className="font-semibold text-foreground">{gestanteNome}</span></>
+        )}
+      </p>
+
+      <div className="flex items-center gap-2 flex-wrap pt-1">
+        {slot.gestante_id && (
+          <button
+            onClick={() => onProntuario(slot.id)}
+            className="text-[11px] font-semibold bg-[#1a1557] text-white px-3 py-1.5 rounded-full hover:bg-[#241e7a]"
+          >
+            Prontuário
+          </button>
+        )}
+        {slot.recording_path ? (
+          audioUrl ? (
+            <audio controls src={audioUrl} className="h-9 w-full max-w-xs" />
+          ) : (
+            <button
+              onClick={carregarAudio}
+              disabled={loadingAudio}
+              className="text-[11px] font-semibold bg-card text-foreground border border-border px-3 py-1.5 rounded-full hover:bg-muted"
+            >
+              {loadingAudio ? "Carregando..." : "Ouvir gravação"}
+              {slot.recording_duration_seg
+                ? ` (${Math.floor(slot.recording_duration_seg / 60)}min)`
+                : ""}
+            </button>
+          )
+        ) : (
+          realizado && (
+            <span className="text-[10px] text-muted-foreground italic">
+              Sem gravação disponível
+            </span>
+          )
+        )}
+      </div>
+    </li>
+  );
+}
+
