@@ -449,7 +449,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       {!data!.matriculado && cursoOffers.length > 0 && (
         <div style={{ background: "white", padding: 14, border: `1px solid ${c.border}`, marginBottom: 16 }}>
           <div style={{ fontSize: 10, letterSpacing: "0.18em", color: c.muted, marginBottom: 4 }}>A PARTIR DE</div>
-          <div style={{ fontFamily: serif, fontSize: 22, color: c.sageDark }}>
+          <div style={{ fontFamily: sans, fontSize: 22, fontWeight: 500, color: c.sageDark, fontVariantNumeric: "lining-nums tabular-nums" }}>
             {fmtPreco(Math.min(...cursoOffers.map((o) => o.preco_centavos)), cursoOffers[0].moeda)}
           </div>
         </div>
