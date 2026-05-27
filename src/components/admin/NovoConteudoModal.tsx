@@ -442,7 +442,7 @@ export default function NovoConteudoModal({
             }))
         : [];
 
-      await upAula({
+      const aulaRow = await upAula({
         data: {
           modulo_id: moduloRow.id,
           titulo: a.titulo,
@@ -460,6 +460,12 @@ export default function NovoConteudoModal({
           links_compra: linksLimpos,
         },
       });
+
+      // Persistir ofertas e áudios desta aula
+      await Promise.all([
+        a.ofertasRef.current?.flush(aulaRow.id),
+        a.audiosRef.current?.flush(aulaRow.id),
+      ]);
 
     }
   };
