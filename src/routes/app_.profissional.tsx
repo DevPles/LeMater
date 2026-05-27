@@ -219,6 +219,7 @@ function Dashboard({ session }: { session: Session }) {
   };
 
   const filtered = filtroStatus === "todos" ? slots : slots.filter((s) => s.status === filtroStatus);
+  const historico = slots.filter((s) => s.status === "realizado" || s.status === "cancelado");
 
   return (
     <div className="min-h-screen bg-background">
