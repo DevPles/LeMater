@@ -54,13 +54,15 @@ const ofertaSchema = z.object({
   id: z.string().uuid().optional(),
   produto_tipo: z.enum(["curso", "aula", "material", "servico"]),
   produto_id: z.string().uuid(),
-  pais: z.string().max(8).nullable().optional(),
+  pais: z.string().min(1).max(8).default("ALL"),
   plataforma: z.string().min(1).max(40),
   tipo_link: z.enum(["nativo", "externo"]),
-  url_externa: z.string().url().nullable().optional(),
+  url_externo: z.string().url().nullable().optional(),
   produto_externo_id: z.string().max(120).nullable().optional(),
   preco_centavos: z.number().int().min(0).default(0),
   moeda: z.string().length(3).default("BRL"),
+  label: z.string().max(60).nullable().optional(),
+  ordem: z.number().int().min(0).default(0),
   ativo: z.boolean().default(true),
 });
 
@@ -84,7 +86,20 @@ export const saveOffer = createServerFn({ method: "POST" })
   .inputValidator((d) => ofertaSchema.parse(d))
   .handler(async ({ context, data }) => {
     await assertAdmin(context.userId);
-    const row = { ...data, pais: data.pais ?? null, url_externa: data.url_externa ?? null, produto_externo_id: data.produto_externo_id ?? null };
+    const row = {
+      produto_tipo: data.produto_tipo,
+      produto_id: data.produto_id,
+      pais: data.pais,
+      plataforma: data.plataforma,
+      tipo_link: data.tipo_link,
+      url_externo: data.url_externo ?? null,
+      produto_externo_id: data.produto_externo_id ?? null,
+      preco_centavos: data.preco_centavos,
+      moeda: data.moeda,
+      label: data.label ?? null,
+      ordem: data.ordem,
+      ativo: data.ativo,
+    };
     if (data.id) {
       const { error } = await supabaseAdmin.from("product_offers").update(row).eq("id", data.id);
       if (error) throw new Error(error.message);
@@ -94,6 +109,7 @@ export const saveOffer = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { id: ins.id };
   });
+
 
 export const deleteOffer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
