@@ -32,6 +32,7 @@ import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/pu
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
 import { Route as AuthenticatedAppMembroRouteImport } from './routes/_authenticated/app.membro'
 import { Route as AuthenticatedAppAdminRouteImport } from './routes/_authenticated/app.admin'
+import { Route as ApiPublicHooksHotmartRouteImport } from './routes/api/public/hooks/hotmart'
 import { Route as AuthenticatedAtlasSlugAprenderRouteImport } from './routes/_authenticated/atlas.$slug.aprender'
 
 const RedefinirSenhaRoute = RedefinirSenhaRouteImport.update({
@@ -149,6 +150,11 @@ const AuthenticatedAppAdminRoute = AuthenticatedAppAdminRouteImport.update({
   path: '/app/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiPublicHooksHotmartRoute = ApiPublicHooksHotmartRouteImport.update({
+  id: '/api/public/hooks/hotmart',
+  path: '/api/public/hooks/hotmart',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAtlasSlugAprenderRoute =
   AuthenticatedAtlasSlugAprenderRouteImport.update({
     id: '/atlas/$slug/aprender',
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/app/sala/$roomId': typeof AppSalaRoomIdRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
+  '/api/public/hooks/hotmart': typeof ApiPublicHooksHotmartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByTo {
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/app/sala/$roomId': typeof AppSalaRoomIdRoute
   '/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
+  '/api/public/hooks/hotmart': typeof ApiPublicHooksHotmartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -232,6 +240,7 @@ export interface FileRoutesById {
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
   '/app_/sala/$roomId': typeof AppSalaRoomIdRoute
   '/_authenticated/atlas/$slug/aprender': typeof AuthenticatedAtlasSlugAprenderRoute
+  '/api/public/hooks/hotmart': typeof ApiPublicHooksHotmartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -259,6 +268,7 @@ export interface FileRouteTypes {
     | '/api/public/mercadopago-webhook'
     | '/app/sala/$roomId'
     | '/atlas/$slug/aprender'
+    | '/api/public/hooks/hotmart'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/api/public/mercadopago-webhook'
     | '/app/sala/$roomId'
     | '/atlas/$slug/aprender'
+    | '/api/public/hooks/hotmart'
   id:
     | '__root__'
     | '/'
@@ -310,6 +321,7 @@ export interface FileRouteTypes {
     | '/api/public/mercadopago-webhook'
     | '/app_/sala/$roomId'
     | '/_authenticated/atlas/$slug/aprender'
+    | '/api/public/hooks/hotmart'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -333,6 +345,7 @@ export interface RootRouteChildren {
   ApiPublicHotmartWebhookRoute: typeof ApiPublicHotmartWebhookRoute
   ApiPublicMercadopagoWebhookRoute: typeof ApiPublicMercadopagoWebhookRoute
   AppSalaRoomIdRoute: typeof AppSalaRoomIdRoute
+  ApiPublicHooksHotmartRoute: typeof ApiPublicHooksHotmartRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -498,6 +511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/hooks/hotmart': {
+      id: '/api/public/hooks/hotmart'
+      path: '/api/public/hooks/hotmart'
+      fullPath: '/api/public/hooks/hotmart'
+      preLoaderRoute: typeof ApiPublicHooksHotmartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/atlas/$slug/aprender': {
       id: '/_authenticated/atlas/$slug/aprender'
       path: '/atlas/$slug/aprender'
@@ -555,7 +575,18 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHotmartWebhookRoute: ApiPublicHotmartWebhookRoute,
   ApiPublicMercadopagoWebhookRoute: ApiPublicMercadopagoWebhookRoute,
   AppSalaRoomIdRoute: AppSalaRoomIdRoute,
+  ApiPublicHooksHotmartRoute: ApiPublicHooksHotmartRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
