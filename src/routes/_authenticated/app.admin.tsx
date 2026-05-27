@@ -183,6 +183,7 @@ function AdminPage() {
         <main style={{ maxWidth: 1280, width: "100%", margin: "0 auto", padding: "28px 24px 80px", flex: 1 }}>
           {tab === "dash" && <DashboardTab onGoTo={setTab} />}
           {tab === "atlas" && <AtlasContentTab />}
+          {tab === "biblioteca" && <BibliotecaTab />}
           {tab === "consultas" && <ConsultasTab />}
           {tab === "gravacoes" && <GravacoesTab />}
           {tab === "profissionais" && <ProfissionaisTab />}
