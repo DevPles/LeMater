@@ -266,13 +266,23 @@ export function ConsultasTab() {
             Histórico completo de atendimentos — disponíveis, reservados, realizados e cancelados.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={load}
-          className="bg-[#1a1557] text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:opacity-90"
-        >
-          Recarregar
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setCriarAberto(true)}
+            className="bg-[#f0c040] text-[#1a1557] text-xs font-bold px-3 py-1.5 rounded-full hover:opacity-90"
+          >
+            + Novo horário
+          </button>
+          <button
+            type="button"
+            onClick={load}
+            className="bg-[#1a1557] text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:opacity-90"
+          >
+            Recarregar
+          </button>
+        </div>
+
       </div>
 
       {/* contadores */}
