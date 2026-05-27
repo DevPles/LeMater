@@ -1,27 +1,123 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { listVendas, listCupons, saveCupom, deleteCupom, listCursosBasic } from "@/lib/vendas.functions";
+import { listOrders, aprovarPedidoManual, reembolsarPedido } from "@/lib/orders.functions";
 
 type Venda = { id: string; processado_em: string; email_comprador: string; nome_comprador: string | null; produto: string | null; evento: string; status: string; transaction_id: string | null; curso_id: string | null; curso_titulo: string | null; cupom_codigo: string | null; valor_centavos: number | null; plataforma: string | null };
 type Cupom = { id: string; codigo: string; descricao: string | null; desconto_pct: number | null; desconto_centavos: number | null; curso_id: string | null; valido_de: string | null; valido_ate: string | null; max_usos: number | null; usos: number; ativo: boolean; created_at: string };
 type CursoMin = { id: string; titulo: string; preco_centavos: number; produto_externo_id: string | null };
+type Order = { id: string; created_at: string; aprovado_em: string | null; plataforma: string; produto_tipo: string; produto_id: string; comprador_email: string; comprador_nome: string | null; status: string; valor_centavos: number; moeda: string; pais: string | null; transaction_id_externo: string | null; cupom_codigo: string | null; aprovacao_manual: boolean };
 
-const moeda = (c: number | null | undefined) => c == null ? "—" : `R$ ${(c / 100).toFixed(2).replace(".", ",")}`;
+const moeda = (c: number | null | undefined, m = "BRL") => c == null ? "—" : `${m} ${(c / 100).toFixed(2).replace(".", ",")}`;
 const dataFmt = (d: string | null) => d ? new Date(d).toLocaleString("pt-BR") : "—";
 
+type Aba = "pedidos" | "vendas" | "cupons" | "integracoes";
+
 export function VendasTab() {
-  const [aba, setAba] = useState<"vendas" | "cupons">("vendas");
+  const [aba, setAba] = useState<Aba>("pedidos");
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 border-b border-[#1a1557]/10">
-        {[["vendas", "Vendas"], ["cupons", "Cupons"]].map(([k, l]) => (
-          <button key={k} onClick={() => setAba(k as any)}
+      <div className="flex gap-2 border-b border-[#1a1557]/10 flex-wrap">
+        {([["pedidos", "Pedidos"], ["vendas", "Vendas (legado)"], ["cupons", "Cupons"], ["integracoes", "Integrações"]] as [Aba, string][]).map(([k, l]) => (
+          <button key={k} onClick={() => setAba(k)}
             className={`px-4 py-2 text-sm font-semibold transition-colors ${aba === k ? "text-[#1a1557] border-b-2 border-[#f0c040]" : "text-[#1a1557]/50 hover:text-[#1a1557]"}`}>
             {l}
           </button>
         ))}
       </div>
-      {aba === "vendas" ? <VendasView /> : <CuponsView />}
+      {aba === "pedidos" && <PedidosView />}
+      {aba === "vendas" && <VendasView />}
+      {aba === "cupons" && <CuponsView />}
+      {aba === "integracoes" && <IntegracoesView />}
+    </div>
+  );
+}
+
+function PedidosView() {
+  const fn = useServerFn(listOrders);
+  const fnAprovar = useServerFn(aprovarPedidoManual);
+  const fnReembolsar = useServerFn(reembolsarPedido);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [err, setErr] = useState<string | null>(null);
+  const [filtro, setFiltro] = useState<string>("todos");
+
+  const reload = () => fn().then((r) => setOrders(r.orders as Order[])).catch((e) => setErr(e.message));
+  useEffect(() => { reload(); }, []);
+
+  if (err) return <p className="text-red-600">{err}</p>;
+  const filtrados = filtro === "todos" ? orders : orders.filter(o => o.status === filtro);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 flex-wrap">
+        {["todos", "pendente", "aprovado", "reembolsado", "cancelado"].map(s => (
+          <button key={s} onClick={() => setFiltro(s)}
+            className={`px-3 py-1 rounded-full text-xs font-semibold ${filtro === s ? "bg-[#1a1557] text-white" : "bg-white border border-[#1a1557]/20 text-[#1a1557]"}`}>
+            {s}
+          </button>
+        ))}
+      </div>
+      <div className="bg-white rounded-lg border border-[#1a1557]/10 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-[#faf8f3] text-[#1a1557] text-xs uppercase">
+              <tr>{["Data", "Plataforma", "País", "Tipo", "Comprador", "Valor", "Status", "Ações"].map(h => <th key={h} className="text-left px-3 py-2 font-semibold">{h}</th>)}</tr>
+            </thead>
+            <tbody>
+              {filtrados.length === 0 && <tr><td colSpan={8} className="px-3 py-6 text-center text-[#1a1557]/50">Nenhum pedido.</td></tr>}
+              {filtrados.map(o => (
+                <tr key={o.id} className="border-t border-[#1a1557]/5">
+                  <td className="px-3 py-2 text-xs">{dataFmt(o.created_at)}</td>
+                  <td className="px-3 py-2 uppercase text-xs">{o.plataforma}</td>
+                  <td className="px-3 py-2 text-xs">{o.pais ?? "—"}</td>
+                  <td className="px-3 py-2 text-xs capitalize">{o.produto_tipo}</td>
+                  <td className="px-3 py-2"><div className="font-medium">{o.comprador_nome ?? "—"}</div><div className="text-xs text-[#1a1557]/60">{o.comprador_email}</div></td>
+                  <td className="px-3 py-2">{moeda(o.valor_centavos, o.moeda)}</td>
+                  <td className="px-3 py-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${o.status === "aprovado" ? "bg-green-100 text-green-800" : o.status === "pendente" ? "bg-yellow-100 text-yellow-800" : "bg-red-100 text-red-800"}`}>{o.status}</span>
+                  </td>
+                  <td className="px-3 py-2 space-x-1">
+                    {o.status === "pendente" && (
+                      <button onClick={() => fnAprovar({ data: { order_id: o.id } }).then(reload)} className="text-xs px-2 py-1 bg-[#1a1557] text-white rounded">Aprovar</button>
+                    )}
+                    {o.status === "aprovado" && (
+                      <button onClick={() => { if (confirm("Reembolsar e revogar acesso?")) fnReembolsar({ data: { order_id: o.id } }).then(reload); }} className="text-xs px-2 py-1 border border-red-600 text-red-700 rounded">Reembolsar</button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function IntegracoesView() {
+  const base = typeof window !== "undefined" ? window.location.origin : "https://lemater.com";
+  const hooks: { nome: string; url: string; segredo: string; instrucoes: string }[] = [
+    { nome: "Mercado Pago", url: `${base}/api/public/mercadopago-webhook`, segredo: "MERCADOPAGO_ACCESS_TOKEN (Access Token)", instrucoes: "Painel MP → Suas Integrações → Webhooks → Configurar URL." },
+    { nome: "Hotmart", url: `${base}/api/public/hooks/hotmart`, segredo: "HOTMART_HOTTOK", instrucoes: "Hotmart → Ferramentas → Postback (Webhook) → URL + HotTok." },
+    { nome: "Kiwify", url: `${base}/api/public/hooks/kiwify`, segredo: "KIWIFY_WEBHOOK_SECRET", instrucoes: "Kiwify → Configurações → Webhooks → adicionar URL e Secret." },
+    { nome: "Eduzz", url: `${base}/api/public/hooks/eduzz?api_key=SEU_SECRET`, segredo: "EDUZZ_WEBHOOK_SECRET", instrucoes: "Myeduzz → Integrações → Postback → cole URL com api_key." },
+    { nome: "Stripe", url: `${base}/api/public/hooks/stripe`, segredo: "STRIPE_WEBHOOK_SECRET (whsec_...)", instrucoes: "Stripe → Developers → Webhooks → Add endpoint. Eventos: checkout.session.completed, charge.refunded. Coloque product_external_id no metadata do Checkout/PaymentLink." },
+    { nome: "Teachable", url: `${base}/api/public/hooks/teachable`, segredo: "TEACHABLE_WEBHOOK_SECRET", instrucoes: "Teachable → Settings → Webhooks → Sale Created / Enrollment Created / Sale Refunded." },
+    { nome: "Gumroad", url: `${base}/api/public/hooks/gumroad?secret=SEU_SECRET`, segredo: "GUMROAD_WEBHOOK_SECRET", instrucoes: "Gumroad → Settings → Advanced → Ping URL com ?secret=..." },
+  ];
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-[#1a1557]/70">Cole estas URLs nas plataformas correspondentes. Em cada oferta cadastrada no curso/aula/material, preencha <b>produto_externo_id</b> com o ID do produto na plataforma — assim o webhook libera o acesso certo automaticamente.</p>
+      {hooks.map(h => (
+        <div key={h.nome} className="bg-white rounded-lg border border-[#1a1557]/10 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="font-bold text-[#1a1557]">{h.nome}</div>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-[#faf8f3] font-mono">{h.segredo}</span>
+          </div>
+          <div className="font-mono text-xs bg-[#0d0d0d] text-[#f0c040] p-2 rounded break-all">{h.url}</div>
+          <p className="text-xs text-[#1a1557]/60 mt-2">{h.instrucoes}</p>
+        </div>
+      ))}
     </div>
   );
 }
