@@ -32,6 +32,7 @@ import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/pu
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
 import { Route as AuthenticatedAppMembroRouteImport } from './routes/_authenticated/app.membro'
 import { Route as AuthenticatedAppAdminRouteImport } from './routes/_authenticated/app.admin'
+import { Route as ApiPublicHooksStripeRouteImport } from './routes/api/public/hooks/stripe'
 import { Route as ApiPublicHooksKiwifyRouteImport } from './routes/api/public/hooks/kiwify'
 import { Route as ApiPublicHooksHotmartRouteImport } from './routes/api/public/hooks/hotmart'
 import { Route as ApiPublicHooksEduzzRouteImport } from './routes/api/public/hooks/eduzz'
@@ -152,6 +153,11 @@ const AuthenticatedAppAdminRoute = AuthenticatedAppAdminRouteImport.update({
   path: '/app/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiPublicHooksStripeRoute = ApiPublicHooksStripeRouteImport.update({
+  id: '/api/public/hooks/stripe',
+  path: '/api/public/hooks/stripe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksKiwifyRoute = ApiPublicHooksKiwifyRouteImport.update({
   id: '/api/public/hooks/kiwify',
   path: '/api/public/hooks/kiwify',
@@ -201,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/eduzz': typeof ApiPublicHooksEduzzRoute
   '/api/public/hooks/hotmart': typeof ApiPublicHooksHotmartRoute
   '/api/public/hooks/kiwify': typeof ApiPublicHooksKiwifyRoute
+  '/api/public/hooks/stripe': typeof ApiPublicHooksStripeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/eduzz': typeof ApiPublicHooksEduzzRoute
   '/api/public/hooks/hotmart': typeof ApiPublicHooksHotmartRoute
   '/api/public/hooks/kiwify': typeof ApiPublicHooksKiwifyRoute
+  '/api/public/hooks/stripe': typeof ApiPublicHooksStripeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -259,6 +267,7 @@ export interface FileRoutesById {
   '/api/public/hooks/eduzz': typeof ApiPublicHooksEduzzRoute
   '/api/public/hooks/hotmart': typeof ApiPublicHooksHotmartRoute
   '/api/public/hooks/kiwify': typeof ApiPublicHooksKiwifyRoute
+  '/api/public/hooks/stripe': typeof ApiPublicHooksStripeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -289,6 +298,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/eduzz'
     | '/api/public/hooks/hotmart'
     | '/api/public/hooks/kiwify'
+    | '/api/public/hooks/stripe'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -317,6 +327,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/eduzz'
     | '/api/public/hooks/hotmart'
     | '/api/public/hooks/kiwify'
+    | '/api/public/hooks/stripe'
   id:
     | '__root__'
     | '/'
@@ -346,6 +357,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/eduzz'
     | '/api/public/hooks/hotmart'
     | '/api/public/hooks/kiwify'
+    | '/api/public/hooks/stripe'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -372,6 +384,7 @@ export interface RootRouteChildren {
   ApiPublicHooksEduzzRoute: typeof ApiPublicHooksEduzzRoute
   ApiPublicHooksHotmartRoute: typeof ApiPublicHooksHotmartRoute
   ApiPublicHooksKiwifyRoute: typeof ApiPublicHooksKiwifyRoute
+  ApiPublicHooksStripeRoute: typeof ApiPublicHooksStripeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -537,6 +550,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/public/hooks/stripe': {
+      id: '/api/public/hooks/stripe'
+      path: '/api/public/hooks/stripe'
+      fullPath: '/api/public/hooks/stripe'
+      preLoaderRoute: typeof ApiPublicHooksStripeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/kiwify': {
       id: '/api/public/hooks/kiwify'
       path: '/api/public/hooks/kiwify'
@@ -618,6 +638,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksEduzzRoute: ApiPublicHooksEduzzRoute,
   ApiPublicHooksHotmartRoute: ApiPublicHooksHotmartRoute,
   ApiPublicHooksKiwifyRoute: ApiPublicHooksKiwifyRoute,
+  ApiPublicHooksStripeRoute: ApiPublicHooksStripeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
