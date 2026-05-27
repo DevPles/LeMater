@@ -319,7 +319,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
           <div style={{ padding: "18px", background: c.warm }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
               <span style={{ fontSize: 11, letterSpacing: "0.22em", color: c.muted, fontFamily: sans }}>TOTAL</span>
-              <span style={{ fontFamily: serif, fontSize: 28, color: c.sageDark }}>{fmtPreco(offerAtiva.offer.preco_centavos, offerAtiva.offer.moeda)}</span>
+              <span style={{ fontFamily: sans, fontSize: 26, fontWeight: 500, color: c.sageDark, fontVariantNumeric: "lining-nums tabular-nums" }}>{fmtPreco(offerAtiva.offer.preco_centavos, offerAtiva.offer.moeda)}</span>
             </div>
             <button onClick={comprar} disabled={comprando}
               style={{ width: "100%", background: c.gold, color: "white", fontFamily: sans, fontSize: 13, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", padding: "16px", border: "none", cursor: comprando ? "not-allowed" : "pointer", opacity: comprando ? 0.6 : 1 }}>
@@ -449,7 +449,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       {!data!.matriculado && cursoOffers.length > 0 && (
         <div style={{ background: "white", padding: 14, border: `1px solid ${c.border}`, marginBottom: 16 }}>
           <div style={{ fontSize: 10, letterSpacing: "0.18em", color: c.muted, marginBottom: 4 }}>A PARTIR DE</div>
-          <div style={{ fontFamily: serif, fontSize: 22, color: c.sageDark }}>
+          <div style={{ fontFamily: sans, fontSize: 22, fontWeight: 500, color: c.sageDark, fontVariantNumeric: "lining-nums tabular-nums" }}>
             {fmtPreco(Math.min(...cursoOffers.map((o) => o.preco_centavos)), cursoOffers[0].moeda)}
           </div>
         </div>
@@ -564,7 +564,7 @@ function OfferRow({ offer, ativo, onClick }: { offer: Offer; ativo: boolean; onC
         <div style={{ fontSize: 13, fontWeight: 500 }}>{platLabel(offer.plataforma)}</div>
         {offer.label && <div style={{ fontSize: 11, opacity: 0.75, marginTop: 2 }}>{offer.label}</div>}
       </div>
-      <div style={{ fontFamily: serif, fontSize: 18, whiteSpace: "nowrap" }}>{fmtPreco(offer.preco_centavos, offer.moeda)}</div>
+      <div style={{ fontFamily: sans, fontSize: 17, fontWeight: 600, whiteSpace: "nowrap", fontVariantNumeric: "lining-nums tabular-nums" }}>{fmtPreco(offer.preco_centavos, offer.moeda)}</div>
     </button>
   );
 }
