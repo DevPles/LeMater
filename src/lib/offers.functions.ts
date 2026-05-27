@@ -74,7 +74,7 @@ export const startOfferCheckout = createServerFn({ method: "POST" })
       }
     } else if (offer.produto_tipo === "aula") {
       const { data: a } = await supabaseAdmin
-        .from("aulas")
+        .from("curso_aulas")
         .select("id, titulo, descricao, modulo_id")
         .eq("id", offer.produto_id)
         .maybeSingle();
@@ -82,22 +82,13 @@ export const startOfferCheckout = createServerFn({ method: "POST" })
         titulo = offer.label ?? `Aula · ${a.titulo}`;
         descricao = a.descricao ?? null;
         if (a.modulo_id) {
-          const { data: mod } = await supabaseAdmin.from("modulos").select("curso_id").eq("id", a.modulo_id).maybeSingle();
+          const { data: mod } = await supabaseAdmin.from("curso_modulos").select("curso_id").eq("id", a.modulo_id).maybeSingle();
           cursoIdRelacionado = mod?.curso_id ?? null;
         }
       }
-    } else if (offer.produto_tipo === "material" || offer.produto_tipo === "servico") {
-      const { data: m } = await supabaseAdmin
-        .from("materiais")
-        .select("id, titulo, descricao, capa_url")
-        .eq("id", offer.produto_id)
-        .maybeSingle();
-      if (m) {
-        titulo = offer.label ?? m.titulo;
-        descricao = m.descricao ?? null;
-        capa = m.capa_url ?? null;
-      }
     }
+    // material/servico: usa offer.label como título — não há tabela canônica
+
 
     const claims = context.claims as { email?: unknown; user_metadata?: { nome?: unknown } } | null;
     const emailComprador = typeof claims?.email === "string" ? claims.email : "";
