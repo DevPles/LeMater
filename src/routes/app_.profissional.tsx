@@ -525,3 +525,134 @@ function Dashboard({ session }: { session: Session }) {
     </div>
   );
 }
+
+function HistoricoCard({
+  slots,
+  gestanteNomes,
+  onProntuario,
+  loading,
+}: {
+  slots: Slot[];
+  gestanteNomes: Record<string, string>;
+  onProntuario: (id: string) => void;
+  loading: boolean;
+}) {
+  return (
+    <div className="bg-card border border-border rounded-2xl overflow-hidden">
+      <div className="px-4 py-2 bg-muted/40 border-b border-border">
+        <p className="text-xs font-bold uppercase tracking-wide">
+          Histórico de consultas ({slots.length})
+        </p>
+      </div>
+      {loading ? (
+        <LoadingMessage />
+      ) : slots.length === 0 ? (
+        <p className="p-6 text-sm text-center text-muted-foreground">
+          Ainda não há consultas realizadas.
+        </p>
+      ) : (
+        <ul className="divide-y divide-border max-h-[60dvh] overflow-y-auto">
+          {slots.map((s) => (
+            <HistoricoItem
+              key={s.id}
+              slot={s}
+              gestanteNome={s.gestante_id ? gestanteNomes[s.gestante_id] : undefined}
+              onProntuario={onProntuario}
+            />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function HistoricoItem({
+  slot,
+  gestanteNome,
+  onProntuario,
+}: {
+  slot: Slot;
+  gestanteNome: string | undefined;
+  onProntuario: (id: string) => void;
+}) {
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [loadingAudio, setLoadingAudio] = useState(false);
+  const dt = new Date(slot.data_hora);
+  const realizado = slot.status === "realizado";
+
+  const carregarAudio = async () => {
+    if (!slot.recording_path || audioUrl) return;
+    setLoadingAudio(true);
+    const { data, error } = await supabase.storage
+      .from("consultation-recordings")
+      .createSignedUrl(slot.recording_path, 60 * 60);
+    setLoadingAudio(false);
+    if (!error && data?.signedUrl) setAudioUrl(data.signedUrl);
+  };
+
+  return (
+    <li className="p-3 space-y-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span
+          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+            realizado ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          {slot.status}
+        </span>
+        {slot.tipo_atendimento && (
+          <span className="text-[10px] uppercase tracking-wide font-semibold text-primary">
+            {slot.tipo_atendimento}
+          </span>
+        )}
+      </div>
+      {slot.titulo && (
+        <p className="font-bold text-foreground text-sm">{slot.titulo}</p>
+      )}
+      <p className="text-xs font-semibold text-foreground">
+        {dt.toLocaleDateString("pt-BR")} às{" "}
+        {dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+      </p>
+      <p className="text-xs text-muted-foreground">
+        {slot.duracao_min} min • {slot.modalidade === "videochamada" ? "Vídeo" : "Presencial"}
+        {gestanteNome && (
+          <> • <span className="font-semibold text-foreground">{gestanteNome}</span></>
+        )}
+      </p>
+
+      <div className="flex items-center gap-2 flex-wrap pt-1">
+        {slot.gestante_id && (
+          <button
+            onClick={() => onProntuario(slot.id)}
+            className="text-[11px] font-semibold bg-[#1a1557] text-white px-3 py-1.5 rounded-full hover:bg-[#241e7a]"
+          >
+            Prontuário
+          </button>
+        )}
+        {slot.recording_path ? (
+          audioUrl ? (
+            <audio controls src={audioUrl} className="h-9 w-full max-w-xs" />
+          ) : (
+            <button
+              onClick={carregarAudio}
+              disabled={loadingAudio}
+              className="text-[11px] font-semibold bg-card text-foreground border border-border px-3 py-1.5 rounded-full hover:bg-muted"
+            >
+              {loadingAudio ? "Carregando..." : "Ouvir gravação"}
+              {slot.recording_duration_seg
+                ? ` (${Math.floor(slot.recording_duration_seg / 60)}min)`
+                : ""}
+            </button>
+          )
+        ) : (
+          realizado && (
+            <span className="text-[10px] text-muted-foreground italic">
+              Sem gravação disponível
+            </span>
+          )
+        )}
+      </div>
+    </li>
+  );
+}
+
