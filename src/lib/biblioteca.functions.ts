@@ -132,8 +132,8 @@ export const upsertLesson = createServerFn({ method: "POST" })
     const row = {
       ...rest,
       slug: rest.slug?.trim() || slugify(rest.title),
-      benefits: rest.benefits as unknown as object,
-      objectives: rest.objectives as unknown as object,
+      benefits: rest.benefits as unknown as import("@/integrations/supabase/types").Json,
+      objectives: rest.objectives as unknown as import("@/integrations/supabase/types").Json,
     };
 
     let lessonId = id ?? null;
