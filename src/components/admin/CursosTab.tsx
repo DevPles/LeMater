@@ -276,6 +276,11 @@ function EstruturaTab({ cursoId, modulos, aulas, onChanged }: { cursoId: string;
       ordem: Number(editAula.ordem) || 0,
       previa_gratis: !!editAula.previa_gratis,
       materiais_extras,
+      preco_centavos: Number(editAula.preco_centavos) || 0,
+      preco_label: editAula.preco_label || null,
+      links_compra: Array.isArray(editAula.links_compra)
+        ? editAula.links_compra.filter((l: any) => l?.plataforma?.trim() && l?.url?.trim())
+        : [],
     } });
     setEditAula(null); onChanged();
   };
