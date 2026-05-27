@@ -137,7 +137,23 @@ function Dashboard({ session }: { session: Session }) {
         .select("*")
         .eq("professional_id", (p as Professional).id)
         .order("data_hora", { ascending: false });
-      if (s) setSlots(s as Slot[]);
+      if (s) {
+        setSlots(s as Slot[]);
+        const ids = Array.from(
+          new Set((s as Slot[]).map((x) => x.gestante_id).filter(Boolean) as string[]),
+        );
+        if (ids.length) {
+          const { data: profs } = await supabase
+            .from("profiles")
+            .select("user_id, nome")
+            .in("user_id", ids);
+          const map: Record<string, string> = {};
+          (profs ?? []).forEach((p) => {
+            map[(p as { user_id: string }).user_id] = (p as { nome: string | null }).nome ?? "Gestante";
+          });
+          setGestanteNomes(map);
+        }
+      }
     }
     setLoading(false);
   };
