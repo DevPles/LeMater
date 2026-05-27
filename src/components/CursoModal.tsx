@@ -543,9 +543,11 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
               <div style={{ padding: "44px 16px 20px", background: c.cream }}>
                 {renderPlayer()}
               </div>
-              <div style={{ padding: "20px 16px 32px", background: c.warm }}>
-                {renderLista()}
-              </div>
+              {!bloqueioInfo && (
+                <div style={{ padding: "20px 16px 32px", background: c.warm }}>
+                  {renderLista()}
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", height: "min(92vh, 760px)" }}>
