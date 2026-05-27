@@ -49,9 +49,12 @@ export const upsertModule = createServerFn({ method: "POST" })
   .inputValidator((d) => ModuleInput.parse(d))
   .handler(async ({ data, context }) => {
     await ensureAdmin(context.userId);
-    const row = { ...data, slug: data.slug?.trim() || slugify(data.title) };
+    const slug = data.slug?.trim() || slugify(data.title);
+    const row = { ...data, slug };
     if (data.id) {
-      const { id, ...rest } = row;
+      const id = data.id;
+      const { id: _drop, ...rest } = row;
+      void _drop;
       const { error } = await supabaseAdmin.from("modules").update(rest).eq("id", id);
       if (error) throw new Error(error.message);
       return { id };
