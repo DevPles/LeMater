@@ -689,164 +689,210 @@ export default function NovoConteudoModal({
   );
 }
 
-// ================= FORM CURSO =================
+// ================= FORM CURSO (WIZARD) =================
+const STEPS_CURSO = [
+  "Identidade",
+  "Mídia",
+  "Acesso & Ofertas",
+  "Instrutor & PDFs",
+  "Aulas",
+  "Publicação",
+];
+
+function Stepper({ steps, atual, onGo }: { steps: string[]; atual: number; onGo: (i: number) => void }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
+      {steps.map((label, i) => {
+        const ativo = i === atual;
+        const concluido = i < atual;
+        return (
+          <button
+            key={label}
+            type="button"
+            onClick={() => onGo(i)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: ativo ? c.sageDark : concluido ? c.warm : "white",
+              color: ativo ? "white" : c.ink,
+              border: `1px solid ${ativo ? c.sageDark : c.border}`,
+              padding: "7px 12px",
+              cursor: "pointer",
+              fontFamily: sans,
+              fontSize: 11,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+            }}
+          >
+            <span style={{ fontFamily: sans, fontWeight: 600, opacity: 0.7, fontVariantNumeric: "tabular-nums lining-nums" }}>
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span>{label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function WizardNav({
+  atual,
+  total,
+  onVoltar,
+  onAvancar,
+}: {
+  atual: number;
+  total: number;
+  onVoltar: () => void;
+  onAvancar: () => void;
+}) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20, paddingTop: 16, borderTop: `1px solid ${c.border}` }}>
+      <button
+        type="button"
+        onClick={onVoltar}
+        disabled={atual === 0}
+        style={{
+          background: "transparent",
+          border: `1px solid ${c.border}`,
+          color: atual === 0 ? c.muted : c.ink,
+          padding: "10px 18px",
+          fontFamily: sans,
+          fontSize: 11,
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          cursor: atual === 0 ? "not-allowed" : "pointer",
+          opacity: atual === 0 ? 0.4 : 1,
+        }}
+      >
+        ← Voltar
+      </button>
+      <div style={{ fontSize: 11, color: c.muted, fontFamily: sans, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+        Passo {atual + 1} de {total}
+      </div>
+      <button
+        type="button"
+        onClick={onAvancar}
+        disabled={atual === total - 1}
+        style={{
+          background: atual === total - 1 ? "transparent" : c.sageDark,
+          border: `1px solid ${atual === total - 1 ? c.border : c.sageDark}`,
+          color: atual === total - 1 ? c.muted : "white",
+          padding: "10px 18px",
+          fontFamily: sans,
+          fontSize: 11,
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          cursor: atual === total - 1 ? "not-allowed" : "pointer",
+          opacity: atual === total - 1 ? 0.4 : 1,
+        }}
+      >
+        Avançar →
+      </button>
+    </div>
+  );
+}
+
 function FormCurso({ curso, setCurso, aulas, setAulas, editando, ofertasCursoRef, audiosCursoRef }: any) {
   const updateCurso = (patch: Record<string, unknown>) =>
     setCurso((prev: any) => ({ ...prev, ...patch }));
-  const handleCursoInput = (patch: Record<string, unknown>) => {
-    updateCurso(patch);
+  const handleCursoInput = (patch: Record<string, unknown>) => updateCurso(patch);
+
+  const steps = editando ? STEPS_CURSO.filter((s) => s !== "Aulas") : STEPS_CURSO;
+  const [step, setStep] = useState(0);
+  const goStep = (i: number) => setStep(Math.max(0, Math.min(steps.length - 1, i)));
+
+  const [aulaSel, setAulaSel] = useState(0);
+  const addAula = () => {
+    setAulas((prev: AulaLocal[]) => [...prev, aulaVazia()]);
+    setAulaSel((prev) => prev + 1);
   };
-  const addAula = () => setAulas((prev: AulaLocal[]) => [...prev, aulaVazia()]);
-  const removeAula = (i: number) =>
-    setAulas((prev: AulaLocal[]) => prev.filter((_: any, j: number) => j !== i));
+  const removeAula = (i: number) => {
+    setAulas((prev: AulaLocal[]) => {
+      const next = prev.filter((_, j) => j !== i);
+      return next.length ? next : [aulaVazia()];
+    });
+    setAulaSel((prev) => Math.max(0, prev - (i <= prev ? 1 : 0)));
+  };
   const updateAula = (i: number, patch: Partial<AulaLocal>) =>
     setAulas((prev: AulaLocal[]) =>
-      prev.map((a: AulaLocal, j: number) => (j === i ? { ...a, ...patch } : a)),
+      prev.map((a, j) => (j === i ? { ...a, ...patch } : a)),
     );
+  const aulaIdx = Math.min(aulaSel, aulas.length - 1);
+  const aulaAtual = aulas[aulaIdx];
 
-  return (
+  const renderIdentidade = () => (
     <div style={{ display: "grid", gap: 14 }}>
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
         <Field label="Título do curso">
-          <input
-            {...noAuto}
-            name="curso-titulo"
-            value={curso.titulo}
+          <input {...noAuto} name="curso-titulo" value={curso.titulo}
             onInput={(e) => handleCursoInput({ titulo: e.currentTarget.value })}
             onChange={(e) => handleCursoInput({ titulo: e.currentTarget.value })}
-            style={inp}
-            placeholder="Ex.: Preparação para o parto"
-          />
+            style={inp} placeholder="Ex.: Preparação para o parto" />
         </Field>
         <Field label="Slug (URL)">
-          <input
-            {...noAuto}
-            name="curso-slug"
-            value={curso.slug}
-            onInput={(e) =>
-              handleCursoInput({
-                slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
-              })
-            }
-            onChange={(e) =>
-              handleCursoInput({
-                slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
-              })
-            }
-            style={inp}
-            placeholder="meu-curso"
-          />
+          <input {...noAuto} name="curso-slug" value={curso.slug}
+            onInput={(e) => handleCursoInput({ slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })}
+            onChange={(e) => handleCursoInput({ slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })}
+            style={inp} placeholder="meu-curso" />
         </Field>
       </div>
       <Field label="Descrição curta (vitrine)">
-        <textarea
-          {...noAuto}
-          name="curso-desc-curta"
-          value={curso.descricao_curta}
+        <textarea {...noAuto} name="curso-desc-curta" value={curso.descricao_curta}
           onInput={(e) => handleCursoInput({ descricao_curta: e.currentTarget.value })}
           onChange={(e) => handleCursoInput({ descricao_curta: e.currentTarget.value })}
-          style={{ ...inp, minHeight: 60 }}
-          placeholder="Aparece no card da vitrine (1-2 linhas)"
-        />
+          style={{ ...inp, minHeight: 60 }} placeholder="Aparece no card da vitrine (1-2 linhas)" />
       </Field>
       <Field label="Descrição longa (página de vendas)">
-        <textarea
-          {...noAuto}
-          name="curso-desc-longa"
-          value={curso.descricao_longa}
+        <textarea {...noAuto} name="curso-desc-longa" value={curso.descricao_longa}
           onInput={(e) => handleCursoInput({ descricao_longa: e.currentTarget.value })}
           onChange={(e) => handleCursoInput({ descricao_longa: e.currentTarget.value })}
-          style={{ ...inp, minHeight: 110 }}
-          placeholder="Texto completo exibido na página do curso"
-        />
+          style={{ ...inp, minHeight: 110 }} placeholder="Texto completo exibido na página do curso" />
       </Field>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
         <Field label="Categoria">
-          <input
-            {...noAuto}
-            name="curso-categoria"
-            value={curso.categoria}
+          <input {...noAuto} name="curso-categoria" value={curso.categoria}
             onInput={(e) => handleCursoInput({ categoria: e.currentTarget.value })}
-            onChange={(e) => handleCursoInput({ categoria: e.currentTarget.value })}
-            style={inp}
-          />
+            onChange={(e) => handleCursoInput({ categoria: e.currentTarget.value })} style={inp} />
         </Field>
         <Field label="Nível">
-          <select
-            {...noAuto}
-            name="curso-nivel"
-            value={curso.nivel}
+          <select {...noAuto} name="curso-nivel" value={curso.nivel}
             onInput={(e) => handleCursoInput({ nivel: e.currentTarget.value })}
-            onChange={(e) => handleCursoInput({ nivel: e.currentTarget.value })}
-            style={inp}
-          >
+            onChange={(e) => handleCursoInput({ nivel: e.currentTarget.value })} style={inp}>
             <option value="iniciante">Iniciante</option>
             <option value="intermediario">Intermediário</option>
             <option value="avancado">Avançado</option>
           </select>
         </Field>
         <Field label="Carga (min)">
-          <input
-            {...noAuto}
-            name="curso-carga-min"
-            type="number"
-            value={curso.carga_horaria_min}
-            onInput={(e) =>
-              handleCursoInput({ carga_horaria_min: parseInt(e.currentTarget.value) || 0 })
-            }
-            onChange={(e) =>
-              handleCursoInput({ carga_horaria_min: parseInt(e.currentTarget.value) || 0 })
-            }
-            style={inp}
-          />
-        </Field>
-        <Field label="Acesso">
-          <select
-            {...noAuto}
-            name="curso-acesso"
-            value={curso.area}
-            onInput={(e) => handleCursoInput({ area: e.currentTarget.value as "gratis" | "pago" })}
-            onChange={(e) => handleCursoInput({ area: e.currentTarget.value as "gratis" | "pago" })}
-            style={inp}
-          >
-            <option value="gratis">Grátis (livre para todos)</option>
-            <option value="pago">Pago</option>
-          </select>
+          <input {...noAuto} name="curso-carga-min" type="number" value={curso.carga_horaria_min}
+            onInput={(e) => handleCursoInput({ carga_horaria_min: parseInt(e.currentTarget.value) || 0 })}
+            onChange={(e) => handleCursoInput({ carga_horaria_min: parseInt(e.currentTarget.value) || 0 })}
+            style={inp} />
         </Field>
       </div>
+    </div>
+  );
 
+  const renderMidia = () => (
+    <div style={{ display: "grid", gap: 14 }}>
       <Field label={`Capa (imagem ou vídeo — fallback / poster do vídeo)${curso.capa_url && !curso.removerCapa ? " — atual" : ""}`}>
-        <input
-          {...noAuto}
-          name="curso-capa"
-          type="file"
-          accept="image/*,video/mp4,video/webm,video/*"
-          onChange={(e) => updateCurso({ capa: e.target.files?.[0] ?? null, removerCapa: false })}
-          style={inp}
-        />
+        <input {...noAuto} name="curso-capa" type="file" accept="image/*,video/mp4,video/webm,video/*"
+          onChange={(e) => updateCurso({ capa: e.target.files?.[0] ?? null, removerCapa: false })} style={inp} />
         {curso.capa_url && !curso.removerCapa && !curso.capa && (
           <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
             <img src={curso.capa_url} alt="capa atual" style={{ maxHeight: 100, border: `1px solid ${c.border}` }} />
-            <button
-              type="button"
-              onClick={() => updateCurso({ removerCapa: true, capa_url: "" })}
-              style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "6px 12px", cursor: "pointer", fontSize: 11, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}
-            >
+            <button type="button" onClick={() => updateCurso({ removerCapa: true, capa_url: "" })}
+              style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "6px 12px", cursor: "pointer", fontSize: 11, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}>
               Remover capa
             </button>
           </div>
         )}
       </Field>
       <Field label={`Vídeo de capa em loop (opcional, mp4/webm)${curso.capa_video_url && !curso.removerCapaVideo ? " — atual" : ""}`}>
-        <input
-          {...noAuto}
-          name="curso-capa-video"
-          type="file"
-          accept="video/mp4,video/webm"
-          onChange={(e) => updateCurso({ capaVideo: e.target.files?.[0] ?? null, removerCapaVideo: false })}
-          style={inp}
-        />
+        <input {...noAuto} name="curso-capa-video" type="file" accept="video/mp4,video/webm"
+          onChange={(e) => updateCurso({ capaVideo: e.target.files?.[0] ?? null, removerCapaVideo: false })} style={inp} />
         {curso.capaVideo && (
           <div style={{ fontSize: 11, color: c.muted, marginTop: 6 }}>
             {curso.capaVideo.name} · {(curso.capaVideo.size / 1024 / 1024).toFixed(1)} MB
@@ -855,392 +901,394 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando, ofertasCursoRef
         {curso.capa_video_url && !curso.removerCapaVideo && !curso.capaVideo && (
           <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
             <video src={curso.capa_video_url} autoPlay muted loop playsInline style={{ maxHeight: 100, border: `1px solid ${c.border}` }} />
-            <button
-              type="button"
-              onClick={() => updateCurso({ removerCapaVideo: true, capa_video_url: "" })}
-              style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "6px 12px", cursor: "pointer", fontSize: 11, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}
-            >
+            <button type="button" onClick={() => updateCurso({ removerCapaVideo: true, capa_video_url: "" })}
+              style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "6px 12px", cursor: "pointer", fontSize: 11, fontFamily: sans, textTransform: "uppercase", letterSpacing: "0.1em" }}>
               Remover vídeo
             </button>
           </div>
         )}
       </Field>
       <Field label="Trailer (URL YouTube/Vimeo, opcional)">
-        <input
-          {...noAuto}
-          name="curso-trailer"
-          value={curso.trailer_url}
+        <input {...noAuto} name="curso-trailer" value={curso.trailer_url}
           onInput={(e) => handleCursoInput({ trailer_url: e.currentTarget.value })}
-          onChange={(e) => handleCursoInput({ trailer_url: e.currentTarget.value })}
-          style={inp}
-        />
+          onChange={(e) => handleCursoInput({ trailer_url: e.currentTarget.value })} style={inp} />
       </Field>
+    </div>
+  );
 
-      {curso.area === "pago" && (
+  const renderAcessoOfertas = () => (
+    <div style={{ display: "grid", gap: 14 }}>
+      <Field label="Acesso do curso">
+        <select {...noAuto} name="curso-acesso" value={curso.area}
+          onInput={(e) => handleCursoInput({ area: e.currentTarget.value as "gratis" | "pago" })}
+          onChange={(e) => handleCursoInput({ area: e.currentTarget.value as "gratis" | "pago" })}
+          style={{ ...inp, maxWidth: 360 }}>
+          <option value="gratis">Grátis (livre para todos)</option>
+          <option value="pago">Pago</option>
+        </select>
+      </Field>
+      {curso.area === "pago" ? (
         <>
-          <div style={sectionTitle}>Venda do curso completo</div>
-          <div style={{ fontSize: 12, color: c.muted, marginBottom: 10, fontFamily: sans }}>
-            Configure preço por país e plataforma de pagamento. O usuário verá apenas as ofertas do país dele.
+          <div style={{ fontSize: 12, color: c.muted, fontFamily: sans }}>
+            Configure preço por país e plataforma. O usuário verá apenas as ofertas do país dele.
           </div>
           <OfertasEditor
             ref={ofertasCursoRef}
             produtoTipo="curso"
             produtoId={curso.id}
-            titulo="Ofertas do curso (país × plataforma)"
+            titulo="Ofertas do curso completo (país × plataforma)"
           />
         </>
+      ) : (
+        <div style={{ fontSize: 12, color: c.muted, fontFamily: sans, background: c.warm, padding: 14, border: `1px solid ${c.border}` }}>
+          Curso grátis — sem ofertas de pagamento.
+        </div>
       )}
+    </div>
+  );
 
-      <div style={sectionTitle}>Ouça também (áudios vinculados)</div>
-      <AudiosEditor ref={audiosCursoRef} vinculoTipo="curso" vinculoId={curso.id} />
-
-
-      <div style={sectionTitle}>Instrutor</div>
+  const renderInstrutorPdfs = () => (
+    <div style={{ display: "grid", gap: 14 }}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <Field label="Nome">
-          <input
-            {...noAuto}
-            name="curso-instrutor-nome"
-            value={curso.instrutor_nome}
+        <Field label="Nome do instrutor">
+          <input {...noAuto} name="curso-instrutor-nome" value={curso.instrutor_nome}
             onInput={(e) => handleCursoInput({ instrutor_nome: e.currentTarget.value })}
-            onChange={(e) => handleCursoInput({ instrutor_nome: e.currentTarget.value })}
-            style={inp}
-          />
+            onChange={(e) => handleCursoInput({ instrutor_nome: e.currentTarget.value })} style={inp} />
         </Field>
         <Field label="Foto (URL)">
-          <input
-            {...noAuto}
-            name="curso-instrutor-foto"
-            value={curso.instrutor_foto}
+          <input {...noAuto} name="curso-instrutor-foto" value={curso.instrutor_foto}
             onInput={(e) => handleCursoInput({ instrutor_foto: e.currentTarget.value })}
-            onChange={(e) => handleCursoInput({ instrutor_foto: e.currentTarget.value })}
-            style={inp}
-          />
+            onChange={(e) => handleCursoInput({ instrutor_foto: e.currentTarget.value })} style={inp} />
         </Field>
       </div>
       <Field label="Bio">
-        <textarea
-          {...noAuto}
-          name="curso-instrutor-bio"
-          value={curso.instrutor_bio}
+        <textarea {...noAuto} name="curso-instrutor-bio" value={curso.instrutor_bio}
           onInput={(e) => handleCursoInput({ instrutor_bio: e.currentTarget.value })}
           onChange={(e) => handleCursoInput({ instrutor_bio: e.currentTarget.value })}
-          style={{ ...inp, minHeight: 60 }}
-        />
+          style={{ ...inp, minHeight: 70 }} />
       </Field>
 
       <div style={sectionTitle}>PDFs grátis do curso (download na página)</div>
-      <input
-        {...noAuto}
-        name="curso-pdfs-gratis"
-        type="file"
-        accept="application/pdf,.pdf"
-        multiple
-        onChange={(e) => updateCurso({ pdfsGratis: Array.from(e.target.files ?? []) })}
-        style={inp}
-      />
+      <input {...noAuto} name="curso-pdfs-gratis" type="file" accept="application/pdf,.pdf" multiple
+        onChange={(e) => updateCurso({ pdfsGratis: Array.from(e.target.files ?? []) })} style={inp} />
       {curso.pdfsGratis.length > 0 && (
         <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 4 }}>
           {curso.pdfsGratis.map((f: File, i: number) => (
-            <li
-              key={i}
-              style={{ fontSize: 12, color: c.muted, padding: "4px 8px", background: c.warm }}
-            >
+            <li key={i} style={{ fontSize: 12, color: c.muted, padding: "4px 8px", background: c.warm }}>
               {f.name}
             </li>
           ))}
         </ul>
       )}
 
-      {!editando && <div style={sectionTitle}>Aulas — adicione quantas precisar</div>}
-      {!editando && (
-      <div style={{ display: "grid", gap: 14 }}>
-        {aulas.map((a: AulaLocal, i: number) => (
-          <div
-            key={i}
-            style={{ background: "white", border: `1px solid ${c.border}`, padding: 16 }}
-          >
-            <div
+      <div style={sectionTitle}>Áudios vinculados ao curso (Ouça também)</div>
+      <AudiosEditor ref={audiosCursoRef} vinculoTipo="curso" vinculoId={curso.id} />
+    </div>
+  );
+
+  const renderAulas = () => (
+    <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 16, minHeight: 400 }}>
+      <div style={{ borderRight: `1px solid ${c.border}`, paddingRight: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: c.muted, marginBottom: 4, fontFamily: sans }}>
+          Aulas do curso
+        </div>
+        {aulas.map((a: AulaLocal, i: number) => {
+          const ativo = i === aulaIdx;
+          return (
+            <button key={i} type="button" onClick={() => setAulaSel(i)}
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 12,
-              }}
-            >
-              <strong style={{ fontFamily: serif, fontSize: 18, fontWeight: 400 }}>
-                Aula {i + 1}
-              </strong>
-              {aulas.length > 1 && (
-                <button type="button" onClick={() => removeAula(i)} style={btnSm(c.danger)}>
-                  Remover
-                </button>
-              )}
-            </div>
-            <div style={{ display: "grid", gap: 10 }}>
-              <Field label="Título">
-                <input
-                  value={a.titulo}
-                  onChange={(e) => updateAula(i, { titulo: e.target.value })}
-                  style={inp}
-                />
-              </Field>
-              <Field label="Descrição">
-                <textarea
-                  value={a.descricao}
-                  onChange={(e) => updateAula(i, { descricao: e.target.value })}
-                  style={{ ...inp, minHeight: 50 }}
-                />
-              </Field>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-                <Field label="Tipo">
-                  <select
-                    value={a.tipo}
-                    onChange={(e) => updateAula(i, { tipo: e.target.value as any })}
-                    style={inp}
-                  >
-                    <option value="video">Vídeo</option>
-                    <option value="pdf">PDF</option>
-                    <option value="texto">Texto</option>
-                  </select>
-                </Field>
-                <Field label="Duração (min)">
-                  <input
-                    type="number"
-                    value={a.duracao_min}
-                    onChange={(e) => updateAula(i, { duracao_min: parseInt(e.target.value) || 0 })}
-                    style={inp}
-                  />
-                </Field>
-                <Field label="Acesso">
-                  <select
-                    value={a.previa_gratis ? "gratis" : "pago"}
-                    onChange={(e) => updateAula(i, { previa_gratis: e.target.value === "gratis" })}
-                    style={inp}
-                  >
-                    <option value="gratis">Grátis</option>
-                    <option value="pago">Pago</option>
-                  </select>
-                </Field>
+                textAlign: "left",
+                background: ativo ? c.sageDark : "white",
+                color: ativo ? "white" : c.ink,
+                border: `1px solid ${ativo ? c.sageDark : c.border}`,
+                padding: "10px 12px", cursor: "pointer", fontFamily: sans, fontSize: 12,
+              }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.75, marginBottom: 2, fontVariantNumeric: "tabular-nums lining-nums" }}>
+                Aula {String(i + 1).padStart(2, "0")}
               </div>
-
-              {!a.previa_gratis && (
-                <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: 12 }}>
-                  <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 8 }}>
-                    Venda desta aula
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-                    <Field label="Preço (centavos)">
-                      <input
-                        type="number"
-                        min={0}
-                        value={a.preco_centavos}
-                        onChange={(e) => updateAula(i, { preco_centavos: Math.max(0, parseInt(e.target.value) || 0) })}
-                        style={inp}
-                      />
-                    </Field>
-                    <Field label="Preço (texto exibido)">
-                      <input
-                        value={a.preco_label}
-                        onChange={(e) => updateAula(i, { preco_label: e.target.value })}
-                        placeholder="R$ 47"
-                        style={inp}
-                      />
-                    </Field>
-                  </div>
-                  <div style={{ fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: c.muted, marginBottom: 6 }}>
-                    Métodos de pagamento
-                  </div>
-                  {(a.links_compra ?? []).map((l, k) => (
-                    <div key={k} style={{ display: "grid", gridTemplateColumns: "120px 180px 1fr auto", gap: 6, marginBottom: 6 }}>
-                      <select
-                        value={l.pais ?? "Brasil"}
-                        onChange={(e) => {
-                          const arr = [...a.links_compra]; arr[k] = { ...arr[k], pais: e.target.value };
-                          updateAula(i, { links_compra: arr });
-                        }}
-                        style={inp}
-                      >
-                        <option value="Brasil">Brasil</option>
-                        <option value="Internacional">Internacional</option>
-                      </select>
-                      <select
-                        value={l.plataforma}
-                        onChange={(e) => {
-                          const arr = [...a.links_compra]; arr[k] = { ...arr[k], plataforma: e.target.value };
-                          updateAula(i, { links_compra: arr });
-                        }}
-                        style={inp}
-                      >
-                        <option value="">— escolha o método —</option>
-                        <optgroup label="Brasil">
-                          <option value="Mercado Pago">Mercado Pago</option>
-                          <option value="InfinityPay">InfinityPay</option>
-                          <option value="Hotmart">Hotmart</option>
-                          <option value="Kiwify">Kiwify</option>
-                          <option value="Eduzz">Eduzz</option>
-                        </optgroup>
-                        <optgroup label="Internacional">
-                          <option value="Stripe">Stripe</option>
-                        </optgroup>
-                        <option value="Outro">Outro</option>
-                      </select>
-                      <input
-                        value={l.url}
-                        onChange={(e) => {
-                          const arr = [...a.links_compra]; arr[k] = { ...arr[k], url: e.target.value };
-                          updateAula(i, { links_compra: arr });
-                        }}
-                        placeholder="https://… (deixe em branco para Mercado Pago nativo)"
-                        style={inp}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const arr = [...a.links_compra]; arr.splice(k, 1);
-                          updateAula(i, { links_compra: arr });
-                        }}
-                        style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "0 10px", cursor: "pointer", fontSize: 12, fontFamily: sans }}
-                      >
-                        Remover
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => updateAula(i, { links_compra: [...(a.links_compra ?? []), { pais: "Brasil", tipo: "aula", plataforma: "", url: "" }] })}
-                    style={{ background: "white", border: `1px solid ${c.border}`, color: c.sageDark, padding: "6px 12px", cursor: "pointer", fontSize: 11, fontFamily: sans, letterSpacing: "0.08em", textTransform: "uppercase" }}
-                  >
-                    + Adicionar método de pagamento
-                  </button>
-                </div>
-              )}
-
-              {!a.previa_gratis && (
-                <OfertasEditor
-                  ref={a.ofertasRef}
-                  produtoTipo="aula"
-                  produtoId={a.id ?? null}
-                  titulo="Ofertas desta aula (país × plataforma)"
-                />
-              )}
-
-              <AudiosEditor
-                ref={a.audiosRef}
-                vinculoTipo="aula"
-                vinculoId={a.id ?? null}
-                titulo="Áudios vinculados a esta aula"
-              />
-
-
-
-
-              {a.tipo === "video" && (
-                <>
-                  <Field label="URL do vídeo (YouTube/Vimeo)">
-                    <input
-                      value={a.video_url}
-                      onChange={(e) => updateAula(i, { video_url: e.target.value })}
-                      style={inp}
-                      placeholder="https://youtube.com/…"
-                    />
-                  </Field>
-                  <Field label="Ou enviar arquivo de vídeo">
-                    <input
-                      type="file"
-                      accept="video/*"
-                      onChange={(e) => updateAula(i, { videoFile: e.target.files?.[0] ?? null })}
-                      style={inp}
-                    />
-                  </Field>
-                </>
-              )}
-              {a.tipo === "pdf" && (
-                <Field label="Arquivo PDF da aula">
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={(e) => updateAula(i, { pdfFile: e.target.files?.[0] ?? null })}
-                    style={inp}
-                  />
-                </Field>
-              )}
-              {a.tipo === "texto" && (
-                <Field label="Conteúdo (HTML)">
-                  <textarea
-                    value={a.conteudo_html}
-                    onChange={(e) => updateAula(i, { conteudo_html: e.target.value })}
-                    style={{ ...inp, minHeight: 160, fontFamily: "monospace", fontSize: 13 }}
-                  />
-                </Field>
-              )}
-
-              <Field label="Anexos para download (PDFs, imagens, etc — múltiplos)">
-                <input
-                  type="file"
-                  multiple
-                  onChange={(e) => updateAula(i, { anexos: Array.from(e.target.files ?? []) })}
-                  style={inp}
-                />
-                {a.anexos.length > 0 && (
-                  <ul
-                    style={{
-                      margin: "8px 0 0",
-                      padding: 0,
-                      listStyle: "none",
-                      display: "grid",
-                      gap: 4,
-                    }}
-                  >
-                    {a.anexos.map((f, k) => (
-                      <li
-                        key={k}
-                        style={{
-                          fontSize: 12,
-                          color: c.muted,
-                          padding: "4px 8px",
-                          background: c.warm,
-                        }}
-                      >
-                        {f.name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </Field>
-            </div>
-          </div>
-        ))}
-        <button type="button" onClick={addAula} style={{ ...btn(c.sage), alignSelf: "flex-start" }}>
+              <div style={{ fontFamily: serif, fontSize: 14 }}>{a.titulo || "Sem título"}</div>
+            </button>
+          );
+        })}
+        <button type="button" onClick={addAula}
+          style={{
+            marginTop: 6, background: c.warm, color: c.sageDark,
+            border: `1px dashed ${c.sage}`, padding: "10px 12px", cursor: "pointer",
+            fontFamily: sans, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase",
+          }}>
           + Adicionar aula
         </button>
       </div>
+
+      <AulaEditor
+        a={aulaAtual}
+        i={aulaIdx}
+        total={aulas.length}
+        cursoArea={curso.area}
+        onUpdate={(patch) => updateAula(aulaIdx, patch)}
+        onRemove={() => removeAula(aulaIdx)}
+        onPrev={() => setAulaSel((p) => Math.max(0, p - 1))}
+        onNext={() => setAulaSel((p) => Math.min(aulas.length - 1, p + 1))}
+      />
+    </div>
+  );
+
+  const renderPublicacao = () => {
+    const aulasComTitulo = aulas.filter((a: AulaLocal) => a.titulo.trim()).length;
+    return (
+      <div style={{ display: "grid", gap: 14 }}>
+        <div style={{ background: c.warm, padding: 16, border: `1px solid ${c.border}` }}>
+          <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 10 }}>
+            Resumo
+          </div>
+          <div style={{ display: "grid", gap: 6, fontFamily: sans, fontSize: 13 }}>
+            <div><strong>Título:</strong> {curso.titulo || <em style={{ color: c.muted }}>(sem título)</em>}</div>
+            <div><strong>Slug:</strong> {curso.slug || <em style={{ color: c.muted }}>(vazio)</em>}</div>
+            <div><strong>Acesso:</strong> {curso.area === "pago" ? "Pago" : "Grátis"}</div>
+            {!editando && <div><strong>Aulas:</strong> {aulasComTitulo} preenchida(s) de {aulas.length}</div>}
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <Field label="Ordem">
+            <input {...noAuto} name="curso-ordem" type="number" value={curso.ordem}
+              onInput={(e) => handleCursoInput({ ordem: parseInt(e.currentTarget.value) || 0 })}
+              onChange={(e) => handleCursoInput({ ordem: parseInt(e.currentTarget.value) || 0 })} style={inp} />
+          </Field>
+          <Field label="Publicado">
+            <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
+              <input {...noAuto} name="curso-publicado" type="checkbox" checked={curso.publicado}
+                onChange={(e) => updateCurso({ publicado: e.target.checked })} />{" "}
+              Visível ao público
+            </label>
+          </Field>
+        </div>
+        <div style={{ fontSize: 11, color: c.muted, fontFamily: sans }}>
+          Clique em <strong>Salvar</strong> no rodapé do modal para criar o curso.
+        </div>
+      </div>
+    );
+  };
+
+  const stepLabel = steps[step];
+  const renderStep = () => {
+    switch (stepLabel) {
+      case "Identidade": return renderIdentidade();
+      case "Mídia": return renderMidia();
+      case "Acesso & Ofertas": return renderAcessoOfertas();
+      case "Instrutor & PDFs": return renderInstrutorPdfs();
+      case "Aulas": return renderAulas();
+      case "Publicação": return renderPublicacao();
+      default: return null;
+    }
+  };
+
+  return (
+    <div>
+      <Stepper steps={steps} atual={step} onGo={goStep} />
+      <div>{renderStep()}</div>
+      <WizardNav
+        atual={step}
+        total={steps.length}
+        onVoltar={() => goStep(step - 1)}
+        onAvancar={() => goStep(step + 1)}
+      />
+    </div>
+  );
+}
+
+// ----- Editor de uma aula (passo 5) -----
+function AulaEditor({
+  a, i, total, cursoArea, onUpdate, onRemove, onPrev, onNext,
+}: {
+  a: AulaLocal;
+  i: number;
+  total: number;
+  cursoArea: "gratis" | "pago";
+  onUpdate: (patch: Partial<AulaLocal>) => void;
+  onRemove: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  return (
+    <div style={{ display: "grid", gap: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 10, borderBottom: `1px solid ${c.border}` }}>
+        <div>
+          <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, fontFamily: sans, fontVariantNumeric: "tabular-nums lining-nums" }}>
+            Editando · Aula {String(i + 1).padStart(2, "0")} de {String(total).padStart(2, "0")}
+          </div>
+          <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 400, marginTop: 2 }}>
+            {a.titulo || "Nova aula"}
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button type="button" onClick={onPrev} disabled={i === 0}
+            style={{ background: "white", border: `1px solid ${c.border}`, padding: "6px 12px", cursor: i === 0 ? "not-allowed" : "pointer", opacity: i === 0 ? 0.4 : 1, fontFamily: sans, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+            ← Anterior
+          </button>
+          <button type="button" onClick={onNext} disabled={i >= total - 1}
+            style={{ background: "white", border: `1px solid ${c.border}`, padding: "6px 12px", cursor: i >= total - 1 ? "not-allowed" : "pointer", opacity: i >= total - 1 ? 0.4 : 1, fontFamily: sans, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+            Próxima →
+          </button>
+          {total > 1 && (
+            <button type="button" onClick={onRemove} style={btnSm(c.danger)}>Remover</button>
+          )}
+        </div>
+      </div>
+
+      <div style={{ background: "white", border: `1px solid ${c.border}`, padding: 14 }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 12, fontFamily: sans }}>
+          Conteúdo da aula
+        </div>
+        <div style={{ display: "grid", gap: 10 }}>
+          <Field label="Título">
+            <input value={a.titulo} onChange={(e) => onUpdate({ titulo: e.target.value })} style={inp} />
+          </Field>
+          <Field label="Descrição">
+            <textarea value={a.descricao} onChange={(e) => onUpdate({ descricao: e.target.value })} style={{ ...inp, minHeight: 50 }} />
+          </Field>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+            <Field label="Tipo">
+              <select value={a.tipo} onChange={(e) => onUpdate({ tipo: e.target.value as any })} style={inp}>
+                <option value="video">Vídeo</option>
+                <option value="pdf">PDF</option>
+                <option value="texto">Texto</option>
+              </select>
+            </Field>
+            <Field label="Duração (min)">
+              <input type="number" value={a.duracao_min} onChange={(e) => onUpdate({ duracao_min: parseInt(e.target.value) || 0 })} style={inp} />
+            </Field>
+            <Field label="Acesso">
+              <select value={a.previa_gratis ? "gratis" : "pago"}
+                onChange={(e) => onUpdate({ previa_gratis: e.target.value === "gratis" })}
+                style={inp} disabled={cursoArea === "gratis"}>
+                <option value="gratis">Grátis</option>
+                <option value="pago">Pago</option>
+              </select>
+            </Field>
+          </div>
+
+          {a.tipo === "video" && (
+            <>
+              <Field label="URL do vídeo (YouTube/Vimeo)">
+                <input value={a.video_url} onChange={(e) => onUpdate({ video_url: e.target.value })} style={inp} placeholder="https://youtube.com/…" />
+              </Field>
+              <Field label="Ou enviar arquivo de vídeo">
+                <input type="file" accept="video/*" onChange={(e) => onUpdate({ videoFile: e.target.files?.[0] ?? null })} style={inp} />
+              </Field>
+            </>
+          )}
+          {a.tipo === "pdf" && (
+            <Field label="Arquivo PDF da aula">
+              <input type="file" accept="application/pdf" onChange={(e) => onUpdate({ pdfFile: e.target.files?.[0] ?? null })} style={inp} />
+            </Field>
+          )}
+          {a.tipo === "texto" && (
+            <Field label="Conteúdo (HTML)">
+              <textarea value={a.conteudo_html} onChange={(e) => onUpdate({ conteudo_html: e.target.value })} style={{ ...inp, minHeight: 160, fontFamily: "monospace", fontSize: 13 }} />
+            </Field>
+          )}
+
+          <Field label="Anexos para download (PDFs, imagens — múltiplos)">
+            <input type="file" multiple onChange={(e) => onUpdate({ anexos: Array.from(e.target.files ?? []) })} style={inp} />
+            {a.anexos.length > 0 && (
+              <ul style={{ margin: "8px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 4 }}>
+                {a.anexos.map((f, k) => (
+                  <li key={k} style={{ fontSize: 12, color: c.muted, padding: "4px 8px", background: c.warm }}>
+                    {f.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Field>
+        </div>
+      </div>
+
+      {cursoArea === "pago" && !a.previa_gratis && (
+        <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: 14 }}>
+          <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 12, fontFamily: sans }}>
+            Venda desta aula
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+            <Field label="Preço (centavos)">
+              <input type="number" min={0} value={a.preco_centavos}
+                onChange={(e) => onUpdate({ preco_centavos: Math.max(0, parseInt(e.target.value) || 0) })} style={inp} />
+            </Field>
+            <Field label="Preço (texto exibido)">
+              <input value={a.preco_label} onChange={(e) => onUpdate({ preco_label: e.target.value })} placeholder="R$ 47" style={inp} />
+            </Field>
+          </div>
+          <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6, fontFamily: sans }}>
+            Métodos de pagamento (links diretos)
+          </div>
+          {(a.links_compra ?? []).map((l, k) => (
+            <div key={k} style={{ display: "grid", gridTemplateColumns: "120px 180px 1fr auto", gap: 6, marginBottom: 6 }}>
+              <select value={l.pais ?? "Brasil"}
+                onChange={(e) => {
+                  const arr = [...a.links_compra]; arr[k] = { ...arr[k], pais: e.target.value };
+                  onUpdate({ links_compra: arr });
+                }} style={inp}>
+                <option value="Brasil">Brasil</option>
+                <option value="Internacional">Internacional</option>
+              </select>
+              <select value={l.plataforma}
+                onChange={(e) => {
+                  const arr = [...a.links_compra]; arr[k] = { ...arr[k], plataforma: e.target.value };
+                  onUpdate({ links_compra: arr });
+                }} style={inp}>
+                <option value="">— escolha o método —</option>
+                <optgroup label="Brasil">
+                  <option value="Mercado Pago">Mercado Pago</option>
+                  <option value="InfinityPay">InfinityPay</option>
+                  <option value="Hotmart">Hotmart</option>
+                  <option value="Kiwify">Kiwify</option>
+                  <option value="Eduzz">Eduzz</option>
+                </optgroup>
+                <optgroup label="Internacional">
+                  <option value="Stripe">Stripe</option>
+                </optgroup>
+                <option value="Outro">Outro</option>
+              </select>
+              <input value={l.url}
+                onChange={(e) => {
+                  const arr = [...a.links_compra]; arr[k] = { ...arr[k], url: e.target.value };
+                  onUpdate({ links_compra: arr });
+                }}
+                placeholder="https://… (em branco para Mercado Pago nativo)" style={inp} />
+              <button type="button"
+                onClick={() => {
+                  const arr = [...a.links_compra]; arr.splice(k, 1);
+                  onUpdate({ links_compra: arr });
+                }}
+                style={{ background: "transparent", border: `1px solid ${c.border}`, color: c.danger, padding: "0 10px", cursor: "pointer", fontSize: 12, fontFamily: sans }}>
+                Remover
+              </button>
+            </div>
+          ))}
+          <button type="button"
+            onClick={() => onUpdate({ links_compra: [...(a.links_compra ?? []), { pais: "Brasil", tipo: "aula", plataforma: "", url: "" }] })}
+            style={{ background: "white", border: `1px solid ${c.border}`, color: c.sageDark, padding: "6px 12px", cursor: "pointer", fontSize: 11, fontFamily: sans, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 14 }}>
+            + Adicionar método de pagamento
+          </button>
+
+          <OfertasEditor
+            ref={a.ofertasRef}
+            produtoTipo="aula"
+            produtoId={a.id ?? null}
+            titulo="Ofertas desta aula (país × plataforma)"
+          />
+        </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 8 }}>
-        <Field label="Ordem">
-          <input
-            {...noAuto}
-            name="curso-ordem"
-            type="number"
-            value={curso.ordem}
-            onInput={(e) => handleCursoInput({ ordem: parseInt(e.currentTarget.value) || 0 })}
-            onChange={(e) => handleCursoInput({ ordem: parseInt(e.currentTarget.value) || 0 })}
-            style={inp}
-          />
-        </Field>
-        <Field label="Publicado">
-          <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 0" }}>
-            <input
-              {...noAuto}
-              name="curso-publicado"
-              type="checkbox"
-              checked={curso.publicado}
-              onChange={(e) => updateCurso({ publicado: e.target.checked })}
-            />{" "}
-            Visível ao público
-          </label>
-        </Field>
+      <div style={{ background: "white", border: `1px solid ${c.border}`, padding: 14 }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 12, fontFamily: sans }}>
+          Áudios vinculados a esta aula
+        </div>
+        <AudiosEditor
+          ref={a.audiosRef}
+          vinculoTipo="aula"
+          vinculoId={a.id ?? null}
+          titulo=""
+        />
       </div>
     </div>
   );
