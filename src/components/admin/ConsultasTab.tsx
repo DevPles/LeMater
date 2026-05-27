@@ -2,6 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProntuarioConsultaModal } from "@/components/ProntuarioConsultaModal";
 
+const TIPOS_ATENDIMENTO = [
+  "Consulta médica obstétrica",
+  "Consulta de enfermagem",
+  "Visita do agente comunitário de saúde",
+  "Orientação nutricional",
+  "Orientação psicológica",
+  "Orientação sobre amamentação",
+  "Orientação geral pré-natal",
+  "Outro",
+] as const;
+
+type ProfissionalLite = { id: string; nome: string; especialidade: string; ativo: boolean };
+
+
 type Slot = {
   id: string;
   data_hora: string;
@@ -48,6 +62,22 @@ export function ConsultasTab() {
   const [busca, setBusca] = useState("");
   const [apenasGravadas, setApenasGravadas] = useState(false);
 
+  // criação de horário
+  const [todosProfs, setTodosProfs] = useState<ProfissionalLite[]>([]);
+  const [criarAberto, setCriarAberto] = useState(false);
+  const [criando, setCriando] = useState(false);
+  const [criarMsg, setCriarMsg] = useState<string | null>(null);
+  const [novoSlot, setNovoSlot] = useState({
+    professional_id: "",
+    data: "",
+    hora: "",
+    duracao_min: 30,
+    modalidade: "videochamada" as "videochamada" | "presencial",
+    tipo_atendimento: TIPOS_ATENDIMENTO[0] as string,
+    titulo: "",
+    descricao: "",
+  });
+
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -57,6 +87,7 @@ export function ConsultasTab() {
       )
       .order("data_hora", { ascending: false })
       .limit(1000);
+
 
     if (error) {
       console.error(error);
@@ -85,9 +116,54 @@ export function ConsultasTab() {
     setLoading(false);
   };
 
+  const loadProfs = async () => {
+    const { data } = await supabase
+      .from("professionals")
+      .select("id, nome, especialidade, ativo")
+      .order("nome", { ascending: true });
+    setTodosProfs(((data ?? []) as ProfissionalLite[]).filter((p) => p.ativo));
+  };
+
   useEffect(() => {
     load();
+    loadProfs();
   }, []);
+
+  const criarSlot = async () => {
+    setCriarMsg(null);
+    if (!novoSlot.professional_id) return setCriarMsg("Selecione o profissional.");
+    if (!novoSlot.data || !novoSlot.hora) return setCriarMsg("Informe data e hora.");
+    if (!novoSlot.titulo.trim()) return setCriarMsg("Informe um título.");
+    const dt = new Date(`${novoSlot.data}T${novoSlot.hora}:00`);
+    if (isNaN(dt.getTime())) return setCriarMsg("Data/hora inválida.");
+    setCriando(true);
+    const { error } = await supabase.from("appointment_slots").insert({
+      professional_id: novoSlot.professional_id,
+      data_hora: dt.toISOString(),
+      duracao_min: novoSlot.duracao_min,
+      modalidade: novoSlot.modalidade,
+      status: "disponivel",
+      titulo: novoSlot.titulo.trim().slice(0, 120),
+      descricao: novoSlot.descricao.trim().slice(0, 500) || null,
+      tipo_atendimento: novoSlot.tipo_atendimento,
+    });
+    setCriando(false);
+    if (error) return setCriarMsg("Erro: " + error.message);
+    setCriarAberto(false);
+    setNovoSlot({
+      professional_id: "",
+      data: "",
+      hora: "",
+      duracao_min: 30,
+      modalidade: "videochamada",
+      tipo_atendimento: TIPOS_ATENDIMENTO[0],
+      titulo: "",
+      descricao: "",
+    });
+    await load();
+  };
+
+
 
   const profissionais = useMemo(() => {
     const m = new Map<string, string>();
@@ -190,13 +266,23 @@ export function ConsultasTab() {
             Histórico completo de atendimentos — disponíveis, reservados, realizados e cancelados.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={load}
-          className="bg-[#1a1557] text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:opacity-90"
-        >
-          Recarregar
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setCriarAberto(true)}
+            className="bg-[#f0c040] text-[#1a1557] text-xs font-bold px-3 py-1.5 rounded-full hover:opacity-90"
+          >
+            + Novo horário
+          </button>
+          <button
+            type="button"
+            onClick={load}
+            className="bg-[#1a1557] text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:opacity-90"
+          >
+            Recarregar
+          </button>
+        </div>
+
       </div>
 
       {/* contadores */}
@@ -435,6 +521,168 @@ export function ConsultasTab() {
           onClose={() => setProntuarioId(null)}
         />
       )}
+
+      {criarAberto && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => !criando && setCriarAberto(false)}
+        >
+          <div
+            className="bg-card border border-border rounded-2xl shadow-xl max-w-lg w-full p-5 space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h2 className="text-lg font-bold text-foreground">Novo horário disponível</h2>
+                <p className="text-xs text-muted-foreground">
+                  Aparecerá em /app/videochamada na aba Disponíveis.
+                </p>
+              </div>
+              <button
+                onClick={() => !criando && setCriarAberto(false)}
+                className="text-muted-foreground hover:text-foreground text-xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2">
+              <label className="text-xs font-semibold text-foreground">
+                Profissional
+                <select
+                  value={novoSlot.professional_id}
+                  onChange={(e) =>
+                    setNovoSlot((s) => ({ ...s, professional_id: e.target.value }))
+                  }
+                  className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                >
+                  <option value="">Selecione...</option>
+                  {todosProfs.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nome} — {p.especialidade}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="grid grid-cols-2 gap-2">
+                <label className="text-xs font-semibold text-foreground">
+                  Data
+                  <input
+                    type="date"
+                    value={novoSlot.data}
+                    onChange={(e) => setNovoSlot((s) => ({ ...s, data: e.target.value }))}
+                    className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                  />
+                </label>
+                <label className="text-xs font-semibold text-foreground">
+                  Hora
+                  <input
+                    type="time"
+                    value={novoSlot.hora}
+                    onChange={(e) => setNovoSlot((s) => ({ ...s, hora: e.target.value }))}
+                    className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                  />
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <label className="text-xs font-semibold text-foreground">
+                  Duração (min)
+                  <input
+                    type="number"
+                    min={10}
+                    max={180}
+                    value={novoSlot.duracao_min}
+                    onChange={(e) =>
+                      setNovoSlot((s) => ({ ...s, duracao_min: Number(e.target.value) || 30 }))
+                    }
+                    className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                  />
+                </label>
+                <label className="text-xs font-semibold text-foreground">
+                  Modalidade
+                  <select
+                    value={novoSlot.modalidade}
+                    onChange={(e) =>
+                      setNovoSlot((s) => ({
+                        ...s,
+                        modalidade: e.target.value as "videochamada" | "presencial",
+                      }))
+                    }
+                    className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                  >
+                    <option value="videochamada">Videochamada</option>
+                    <option value="presencial">Presencial</option>
+                  </select>
+                </label>
+              </div>
+
+              <label className="text-xs font-semibold text-foreground">
+                Tipo de atendimento
+                <select
+                  value={novoSlot.tipo_atendimento}
+                  onChange={(e) =>
+                    setNovoSlot((s) => ({ ...s, tipo_atendimento: e.target.value }))
+                  }
+                  className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                >
+                  {TIPOS_ATENDIMENTO.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="text-xs font-semibold text-foreground">
+                Título
+                <input
+                  type="text"
+                  value={novoSlot.titulo}
+                  onChange={(e) => setNovoSlot((s) => ({ ...s, titulo: e.target.value }))}
+                  placeholder="Ex: Consulta de pré-natal"
+                  className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                />
+              </label>
+
+              <label className="text-xs font-semibold text-foreground">
+                Descrição (opcional)
+                <textarea
+                  value={novoSlot.descricao}
+                  onChange={(e) => setNovoSlot((s) => ({ ...s, descricao: e.target.value }))}
+                  rows={2}
+                  className="mt-1 w-full border border-border bg-background rounded-lg px-2 py-2 text-sm"
+                />
+              </label>
+            </div>
+
+            {criarMsg && (
+              <p className="text-xs font-semibold text-rose-600">{criarMsg}</p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setCriarAberto(false)}
+                disabled={criando}
+                className="text-xs font-semibold px-3 py-2 rounded-full text-muted-foreground hover:text-foreground"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={criarSlot}
+                disabled={criando}
+                className="bg-[#1a1557] text-white text-xs font-bold px-4 py-2 rounded-full hover:opacity-90 disabled:opacity-50"
+              >
+                {criando ? "Publicando..." : "Publicar horário"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
