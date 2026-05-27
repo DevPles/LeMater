@@ -101,9 +101,12 @@ export type Database = {
           id: string
           modalidade: string
           observacao: string | null
+          preco_centavos: number
+          produto_externo_id: string | null
           professional_id: string
           recording_duration_seg: number | null
           recording_path: string | null
+          requer_pagamento: boolean
           reservado_em: string | null
           room_id: string | null
           status: string
@@ -122,9 +125,12 @@ export type Database = {
           id?: string
           modalidade?: string
           observacao?: string | null
+          preco_centavos?: number
+          produto_externo_id?: string | null
           professional_id: string
           recording_duration_seg?: number | null
           recording_path?: string | null
+          requer_pagamento?: boolean
           reservado_em?: string | null
           room_id?: string | null
           status?: string
@@ -143,9 +149,12 @@ export type Database = {
           id?: string
           modalidade?: string
           observacao?: string | null
+          preco_centavos?: number
+          produto_externo_id?: string | null
           professional_id?: string
           recording_duration_seg?: number | null
           recording_path?: string | null
+          requer_pagamento?: boolean
           reservado_em?: string | null
           room_id?: string | null
           status?: string
@@ -1111,7 +1120,9 @@ export type Database = {
           link_compra: string | null
           ordem: number
           plataforma_venda: string | null
+          preco_centavos: number
           preco_label: string | null
+          produto_externo_id: string | null
           publicado: boolean
           tipo: string
           titulo: string
@@ -1131,7 +1142,9 @@ export type Database = {
           link_compra?: string | null
           ordem?: number
           plataforma_venda?: string | null
+          preco_centavos?: number
           preco_label?: string | null
+          produto_externo_id?: string | null
           publicado?: boolean
           tipo: string
           titulo: string
@@ -1151,7 +1164,9 @@ export type Database = {
           link_compra?: string | null
           ordem?: number
           plataforma_venda?: string | null
+          preco_centavos?: number
           preco_label?: string | null
+          produto_externo_id?: string | null
           publicado?: boolean
           tipo?: string
           titulo?: string
@@ -1333,6 +1348,129 @@ export type Database = {
           id?: string
           nome?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          aprovacao_manual: boolean
+          aprovado_em: string | null
+          aprovado_por: string | null
+          comprador_email: string
+          comprador_nome: string | null
+          comprador_user_id: string | null
+          created_at: string
+          cupom_codigo: string | null
+          id: string
+          moeda: string
+          observacao: string | null
+          pais: string | null
+          plataforma: string
+          produto_id: string
+          produto_tipo: string
+          raw_payload: Json
+          status: string
+          transaction_id_externo: string | null
+          updated_at: string
+          valor_centavos: number
+        }
+        Insert: {
+          aprovacao_manual?: boolean
+          aprovado_em?: string | null
+          aprovado_por?: string | null
+          comprador_email: string
+          comprador_nome?: string | null
+          comprador_user_id?: string | null
+          created_at?: string
+          cupom_codigo?: string | null
+          id?: string
+          moeda?: string
+          observacao?: string | null
+          pais?: string | null
+          plataforma: string
+          produto_id: string
+          produto_tipo: string
+          raw_payload?: Json
+          status?: string
+          transaction_id_externo?: string | null
+          updated_at?: string
+          valor_centavos?: number
+        }
+        Update: {
+          aprovacao_manual?: boolean
+          aprovado_em?: string | null
+          aprovado_por?: string | null
+          comprador_email?: string
+          comprador_nome?: string | null
+          comprador_user_id?: string | null
+          created_at?: string
+          cupom_codigo?: string | null
+          id?: string
+          moeda?: string
+          observacao?: string | null
+          pais?: string | null
+          plataforma?: string
+          produto_id?: string
+          produto_tipo?: string
+          raw_payload?: Json
+          status?: string
+          transaction_id_externo?: string | null
+          updated_at?: string
+          valor_centavos?: number
+        }
+        Relationships: []
+      }
+      product_offers: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          label: string | null
+          moeda: string
+          ordem: number
+          pais: string
+          plataforma: string
+          preco_centavos: number
+          produto_externo_id: string | null
+          produto_id: string
+          produto_tipo: string
+          tipo_link: string
+          updated_at: string
+          url_externo: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          label?: string | null
+          moeda?: string
+          ordem?: number
+          pais?: string
+          plataforma: string
+          preco_centavos?: number
+          produto_externo_id?: string | null
+          produto_id: string
+          produto_tipo: string
+          tipo_link?: string
+          updated_at?: string
+          url_externo?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          label?: string | null
+          moeda?: string
+          ordem?: number
+          pais?: string
+          plataforma?: string
+          preco_centavos?: number
+          produto_externo_id?: string | null
+          produto_id?: string
+          produto_tipo?: string
+          tipo_link?: string
+          updated_at?: string
+          url_externo?: string | null
         }
         Relationships: []
       }
@@ -1906,6 +2044,7 @@ export type Database = {
         Args: { _gestante_id: string; _prof_user_id: string }
         Returns: boolean
       }
+      liberar_acesso_por_pedido: { Args: { _order_id: string }; Returns: Json }
       list_consultas_prof: {
         Args: { _only_with_lancamentos?: boolean }
         Returns: {
@@ -1938,6 +2077,7 @@ export type Database = {
         Args: { _registro: string }
         Returns: string
       }
+      revogar_acesso_por_pedido: { Args: { _order_id: string }; Returns: Json }
       submit_evaluation_response: {
         Args: {
           _nome: string
