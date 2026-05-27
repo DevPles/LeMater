@@ -27,6 +27,7 @@ import { Route as AppGestacaoRouteImport } from './routes/app_.gestacao'
 import { Route as AppCronogramaRouteImport } from './routes/app_.cronograma'
 import { Route as AppCartaoRouteImport } from './routes/app_.cartao'
 import { Route as AppAlertasRouteImport } from './routes/app_.alertas'
+import { Route as AuthenticatedCarrinhoRouteImport } from './routes/_authenticated/carrinho'
 import { Route as AppSalaRoomIdRouteImport } from './routes/app_.sala.$roomId'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago-webhook'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
@@ -127,6 +128,11 @@ const AppAlertasRoute = AppAlertasRouteImport.update({
   path: '/app/alertas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCarrinhoRoute = AuthenticatedCarrinhoRouteImport.update({
+  id: '/carrinho',
+  path: '/carrinho',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AppSalaRoomIdRoute = AppSalaRoomIdRouteImport.update({
   id: '/app_/sala/$roomId',
   path: '/app/sala/$roomId',
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/atlas': typeof AtlasRouteWithChildren
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/carrinho': typeof AuthenticatedCarrinhoRoute
   '/app/alertas': typeof AppAlertasRoute
   '/app/cartao': typeof AppCartaoRoute
   '/app/cronograma': typeof AppCronogramaRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/atlas': typeof AtlasRouteWithChildren
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/carrinho': typeof AuthenticatedCarrinhoRoute
   '/app/alertas': typeof AppAlertasRoute
   '/app/cartao': typeof AppCartaoRoute
   '/app/cronograma': typeof AppCronogramaRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/atlas': typeof AtlasRouteWithChildren
   '/login': typeof LoginRoute
   '/redefinir-senha': typeof RedefinirSenhaRoute
+  '/_authenticated/carrinho': typeof AuthenticatedCarrinhoRoute
   '/app_/alertas': typeof AppAlertasRoute
   '/app_/cartao': typeof AppCartaoRoute
   '/app_/cronograma': typeof AppCronogramaRoute
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/atlas'
     | '/login'
     | '/redefinir-senha'
+    | '/carrinho'
     | '/app/alertas'
     | '/app/cartao'
     | '/app/cronograma'
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/atlas'
     | '/login'
     | '/redefinir-senha'
+    | '/carrinho'
     | '/app/alertas'
     | '/app/cartao'
     | '/app/cronograma'
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/atlas'
     | '/login'
     | '/redefinir-senha'
+    | '/_authenticated/carrinho'
     | '/app_/alertas'
     | '/app_/cartao'
     | '/app_/cronograma'
@@ -515,6 +527,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAlertasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/carrinho': {
+      id: '/_authenticated/carrinho'
+      path: '/carrinho'
+      fullPath: '/carrinho'
+      preLoaderRoute: typeof AuthenticatedCarrinhoRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/app_/sala/$roomId': {
       id: '/app_/sala/$roomId'
       path: '/app/sala/$roomId'
@@ -589,12 +608,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedCarrinhoRoute: typeof AuthenticatedCarrinhoRoute
   AuthenticatedAppAdminRoute: typeof AuthenticatedAppAdminRoute
   AuthenticatedAppMembroRoute: typeof AuthenticatedAppMembroRoute
   AuthenticatedAtlasSlugAprenderRoute: typeof AuthenticatedAtlasSlugAprenderRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedCarrinhoRoute: AuthenticatedCarrinhoRoute,
   AuthenticatedAppAdminRoute: AuthenticatedAppAdminRoute,
   AuthenticatedAppMembroRoute: AuthenticatedAppMembroRoute,
   AuthenticatedAtlasSlugAprenderRoute: AuthenticatedAtlasSlugAprenderRoute,
