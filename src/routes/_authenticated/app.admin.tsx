@@ -20,13 +20,30 @@ import { VendasTab } from "@/components/admin/VendasTab";
 import lemateLogo from "@/assets/logo_monograma.png";
 
 export const Route = createFileRoute("/_authenticated/app/admin")({
-  head: () => ({ meta: [{ title: "Admin · Le Mater" }], links: [{ rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" }] }),
+  head: () => ({ meta: [{ title: "Admin · Le Mater" }] }),
   component: AdminPage,
 });
 
-const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48" };
-const serif = "'Cormorant Garamond', serif";
+// Paleta da marca (navy + gold + cream) — alinhada ao resto do app
+const c = {
+  cream: "#faf8f3",
+  warm: "#f3eddf",
+  navy: "#1a1557",
+  navyDark: "#120f3f",
+  gold: "#f0c040",
+  goldDark: "#d4a52a",
+  ink: "#1a1557",
+  muted: "#6b6883",
+  border: "#e8e3d4",
+  danger: "#b23a48",
+  ok: "#2f7a4e",
+  // aliases mantidos para retrocompatibilidade dos componentes existentes
+  sage: "#1a1557",
+  sageDark: "#1a1557",
+};
+const serif = "'Playfair Display', serif";
 const sans = "'DM Sans', sans-serif";
+
 
 type Tab =
   | "dash"
