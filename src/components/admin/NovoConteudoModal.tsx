@@ -1376,8 +1376,23 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
         />
       </Field>
 
+      {isServico && (
+        <>
+          <div style={sectionTitle}>Venda do serviço (país × plataforma)</div>
+          <div style={{ fontSize: 12, color: c.muted, marginBottom: 10, fontFamily: sans }}>
+            Configure preço e plataforma de pagamento por país. Salve o serviço — depois reabra para ajustar ofertas.
+          </div>
+          <OfertasEditor
+            ref={ofertasServicoRef}
+            produtoTipo="servico"
+            produtoId={material.id ?? null}
+            titulo="Ofertas do serviço"
+          />
+        </>
+      )}
+
       <div style={sectionTitle}>
-        {isServico ? "Compra / agendamento" : "Venda externa (opcional)"}
+        {isServico ? "Link alternativo (opcional)" : "Venda externa (opcional)"}
       </div>
       <Field label="Link">
         <input
