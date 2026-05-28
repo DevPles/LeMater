@@ -10,7 +10,9 @@ export type CartItem = {
   moeda: string;
   link_compra: string | null;
   tema: string | null;
+  beneficios?: string[];
 };
+
 
 const STORAGE_KEY = "lemater_cart_v1";
 let memo: CartItem[] = [];
