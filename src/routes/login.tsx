@@ -518,8 +518,8 @@ const css = `
 }
 
 .web-login-card {
-  width: min(720px, calc(100vw - 48px));
-  min-height: 300px;
+  width: min(440px, calc(100vw - 48px));
+  min-height: 280px;
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
