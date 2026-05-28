@@ -618,6 +618,7 @@ export type Database = {
       }
       curso_aulas: {
         Row: {
+          beneficios: string[]
           capa_url: string | null
           capa_video_url: string | null
           conteudo_html: string | null
@@ -645,6 +646,7 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          beneficios?: string[]
           capa_url?: string | null
           capa_video_url?: string | null
           conteudo_html?: string | null
@@ -672,6 +674,7 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          beneficios?: string[]
           capa_url?: string | null
           capa_video_url?: string | null
           conteudo_html?: string | null
