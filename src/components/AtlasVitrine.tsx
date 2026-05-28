@@ -49,6 +49,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
   const [temaSel, setTemaSel] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [openSlug, setOpenSlug] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     fnTemas().then((t) => setTemas(t as AtlasTema[])).catch((e) => setErr(e?.message ?? "Erro"));
