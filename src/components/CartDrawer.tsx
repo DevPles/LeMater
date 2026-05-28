@@ -53,6 +53,9 @@ export function CartDrawer() {
   const { items, total, remove, clear } = useCart();
   const { open, setOpen } = useCartUI();
   const fnCheckout = useServerFn(createCartOrder);
+  const { session, profile } = useGestanteProfile();
+  const navigate = useNavigate();
+  const isAuthed = !!session?.user;
 
   const [step, setStep] = useState<"cart" | "checkout" | "done">("cart");
   const [nome, setNome] = useState("");
@@ -62,7 +65,24 @@ export function CartDrawer() {
   const [err, setErr] = useState<string | null>(null);
   const moeda = items[0]?.moeda ?? "BRL";
 
+  useEffect(() => {
+    if (isAuthed) {
+      if (!nome && (profile?.nome || session?.user?.user_metadata?.full_name)) {
+        setNome(profile?.nome ?? session?.user?.user_metadata?.full_name ?? "");
+      }
+      if (!email && (profile?.email || session?.user?.email)) {
+        setEmail(profile?.email ?? session?.user?.email ?? "");
+      }
+    }
+  }, [isAuthed, profile?.nome, profile?.email, session?.user?.email]);
+
   if (!open) return null;
+
+  const goLogin = () => {
+    setOpen(false);
+    navigate({ to: "/login", search: { redirect: "/atlas" } as any });
+  };
+
 
   const submit = async () => {
     setErr(null);
