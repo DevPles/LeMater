@@ -100,13 +100,21 @@ export const createMercadoPagoCheckout = createServerFn({ method: "POST" })
     const { order, items } = await loadOrder(data.order_id);
     const currency = (order.moeda || "BRL").toUpperCase();
 
-    const mpItems = (items.length
+    const rawItems = (items.length
       ? items
       : [{ title: "Atlas Materno", quantity: 1, unit_price_centavos: order.valor_centavos, currency: order.moeda }]
-    ).map((it) => ({
-      title: it.title.slice(0, 250),
-      quantity: it.quantity || 1,
-      unit_price: Math.round(it.unit_price_centavos) / 100,
+    ).filter((it) => Number(it.unit_price_centavos) > 0);
+
+    if (rawItems.length === 0) {
+      throw new Error("Pedido sem itens válidos para pagamento.");
+    }
+
+    const mpItems = rawItems.map((it) => ({
+      id: order.id,
+      title: (it.title || "Atlas Materno").slice(0, 250),
+      description: (it.title || "Atlas Materno").slice(0, 250),
+      quantity: Number(it.quantity) || 1,
+      unit_price: Number((Math.round(Number(it.unit_price_centavos)) / 100).toFixed(2)),
       currency_id: currency,
     }));
 
