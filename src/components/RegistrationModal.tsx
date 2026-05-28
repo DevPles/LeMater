@@ -1100,6 +1100,53 @@ export default function RegistrationModal({
                 </motion.div>
               )}
 
+              {/* Peso e altura para IMC */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className={labelClass}>Peso atual (kg)</Label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    step="0.1"
+                    value={pesoInicial}
+                    onChange={(e) => setPesoInicial(e.target.value)}
+                    placeholder="Ex: 62.5"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <Label className={labelClass}>Altura (cm)</Label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    step="0.1"
+                    value={altura}
+                    onChange={(e) => setAltura(e.target.value)}
+                    placeholder="Ex: 165"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+
+              {imc && imcClass && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{ background: `${c.sageLight}15`, borderColor: `${c.sage}33` }}
+                  className="rounded-2xl p-4 space-y-2"
+                >
+                  <div className="flex justify-between items-center">
+                    <span style={{ color: c.muted }} className="text-sm">IMC pré-gestacional</span>
+                    <span style={{ color: c.sageDark }} className="font-bold">{imc.toFixed(1)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span style={{ color: c.muted }} className="text-sm">Classificação</span>
+                    <span style={{ color: imcClass.color }} className="font-bold">{imcClass.label}</span>
+                  </div>
+                </motion.div>
+              )}
+
+
               <div>
                 <Label className={labelClass}>Fez teste de gravidez?</Label>
                 <div className="flex gap-3 mt-2">
