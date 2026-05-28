@@ -613,7 +613,7 @@ export const listAtlasAulas = createServerFn({ method: "GET" })
       if (aulaIds.length === 0) return [];
     }
     let q = supabaseAdmin.from("curso_aulas")
-      .select("id, slug, titulo, descricao, capa_url, capa_video_url, duracao_min, tipo, gratis, preco_label, preco_centavos, moeda, link_compra_externo, previa_gratis, publicado, ordem, created_at")
+      .select("id, slug, titulo, descricao, capa_url, capa_video_url, duracao_min, tipo, gratis, preco_label, preco_centavos, moeda, link_compra_externo, previa_gratis, beneficios, publicado, ordem, created_at")
       .order("ordem").order("created_at", { ascending: false });
     if (!admin) q = q.eq("publicado", true);
     if (aulaIds.length) q = q.in("id", aulaIds);
