@@ -1,7 +1,10 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCart, useCartUI } from "@/lib/cart-store";
 import { createCartOrder } from "@/lib/cart.functions";
+import { useGestanteProfile } from "@/hooks/useGestanteProfile";
+
 
 const c = {
   cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42",
