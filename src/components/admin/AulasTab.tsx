@@ -41,9 +41,11 @@ export default function AulasTab() {
 
   const [aulas, setAulas] = useState<AulaRow[] | null>(null);
   const [temas, setTemas] = useState<Tema[]>([]);
-  const [editing, setEditing] = useState<Partial<AulaRow> & { temas?: string[] } | null>(null);
+  type Draft = Omit<Partial<AulaRow>, "temas"> & { temas?: string[]; video_url?: string | null; pdf_url?: string | null; conteudo_html?: string | null };
+  const [editing, setEditing] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
 
   const reload = async () => {
     setErr(null);
