@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCart, useCartUI } from "@/lib/cart-store";
 import { createCartOrder } from "@/lib/cart.functions";
+import { createStripeCheckout, createMercadoPagoCheckout } from "@/lib/checkout.functions";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 
 
@@ -131,6 +132,8 @@ export function CartDrawer() {
   const { items, total, remove, clear } = useCart();
   const { open, setOpen } = useCartUI();
   const fnCheckout = useServerFn(createCartOrder);
+  const fnStripe = useServerFn(createStripeCheckout);
+  const fnMP = useServerFn(createMercadoPagoCheckout);
   const { session, profile } = useGestanteProfile();
   const navigate = useNavigate();
   const isAuthed = !!session?.user;
@@ -139,7 +142,7 @@ export function CartDrawer() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [pais, setPais] = useState("BR");
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState<null | "stripe" | "mercadopago">(null);
   const [err, setErr] = useState<string | null>(null);
   const moeda = items[0]?.moeda ?? "BRL";
 
@@ -161,16 +164,15 @@ export function CartDrawer() {
     navigate({ to: "/login", search: { redirect: "/atlas" } as any });
   };
 
-
-  const submit = async () => {
+  const payWith = async (provider: "stripe" | "mercadopago") => {
     setErr(null);
     if (!nome.trim() || !email.trim() || items.length === 0) {
       setErr("Preencha nome e email para continuar.");
       return;
     }
-    setSubmitting(true);
+    setSubmitting(provider);
     try {
-      await fnCheckout({
+      const created = (await fnCheckout({
         data: {
           comprador_nome: nome.trim(),
           comprador_email: email.trim(),
@@ -182,15 +184,26 @@ export function CartDrawer() {
             moeda: i.moeda,
           })),
         },
-      });
+      })) as { order_id: string };
+
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      const res = provider === "stripe"
+        ? await fnStripe({ data: { order_id: created.order_id, origin } })
+        : await fnMP({ data: { order_id: created.order_id, origin } });
+
       clear();
+      if (typeof window !== "undefined" && (res as { url: string }).url) {
+        window.location.href = (res as { url: string }).url;
+        return;
+      }
       setStep("done");
     } catch (e: any) {
-      setErr(e?.message ?? "Erro ao processar pedido.");
+      setErr(e?.message ?? "Erro ao processar pagamento.");
     } finally {
-      setSubmitting(false);
+      setSubmitting(null);
     }
   };
+
 
   return (
     <div
@@ -498,12 +511,32 @@ export function CartDrawer() {
                 </>
               )
             ) : (
-              <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => setStep("cart")} disabled={submitting} style={btnSecondary}>
-                  Voltar
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <button
+                  onClick={() => payWith("mercadopago")}
+                  disabled={submitting !== null}
+                  style={{ ...btnPrimary, opacity: submitting ? 0.6 : 1 }}
+                  className="lem-cart-cta"
+                >
+                  {submitting === "mercadopago" ? "Redirecionando…" : "Pagar com Pix · Cartão (Mercado Pago)"}
                 </button>
-                <button onClick={submit} disabled={submitting} style={{ ...btnPrimary, flex: 1, opacity: submitting ? 0.6 : 1 }} className="lem-cart-cta">
-                  {submitting ? "Enviando…" : "Confirmar pedido"}
+                <button
+                  onClick={() => payWith("stripe")}
+                  disabled={submitting !== null}
+                  style={{
+                    ...btnPrimary,
+                    background: "white",
+                    color: c.sageDark,
+                    border: `1.5px solid ${c.sageDark}`,
+                    boxShadow: "none",
+                    opacity: submitting ? 0.6 : 1,
+                  }}
+                  className="lem-cart-cta"
+                >
+                  {submitting === "stripe" ? "Redirecionando…" : "Pagar com Cartão internacional (Stripe)"}
+                </button>
+                <button onClick={() => setStep("cart")} disabled={submitting !== null} style={{ ...btnSecondary, padding: "10px 18px" }}>
+                  Voltar
                 </button>
               </div>
             )}
