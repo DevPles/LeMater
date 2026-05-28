@@ -57,6 +57,7 @@ export const createStripeCheckout = createServerFn({ method: "POST" })
 
     const form = new URLSearchParams();
     form.set("mode", "payment");
+    form.set("payment_method_types[0]", "card");
     form.set("success_url", `${data.origin}/atlas?paid=${order.id}`);
     form.set("cancel_url", `${data.origin}/atlas?canceled=${order.id}`);
     form.set("client_reference_id", order.id);
