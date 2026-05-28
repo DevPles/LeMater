@@ -97,7 +97,7 @@ const sectionTitle: CSSProperties = {
   paddingTop: 16,
 };
 
-type Tipo = "curso" | "material" | "servico";
+type Tipo = "curso" | "material" | "servico"; // "curso" mantido por compat. com edição legada; UI nova só expõe material/servico
 
 type LinkCompra = { plataforma: string; url: string; pais?: string | null; tipo?: "curso" | "passe" | "aula" | null };
 type AulaLocal = {
@@ -141,7 +141,7 @@ const aulaVazia = (): AulaLocal => ({
 
 
 export default function NovoConteudoModal({
-  tipoInicial = "curso",
+  tipoInicial = "material",
   cursoEdit,
   onClose,
   onSaved,
@@ -563,7 +563,7 @@ export default function NovoConteudoModal({
 
           {!editando && (
             <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
-              {(["curso", "material", "servico"] as Tipo[]).map((t) => {
+              {(["material", "servico"] as Tipo[]).map((t) => {
                 const ativo = tipo === t;
                 return (
                   <button
@@ -583,7 +583,7 @@ export default function NovoConteudoModal({
                       cursor: "pointer",
                     }}
                   >
-                    {t === "curso" ? "Curso" : t === "material" ? "Material" : "Serviço"}
+                    {t === "material" ? "Material" : "Serviço"}
                   </button>
                 );
               })}
