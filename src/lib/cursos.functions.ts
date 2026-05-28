@@ -721,8 +721,10 @@ const AulaAvulsaSchema = z.object({
   preco_label: z.string().max(60).nullable().optional(),
   moeda: z.string().max(8).default("BRL"),
   link_compra_externo: z.string().max(500).nullable().optional(),
+  beneficios: z.array(z.string().trim().min(1).max(200)).max(20).default([]),
   temas: z.array(z.string().uuid()).min(1, "Selecione ao menos um tema").max(20),
 });
+
 
 export const adminUpsertAulaAvulsa = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
