@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCart, useCartUI } from "@/lib/cart-store";
@@ -28,26 +28,109 @@ function formatMoney(centavos: number, moeda: string) {
 
 export function CartFloatingButton() {
   const { count } = useCart();
-  if (count === 0) return null;
+  const SIZE = 60;
+  const MARGIN = 16;
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const dragRef = useRef<{ dragging: boolean; moved: boolean; offX: number; offY: number }>({
+    dragging: false, moved: false, offX: 0, offY: 0,
+  });
+
+  // Initial position (bottom-right) and persist
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem("lemater_cart_pos");
+      if (saved) {
+        const p = JSON.parse(saved);
+        if (typeof p.x === "number" && typeof p.y === "number") {
+          setPos(clampPos(p.x, p.y));
+          return;
+        }
+      }
+    } catch {}
+    setPos({ x: window.innerWidth - SIZE - 24, y: window.innerHeight - SIZE - 24 });
+    const onResize = () => setPos((p) => (p ? clampPos(p.x, p.y) : p));
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  function clampPos(x: number, y: number) {
+    if (typeof window === "undefined") return { x, y };
+    const maxX = window.innerWidth - SIZE - MARGIN;
+    const maxY = window.innerHeight - SIZE - MARGIN;
+    return {
+      x: Math.max(MARGIN, Math.min(maxX, x)),
+      y: Math.max(MARGIN, Math.min(maxY, y)),
+    };
+  }
+
+  const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!pos) return;
+    (e.currentTarget as HTMLButtonElement).setPointerCapture(e.pointerId);
+    dragRef.current = {
+      dragging: true, moved: false,
+      offX: e.clientX - pos.x, offY: e.clientY - pos.y,
+    };
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!dragRef.current.dragging) return;
+    const nx = e.clientX - dragRef.current.offX;
+    const ny = e.clientY - dragRef.current.offY;
+    const np = clampPos(nx, ny);
+    if (Math.abs(nx - (pos?.x ?? 0)) > 3 || Math.abs(ny - (pos?.y ?? 0)) > 3) {
+      dragRef.current.moved = true;
+    }
+    setPos(np);
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const wasDrag = dragRef.current.moved;
+    dragRef.current.dragging = false;
+    if (pos) {
+      try { localStorage.setItem("lemater_cart_pos", JSON.stringify(pos)); } catch {}
+    }
+    if (!wasDrag) {
+      const fn = (window as any).__lemater_openCart;
+      if (typeof fn === "function") fn();
+    }
+  };
+
+  if (count === 0 || !pos) return null;
   return (
     <button
-      onClick={() => {
-        const fn = (window as any).__lemater_openCart;
-        if (typeof fn === "function") fn();
-      }}
+      aria-label={`Carrinho (${count})`}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
       style={{
-        position: "fixed", bottom: 24, right: 24, zIndex: 900,
+        position: "fixed", left: pos.x, top: pos.y, zIndex: 900,
+        width: SIZE, height: SIZE, borderRadius: "50%",
         background: c.sageDark, color: "white", border: "none",
-        padding: "14px 22px", borderRadius: 999,
-        fontFamily: sans, fontSize: 12, letterSpacing: "0.14em",
-        textTransform: "uppercase", cursor: "pointer", fontWeight: 500,
-        boxShadow: "0 10px 30px rgba(45,90,66,0.35)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        cursor: "grab", touchAction: "none", userSelect: "none",
+        boxShadow: "0 10px 30px rgba(45,90,66,0.4)",
       }}
     >
-      Carrinho · {count}
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <circle cx="9" cy="21" r="1.5" />
+        <circle cx="18" cy="21" r="1.5" />
+        <path d="M3 3h2l2.4 12.3a2 2 0 0 0 2 1.7h8.2a2 2 0 0 0 2-1.6L21 8H6" />
+      </svg>
+      <span
+        style={{
+          position: "absolute", top: -4, right: -4, minWidth: 22, height: 22,
+          padding: "0 6px", borderRadius: 999, background: c.gold, color: "#1C1C1A",
+          fontFamily: sans, fontSize: 11, fontWeight: 700,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+        }}
+      >
+        {count}
+      </span>
     </button>
   );
 }
+
 
 export function CartDrawer() {
   const { items, total, remove, clear } = useCart();
