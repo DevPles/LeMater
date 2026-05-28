@@ -359,22 +359,23 @@ function RegisterForm({
       <Field label="E-mail" type="email" value={email} onChange={onEmailChange} autoComplete="email" required />
       <div className="field-group">
         <Label className="field-label">País</Label>
-        <div className="country-wrap">
-          <img
-            className="country-flag-img"
-            src={`https://flagcdn.com/w40/${selected.flag}.png`}
-            srcSet={`https://flagcdn.com/w80/${selected.flag}.png 2x`}
-            alt={selected.code}
-          />
-          <select
-            className="neo-input country-select"
-            value={country}
-            onChange={(e) => onCountryChange(e.target.value)}
-          >
-            {PAISES.map((p) => (
-              <option key={p.code} value={p.code}>{p.label} ({p.dial})</option>
-            ))}
-          </select>
+        <div className="country-flags">
+          {PAISES.map((p) => (
+            <button
+              key={p.code}
+              type="button"
+              className={`country-flag-btn${country === p.code ? " is-active" : ""}`}
+              onClick={() => onCountryChange(p.code)}
+              aria-label={p.label}
+              title={p.label}
+            >
+              <img
+                src={`https://flagcdn.com/w80/${p.flag}.png`}
+                srcSet={`https://flagcdn.com/w160/${p.flag}.png 2x`}
+                alt={p.code}
+              />
+            </button>
+          ))}
         </div>
       </div>
       <div className="field-group">
