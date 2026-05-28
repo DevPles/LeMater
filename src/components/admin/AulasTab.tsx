@@ -81,7 +81,9 @@ export default function AulasTab({ reloadSignal, temaFilter }: { reloadSignal?: 
               </div>
             ))}
           </div>
-        )}
+        );
+      })()}
+
 
       {editing && (
         <AulaEditor
