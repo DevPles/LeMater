@@ -141,7 +141,7 @@ const aulaVazia = (): AulaLocal => ({
 
 
 export default function NovoConteudoModal({
-  tipoInicial = "material",
+  tipoInicial = "servico",
   cursoEdit,
   onClose,
   onSaved,
@@ -155,6 +155,7 @@ export default function NovoConteudoModal({
   const [tipo, setTipo] = useState<Tipo>(editando ? "curso" : tipoInicial);
   const [busy, setBusy] = useState(false);
   const [busyMsg, setBusyMsg] = useState("");
+  const servicoUnico = !editando && tipoInicial === "servico";
 
   // ---- CURSO ----
   const upCurso = useServerFn(adminUpsertCurso);
@@ -558,10 +559,10 @@ export default function NovoConteudoModal({
             {editando ? "Editar conteúdo" : "Novo conteúdo"}
           </div>
           <h2 style={{ fontFamily: serif, fontSize: 30, fontWeight: 400, margin: "0 0 18px" }}>
-            {editando ? "Editar curso" : "Criar novo item do Atlas"}
+            {editando ? "Editar curso" : servicoUnico ? "Criar serviço do Atlas" : "Criar novo item do Atlas"}
           </h2>
 
-          {!editando && (
+          {!editando && !servicoUnico && (
             <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
               {(["material", "servico"] as Tipo[]).map((t) => {
                 const ativo = tipo === t;
