@@ -20,6 +20,7 @@ export type ContentCardProps = {
   precoLabel?: string | null;   // ex: "R$ 197"
   precoTituloLabel?: string | null; // ex: "Investimento"
   ctaLabel: string;
+  ctaIcon?: "cart" | "cart-check" | null;
   onAction: () => void;
   forceDark?: boolean;
   extra?: ReactNode;
