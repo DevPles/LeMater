@@ -66,7 +66,8 @@ export default function AulasTab() {
 
   const editar = (a: AulaRow) => setEditing({
     ...a, temas: a.temas.map((t) => t.id),
-  });
+  } as Draft);
+
 
   const salvar = async (form: HTMLFormElement) => {
     if (!editing) return;
