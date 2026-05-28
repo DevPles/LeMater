@@ -90,32 +90,33 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
             <span style={{ width: 24, height: 1, background: c.sage }} />
             FORMAÇÃO
           </div>
-          <h2 style={{ fontFamily: serif, fontSize: isApp ? 32 : "clamp(28px, 3vw, 44px)", fontWeight: 300, lineHeight: 1.1, color: c.ink, marginBottom: isApp ? 12 : 20 }}>
-            Atlas Materno.
-          </h2>
-
-          {temas.length > 0 && (
-            <div style={{ marginTop: isApp ? 12 : 18 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: isApp ? 12 : 20, flexWrap: "wrap" }}>
+            <h2 style={{ fontFamily: serif, fontSize: isApp ? 32 : "clamp(28px, 3vw, 44px)", fontWeight: 300, lineHeight: 1.1, color: c.ink, margin: 0 }}>
+              Atlas Materno.
+            </h2>
+            {temas.length > 0 && (
               <button
                 onClick={() => setMenuOpen(true)}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 10,
                   background: "transparent", border: `1px solid ${c.border}`,
-                  padding: isApp ? "10px 16px" : "12px 20px",
-                  fontSize: isApp ? 11 : 12, letterSpacing: "0.12em",
+                  padding: isApp ? "8px 14px" : "10px 18px",
+                  fontSize: isApp ? 10 : 11, letterSpacing: "0.12em",
                   textTransform: "uppercase", cursor: "pointer",
                   fontFamily: sans, color: c.ink, borderRadius: 999,
+                  flexShrink: 0,
                 }}
               >
                 <span style={{ display: "inline-flex", flexDirection: "column", gap: 3 }}>
-                  <span style={{ width: 16, height: 1.5, background: c.ink }} />
-                  <span style={{ width: 16, height: 1.5, background: c.ink }} />
-                  <span style={{ width: 16, height: 1.5, background: c.ink }} />
+                  <span style={{ width: 14, height: 1.5, background: c.ink }} />
+                  <span style={{ width: 14, height: 1.5, background: c.ink }} />
+                  <span style={{ width: 14, height: 1.5, background: c.ink }} />
                 </span>
-                Filtrar · {temaSel ? (temas.find((t) => t.id === temaSel)?.titulo ?? "Tema") : "Todos"}
+                {temaSel ? (temas.find((t) => t.id === temaSel)?.titulo ?? "Filtrar") : "Filtrar"}
               </button>
-            </div>
-          )}
+            )}
+          </div>
+
 
           {menuOpen && (
             <div
