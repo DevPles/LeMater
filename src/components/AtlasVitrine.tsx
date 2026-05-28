@@ -122,17 +122,18 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
             <div
               onClick={() => setMenuOpen(false)}
               style={{
-                position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
-                zIndex: 1000, display: "flex", alignItems: "flex-end", justifyContent: "center",
+                position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+                zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center",
+                padding: 16,
               }}
             >
               <div
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                  background: c.cream, width: "100%", maxWidth: 420,
-                  borderTopLeftRadius: 16, borderTopRightRadius: 16,
-                  padding: "12px 12px 18px", maxHeight: "70vh", overflowY: "auto",
-                  boxShadow: "0 -10px 40px rgba(0,0,0,0.2)",
+                  background: c.cream, width: "100%", maxWidth: 320,
+                  borderRadius: 14,
+                  padding: "10px 10px 14px", maxHeight: "70vh", overflowY: "auto",
+                  boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, padding: "0 4px" }}>
