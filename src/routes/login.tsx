@@ -359,22 +359,23 @@ function RegisterForm({
       <Field label="E-mail" type="email" value={email} onChange={onEmailChange} autoComplete="email" required />
       <div className="field-group">
         <Label className="field-label">País</Label>
-        <div className="country-wrap">
-          <img
-            className="country-flag-img"
-            src={`https://flagcdn.com/w40/${selected.flag}.png`}
-            srcSet={`https://flagcdn.com/w80/${selected.flag}.png 2x`}
-            alt={selected.code}
-          />
-          <select
-            className="neo-input country-select"
-            value={country}
-            onChange={(e) => onCountryChange(e.target.value)}
-          >
-            {PAISES.map((p) => (
-              <option key={p.code} value={p.code}>{p.label} ({p.dial})</option>
-            ))}
-          </select>
+        <div className="country-flags">
+          {PAISES.map((p) => (
+            <button
+              key={p.code}
+              type="button"
+              className={`country-flag-btn${country === p.code ? " is-active" : ""}`}
+              onClick={() => onCountryChange(p.code)}
+              aria-label={p.label}
+              title={p.label}
+            >
+              <img
+                src={`https://flagcdn.com/w80/${p.flag}.png`}
+                srcSet={`https://flagcdn.com/w160/${p.flag}.png 2x`}
+                alt={p.code}
+              />
+            </button>
+          ))}
         </div>
       </div>
       <div className="field-group">
@@ -529,26 +530,34 @@ const css = `
 }
 
 
-.country-wrap { position: relative; }
-.country-flag-img {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 22px;
-  height: 16px;
-  object-fit: cover;
-  border-radius: 2px;
-  pointer-events: none;
-  z-index: 1;
+.country-flags {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
-.country-select {
-  padding-left: 46px;
-  appearance: none;
+.country-flag-btn {
+  width: 56px;
+  height: 40px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background: ${CREAM_PANEL};
+  padding: 0;
   cursor: pointer;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23234735' d='M6 8L0 0h12z'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.country-flag-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.country-flag-btn:hover { transform: translateY(-1px); }
+.country-flag-btn.is-active {
+  border-color: ${GREEN_DEEP};
+  box-shadow: 0 4px 12px -4px rgba(35, 71, 53, 0.4);
 }
 .phone-combined {
   display: flex;
