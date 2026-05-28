@@ -1,7 +1,10 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCart, useCartUI } from "@/lib/cart-store";
 import { createCartOrder } from "@/lib/cart.functions";
+import { useGestanteProfile } from "@/hooks/useGestanteProfile";
+
 
 const c = {
   cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42",
@@ -50,6 +53,9 @@ export function CartDrawer() {
   const { items, total, remove, clear } = useCart();
   const { open, setOpen } = useCartUI();
   const fnCheckout = useServerFn(createCartOrder);
+  const { session, profile } = useGestanteProfile();
+  const navigate = useNavigate();
+  const isAuthed = !!session?.user;
 
   const [step, setStep] = useState<"cart" | "checkout" | "done">("cart");
   const [nome, setNome] = useState("");
@@ -59,7 +65,24 @@ export function CartDrawer() {
   const [err, setErr] = useState<string | null>(null);
   const moeda = items[0]?.moeda ?? "BRL";
 
+  useEffect(() => {
+    if (isAuthed) {
+      if (!nome && (profile?.nome || session?.user?.user_metadata?.full_name)) {
+        setNome(profile?.nome ?? session?.user?.user_metadata?.full_name ?? "");
+      }
+      if (!email && (profile?.email || session?.user?.email)) {
+        setEmail(profile?.email ?? session?.user?.email ?? "");
+      }
+    }
+  }, [isAuthed, profile?.nome, profile?.email, session?.user?.email]);
+
   if (!open) return null;
+
+  const goLogin = () => {
+    setOpen(false);
+    navigate({ to: "/login", search: { redirect: "/atlas" } as any });
+  };
+
 
   const submit = async () => {
     setErr(null);
@@ -228,9 +251,21 @@ export function CartDrawer() {
               </span>
             </div>
             {step === "cart" ? (
-              <button onClick={() => setStep("checkout")} style={btnPrimary}>
-                Finalizar compra
-              </button>
+              isAuthed ? (
+                <button onClick={() => setStep("checkout")} style={btnPrimary}>
+                  Finalizar compra
+                </button>
+              ) : (
+                <>
+                  <p style={{ fontSize: 12, color: c.muted, margin: "0 0 10px", textAlign: "center", lineHeight: 1.4 }}>
+                    Entre ou crie sua conta para finalizar a compra.
+                  </p>
+                  <button onClick={goLogin} style={btnPrimary}>
+                    Entrar / Criar conta
+                  </button>
+                </>
+              )
+
             ) : (
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => setStep("cart")} disabled={submitting} style={btnSecondary}>
