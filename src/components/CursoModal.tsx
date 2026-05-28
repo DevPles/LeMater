@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useNavigate } from "@tanstack/react-router";
 import { getCursoBySlug, getAulaPlayer, type CursoDetalhe, type AulaPlayer } from "@/lib/cursos.functions";
-import { getPublicOffers, startOfferCheckout } from "@/lib/offers.functions";
 import { getPublicAudios } from "@/lib/audios.functions";
 import { useAuth } from "@/hooks/useAuth";
+import { cartStore, openCart } from "@/lib/cart-store";
 
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", gold: "#B8923A" };
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
+
 
 type Offer = {
   id: string;
@@ -92,30 +92,17 @@ function useIsMobile() {
 export function CursoModal({ slug, onClose }: { slug: string; onClose: () => void }) {
   const fn = useServerFn(getCursoBySlug);
   const playerFn = useServerFn(getAulaPlayer);
-  const offersFn = useServerFn(getPublicOffers);
   const audiosFn = useServerFn(getPublicAudios);
-  const checkoutFn = useServerFn(startOfferCheckout);
   const { user } = useAuth();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [data, setData] = useState<CursoDetalhe | null | undefined>(undefined);
   const [err, setErr] = useState<string | null>(null);
   const [aulaSel, setAulaSel] = useState<string | null>(null);
   const [player, setPlayer] = useState<AulaPlayer | null>(null);
   const [playerErr, setPlayerErr] = useState<string | null>(null);
-  const [bloqueioInfo, setBloqueioInfo] = useState<{ titulo: string; aulaId: string } | null>(null);
-  const [pais, setPais] = useState<string>(() => detectPais());
-
-  // Ofertas: curso + por aula
-  const [cursoOffers, setCursoOffers] = useState<Offer[]>([]);
-  const [aulaOffers, setAulaOffers] = useState<Record<string, Offer[]>>({});
-  // Áudios do curso
   const [cursoAudios, setCursoAudios] = useState<Audio[]>([]);
-
-  const [offerSel, setOfferSel] = useState<string | null>(null);
-  const [checkoutErr, setCheckoutErr] = useState<string | null>(null);
-  const [comprando, setComprando] = useState(false);
   const [modulosAbertos, setModulosAbertos] = useState<Record<string, boolean>>({});
+  const [cartTick, setCartTick] = useState(0);
 
   useEffect(() => {
     fn({ data: { slug } })
@@ -124,38 +111,18 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
         setData(det);
         if (det) {
           const first = det.modulos.flatMap((m) => m.aulas).find((a) => !a.bloqueada);
-          if (first) {
-            setAulaSel(first.id);
-            setBloqueioInfo(null);
-          }
+          if (first) setAulaSel(first.id);
         }
       })
       .catch((e) => setErr(e?.message ?? "Erro"));
   }, [slug, user?.id]);
 
-  // Carrega ofertas do curso + áudios quando muda país ou curso
   useEffect(() => {
     if (!data?.id) return;
-    offersFn({ data: { produto_tipo: "curso", produto_id: data.id, pais } })
-      .then((r) => setCursoOffers((r.offers ?? []) as Offer[]))
-      .catch(() => setCursoOffers([]));
     audiosFn({ data: { vinculo_tipo: "curso", vinculo_id: data.id } })
-      .then((r) => setCursoAudios((r.audios ?? []) as Audio[]))
+      .then((r: { audios?: Audio[] }) => setCursoAudios((r.audios ?? []) as Audio[]))
       .catch(() => setCursoAudios([]));
-  }, [data?.id, pais]);
-
-  // Carrega ofertas da aula quando bloqueia uma aula
-  useEffect(() => {
-    if (!bloqueioInfo) return;
-    const aId = bloqueioInfo.aulaId;
-    if (aulaOffers[aId]) return;
-    offersFn({ data: { produto_tipo: "aula", produto_id: aId, pais } })
-      .then((r) => setAulaOffers((prev) => ({ ...prev, [aId]: (r.offers ?? []) as Offer[] })))
-      .catch(() => setAulaOffers((prev) => ({ ...prev, [aId]: [] })));
-  }, [bloqueioInfo?.aulaId, pais]);
-
-  // Reset cache de ofertas de aulas ao mudar país
-  useEffect(() => { setAulaOffers({}); setOfferSel(null); }, [pais]);
+  }, [data?.id]);
 
   useEffect(() => {
     if (!aulaSel) { setPlayer(null); return; }
@@ -173,181 +140,49 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
 
   const fechar = () => onClose();
 
-  // Ofertas combinadas (aula bloqueada + curso completo)
-  const ofertasAulaAtual = bloqueioInfo ? (aulaOffers[bloqueioInfo.aulaId] ?? []) : [];
-  const ofertasCombinadas: { secao: "aula" | "curso"; offer: Offer }[] = useMemo(() => {
-    const arr: { secao: "aula" | "curso"; offer: Offer }[] = [];
-    ofertasAulaAtual.forEach((o) => arr.push({ secao: "aula", offer: o }));
-    cursoOffers.forEach((o) => arr.push({ secao: "curso", offer: o }));
-    return arr;
-  }, [ofertasAulaAtual, cursoOffers]);
-
-  const offerAtiva = useMemo(() => {
-    if (offerSel) return ofertasCombinadas.find((x) => x.offer.id === offerSel) ?? ofertasCombinadas[0] ?? null;
-    return ofertasCombinadas[0] ?? null;
-  }, [offerSel, ofertasCombinadas]);
-
-  const comprar = async () => {
-    setCheckoutErr(null);
-    if (!offerAtiva) return;
-    if (!user) { navigate({ to: "/app" }); return; }
-    const offer = offerAtiva.offer;
-
-    // Plataformas externas → abre direto a URL cadastrada
-    if (offer.plataforma !== "mercadopago" && offer.url_externo) {
-      window.open(offer.url_externo, "_blank", "noopener");
-      // Registra clique via checkoutFn em background (best effort)
-      checkoutFn({ data: { offer_id: offer.id } }).catch(() => undefined);
-      return;
-    }
-
-    const win = window.open("about:blank", "_blank");
-    if (win) win.opener = null;
-    setComprando(true);
-    try {
-      const r = await checkoutFn({ data: { offer_id: offer.id } });
-      const url = r.url;
-      if (url) {
-        if (win) win.location.href = url; else window.location.href = url;
-      } else {
-        win?.close();
-        setCheckoutErr(r.message ?? "Esta oferta não tem checkout ativo.");
-      }
-    } catch (e: unknown) {
-      win?.close();
-      const msg =
-        e instanceof Error ? e.message :
-        (typeof e === "object" && e && "message" in e) ? String((e as { message: unknown }).message) :
-        "Não foi possível iniciar a compra";
-      setCheckoutErr(msg);
-    } finally {
-      setComprando(false);
-    }
+  const adicionarAoCarrinho = (aulaId: string, titulo: string, precoCent: number, precoLabel: string | null) => {
+    if (!data) return;
+    cartStore.add({
+      aula_id: aulaId,
+      slug: aulaId,
+      titulo,
+      capa_url: data.capa_url ?? null,
+      preco_centavos: precoCent ?? 0,
+      preco_label: precoLabel,
+      moeda: "BRL",
+      link_compra: null,
+      tema: data.titulo,
+    });
+    setCartTick((t) => t + 1);
+    openCart();
+    onClose();
   };
 
-  const abrirAula = (id: string, bloqueada: boolean, titulo: string) => {
+  const abrirAula = (id: string, bloqueada: boolean, titulo: string, precoCent: number, precoLabel: string | null) => {
     if (bloqueada) {
-      setBloqueioInfo({ titulo, aulaId: id });
-      setOfferSel(null);
-      setAulaSel(null);
-      setPlayer(null);
-      if (isMobile) {
-        requestAnimationFrame(() => document.getElementById("curso-modal-top")?.scrollIntoView({ behavior: "smooth" }));
-      }
+      adicionarAoCarrinho(id, titulo, precoCent, precoLabel);
       return;
     }
-    setBloqueioInfo(null);
     setAulaSel(id);
     if (isMobile) {
       requestAnimationFrame(() => document.getElementById("curso-modal-top")?.scrollIntoView({ behavior: "smooth" }));
     }
   };
 
-  const voltarParaLista = () => {
-    setBloqueioInfo(null);
-    setCheckoutErr(null);
-  };
 
-  // ───────── Checkout enxuto ─────────
-  const renderCheckout = () => {
-    if (!bloqueioInfo) return null;
-    const paisLabel = PAISES.find((p) => p.code === pais)?.label ?? pais;
-    return (
-      <div style={{ background: "white", border: `1px solid ${c.border}`, overflow: "hidden" }}>
-        {/* Header: SUA COMPRA + país pill */}
-        <div style={{ padding: "12px 16px", borderBottom: `1px solid ${c.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: c.warm, gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-            {isMobile && (
-              <button onClick={voltarParaLista} style={{ background: "transparent", border: "none", color: c.sageDark, fontFamily: sans, fontSize: 12, cursor: "pointer", padding: 0, letterSpacing: "0.06em" }}>
-                ← Voltar
-              </button>
-            )}
-            <span style={{ fontSize: 10, letterSpacing: "0.22em", color: c.sageDark, fontFamily: sans, fontWeight: 600 }}>SUA COMPRA</span>
-          </div>
-          <div style={{ position: "relative" }}>
-            <select
-              value={pais}
-              onChange={(e) => setPais(e.target.value)}
-              aria-label="País de pagamento"
-              style={{
-                appearance: "none", WebkitAppearance: "none",
-                background: "white", border: `1px solid ${c.border}`,
-                padding: "6px 24px 6px 10px",
-                fontFamily: sans, fontSize: 11, color: c.ink, fontWeight: 500,
-                cursor: "pointer", borderRadius: 999, letterSpacing: "0.04em",
-              }}
-            >
-              {PAISES.map((p) => <option key={p.code} value={p.code}>{p.label}</option>)}
-            </select>
-            <span style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: c.muted, fontSize: 10 }}>▾</span>
-          </div>
-        </div>
-
-        {/* Item — só nome da aula, sem repetir capa+curso */}
-        <div style={{ padding: "14px 16px 4px", textAlign: "left" }}>
-          <div style={{ fontSize: 10, letterSpacing: "0.18em", color: c.gold, marginBottom: 4 }}>VOCÊ ESTÁ COMPRANDO</div>
-          <div style={{ fontFamily: serif, fontSize: 18, color: c.ink, lineHeight: 1.25 }}>{bloqueioInfo.titulo}</div>
-        </div>
-
-        {/* Ofertas — radio list unificada */}
-        <div style={{ padding: "12px 16px 4px", textAlign: "left" }}>
-          {ofertasCombinadas.length === 0 && (
-            <div style={{ fontSize: 12, color: c.muted, fontStyle: "italic", padding: "8px 0" }}>
-              Nenhuma oferta disponível para {paisLabel} ainda.
-            </div>
-          )}
-          <div style={{ display: "grid", gap: 8 }}>
-            {ofertasAulaAtual.map((o) => (
-              <OfferRow key={o.id} offer={o} secao="aula" ativo={offerAtiva?.offer.id === o.id} onClick={() => setOfferSel(o.id)} />
-            ))}
-            {cursoOffers.map((o) => (
-              <OfferRow key={o.id} offer={o} secao="curso" ativo={offerAtiva?.offer.id === o.id} onClick={() => setOfferSel(o.id)} />
-            ))}
-          </div>
-        </div>
-
-        {/* CTA único — total embutido no botão */}
-        {offerAtiva && (
-          <div style={{ padding: "14px 16px 16px" }}>
-            <button onClick={comprar} disabled={comprando}
-              style={{
-                width: "100%", background: c.gold, color: "white",
-                fontFamily: sans, padding: "14px 16px", border: "none",
-                cursor: comprando ? "not-allowed" : "pointer", opacity: comprando ? 0.6 : 1,
-                display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
-              }}>
-              <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" }}>
-                {comprando ? "Processando…" : "Finalizar"}
-              </span>
-              <span style={{ fontSize: 18, fontWeight: 600, fontVariantNumeric: "lining-nums tabular-nums" }}>
-                {fmtPreco(offerAtiva.offer.preco_centavos, offerAtiva.offer.moeda)}
-              </span>
-            </button>
-            <div style={{ marginTop: 8, fontSize: 11, color: c.muted, fontFamily: sans, textAlign: "center", letterSpacing: "0.02em" }}>
-              {platLabel(offerAtiva.offer.plataforma)}
-              {offerAtiva.offer.label ? ` · ${offerAtiva.offer.label}` : ""}
-              {" · pagamento seguro · acesso imediato"}
-            </div>
-            {checkoutErr && <div style={{ fontSize: 12, color: "#B23A48", marginTop: 8, textAlign: "center" }}>{checkoutErr}</div>}
-          </div>
-        )}
-      </div>
-    );
-  };
 
   // ───────── Player ─────────
   const renderPlayer = () => (
     <div>
-      {renderCheckout()}
-
-      {!aulaSel && !bloqueioInfo && (
+      {!aulaSel && (
         <div style={{ color: c.muted, padding: 30, textAlign: "center", background: c.warm, border: `1px solid ${c.border}` }}>
           Selecione uma aula para começar.
         </div>
       )}
 
-      {aulaSel && !bloqueioInfo && (
+      {aulaSel && (
         <>
+
           {playerErr && <p style={{ color: "#B23A48" }}>{playerErr}</p>}
           {!player && !playerErr && (
             <div style={{ aspectRatio: "16/9", background: "#000", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>
@@ -400,7 +235,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       )}
 
       {/* Áudios do curso */}
-      {cursoAudios.length > 0 && !bloqueioInfo && (
+      {cursoAudios.length > 0 && (
         <div style={{ marginTop: 20 }}>
           <div style={{ fontSize: 10, letterSpacing: "0.22em", color: c.sageDark, marginBottom: 10, fontFamily: sans, fontWeight: 600 }}>OUÇA TAMBÉM</div>
           <div style={{ display: "grid", gap: 8 }}>
@@ -434,9 +269,11 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   );
 
   // ───────── Vitrine ─────────
-  const precoMin = cursoOffers.length > 0
-    ? fmtPreco(Math.min(...cursoOffers.map((o) => o.preco_centavos)), cursoOffers[0].moeda)
+  const aulasPagas = data?.modulos.flatMap((m) => m.aulas).filter((a) => (a.preco_centavos ?? 0) > 0) ?? [];
+  const precoMin = aulasPagas.length > 0
+    ? fmtPreco(Math.min(...aulasPagas.map((a) => a.preco_centavos)), "BRL")
     : null;
+
 
   const renderLista = () => (
     <div>
@@ -491,11 +328,13 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
             {aberto && (
               <ul style={{ listStyle: "none", padding: 0, margin: "0 0 10px" }}>
                 {m.aulas.map((a) => {
-                  const ativo = aulaSel === a.id || bloqueioInfo?.aulaId === a.id;
+                  const ativo = aulaSel === a.id;
+                  const inCart = cartStore.has(a.id);
+                  void cartTick;
                   return (
                     <li key={a.id}>
                       <button
-                        onClick={() => abrirAula(a.id, a.bloqueada, a.titulo)}
+                        onClick={() => abrirAula(a.id, a.bloqueada, a.titulo, a.preco_centavos ?? 0, a.preco_label)}
                         style={{
                           width: "100%", textAlign: "left", padding: "10px 12px",
                           background: ativo ? c.sageDark : "transparent",
@@ -509,7 +348,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                           {a.titulo}
                         </span>
                         <span style={{ fontSize: 10, opacity: 0.75, letterSpacing: "0.08em" }}>
-                          {a.bloqueada ? "COMPRAR" : a.previa_gratis ? "PRÉVIA" : `${a.duracao_min}min`}
+                          {a.bloqueada ? (inCart ? "NO CARRINHO" : "+ CARRINHO") : a.previa_gratis ? "PRÉVIA" : `${a.duracao_min}min`}
                         </span>
                       </button>
                     </li>
@@ -543,11 +382,9 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
               <div style={{ padding: "44px 16px 20px", background: c.cream }}>
                 {renderPlayer()}
               </div>
-              {!bloqueioInfo && (
-                <div style={{ padding: "20px 16px 32px", background: c.warm }}>
-                  {renderLista()}
-                </div>
-              )}
+              <div style={{ padding: "20px 16px 32px", background: c.warm }}>
+                {renderLista()}
+              </div>
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", height: "min(92vh, 760px)" }}>
