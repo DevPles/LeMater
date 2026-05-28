@@ -225,11 +225,30 @@ export default function RegistrationModal({
 
   // Step 2 fields (pregnancy)
   const [dum, setDum] = useState("");
+  const [pesoInicial, setPesoInicial] = useState("");
+  const [altura, setAltura] = useState("");
   const [testeGravidez, setTesteGravidez] = useState<boolean | null>(null);
   const [qualTeste, setQualTeste] = useState("");
 
   const gestAge = dum ? calcGestationalAge(new Date(dum)) : null;
   const dueDate = dum ? calcDueDate(new Date(dum)) : null;
+
+  // IMC pré-gestacional: peso (kg) / altura² (m)
+  const imc = (() => {
+    const p = parseFloat(pesoInicial.replace(",", "."));
+    const a = parseFloat(altura.replace(",", "."));
+    if (!p || !a) return null;
+    const alturaM = a > 3 ? a / 100 : a; // aceita 165 ou 1.65
+    if (alturaM <= 0) return null;
+    return p / (alturaM * alturaM);
+  })();
+  const imcClass = (() => {
+    if (!imc) return null;
+    if (imc < 18.5) return { label: "Baixo peso", color: "#C4714A" };
+    if (imc < 25) return { label: "Peso adequado", color: "#2D5A42" };
+    if (imc < 30) return { label: "Sobrepeso", color: "#C4714A" };
+    return { label: "Obesidade", color: "#9B3D2E" };
+  })();
 
   const handleFoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
