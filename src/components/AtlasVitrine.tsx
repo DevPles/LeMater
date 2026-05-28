@@ -245,6 +245,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                       slug: a.slug,
                       titulo: a.titulo,
                       capa_url: a.capa_url,
+                      capa_video_url: videoForAula(a),
                       preco_centavos: a.preco_centavos,
                       preco_label: a.preco_label,
                       moeda: a.moeda,
