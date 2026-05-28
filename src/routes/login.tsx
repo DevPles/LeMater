@@ -360,24 +360,29 @@ function RegisterForm({
       <div className="field-group">
         <Label className="field-label">País</Label>
         <div className="country-wrap">
-          <span className="country-flag" aria-hidden>{selected.flag}</span>
+          <img
+            className="country-flag-img"
+            src={`https://flagcdn.com/w40/${selected.flag}.png`}
+            srcSet={`https://flagcdn.com/w80/${selected.flag}.png 2x`}
+            alt={selected.code}
+          />
           <select
             className="neo-input country-select"
             value={country}
             onChange={(e) => onCountryChange(e.target.value)}
           >
             {PAISES.map((p) => (
-              <option key={p.code} value={p.code}>{p.flag} {p.label} {p.dial && `(${p.dial})`}</option>
+              <option key={p.code} value={p.code}>{p.label} ({p.dial})</option>
             ))}
           </select>
         </div>
       </div>
       <div className="field-group">
         <Label className="field-label">Celular</Label>
-        <div className="phone-wrap">
-          {dial && <span className="phone-dial">{dial}</span>}
-          <Input
-            className="neo-input phone-input"
+        <div className="phone-wrap neo-input phone-combined">
+          <span className="phone-dial">{dial}</span>
+          <input
+            className="phone-input-bare"
             type="tel"
             inputMode="tel"
             autoComplete="tel"
@@ -388,6 +393,7 @@ function RegisterForm({
           />
         </div>
       </div>
+
       <PasswordField value={password} show={showPassword} onChange={onPasswordChange} onToggle={onTogglePassword} />
 
       {mobile ? (
