@@ -652,14 +652,14 @@ const css = `
 }
 
 .neo-input {
-  height: 44px;
+  height: 38px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #f0e9d8;
   color: ${GREEN_DEEP};
-  padding: 0 16px;
-  font-size: 15px;
-  box-shadow: inset 4px 4px 8px rgba(168, 154, 120, 0.35), inset -4px -4px 8px rgba(255, 255, 255, 0.85);
+  padding: 0 12px;
+  font-size: 14px;
+  box-shadow: inset 3px 3px 6px rgba(168, 154, 120, 0.35), inset -3px -3px 6px rgba(255, 255, 255, 0.85);
 }
 
 .neo-input:focus-visible { outline: 2px solid ${GOLD}; outline-offset: 2px; }
