@@ -93,8 +93,8 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
             <span style={{ width: 24, height: 1, background: c.sage }} />
             FORMAÇÃO
           </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: isApp ? 12 : 20, flexWrap: "wrap" }}>
-            <h2 style={{ fontFamily: serif, fontSize: isApp ? 32 : "clamp(28px, 3vw, 44px)", fontWeight: 300, lineHeight: 1.1, color: c.ink, margin: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: isApp ? 12 : 20, flexWrap: "nowrap" }}>
+            <h2 style={{ fontFamily: serif, fontSize: isApp ? 26 : "clamp(28px, 3vw, 44px)", fontWeight: 300, lineHeight: 1.1, color: c.ink, margin: 0, flexShrink: 1, minWidth: 0 }}>
               Atlas Materno.
             </h2>
             {temas.length > 0 && (
