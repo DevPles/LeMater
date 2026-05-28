@@ -1,7 +1,8 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { adminListCursos, adminUpsertAulaAvulsa } from "@/lib/cursos.functions";
+import OfertasEditor, { type OfertasEditorHandle } from "@/components/admin/OfertasEditor";
 
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48" };
 const sans = "'DM Sans', sans-serif";
@@ -60,6 +61,7 @@ export default function AulaEditor({
   const [temas, setTemas] = useState<Tema[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const ofertasRef = useRef<OfertasEditorHandle>(null);
   const editing: AulaDraft = initial ?? {
     titulo: "", slug: "", descricao: "", tipo: "video", duracao_min: 0,
     publicado: false, gratis: false, previa_gratis: false,
@@ -140,7 +142,7 @@ export default function AulaEditor({
       const beneficios = String(fd.get("beneficios") ?? "")
         .split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 20);
 
-      await fnSave({ data: {
+      const saved = await fnSave({ data: {
         id: editing.id,
         titulo, slug,
         descricao: String(fd.get("descricao") ?? "") || null,
@@ -156,7 +158,11 @@ export default function AulaEditor({
         link_compra_externo: String(fd.get("link_compra_externo") ?? "") || null,
         beneficios,
         temas: temasSel,
-      } as any });
+      } as any }) as { id: string };
+
+      if (ofertasRef.current && saved?.id) {
+        await ofertasRef.current.flush(saved.id);
+      }
 
       onSaved();
       onClose();
@@ -255,6 +261,21 @@ export default function AulaEditor({
               style={{ ...inp, resize: "vertical" }}
             />
           </Field>
+
+          <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${c.border}` }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 10 }}>
+              Formas de pagamento por país
+            </div>
+            <div style={{ fontSize: 12, color: c.muted, marginBottom: 12 }}>
+              Configure preço por país e plataforma (Mercado Pago, Stripe, Hotmart…). O comprador verá apenas as ofertas do país dele.
+            </div>
+            <OfertasEditor
+              ref={ofertasRef}
+              produtoTipo="aula"
+              produtoId={editing.id ?? null}
+              titulo="Ofertas da aula"
+            />
+          </div>
         </div>
 
 
