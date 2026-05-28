@@ -65,7 +65,7 @@ export const Route = createFileRoute("/api/public/hooks/stripe")({
             plataforma: "stripe",
           };
           if (status === "aprovado") update.aprovado_em = new Date().toISOString();
-          await supabaseAdmin.from("orders").update(update).eq("id", orderId);
+          await supabaseAdmin.from("orders").update(update as never).eq("id", orderId);
           if (status === "aprovado") {
             await supabaseAdmin.rpc("liberar_acesso_por_pedido", { _order_id: orderId });
           } else if (status === "reembolsado" || status === "cancelado") {
