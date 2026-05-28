@@ -754,7 +754,9 @@ export const adminUpsertAulaAvulsa = createServerFn({ method: "POST" })
       preco_label: data.gratis ? "Grátis" : (data.preco_label ?? null),
       moeda: data.moeda,
       link_compra_externo: data.gratis ? null : (data.link_compra_externo ?? null),
+      beneficios: data.beneficios ?? [],
     };
+
     if (data.id) payload.id = data.id;
 
     const { data: aula, error } = await supabaseAdmin
