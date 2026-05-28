@@ -242,7 +242,17 @@ export default function AulaEditor({
                 <option value="EUR">EUR</option>
               </select>
             </Field>
-          </div>
+          <Field label="Benefícios da compra (um por linha — aparecem no carrinho como 'Você está adquirindo')">
+            <textarea
+              name="beneficios"
+              defaultValue={(editing.beneficios ?? []).join("\n")}
+              rows={5}
+              placeholder={"Acesso vitalício à aula\nVisualização ilimitada em qualquer dispositivo\nMateriais de apoio em PDF\nCertificado digital de conclusão\nSuporte da equipe Le Mater"}
+              style={{ ...inp, resize: "vertical" }}
+            />
+          </Field>
+        </div>
+
           <Field label="Link de compra externo (Stripe / Mercado Pago / Hotmart…)">
             <input name="link_compra_externo" defaultValue={editing.link_compra_externo ?? ""} placeholder="https://..." style={inp} />
           </Field>
