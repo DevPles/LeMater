@@ -13,13 +13,8 @@ const c = {
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-const BENEFITS = [
-  "Acesso vitalício à aula",
-  "Visualização ilimitada em qualquer dispositivo",
-  "Materiais de apoio em PDF",
-  "Certificado digital de conclusão",
-  "Suporte da equipe Le Mater",
-];
+
+
 
 function formatMoney(centavos: number, moeda: string) {
   const v = (centavos / 100).toFixed(2).replace(".", ",");
