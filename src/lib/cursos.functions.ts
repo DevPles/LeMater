@@ -537,3 +537,233 @@ export const adminRevogarMatricula = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ===================================================================
+// ATLAS — Temas e Aulas avulsas (remodelagem: aula como entidade principal)
+// ===================================================================
+
+export type AtlasTema = {
+  id: string;
+  slug: string;
+  titulo: string;
+  capa_url: string | null;
+  ordem: number;
+  total_aulas: number;
+};
+
+export type AtlasAulaVitrine = {
+  id: string;
+  slug: string;
+  titulo: string;
+  descricao: string | null;
+  capa_url: string | null;
+  capa_video_url: string | null;
+  duracao_min: number;
+  tipo: "video" | "pdf" | "texto";
+  gratis: boolean;
+  preco_label: string | null;
+  preco_centavos: number;
+  moeda: string;
+  link_compra: string | null;
+  temas: { id: string; slug: string; titulo: string }[];
+  pode_consumir: boolean;
+  matriculado: boolean;
+  previa_gratis: boolean;
+};
+
+export const listAtlasTemas = createServerFn({ method: "GET" }).handler(async () => {
+  const { data: temas, error } = await supabaseAdmin
+    .from("cursos")
+    .select("id, slug, titulo, capa_url, ordem")
+    .eq("publicado", true)
+    .order("ordem")
+    .order("titulo");
+  if (error) throw new Error(error.message);
+  const ids = (temas ?? []).map((t) => t.id);
+  const counts: Record<string, number> = {};
+  if (ids.length) {
+    const { data: links } = await supabaseAdmin
+      .from("aula_temas")
+      .select("tema_id, aula_id, curso_aulas!inner(publicado)")
+      .in("tema_id", ids);
+    for (const l of (links ?? []) as any[]) {
+      if (l.curso_aulas?.publicado) counts[l.tema_id] = (counts[l.tema_id] ?? 0) + 1;
+    }
+  }
+  return (temas ?? []).map((t) => ({ ...t, total_aulas: counts[t.id] ?? 0 })) as AtlasTema[];
+});
+
+export const listAtlasAulas = createServerFn({ method: "GET" })
+  .inputValidator((i: unknown) =>
+    z.object({ tema_id: z.string().uuid().nullable().optional() }).parse(i ?? {}),
+  )
+  .handler(async ({ data }): Promise<AtlasAulaVitrine[]> => {
+    const userId = await getUserIdFromAuthHeader();
+    const admin = await isAdmin(userId);
+    const paid = await hasPaidAccess(userId);
+
+    // 1. Aulas publicadas (ou todas, se admin)
+    let aulaIds: string[] = [];
+    if (data.tema_id) {
+      const { data: links } = await supabaseAdmin
+        .from("aula_temas").select("aula_id").eq("tema_id", data.tema_id);
+      aulaIds = (links ?? []).map((l) => l.aula_id);
+      if (aulaIds.length === 0) return [];
+    }
+    let q = supabaseAdmin.from("curso_aulas")
+      .select("id, slug, titulo, descricao, capa_url, capa_video_url, duracao_min, tipo, gratis, preco_label, preco_centavos, moeda, link_compra_externo, previa_gratis, publicado, ordem, created_at")
+      .order("ordem").order("created_at", { ascending: false });
+    if (!admin) q = q.eq("publicado", true);
+    if (aulaIds.length) q = q.in("id", aulaIds);
+    const { data: aulas, error } = await q;
+    if (error) throw new Error(error.message);
+    if (!aulas?.length) return [];
+
+    const ids = aulas.map((a) => a.id);
+
+    // 2. Temas vinculados (para mostrar chips no card)
+    const { data: vinculos } = await supabaseAdmin
+      .from("aula_temas")
+      .select("aula_id, tema_id, cursos:tema_id(slug, titulo)")
+      .in("aula_id", ids);
+    const temasPorAula: Record<string, { id: string; slug: string; titulo: string }[]> = {};
+    for (const v of (vinculos ?? []) as any[]) {
+      (temasPorAula[v.aula_id] ||= []).push({
+        id: v.tema_id, slug: v.cursos?.slug ?? "", titulo: v.cursos?.titulo ?? "",
+      });
+    }
+
+    // 3. Matrículas individuais (aula_matriculas) + acesso por curso pai (via aula_temas)
+    const matriculasAula = new Set<string>();
+    const matriculasCurso = new Set<string>();
+    if (userId) {
+      const { data: ma } = await supabaseAdmin
+        .from("aula_matriculas").select("aula_id, ativo, expira_em")
+        .eq("user_id", userId).eq("ativo", true).in("aula_id", ids);
+      const now = new Date();
+      for (const r of ma ?? []) {
+        if (!r.expira_em || new Date(r.expira_em) > now) matriculasAula.add(r.aula_id);
+      }
+      const m = await matriculasAtivas(userId);
+      m.forEach((cid) => matriculasCurso.add(cid));
+    }
+
+    return aulas.map((a) => {
+      const temas = temasPorAula[a.id] ?? [];
+      const cobertoPorCurso = temas.some((t) => matriculasCurso.has(t.id));
+      const pode_consumir =
+        admin || a.gratis || a.previa_gratis || paid ||
+        matriculasAula.has(a.id) || cobertoPorCurso;
+      return {
+        id: a.id, slug: a.slug ?? a.id, titulo: a.titulo, descricao: a.descricao,
+        capa_url: a.capa_url, capa_video_url: a.capa_video_url,
+        duracao_min: a.duracao_min, tipo: a.tipo as AtlasAulaVitrine["tipo"],
+        gratis: a.gratis, preco_label: a.preco_label, preco_centavos: a.preco_centavos ?? 0,
+        moeda: a.moeda ?? "BRL",
+        link_compra: a.link_compra_externo,
+        temas, pode_consumir, matriculado: pode_consumir,
+        previa_gratis: a.previa_gratis,
+      };
+    });
+  });
+
+// ----------- ADMIN: Aulas avulsas -----------
+
+async function ensureDefaultModuloForTema(tema_id: string): Promise<string> {
+  const { data: existing } = await supabaseAdmin
+    .from("curso_modulos").select("id").eq("curso_id", tema_id)
+    .order("ordem").limit(1).maybeSingle();
+  if (existing?.id) return existing.id;
+  const { data: novo, error } = await supabaseAdmin.from("curso_modulos")
+    .insert({ curso_id: tema_id, titulo: "Conteúdo", ordem: 0 }).select("id").single();
+  if (error || !novo) throw new Error("Falha ao preparar módulo do tema");
+  return novo.id;
+}
+
+export const adminListAulas = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireAdmin(context.userId);
+    const { data: aulas, error } = await supabaseAdmin
+      .from("curso_aulas")
+      .select("id, slug, titulo, descricao, tipo, duracao_min, capa_url, publicado, gratis, preco_label, preco_centavos, moeda, link_compra_externo, previa_gratis, created_at, modulo_id")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    const ids = (aulas ?? []).map((a) => a.id);
+    const temasPorAula: Record<string, { id: string; titulo: string }[]> = {};
+    if (ids.length) {
+      const { data: vinculos } = await supabaseAdmin
+        .from("aula_temas").select("aula_id, tema_id, cursos:tema_id(titulo)")
+        .in("aula_id", ids);
+      for (const v of (vinculos ?? []) as any[]) {
+        (temasPorAula[v.aula_id] ||= []).push({ id: v.tema_id, titulo: v.cursos?.titulo ?? "" });
+      }
+    }
+    return (aulas ?? []).map((a) => ({ ...a, temas: temasPorAula[a.id] ?? [] }));
+  });
+
+const AulaAvulsaSchema = z.object({
+  id: z.string().uuid().optional(),
+  titulo: z.string().trim().min(2).max(200),
+  slug: z.string().trim().min(2).max(160).regex(/^[a-z0-9-]+$/),
+  descricao: z.string().max(2000).nullable().optional(),
+  tipo: z.enum(["video", "pdf", "texto"]),
+  video_url: z.string().nullable().optional(),
+  pdf_url: z.string().nullable().optional(),
+  conteudo_html: z.string().max(60000).nullable().optional(),
+  capa_url: z.string().nullable().optional(),
+  capa_video_url: z.string().nullable().optional(),
+  duracao_min: z.number().int().min(0).default(0),
+  publicado: z.boolean().default(false),
+  gratis: z.boolean().default(false),
+  previa_gratis: z.boolean().default(false),
+  preco_centavos: z.number().int().min(0).default(0),
+  preco_label: z.string().max(60).nullable().optional(),
+  moeda: z.string().max(8).default("BRL"),
+  link_compra_externo: z.string().max(500).nullable().optional(),
+  temas: z.array(z.string().uuid()).min(1, "Selecione ao menos um tema").max(20),
+});
+
+export const adminUpsertAulaAvulsa = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => AulaAvulsaSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context.userId);
+
+    // garantir módulo "host" no primeiro tema
+    const modulo_id = await ensureDefaultModuloForTema(data.temas[0]);
+
+    const payload: any = {
+      modulo_id,
+      titulo: data.titulo,
+      slug: data.slug,
+      descricao: data.descricao ?? null,
+      tipo: data.tipo,
+      video_url: data.video_url ?? null,
+      pdf_url: data.pdf_url ?? null,
+      conteudo_html: data.conteudo_html ?? null,
+      capa_url: data.capa_url ?? null,
+      capa_video_url: data.capa_video_url ?? null,
+      duracao_min: data.duracao_min,
+      publicado: data.publicado,
+      gratis: data.gratis,
+      previa_gratis: data.previa_gratis,
+      preco_centavos: data.gratis ? 0 : data.preco_centavos,
+      preco_label: data.gratis ? "Grátis" : (data.preco_label ?? null),
+      moeda: data.moeda,
+      link_compra_externo: data.gratis ? null : (data.link_compra_externo ?? null),
+    };
+    if (data.id) payload.id = data.id;
+
+    const { data: aula, error } = await supabaseAdmin
+      .from("curso_aulas").upsert(payload).select("id").single();
+    if (error || !aula) throw new Error(error?.message ?? "Falha ao salvar aula");
+
+    // Sincroniza temas
+    await supabaseAdmin.from("aula_temas").delete().eq("aula_id", aula.id);
+    const rows = data.temas.map((tid, idx) => ({ aula_id: aula.id, tema_id: tid, ordem: idx }));
+    const { error: linkErr } = await supabaseAdmin.from("aula_temas").insert(rows);
+    if (linkErr) throw new Error(linkErr.message);
+
+    return { id: aula.id };
+  });

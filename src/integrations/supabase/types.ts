@@ -288,6 +288,42 @@ export type Database = {
           },
         ]
       }
+      aula_temas: {
+        Row: {
+          aula_id: string
+          created_at: string
+          ordem: number
+          tema_id: string
+        }
+        Insert: {
+          aula_id: string
+          created_at?: string
+          ordem?: number
+          tema_id: string
+        }
+        Update: {
+          aula_id?: string
+          created_at?: string
+          ordem?: number
+          tema_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aula_temas_aula_id_fkey"
+            columns: ["aula_id"]
+            isOneToOne: false
+            referencedRelation: "curso_aulas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aula_temas_tema_id_fkey"
+            columns: ["tema_id"]
+            isOneToOne: false
+            referencedRelation: "cursos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bundle_items: {
         Row: {
           bundle_id: string
@@ -582,63 +618,81 @@ export type Database = {
       }
       curso_aulas: {
         Row: {
+          capa_url: string | null
+          capa_video_url: string | null
           conteudo_html: string | null
           created_at: string
           descricao: string | null
           duracao_min: number
+          gratis: boolean
           id: string
           link_compra_externo: string | null
           links_compra: Json
           materiais_extras: Json
           modulo_id: string
+          moeda: string
           ordem: number
           pdf_url: string | null
           plataforma_venda: string | null
           preco_centavos: number
           preco_label: string | null
           previa_gratis: boolean
+          publicado: boolean
+          slug: string | null
           tipo: string
           titulo: string
           updated_at: string
           video_url: string | null
         }
         Insert: {
+          capa_url?: string | null
+          capa_video_url?: string | null
           conteudo_html?: string | null
           created_at?: string
           descricao?: string | null
           duracao_min?: number
+          gratis?: boolean
           id?: string
           link_compra_externo?: string | null
           links_compra?: Json
           materiais_extras?: Json
           modulo_id: string
+          moeda?: string
           ordem?: number
           pdf_url?: string | null
           plataforma_venda?: string | null
           preco_centavos?: number
           preco_label?: string | null
           previa_gratis?: boolean
+          publicado?: boolean
+          slug?: string | null
           tipo?: string
           titulo: string
           updated_at?: string
           video_url?: string | null
         }
         Update: {
+          capa_url?: string | null
+          capa_video_url?: string | null
           conteudo_html?: string | null
           created_at?: string
           descricao?: string | null
           duracao_min?: number
+          gratis?: boolean
           id?: string
           link_compra_externo?: string | null
           links_compra?: Json
           materiais_extras?: Json
           modulo_id?: string
+          moeda?: string
           ordem?: number
           pdf_url?: string | null
           plataforma_venda?: string | null
           preco_centavos?: number
           preco_label?: string | null
           previa_gratis?: boolean
+          publicado?: boolean
+          slug?: string | null
           tipo?: string
           titulo?: string
           updated_at?: string

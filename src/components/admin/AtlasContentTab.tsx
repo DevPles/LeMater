@@ -2,18 +2,21 @@ import { useState, type CSSProperties } from "react";
 import CursosTab from "./CursosTab";
 import MateriaisTab from "./MateriaisTab";
 import NovoConteudoModal from "./NovoConteudoModal";
+import AulasTab from "./AulasTab";
 
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2" };
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type Tipo = "curso" | "material" | "servico";
+type Tipo = "aula" | "curso" | "material" | "servico";
 
 const LABELS: Record<Tipo, string> = {
-  curso: "Cursos",
+  aula: "Aulas",
+  curso: "Temas / Coleções",
   material: "Materiais",
   servico: "Serviços",
 };
+
 
 export default function AtlasContentTab() {
   const [tipo, setTipo] = useState<Tipo>("curso");
@@ -27,7 +30,7 @@ export default function AtlasContentTab() {
           <h1 style={{ fontFamily: serif, fontSize: 36, fontWeight: 300, margin: "0 0 6px" }}>Atlas Materno</h1>
           <p style={{ color: c.muted, margin: 0, fontSize: 14 }}>Todo o conteúdo do Atlas em um só lugar.</p>
         </div>
-        <button onClick={() => setNovoOpen(true)} style={btnPrimary(c.sageDark)}>Novo conteúdo</button>
+        {tipo !== "aula" && <button onClick={() => setNovoOpen(true)} style={btnPrimary(c.sageDark)}>Novo conteúdo</button>}
       </div>
 
       <div style={{ display: "flex", gap: 0, marginBottom: 24, borderBottom: `1px solid ${c.border}` }}>
@@ -58,18 +61,20 @@ export default function AtlasContentTab() {
       </div>
 
       <div key={`${tipo}-${reloadKey}`}>
+        {tipo === "aula" && <AulasTab />}
         {tipo === "curso" && <CursosTab esconderNovo />}
         {tipo === "material" && <MateriaisTab esconderNovo />}
         {tipo === "servico" && <MateriaisTab esconderNovo forcarCategoria="Serviço" titulo="Serviços" ctaNovo="Novo serviço" />}
       </div>
 
-      {novoOpen && (
+      {novoOpen && tipo !== "aula" && (
         <NovoConteudoModal
           tipoInicial={tipo}
           onClose={() => setNovoOpen(false)}
           onSaved={() => setReloadKey((k) => k + 1)}
         />
       )}
+
     </div>
   );
 }
