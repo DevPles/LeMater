@@ -569,7 +569,9 @@ export type AtlasAulaVitrine = {
   pode_consumir: boolean;
   matriculado: boolean;
   previa_gratis: boolean;
+  beneficios: string[];
 };
+
 
 export const listAtlasTemas = createServerFn({ method: "GET" }).handler(async () => {
   const { data: temas, error } = await supabaseAdmin
@@ -611,7 +613,7 @@ export const listAtlasAulas = createServerFn({ method: "GET" })
       if (aulaIds.length === 0) return [];
     }
     let q = supabaseAdmin.from("curso_aulas")
-      .select("id, slug, titulo, descricao, capa_url, capa_video_url, duracao_min, tipo, gratis, preco_label, preco_centavos, moeda, link_compra_externo, previa_gratis, publicado, ordem, created_at")
+      .select("id, slug, titulo, descricao, capa_url, capa_video_url, duracao_min, tipo, gratis, preco_label, preco_centavos, moeda, link_compra_externo, previa_gratis, beneficios, publicado, ordem, created_at")
       .order("ordem").order("created_at", { ascending: false });
     if (!admin) q = q.eq("publicado", true);
     if (aulaIds.length) q = q.in("id", aulaIds);
@@ -663,7 +665,9 @@ export const listAtlasAulas = createServerFn({ method: "GET" })
         link_compra: a.link_compra_externo,
         temas, pode_consumir, matriculado: pode_consumir,
         previa_gratis: a.previa_gratis,
+        beneficios: ((a as any).beneficios as string[] | null) ?? [],
       };
+
     });
   });
 
@@ -686,7 +690,7 @@ export const adminListAulas = createServerFn({ method: "GET" })
     await requireAdmin(context.userId);
     const { data: aulas, error } = await supabaseAdmin
       .from("curso_aulas")
-      .select("id, slug, titulo, descricao, tipo, duracao_min, capa_url, capa_video_url, video_url, pdf_url, conteudo_html, publicado, gratis, preco_label, preco_centavos, moeda, link_compra_externo, previa_gratis, created_at, modulo_id")
+      .select("id, slug, titulo, descricao, tipo, duracao_min, capa_url, capa_video_url, video_url, pdf_url, conteudo_html, publicado, gratis, preco_label, preco_centavos, moeda, link_compra_externo, previa_gratis, beneficios, created_at, modulo_id")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     const ids = (aulas ?? []).map((a) => a.id);
@@ -721,8 +725,10 @@ const AulaAvulsaSchema = z.object({
   preco_label: z.string().max(60).nullable().optional(),
   moeda: z.string().max(8).default("BRL"),
   link_compra_externo: z.string().max(500).nullable().optional(),
+  beneficios: z.array(z.string().trim().min(1).max(200)).max(20).default([]),
   temas: z.array(z.string().uuid()).min(1, "Selecione ao menos um tema").max(20),
 });
+
 
 export const adminUpsertAulaAvulsa = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -752,7 +758,9 @@ export const adminUpsertAulaAvulsa = createServerFn({ method: "POST" })
       preco_label: data.gratis ? "Grátis" : (data.preco_label ?? null),
       moeda: data.moeda,
       link_compra_externo: data.gratis ? null : (data.link_compra_externo ?? null),
+      beneficios: data.beneficios ?? [],
     };
+
     if (data.id) payload.id = data.id;
 
     const { data: aula, error } = await supabaseAdmin

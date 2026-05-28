@@ -38,8 +38,10 @@ export type AulaDraft = {
   video_url?: string | null;
   pdf_url?: string | null;
   conteudo_html?: string | null;
+  beneficios?: string[];
   temas?: string[];
 };
+
 
 type Tema = { id: string; titulo: string };
 
@@ -135,6 +137,9 @@ export default function AulaEditor({
         conteudo_html = String(fd.get("conteudo_html") ?? "");
       }
 
+      const beneficios = String(fd.get("beneficios") ?? "")
+        .split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 20);
+
       await fnSave({ data: {
         id: editing.id,
         titulo, slug,
@@ -149,8 +154,10 @@ export default function AulaEditor({
         preco_label: String(fd.get("preco_label") ?? "") || null,
         moeda: String(fd.get("moeda") ?? "BRL") || "BRL",
         link_compra_externo: String(fd.get("link_compra_externo") ?? "") || null,
+        beneficios,
         temas: temasSel,
       } as any });
+
       onSaved();
       onClose();
     } catch (e: any) { setErr(e?.message ?? "Erro ao salvar"); }
@@ -239,7 +246,17 @@ export default function AulaEditor({
           <Field label="Link de compra externo (Stripe / Mercado Pago / Hotmart…)">
             <input name="link_compra_externo" defaultValue={editing.link_compra_externo ?? ""} placeholder="https://..." style={inp} />
           </Field>
+          <Field label="Benefícios da compra (um por linha — aparecem no carrinho como 'Você está adquirindo')">
+            <textarea
+              name="beneficios"
+              defaultValue={(editing.beneficios ?? []).join("\n")}
+              rows={5}
+              placeholder={"Acesso vitalício à aula\nVisualização ilimitada em qualquer dispositivo\nMateriais de apoio em PDF\nCertificado digital de conclusão\nSuporte da equipe Le Mater"}
+              style={{ ...inp, resize: "vertical" }}
+            />
+          </Field>
         </div>
+
 
         <label style={{ display: "inline-flex", gap: 8, alignItems: "center", margin: "8px 0 18px" }}>
           <input type="checkbox" name="publicado" defaultChecked={editing.publicado ?? false} /> Publicar agora

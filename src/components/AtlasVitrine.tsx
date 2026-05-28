@@ -250,7 +250,9 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                       moeda: a.moeda,
                       link_compra: a.link_compra,
                       tema: a.temas[0]?.titulo ?? null,
+                      beneficios: a.beneficios ?? [],
                     });
+
                     openCart();
                   }}
                 />
