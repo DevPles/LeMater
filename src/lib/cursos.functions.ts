@@ -665,7 +665,9 @@ export const listAtlasAulas = createServerFn({ method: "GET" })
         link_compra: a.link_compra_externo,
         temas, pode_consumir, matriculado: pode_consumir,
         previa_gratis: a.previa_gratis,
+        beneficios: ((a as any).beneficios as string[] | null) ?? [],
       };
+
     });
   });
 
