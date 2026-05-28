@@ -136,15 +136,6 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                   boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
                 }}
               >
-              <div
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  background: c.cream, width: "100%", maxWidth: 420,
-                  borderTopLeftRadius: 16, borderTopRightRadius: 16,
-                  padding: "12px 12px 18px", maxHeight: "70vh", overflowY: "auto",
-                  boxShadow: "0 -10px 40px rgba(0,0,0,0.2)",
-                }}
-              >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, padding: "0 4px" }}>
                   <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: c.sage, fontWeight: 500 }}>
                     Filtrar por tema
