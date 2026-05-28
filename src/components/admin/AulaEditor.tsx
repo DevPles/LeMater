@@ -242,6 +242,10 @@ export default function AulaEditor({
                 <option value="EUR">EUR</option>
               </select>
             </Field>
+          </div>
+          <Field label="Link de compra externo (Stripe / Mercado Pago / Hotmart…)">
+            <input name="link_compra_externo" defaultValue={editing.link_compra_externo ?? ""} placeholder="https://..." style={inp} />
+          </Field>
           <Field label="Benefícios da compra (um por linha — aparecem no carrinho como 'Você está adquirindo')">
             <textarea
               name="beneficios"
@@ -253,10 +257,6 @@ export default function AulaEditor({
           </Field>
         </div>
 
-          <Field label="Link de compra externo (Stripe / Mercado Pago / Hotmart…)">
-            <input name="link_compra_externo" defaultValue={editing.link_compra_externo ?? ""} placeholder="https://..." style={inp} />
-          </Field>
-        </div>
 
         <label style={{ display: "inline-flex", gap: 8, alignItems: "center", margin: "8px 0 18px" }}>
           <input type="checkbox" name="publicado" defaultChecked={editing.publicado ?? false} /> Publicar agora
