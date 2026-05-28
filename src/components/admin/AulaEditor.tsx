@@ -65,6 +65,16 @@ export default function AulaEditor({
     link_compra_externo: "", temas: [],
   };
 
+  // Preview state
+  const [pvTitulo, setPvTitulo] = useState(editing.titulo ?? "");
+  const [pvDesc, setPvDesc] = useState(editing.descricao ?? "");
+  const [pvTipo, setPvTipo] = useState(editing.tipo ?? "video");
+  const [pvGratis, setPvGratis] = useState(editing.gratis ?? false);
+  const [pvPrecoLabel, setPvPrecoLabel] = useState(editing.preco_label ?? "");
+  const [pvTemasIds, setPvTemasIds] = useState<string[]>(editing.temas ?? []);
+  const pvTemaNome = temas.find((t) => pvTemasIds.includes(t.id))?.titulo ?? "Tema";
+  const tipoLabel: Record<string, string> = { video: "Vídeo", pdf: "PDF", texto: "Texto" };
+
   useEffect(() => {
     fnTemas().then((t) => setTemas((t as any[]).map((x) => ({ id: x.id, titulo: x.titulo }))));
   }, []);
