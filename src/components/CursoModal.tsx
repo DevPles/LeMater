@@ -328,11 +328,13 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
             {aberto && (
               <ul style={{ listStyle: "none", padding: 0, margin: "0 0 10px" }}>
                 {m.aulas.map((a) => {
-                  const ativo = aulaSel === a.id || bloqueioInfo?.aulaId === a.id;
+                  const ativo = aulaSel === a.id;
+                  const inCart = cartStore.has(a.id);
+                  void cartTick;
                   return (
                     <li key={a.id}>
                       <button
-                        onClick={() => abrirAula(a.id, a.bloqueada, a.titulo)}
+                        onClick={() => abrirAula(a.id, a.bloqueada, a.titulo, a.preco_centavos ?? 0, a.preco_label)}
                         style={{
                           width: "100%", textAlign: "left", padding: "10px 12px",
                           background: ativo ? c.sageDark : "transparent",
