@@ -511,12 +511,32 @@ export function CartDrawer() {
                 </>
               )
             ) : (
-              <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => setStep("cart")} disabled={submitting} style={btnSecondary}>
-                  Voltar
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <button
+                  onClick={() => payWith("mercadopago")}
+                  disabled={submitting !== null}
+                  style={{ ...btnPrimary, opacity: submitting ? 0.6 : 1 }}
+                  className="lem-cart-cta"
+                >
+                  {submitting === "mercadopago" ? "Redirecionando…" : "Pagar com Pix · Cartão (Mercado Pago)"}
                 </button>
-                <button onClick={submit} disabled={submitting} style={{ ...btnPrimary, flex: 1, opacity: submitting ? 0.6 : 1 }} className="lem-cart-cta">
-                  {submitting ? "Enviando…" : "Confirmar pedido"}
+                <button
+                  onClick={() => payWith("stripe")}
+                  disabled={submitting !== null}
+                  style={{
+                    ...btnPrimary,
+                    background: "white",
+                    color: c.sageDark,
+                    border: `1.5px solid ${c.sageDark}`,
+                    boxShadow: "none",
+                    opacity: submitting ? 0.6 : 1,
+                  }}
+                  className="lem-cart-cta"
+                >
+                  {submitting === "stripe" ? "Redirecionando…" : "Pagar com Cartão internacional (Stripe)"}
+                </button>
+                <button onClick={() => setStep("cart")} disabled={submitting !== null} style={{ ...btnSecondary, padding: "10px 18px" }}>
+                  Voltar
                 </button>
               </div>
             )}
