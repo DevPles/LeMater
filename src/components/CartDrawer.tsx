@@ -208,6 +208,17 @@ export function CartDrawer() {
           setStep("cart");
           return;
         }
+        // Break out of any parent iframe (e.g. Lovable preview) so the
+        // gateway page renders at the real device width and uses its
+        // mobile-optimized layout instead of a cramped desktop view.
+        try {
+          if (window.top && window.top !== window.self) {
+            window.top.location.href = checkoutUrl;
+            return;
+          }
+        } catch {
+          // cross-origin top frame – fall through to same-window assign
+        }
         window.location.assign(checkoutUrl);
         return;
       }
