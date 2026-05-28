@@ -92,30 +92,17 @@ function useIsMobile() {
 export function CursoModal({ slug, onClose }: { slug: string; onClose: () => void }) {
   const fn = useServerFn(getCursoBySlug);
   const playerFn = useServerFn(getAulaPlayer);
-  const offersFn = useServerFn(getPublicOffers);
   const audiosFn = useServerFn(getPublicAudios);
-  const checkoutFn = useServerFn(startOfferCheckout);
   const { user } = useAuth();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [data, setData] = useState<CursoDetalhe | null | undefined>(undefined);
   const [err, setErr] = useState<string | null>(null);
   const [aulaSel, setAulaSel] = useState<string | null>(null);
   const [player, setPlayer] = useState<AulaPlayer | null>(null);
   const [playerErr, setPlayerErr] = useState<string | null>(null);
-  const [bloqueioInfo, setBloqueioInfo] = useState<{ titulo: string; aulaId: string } | null>(null);
-  const [pais, setPais] = useState<string>(() => detectPais());
-
-  // Ofertas: curso + por aula
-  const [cursoOffers, setCursoOffers] = useState<Offer[]>([]);
-  const [aulaOffers, setAulaOffers] = useState<Record<string, Offer[]>>({});
-  // Áudios do curso
   const [cursoAudios, setCursoAudios] = useState<Audio[]>([]);
-
-  const [offerSel, setOfferSel] = useState<string | null>(null);
-  const [checkoutErr, setCheckoutErr] = useState<string | null>(null);
-  const [comprando, setComprando] = useState(false);
   const [modulosAbertos, setModulosAbertos] = useState<Record<string, boolean>>({});
+  const [cartTick, setCartTick] = useState(0);
 
   useEffect(() => {
     fn({ data: { slug } })
@@ -124,38 +111,18 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
         setData(det);
         if (det) {
           const first = det.modulos.flatMap((m) => m.aulas).find((a) => !a.bloqueada);
-          if (first) {
-            setAulaSel(first.id);
-            setBloqueioInfo(null);
-          }
+          if (first) setAulaSel(first.id);
         }
       })
       .catch((e) => setErr(e?.message ?? "Erro"));
   }, [slug, user?.id]);
 
-  // Carrega ofertas do curso + áudios quando muda país ou curso
   useEffect(() => {
     if (!data?.id) return;
-    offersFn({ data: { produto_tipo: "curso", produto_id: data.id, pais } })
-      .then((r) => setCursoOffers((r.offers ?? []) as Offer[]))
-      .catch(() => setCursoOffers([]));
     audiosFn({ data: { vinculo_tipo: "curso", vinculo_id: data.id } })
-      .then((r) => setCursoAudios((r.audios ?? []) as Audio[]))
+      .then((r: { audios?: Audio[] }) => setCursoAudios((r.audios ?? []) as Audio[]))
       .catch(() => setCursoAudios([]));
-  }, [data?.id, pais]);
-
-  // Carrega ofertas da aula quando bloqueia uma aula
-  useEffect(() => {
-    if (!bloqueioInfo) return;
-    const aId = bloqueioInfo.aulaId;
-    if (aulaOffers[aId]) return;
-    offersFn({ data: { produto_tipo: "aula", produto_id: aId, pais } })
-      .then((r) => setAulaOffers((prev) => ({ ...prev, [aId]: (r.offers ?? []) as Offer[] })))
-      .catch(() => setAulaOffers((prev) => ({ ...prev, [aId]: [] })));
-  }, [bloqueioInfo?.aulaId, pais]);
-
-  // Reset cache de ofertas de aulas ao mudar país
-  useEffect(() => { setAulaOffers({}); setOfferSel(null); }, [pais]);
+  }, [data?.id]);
 
   useEffect(() => {
     if (!aulaSel) { setPlayer(null); return; }
@@ -173,80 +140,36 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
 
   const fechar = () => onClose();
 
-  // Ofertas combinadas (aula bloqueada + curso completo)
-  const ofertasAulaAtual = bloqueioInfo ? (aulaOffers[bloqueioInfo.aulaId] ?? []) : [];
-  const ofertasCombinadas: { secao: "aula" | "curso"; offer: Offer }[] = useMemo(() => {
-    const arr: { secao: "aula" | "curso"; offer: Offer }[] = [];
-    ofertasAulaAtual.forEach((o) => arr.push({ secao: "aula", offer: o }));
-    cursoOffers.forEach((o) => arr.push({ secao: "curso", offer: o }));
-    return arr;
-  }, [ofertasAulaAtual, cursoOffers]);
-
-  const offerAtiva = useMemo(() => {
-    if (offerSel) return ofertasCombinadas.find((x) => x.offer.id === offerSel) ?? ofertasCombinadas[0] ?? null;
-    return ofertasCombinadas[0] ?? null;
-  }, [offerSel, ofertasCombinadas]);
-
-  const comprar = async () => {
-    setCheckoutErr(null);
-    if (!offerAtiva) return;
-    if (!user) { navigate({ to: "/app" }); return; }
-    const offer = offerAtiva.offer;
-
-    // Plataformas externas → abre direto a URL cadastrada
-    if (offer.plataforma !== "mercadopago" && offer.url_externo) {
-      window.open(offer.url_externo, "_blank", "noopener");
-      // Registra clique via checkoutFn em background (best effort)
-      checkoutFn({ data: { offer_id: offer.id } }).catch(() => undefined);
-      return;
-    }
-
-    const win = window.open("about:blank", "_blank");
-    if (win) win.opener = null;
-    setComprando(true);
-    try {
-      const r = await checkoutFn({ data: { offer_id: offer.id } });
-      const url = r.url;
-      if (url) {
-        if (win) win.location.href = url; else window.location.href = url;
-      } else {
-        win?.close();
-        setCheckoutErr(r.message ?? "Esta oferta não tem checkout ativo.");
-      }
-    } catch (e: unknown) {
-      win?.close();
-      const msg =
-        e instanceof Error ? e.message :
-        (typeof e === "object" && e && "message" in e) ? String((e as { message: unknown }).message) :
-        "Não foi possível iniciar a compra";
-      setCheckoutErr(msg);
-    } finally {
-      setComprando(false);
-    }
+  const adicionarAoCarrinho = (aulaId: string, titulo: string, precoCent: number, precoLabel: string | null) => {
+    if (!data) return;
+    cartStore.add({
+      aula_id: aulaId,
+      slug: aulaId,
+      titulo,
+      capa_url: data.capa_url ?? null,
+      preco_centavos: precoCent ?? 0,
+      preco_label: precoLabel,
+      moeda: "BRL",
+      link_compra: null,
+      tema: data.titulo,
+    });
+    setCartTick((t) => t + 1);
+    openCart();
+    onClose();
   };
 
-  const abrirAula = (id: string, bloqueada: boolean, titulo: string) => {
+  const abrirAula = (id: string, bloqueada: boolean, titulo: string, precoCent: number, precoLabel: string | null) => {
     if (bloqueada) {
-      setBloqueioInfo({ titulo, aulaId: id });
-      setOfferSel(null);
-      setAulaSel(null);
-      setPlayer(null);
-      if (isMobile) {
-        requestAnimationFrame(() => document.getElementById("curso-modal-top")?.scrollIntoView({ behavior: "smooth" }));
-      }
+      adicionarAoCarrinho(id, titulo, precoCent, precoLabel);
       return;
     }
-    setBloqueioInfo(null);
     setAulaSel(id);
     if (isMobile) {
       requestAnimationFrame(() => document.getElementById("curso-modal-top")?.scrollIntoView({ behavior: "smooth" }));
     }
   };
 
-  const voltarParaLista = () => {
-    setBloqueioInfo(null);
-    setCheckoutErr(null);
-  };
+
 
   // ───────── Checkout enxuto ─────────
   const renderCheckout = () => {
