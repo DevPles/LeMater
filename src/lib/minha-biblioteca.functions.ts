@@ -78,6 +78,11 @@ export const getMinhaBiblioteca = createServerFn({ method: "GET" })
     }
 
     // 5) all_access libera tudo
+    type LessonRow = Record<string, unknown> & { id: string };
+    type ModuleRow = Record<string, unknown> & { id: string };
+    type PathwayRow = Record<string, unknown> & { id: string };
+    type BundleRow = Record<string, unknown> & { id: string };
+
     let lessonsQuery = supabaseAdmin
       .from("lessons")
       .select(LESSON_COLS)
@@ -88,15 +93,17 @@ export const getMinhaBiblioteca = createServerFn({ method: "GET" })
       if (!lessonIds.size) {
         return {
           all_access: false,
-          modules: [],
-          pathways: [],
-          bundles: [],
-          lessons: [],
-          continue_watching: [],
+          modules: [] as ModuleRow[],
+          pathways: [] as PathwayRow[],
+          bundles: [] as BundleRow[],
+          lessons: [] as LessonRow[],
+          continue_watching: [] as LessonRow[],
         };
       }
       lessonsQuery = lessonsQuery.in("id", Array.from(lessonIds));
     }
+
+    const emptyArr = async <T,>() => ({ data: [] as T[] });
 
     const [lessonsRes, modulesRes, pathwaysRes, bundlesRes] = await Promise.all([
       lessonsQuery,
@@ -109,7 +116,7 @@ export const getMinhaBiblioteca = createServerFn({ method: "GET" })
             .order("order", { ascending: true })
         : moduleIds.size
         ? supabaseAdmin.from("modules").select(MODULE_COLS).in("id", Array.from(moduleIds))
-        : Promise.resolve({ data: [] as unknown[] }),
+        : emptyArr<ModuleRow>(),
       allAccess
         ? supabaseAdmin
             .from("pathways")
@@ -119,33 +126,34 @@ export const getMinhaBiblioteca = createServerFn({ method: "GET" })
             .order("order", { ascending: true })
         : pathwayIds.size
         ? supabaseAdmin.from("pathways").select(PATHWAY_COLS).in("id", Array.from(pathwayIds))
-        : Promise.resolve({ data: [] as unknown[] }),
+        : emptyArr<PathwayRow>(),
       bundleIds.size
         ? supabaseAdmin.from("bundles").select(BUNDLE_COLS).in("id", Array.from(bundleIds))
-        : Promise.resolve({ data: [] as unknown[] }),
+        : emptyArr<BundleRow>(),
     ]);
 
-    const lessons = (lessonsRes.data ?? []) as Array<Record<string, unknown> & { id: string }>;
+    const lessons = (lessonsRes.data ?? []) as LessonRow[];
 
     // 6) Continue assistindo (lesson_views recentes)
     const { data: views } = await supabaseAdmin
       .from("lesson_views")
-      .select("lesson_id, last_position_sec, watched_pct, viewed_at")
+      .select("lesson_id, viewed_at")
       .eq("user_id", userId)
       .order("viewed_at", { ascending: false })
       .limit(8);
 
-    const watchedIds = (views ?? []).map((v) => v.lesson_id as string);
+    const watchedIds = ((views ?? []) as Array<{ lesson_id: string }>).map((v) => v.lesson_id);
     const continueWatching = watchedIds
       .map((id) => lessons.find((l) => l.id === id))
-      .filter(Boolean);
+      .filter((x): x is LessonRow => Boolean(x));
 
     return {
       all_access: allAccess,
-      modules: modulesRes.data ?? [],
-      pathways: pathwaysRes.data ?? [],
-      bundles: bundlesRes.data ?? [],
+      modules: (modulesRes.data ?? []) as ModuleRow[],
+      pathways: (pathwaysRes.data ?? []) as PathwayRow[],
+      bundles: (bundlesRes.data ?? []) as BundleRow[],
       lessons,
       continue_watching: continueWatching,
     };
   });
+
