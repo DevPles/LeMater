@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCart, useCartUI } from "@/lib/cart-store";
 import { createCartOrder } from "@/lib/cart.functions";
+import { createStripeCheckout, createMercadoPagoCheckout } from "@/lib/checkout.functions";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 
 
