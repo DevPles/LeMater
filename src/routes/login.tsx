@@ -517,8 +517,8 @@ const css = `
 }
 
 .web-login-card {
-  width: min(560px, calc(100vw - 64px));
-  min-height: 360px;
+  width: min(520px, calc(100vw - 48px));
+  min-height: 340px;
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -527,6 +527,7 @@ const css = `
   background: ${CREAM_PANEL};
   box-shadow: 0 30px 60px -30px rgba(35, 71, 53, 0.35);
 }
+
 
 .country-wrap { position: relative; }
 .country-flag-img {
