@@ -3,6 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { listAtlasTemas, listAtlasAulas, type AtlasTema, type AtlasAulaVitrine } from "@/lib/cursos.functions";
 import { ContentCard } from "@/components/ContentCard";
 import { CursoModal } from "@/components/CursoModal";
+import { CartDrawer, CartFloatingButton } from "@/components/CartDrawer";
+import { useCart, openCart } from "@/lib/cart-store";
 
 const vidEngravidar = "/__l5e/assets-v1/fee6877d-6bbc-417b-9f9d-c37940580cd3/engravidar.mp4";
 const vidPreNatal = "/__l5e/assets-v1/50839f2b-be10-4be1-9dff-fe20596bd45f/pre-natal.mp4";
