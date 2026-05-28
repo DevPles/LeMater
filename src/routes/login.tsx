@@ -112,7 +112,7 @@ function LoginPage() {
       if (!phoneDigits || phoneDigits.length < 6) throw new Error("Informe um celular válido.");
       const fullPhone = dial ? `${dial}${phoneDigits}` : phoneDigits;
 
-      const { error } = await supabase.auth.signUp({
+      const { data: signData, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -122,9 +122,21 @@ function LoginPage() {
       });
       if (error) throw error;
 
-      toast.success("Cadastro realizado! Verifique seu e-mail para confirmar.");
-      goToMode("login");
-      setForm((current) => ({ ...current, loginEmail: email, signName: "", signEmail: "", signPassword: "", signPhone: "" }));
+      // Auto-login: if no session was returned (email confirmation flow), sign in directly
+      let session = signData.session;
+      if (!session) {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
+        session = signInData.session;
+      }
+
+      const activeSession = await waitForActiveSession(signData.user?.id);
+      const userId = activeSession?.user.id ?? session?.user.id;
+      if (!userId) throw new Error("Não foi possível iniciar a sessão.");
+      const destino = await resolvePostLoginPath(userId, "/app/membro");
+
+      toast.success("Conta criada! Bem-vinda.");
+      navigate({ to: destino });
     } catch (error) {
       toast.error((error as Error).message || "Não foi possível cadastrar.");
     } finally {
