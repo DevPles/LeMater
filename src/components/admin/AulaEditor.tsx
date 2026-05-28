@@ -219,7 +219,7 @@ export default function AulaEditor({
           <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 12 }}>Monetização</div>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 10 }}>
             <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
-              <input type="checkbox" name="gratis" defaultChecked={editing.gratis ?? false} /> Aula grátis
+              <input type="checkbox" name="gratis" defaultChecked={editing.gratis ?? false} onChange={(e) => setPvGratis(e.target.checked)} /> Aula grátis
             </label>
             <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
               <input type="checkbox" name="previa_gratis" defaultChecked={editing.previa_gratis ?? false} /> Prévia liberada para todos
@@ -227,7 +227,7 @@ export default function AulaEditor({
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
             <Field label="Preço (centavos)"><input name="preco_centavos" type="number" min={0} defaultValue={editing.preco_centavos ?? 0} style={inp} /></Field>
-            <Field label="Label do preço"><input name="preco_label" defaultValue={editing.preco_label ?? ""} placeholder="R$ 49 / US$ 9" style={inp} /></Field>
+            <Field label="Label do preço"><input name="preco_label" defaultValue={editing.preco_label ?? ""} onChange={(e) => setPvPrecoLabel(e.target.value)} placeholder="R$ 49 / US$ 9" style={inp} /></Field>
             <Field label="Moeda">
               <select name="moeda" defaultValue={editing.moeda ?? "BRL"} style={inp}>
                 <option value="BRL">BRL</option>
