@@ -132,6 +132,8 @@ export function CartDrawer() {
   const { items, total, remove, clear } = useCart();
   const { open, setOpen } = useCartUI();
   const fnCheckout = useServerFn(createCartOrder);
+  const fnStripe = useServerFn(createStripeCheckout);
+  const fnMP = useServerFn(createMercadoPagoCheckout);
   const { session, profile } = useGestanteProfile();
   const navigate = useNavigate();
   const isAuthed = !!session?.user;
@@ -140,7 +142,7 @@ export function CartDrawer() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [pais, setPais] = useState("BR");
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState<null | "stripe" | "mercadopago">(null);
   const [err, setErr] = useState<string | null>(null);
   const moeda = items[0]?.moeda ?? "BRL";
 
@@ -162,16 +164,15 @@ export function CartDrawer() {
     navigate({ to: "/login", search: { redirect: "/atlas" } as any });
   };
 
-
-  const submit = async () => {
+  const payWith = async (provider: "stripe" | "mercadopago") => {
     setErr(null);
     if (!nome.trim() || !email.trim() || items.length === 0) {
       setErr("Preencha nome e email para continuar.");
       return;
     }
-    setSubmitting(true);
+    setSubmitting(provider);
     try {
-      await fnCheckout({
+      const created = (await fnCheckout({
         data: {
           comprador_nome: nome.trim(),
           comprador_email: email.trim(),
@@ -183,15 +184,26 @@ export function CartDrawer() {
             moeda: i.moeda,
           })),
         },
-      });
+      })) as { order_id: string };
+
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      const res = provider === "stripe"
+        ? await fnStripe({ data: { order_id: created.order_id, origin } })
+        : await fnMP({ data: { order_id: created.order_id, origin } });
+
       clear();
+      if (typeof window !== "undefined" && (res as { url: string }).url) {
+        window.location.href = (res as { url: string }).url;
+        return;
+      }
       setStep("done");
     } catch (e: any) {
-      setErr(e?.message ?? "Erro ao processar pedido.");
+      setErr(e?.message ?? "Erro ao processar pagamento.");
     } finally {
-      setSubmitting(false);
+      setSubmitting(null);
     }
   };
+
 
   return (
     <div
