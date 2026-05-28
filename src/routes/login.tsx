@@ -568,6 +568,7 @@ const css = `
   align-items: center;
 }
 .country-flag-btn {
+  position: relative;
   width: 56px;
   height: 40px;
   border-radius: 10px;
@@ -575,11 +576,41 @@ const css = `
   background: ${CREAM_PANEL};
   padding: 0;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: border-color 0.2s, transform 0.2s;
+}
+.country-flag-btn > img {
+  border-radius: 8px;
+  overflow: hidden;
+}
+.confetti-burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+.confetti-piece {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 10px;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: confettiFly 900ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  box-shadow: 0 0 6px rgba(0,0,0,0.15);
+}
+@keyframes confettiFly {
+  0% { opacity: 1; transform: translate(-50%, -50%) rotate(0deg) scale(0.6); }
+  60% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) rotate(var(--rot)) scale(1);
+  }
 }
 .country-flag-btn img {
   width: 100%;
