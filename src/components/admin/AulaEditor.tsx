@@ -142,7 +142,7 @@ export default function AulaEditor({
       const beneficios = String(fd.get("beneficios") ?? "")
         .split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 20);
 
-      await fnSave({ data: {
+      const saved = await fnSave({ data: {
         id: editing.id,
         titulo, slug,
         descricao: String(fd.get("descricao") ?? "") || null,
@@ -158,7 +158,11 @@ export default function AulaEditor({
         link_compra_externo: String(fd.get("link_compra_externo") ?? "") || null,
         beneficios,
         temas: temasSel,
-      } as any });
+      } as any }) as { id: string };
+
+      if (ofertasRef.current && saved?.id) {
+        await ofertasRef.current.flush(saved.id);
+      }
 
       onSaved();
       onClose();
