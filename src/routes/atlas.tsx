@@ -145,7 +145,7 @@ function AtlasVitrine() {
                   titulo={a.titulo}
                   descricao={a.descricao}
                   capa_url={a.capa_url}
-                  capa_video_url={a.capa_video_url}
+                  capa_video_url={videoForAula(a)}
                   metaLabel="Duração"
                   metaValor={a.duracao_min ? `${a.duracao_min} min` : "—"}
                   precoLabel={!a.pode_consumir && !a.gratis ? a.preco_label : null}
