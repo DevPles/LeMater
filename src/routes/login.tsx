@@ -769,21 +769,44 @@ const css = `
 }
 
 .web-brand-button {
-  min-width: 176px;
-  height: 46px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 22px;
   border: 1.5px solid ${GOLD};
   border-radius: 999px;
   background: transparent;
   color: ${GOLD};
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
+  white-space: nowrap;
   transition: background 180ms ease, color 180ms ease;
 }
 
 .web-brand-button:hover { background: ${GOLD}; color: ${GREEN_DEEP}; }
+
+@media (max-width: 767px) {
+  .web-login-desktop {
+    min-height: 100dvh;
+    padding: clamp(28px, 8dvh, 72px) 18px 18px;
+    align-items: flex-start;
+  }
+
+  .web-login-card {
+    --mobile-form-h: 340px;
+    width: min(320px, 100%);
+    min-height: 0;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    border-radius: 12px;
+    box-shadow: 0 22px 34px -22px rgba(35, 71, 53, 0.45);
+  }
+
+  .web-login-card[data-mode="register"] { --mobile-form-h: 460px; }
+  .web-login-card[data-mode="recover"] { --mobile-form-h: 260px; }
+
 
 @media (max-width: 767px) {
   .web-login-desktop {
