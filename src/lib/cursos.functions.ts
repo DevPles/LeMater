@@ -569,7 +569,9 @@ export type AtlasAulaVitrine = {
   pode_consumir: boolean;
   matriculado: boolean;
   previa_gratis: boolean;
+  beneficios: string[];
 };
+
 
 export const listAtlasTemas = createServerFn({ method: "GET" }).handler(async () => {
   const { data: temas, error } = await supabaseAdmin
