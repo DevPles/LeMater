@@ -1,8 +1,8 @@
 import { useState, type CSSProperties } from "react";
 import CursosTab from "./CursosTab";
 import MateriaisTab from "./MateriaisTab";
-import NovoConteudoModal from "./NovoConteudoModal";
 import AulasTab from "./AulasTab";
+import NovoAtlasModal from "./NovoAtlasModal";
 
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2" };
 const serif = "'Cormorant Garamond', serif";
@@ -22,10 +22,6 @@ export default function AtlasContentTab() {
   const [novoOpen, setNovoOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
-  // "Novo conteúdo" só faz sentido para material/servico aqui no topo.
-  // Aula tem botão próprio dentro do AulasTab. Tema (= curso/coleção) tem botão dentro do CursosTab.
-  const mostrarNovoTopo = tipo === "material" || tipo === "servico";
-
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
@@ -35,11 +31,9 @@ export default function AtlasContentTab() {
             Aulas são o coração do Atlas. Cada aula é monetizada de forma independente e pode pertencer a vários temas.
           </p>
         </div>
-        {mostrarNovoTopo && (
-          <button onClick={() => setNovoOpen(true)} style={btnPrimary(c.sageDark)}>
-            {tipo === "servico" ? "Novo serviço" : "Novo material"}
-          </button>
-        )}
+        <button onClick={() => setNovoOpen(true)} style={btnPrimary(c.sageDark)}>
+          Novo conteúdo
+        </button>
       </div>
 
       <div style={{ display: "flex", gap: 0, marginBottom: 24, borderBottom: `1px solid ${c.border}` }}>
@@ -69,16 +63,15 @@ export default function AtlasContentTab() {
         })}
       </div>
 
-      <div key={`${tipo}-${reloadKey}`}>
-        {tipo === "aula" && <AulasTab />}
+      <div>
+        {tipo === "aula" && <AulasTab reloadSignal={reloadKey} />}
         {tipo === "tema" && <CursosTab esconderNovo={false} />}
         {tipo === "material" && <MateriaisTab esconderNovo />}
         {tipo === "servico" && <MateriaisTab esconderNovo forcarCategoria="Serviço" titulo="Serviços" ctaNovo="Novo serviço" />}
       </div>
 
-      {novoOpen && mostrarNovoTopo && (
-        <NovoConteudoModal
-          tipoInicial={tipo as "material" | "servico"}
+      {novoOpen && (
+        <NovoAtlasModal
           onClose={() => setNovoOpen(false)}
           onSaved={() => setReloadKey((k) => k + 1)}
         />
