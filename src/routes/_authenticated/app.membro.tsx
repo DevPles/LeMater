@@ -10,6 +10,7 @@ import {
   type MembroDashboard,
 } from "@/lib/membro.functions";
 import lemateLogo from "@/assets/lemater-logo.png";
+import { ContentCard } from "@/components/ContentCard";
 
 export const Route = createFileRoute("/_authenticated/app/membro")({
   head: () => ({
