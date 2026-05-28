@@ -33,14 +33,26 @@ export const Route = createFileRoute("/login")({
 
 type Mode = "login" | "register" | "recover";
 
+const PAISES = [
+  { code: "BR", label: "Brasil", dial: "+55" },
+  { code: "PT", label: "Portugal", dial: "+351" },
+  { code: "US", label: "Estados Unidos", dial: "+1" },
+  { code: "ES", label: "Espanha", dial: "+34" },
+  { code: "AR", label: "Argentina", dial: "+54" },
+  { code: "OUTRO", label: "Outro", dial: "" },
+];
+
 const initialForm = {
   loginEmail: "",
   loginPassword: "",
   signName: "",
   signEmail: "",
   signPassword: "",
+  signCountry: "BR",
+  signPhone: "",
   recoverEmail: "",
 };
+
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -91,29 +103,35 @@ function LoginPage() {
       const email = form.signEmail.trim();
       const password = form.signPassword;
       const name = form.signName.trim();
+      const country = form.signCountry;
+      const phoneDigits = form.signPhone.replace(/\D/g, "");
+      const dial = PAISES.find((p) => p.code === country)?.dial ?? "";
       if (!name) throw new Error("Informe seu nome.");
       if (!email || !email.includes("@")) throw new Error("Informe um e-mail válido.");
       if (password.length < 4) throw new Error("A senha precisa ter ao menos 4 caracteres.");
+      if (!phoneDigits || phoneDigits.length < 6) throw new Error("Informe um celular válido.");
+      const fullPhone = dial ? `${dial}${phoneDigits}` : phoneDigits;
 
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/app/membro`,
-          data: { full_name: name },
+          data: { full_name: name, phone: fullPhone, country },
         },
       });
       if (error) throw error;
 
       toast.success("Cadastro realizado! Verifique seu e-mail para confirmar.");
       goToMode("login");
-      setForm((current) => ({ ...current, loginEmail: email, signName: "", signEmail: "", signPassword: "" }));
+      setForm((current) => ({ ...current, loginEmail: email, signName: "", signEmail: "", signPassword: "", signPhone: "" }));
     } catch (error) {
       toast.error((error as Error).message || "Não foi possível cadastrar.");
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleRecover = async (event: FormEvent) => {
     event.preventDefault();
@@ -193,15 +211,20 @@ function LoginPage() {
                   name={form.signName}
                   email={form.signEmail}
                   password={form.signPassword}
+                  country={form.signCountry}
+                  phone={form.signPhone}
                   showPassword={showPassword}
                   mobile={isMobile}
                   onNameChange={update("signName")}
                   onEmailChange={update("signEmail")}
                   onPasswordChange={update("signPassword")}
+                  onCountryChange={(v) => setForm((c) => ({ ...c, signCountry: v }))}
+                  onPhoneChange={update("signPhone")}
                   onTogglePassword={() => setShowPassword((current) => !current)}
                   onBack={() => navigate({ to: "/" })}
                   onSubmit={handleSignUp}
                 />
+
               </div>
             </motion.div>
           </div>
@@ -288,11 +311,15 @@ function RegisterForm({
   name,
   email,
   password,
+  country,
+  phone,
   showPassword,
   mobile = false,
   onNameChange,
   onEmailChange,
   onPasswordChange,
+  onCountryChange,
+  onPhoneChange,
   onTogglePassword,
   onBack,
   onSubmit,
@@ -300,21 +327,57 @@ function RegisterForm({
   name: string;
   email: string;
   password: string;
+  country: string;
+  phone: string;
   showPassword: boolean;
   mobile?: boolean;
   onNameChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onPasswordChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onCountryChange: (value: string) => void;
+  onPhoneChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onTogglePassword: () => void;
   onBack?: () => void;
   onSubmit: (event: FormEvent) => void;
 }) {
+  const dial = PAISES.find((p) => p.code === country)?.dial ?? "";
   return (
     <form className={mobile ? "mobile-form" : "web-form"} onSubmit={onSubmit}>
       <FormHeader title="Criar conta" subtitle="Solicite seu acesso." />
       <Field label="Nome" value={name} onChange={onNameChange} autoComplete="name" required />
       <Field label="E-mail" type="email" value={email} onChange={onEmailChange} autoComplete="email" required />
+      <div className="web-field">
+        <Label className="web-field-label">País</Label>
+        <select
+          className="web-field-input"
+          value={country}
+          onChange={(e) => onCountryChange(e.target.value)}
+          style={{ height: 44, background: "transparent", border: "1px solid rgba(0,0,0,0.15)", borderRadius: 8, padding: "0 12px" }}
+        >
+          {PAISES.map((p) => (
+            <option key={p.code} value={p.code}>{p.label} {p.dial && `(${p.dial})`}</option>
+          ))}
+        </select>
+      </div>
+      <div className="web-field">
+        <Label className="web-field-label">Celular</Label>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {dial && <span style={{ fontSize: 14, color: "#555", minWidth: 44 }}>{dial}</span>}
+          <Input
+            className="web-field-input"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={onPhoneChange}
+            placeholder="(00) 00000-0000"
+            required
+            style={{ flex: 1 }}
+          />
+        </div>
+      </div>
       <PasswordField value={password} show={showPassword} onChange={onPasswordChange} onToggle={onTogglePassword} />
+
       {mobile ? (
         <button className="web-primary-button" type="submit">
           Solicitar acesso
