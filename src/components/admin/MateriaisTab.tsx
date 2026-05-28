@@ -41,6 +41,7 @@ export default function MateriaisTab({
   ctaNovo = "Novo material",
   esconderNovo = false,
 }: { forcarCategoria?: string; titulo?: string; ctaNovo?: string; esconderNovo?: boolean } = {}) {
+  const isServicoMode = (forcarCategoria || "").toLowerCase() === "serviço";
   const list = useServerFn(listAllMateriais);
   const upsert = useServerFn(upsertMaterial);
   const del = useServerFn(deleteMaterial);
@@ -59,7 +60,7 @@ export default function MateriaisTab({
   const novo = () => setEdit({
     titulo: "", descricao: "",
     categoria: forcarCategoria ?? "Concepção",
-    tipo: "pdf", area: forcarCategoria ? "pago" : "gratis",
+    tipo: isServicoMode ? "artigo" : "pdf", area: forcarCategoria ? "pago" : "gratis",
     acesso: "publico",
     conteudo_url: "", conteudo_html: "", capa_url: "",
     link_compra: "", plataforma_venda: "", preco_label: "", cta_label: "",
@@ -149,11 +150,11 @@ export default function MateriaisTab({
       {edit && (
         <div onClick={() => setEdit(null)} style={modalBg}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: "white", maxWidth: 720, width: "100%", padding: 32, border: `1px solid ${c.border}`, maxHeight: "90vh", overflow: "auto" }}>
-            <h2 style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, margin: "0 0 20px" }}>{edit.id ? `Editar ${titulo.toLowerCase()}` : `Novo ${titulo.toLowerCase()}`}</h2>
+            <h2 style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, margin: "0 0 20px" }}>{edit.id ? `Editar ${isServicoMode ? "serviço" : titulo.toLowerCase()}` : `Novo ${isServicoMode ? "serviço" : titulo.toLowerCase()}`}</h2>
             <div style={{ display: "grid", gap: 14 }}>
               <Field label="Título"><input value={edit.titulo ?? ""} onChange={(e) => setEdit({ ...edit, titulo: e.target.value })} style={inp} /></Field>
               <Field label="Descrição"><textarea value={edit.descricao ?? ""} onChange={(e) => setEdit({ ...edit, descricao: e.target.value })} style={{ ...inp, minHeight: 80 }} /></Field>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+              {!isServicoMode && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
                 <Field label="Área"><select value={edit.area} onChange={(e) => setEdit({ ...edit, area: e.target.value as any })} style={inp}><option value="gratis">Grátis</option><option value="pago">Pago</option></select></Field>
                 <Field label="Tipo"><select value={edit.tipo} onChange={(e) => setEdit({ ...edit, tipo: e.target.value as any })} style={inp}>
                   <option value="pdf">PDF</option><option value="video_externo">Vídeo externo</option><option value="video_upload">Vídeo upload</option><option value="artigo">Artigo</option>
@@ -164,16 +165,16 @@ export default function MateriaisTab({
                     <option value="Concepção" /><option value="Gestação" /><option value="Puerpério" /><option value="Bebê" /><option value="Cursos" /><option value="Serviço" />
                   </datalist>
                 </Field>
-              </div>
-              {(edit.tipo === "pdf" || edit.tipo === "video_upload") && (
+              </div>}
+              {!isServicoMode && (edit.tipo === "pdf" || edit.tipo === "video_upload") && (
                 <Field label={`Arquivo ${edit.conteudo_url ? "(atual: " + edit.conteudo_url + ")" : ""}`}>
                   <input id="matFile" type="file" accept={edit.tipo === "pdf" ? "application/pdf" : "video/*"} style={inp} />
                 </Field>
               )}
-              {edit.tipo === "video_externo" && (
+              {!isServicoMode && edit.tipo === "video_externo" && (
                 <Field label="URL do vídeo (YouTube/Vimeo)"><input value={edit.conteudo_url ?? ""} onChange={(e) => setEdit({ ...edit, conteudo_url: e.target.value })} style={inp} /></Field>
               )}
-              {edit.tipo === "artigo" && (
+              {!isServicoMode && edit.tipo === "artigo" && (
                 <Field label="Conteúdo HTML"><textarea value={edit.conteudo_html ?? ""} onChange={(e) => setEdit({ ...edit, conteudo_html: e.target.value })} style={{ ...inp, minHeight: 200, fontFamily: "monospace", fontSize: 13 }} /></Field>
               )}
               <Field label={`Capa (imagem) ${edit.capa_url ? "— já cadastrada" : ""}`}>
