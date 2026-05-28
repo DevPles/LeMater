@@ -201,16 +201,21 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: gridTpl, gap: isApp ? 14 : 20 }}>
             {aulas.map((a, i) => {
+              const inCart = cart.has(a.id);
               const badge = a.pode_consumir
                 ? { label: "Seu acesso", color: c.sageDark }
                 : a.gratis
                   ? { label: "Grátis", color: c.sage }
-                  : { label: "Conteúdo pago", color: c.gold };
+                  : inCart
+                    ? { label: "No carrinho", color: c.sageDark }
+                    : { label: "Conteúdo pago", color: c.gold };
               const cta = a.pode_consumir
                 ? "Assistir aula"
-                : a.link_compra
-                  ? "Comprar aula"
-                  : "Saber mais";
+                : a.gratis
+                  ? "Saber mais"
+                  : inCart
+                    ? "Ver carrinho"
+                    : "Adicionar ao carrinho";
               return (
                 <ContentCard
                   key={a.id}
@@ -226,11 +231,26 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                   precoLabel={!a.pode_consumir && !a.gratis ? a.preco_label : null}
                   ctaLabel={cta}
                   onAction={() => {
-                    if (a.link_compra && !a.pode_consumir) {
-                      window.open(a.link_compra, "_blank");
-                    } else if (a.temas[0]?.slug) {
-                      setOpenSlug(a.temas[0].slug);
+                    if (a.pode_consumir || a.gratis) {
+                      if (a.temas[0]?.slug) setOpenSlug(a.temas[0].slug);
+                      return;
                     }
+                    if (inCart) {
+                      openCart();
+                      return;
+                    }
+                    cart.add({
+                      aula_id: a.id,
+                      slug: a.slug,
+                      titulo: a.titulo,
+                      capa_url: a.capa_url,
+                      preco_centavos: a.preco_centavos,
+                      preco_label: a.preco_label,
+                      moeda: a.moeda,
+                      link_compra: a.link_compra,
+                      tema: a.temas[0]?.titulo ?? null,
+                    });
+                    openCart();
                   }}
                 />
               );
@@ -238,6 +258,10 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
           </div>
         )}
       </main>
+
+      <CartFloatingButton />
+      <CartDrawer />
+
 
       {openSlug && <CursoModal slug={openSlug} onClose={() => setOpenSlug(null)} />}
     </div>
