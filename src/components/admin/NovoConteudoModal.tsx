@@ -141,7 +141,7 @@ const aulaVazia = (): AulaLocal => ({
 
 
 export default function NovoConteudoModal({
-  tipoInicial = "material",
+  tipoInicial = "servico",
   cursoEdit,
   onClose,
   onSaved,
@@ -155,6 +155,7 @@ export default function NovoConteudoModal({
   const [tipo, setTipo] = useState<Tipo>(editando ? "curso" : tipoInicial);
   const [busy, setBusy] = useState(false);
   const [busyMsg, setBusyMsg] = useState("");
+  const servicoUnico = !editando && tipoInicial === "servico";
 
   // ---- CURSO ----
   const upCurso = useServerFn(adminUpsertCurso);
@@ -205,7 +206,7 @@ export default function NovoConteudoModal({
     titulo: "",
     descricao: "",
     categoria: "Concepção",
-    tipo: "pdf" as "pdf" | "video_externo" | "video_upload" | "artigo",
+    tipo: (tipoInicial === "servico" ? "artigo" : "pdf") as "pdf" | "video_externo" | "video_upload" | "artigo",
     area: "gratis" as "gratis" | "pago",
     conteudo_url: "",
     conteudo_html: "",
@@ -558,10 +559,10 @@ export default function NovoConteudoModal({
             {editando ? "Editar conteúdo" : "Novo conteúdo"}
           </div>
           <h2 style={{ fontFamily: serif, fontSize: 30, fontWeight: 400, margin: "0 0 18px" }}>
-            {editando ? "Editar curso" : "Criar novo item do Atlas"}
+            {editando ? "Editar curso" : servicoUnico ? "Criar serviço do Atlas" : "Criar novo item do Atlas"}
           </h2>
 
-          {!editando && (
+          {!editando && !servicoUnico && (
             <div style={{ display: "flex", gap: 8, marginBottom: 24, flexWrap: "wrap" }}>
               {(["material", "servico"] as Tipo[]).map((t) => {
                 const ativo = tipo === t;
@@ -1335,7 +1336,7 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
         />
       </Field>
 
-      <div
+      {!isServico && <div
         style={{
           display: "grid",
           gridTemplateColumns: mostrarCategoria ? "1fr 1fr 1fr" : "1fr 1fr",
@@ -1391,9 +1392,9 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
             </select>
           </Field>
         )}
-      </div>
+      </div>}
 
-      {(material.tipo === "pdf" || material.tipo === "video_upload") && (
+      {!isServico && (material.tipo === "pdf" || material.tipo === "video_upload") && (
         <Field label={`Arquivo (${material.tipo === "pdf" ? "PDF" : "Vídeo"})`}>
           <input
             {...noAuto}
@@ -1405,7 +1406,7 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
           />
         </Field>
       )}
-      {material.tipo === "video_externo" && (
+      {!isServico && material.tipo === "video_externo" && (
         <Field label="URL do vídeo">
           <input
             {...noAuto}
@@ -1418,7 +1419,7 @@ function FormMaterial({ material, setMaterial, mostrarCategoria, isServico = fal
           />
         </Field>
       )}
-      {material.tipo === "artigo" && (
+      {!isServico && material.tipo === "artigo" && (
         <Field label="Conteúdo HTML">
           <textarea
             {...noAuto}
@@ -1631,8 +1632,8 @@ function MaterialPreview({ material, isServico }: { material: any; isServico: bo
       titulo={material.titulo || (isServico ? "Nome do serviço" : "Título do material")}
       descricao={descricaoPreview}
       capa_url={capaUrl}
-      metaLabel="Formato"
-      metaValor={tipoLabel[material.tipo] ?? "—"}
+      metaLabel={isServico ? "Tipo" : "Formato"}
+      metaValor={isServico ? "Serviço" : (tipoLabel[material.tipo] ?? "—")}
       precoLabel={precoLabel}
       ctaLabel={
         material.cta_label || (isServico ? "Agendar" : ehGratis ? "Baixar grátis" : "Comprar")
