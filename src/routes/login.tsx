@@ -34,13 +34,11 @@ export const Route = createFileRoute("/login")({
 type Mode = "login" | "register" | "recover";
 
 const PAISES = [
-  { code: "BR", label: "Brasil", dial: "+55", flag: "🇧🇷" },
-  { code: "PT", label: "Portugal", dial: "+351", flag: "🇵🇹" },
-  { code: "US", label: "Estados Unidos", dial: "+1", flag: "🇺🇸" },
-  { code: "ES", label: "Espanha", dial: "+34", flag: "🇪🇸" },
-  { code: "AR", label: "Argentina", dial: "+54", flag: "🇦🇷" },
-  { code: "OUTRO", label: "Outro", dial: "", flag: "🌐" },
+  { code: "BR", label: "Brasil", dial: "+55", flag: "br" },
+  { code: "US", label: "Estados Unidos", dial: "+1", flag: "us" },
+  { code: "ES", label: "Espanha", dial: "+34", flag: "es" },
 ];
+
 
 const initialForm = {
   loginEmail: "",
