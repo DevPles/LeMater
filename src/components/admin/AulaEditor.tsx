@@ -261,6 +261,21 @@ export default function AulaEditor({
               style={{ ...inp, resize: "vertical" }}
             />
           </Field>
+
+          <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${c.border}` }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 10 }}>
+              Formas de pagamento por país
+            </div>
+            <div style={{ fontSize: 12, color: c.muted, marginBottom: 12 }}>
+              Configure preço por país e plataforma (Mercado Pago, Stripe, Hotmart…). O comprador verá apenas as ofertas do país dele.
+            </div>
+            <OfertasEditor
+              ref={ofertasRef}
+              produtoTipo="aula"
+              produtoId={editing.id ?? null}
+              titulo="Ofertas da aula"
+            />
+          </div>
         </div>
 
 
