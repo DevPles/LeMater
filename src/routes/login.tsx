@@ -34,13 +34,11 @@ export const Route = createFileRoute("/login")({
 type Mode = "login" | "register" | "recover";
 
 const PAISES = [
-  { code: "BR", label: "Brasil", dial: "+55", flag: "🇧🇷" },
-  { code: "PT", label: "Portugal", dial: "+351", flag: "🇵🇹" },
-  { code: "US", label: "Estados Unidos", dial: "+1", flag: "🇺🇸" },
-  { code: "ES", label: "Espanha", dial: "+34", flag: "🇪🇸" },
-  { code: "AR", label: "Argentina", dial: "+54", flag: "🇦🇷" },
-  { code: "OUTRO", label: "Outro", dial: "", flag: "🌐" },
+  { code: "BR", label: "Brasil", dial: "+55", flag: "br" },
+  { code: "US", label: "Estados Unidos", dial: "+1", flag: "us" },
+  { code: "ES", label: "Espanha", dial: "+34", flag: "es" },
 ];
+
 
 const initialForm = {
   loginEmail: "",
@@ -362,24 +360,29 @@ function RegisterForm({
       <div className="field-group">
         <Label className="field-label">País</Label>
         <div className="country-wrap">
-          <span className="country-flag" aria-hidden>{selected.flag}</span>
+          <img
+            className="country-flag-img"
+            src={`https://flagcdn.com/w40/${selected.flag}.png`}
+            srcSet={`https://flagcdn.com/w80/${selected.flag}.png 2x`}
+            alt={selected.code}
+          />
           <select
             className="neo-input country-select"
             value={country}
             onChange={(e) => onCountryChange(e.target.value)}
           >
             {PAISES.map((p) => (
-              <option key={p.code} value={p.code}>{p.flag} {p.label} {p.dial && `(${p.dial})`}</option>
+              <option key={p.code} value={p.code}>{p.label} ({p.dial})</option>
             ))}
           </select>
         </div>
       </div>
       <div className="field-group">
         <Label className="field-label">Celular</Label>
-        <div className="phone-wrap">
-          {dial && <span className="phone-dial">{dial}</span>}
-          <Input
-            className="neo-input phone-input"
+        <div className="phone-wrap neo-input phone-combined">
+          <span className="phone-dial">{dial}</span>
+          <input
+            className="phone-input-bare"
             type="tel"
             inputMode="tel"
             autoComplete="tel"
@@ -390,6 +393,7 @@ function RegisterForm({
           />
         </div>
       </div>
+
       <PasswordField value={password} show={showPassword} onChange={onPasswordChange} onToggle={onTogglePassword} />
 
       {mobile ? (
@@ -513,8 +517,8 @@ const css = `
 }
 
 .web-login-card {
-  width: min(560px, calc(100vw - 64px));
-  min-height: 360px;
+  width: min(520px, calc(100vw - 48px));
+  min-height: 340px;
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -524,36 +528,51 @@ const css = `
   box-shadow: 0 30px 60px -30px rgba(35, 71, 53, 0.35);
 }
 
+
 .country-wrap { position: relative; }
-.country-flag {
+.country-flag-img {
   position: absolute;
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 18px;
+  width: 22px;
+  height: 16px;
+  object-fit: cover;
+  border-radius: 2px;
   pointer-events: none;
+  z-index: 1;
 }
 .country-select {
-  padding-left: 44px;
+  padding-left: 46px;
   appearance: none;
   cursor: pointer;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23234735' d='M6 8L0 0h12z'/></svg>");
   background-repeat: no-repeat;
   background-position: right 14px center;
 }
-.phone-wrap {
+.phone-combined {
   display: flex;
-  gap: 8px;
   align-items: center;
+  padding: 0 12px 0 14px;
+  gap: 8px;
 }
 .phone-dial {
   font-size: 14px;
   font-weight: 700;
   color: ${GREEN_DEEP};
-  min-width: 42px;
-  text-align: center;
 }
-.phone-input { flex: 1; }
+.phone-input-bare {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font-size: 15px;
+  color: ${GREEN_DEEP};
+  height: 100%;
+  padding: 0;
+  min-width: 0;
+}
+
 
 .web-back {
   position: absolute;
@@ -750,17 +769,19 @@ const css = `
 }
 
 .web-brand-button {
-  min-width: 176px;
-  height: 46px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 22px;
   border: 1.5px solid ${GOLD};
   border-radius: 999px;
   background: transparent;
   color: ${GOLD};
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
+  white-space: nowrap;
   transition: background 180ms ease, color 180ms ease;
 }
 
@@ -769,13 +790,13 @@ const css = `
 @media (max-width: 767px) {
   .web-login-desktop {
     min-height: 100dvh;
-    padding: clamp(34px, 11dvh, 96px) 22px 22px;
+    padding: clamp(28px, 8dvh, 72px) 18px 18px;
     align-items: flex-start;
   }
 
   .web-login-card {
-    --mobile-form-h: 374px;
-    width: min(348px, 100%);
+    --mobile-form-h: 340px;
+    width: min(320px, 100%);
     min-height: 0;
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
@@ -783,8 +804,10 @@ const css = `
     box-shadow: 0 22px 34px -22px rgba(35, 71, 53, 0.45);
   }
 
-  .web-login-card[data-mode="register"] { --mobile-form-h: 520px; }
-  .web-login-card[data-mode="recover"] { --mobile-form-h: 284px; }
+  .web-login-card[data-mode="register"] { --mobile-form-h: 460px; }
+  .web-login-card[data-mode="recover"] { --mobile-form-h: 260px; }
+
+
 
   .web-form-side {
     grid-column: 1 / -1;
