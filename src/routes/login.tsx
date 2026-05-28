@@ -211,15 +211,20 @@ function LoginPage() {
                   name={form.signName}
                   email={form.signEmail}
                   password={form.signPassword}
+                  country={form.signCountry}
+                  phone={form.signPhone}
                   showPassword={showPassword}
                   mobile={isMobile}
                   onNameChange={update("signName")}
                   onEmailChange={update("signEmail")}
                   onPasswordChange={update("signPassword")}
+                  onCountryChange={(v) => setForm((c) => ({ ...c, signCountry: v }))}
+                  onPhoneChange={update("signPhone")}
                   onTogglePassword={() => setShowPassword((current) => !current)}
                   onBack={() => navigate({ to: "/" })}
                   onSubmit={handleSignUp}
                 />
+
               </div>
             </motion.div>
           </div>
