@@ -5,6 +5,7 @@ export type CartItem = {
   slug: string;
   titulo: string;
   capa_url: string | null;
+  capa_video_url?: string | null;
   preco_centavos: number;
   preco_label: string | null;
   moeda: string;
