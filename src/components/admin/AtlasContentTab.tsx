@@ -30,7 +30,7 @@ export default function AtlasContentTab() {
           <h1 style={{ fontFamily: serif, fontSize: 36, fontWeight: 300, margin: "0 0 6px" }}>Atlas Materno</h1>
           <p style={{ color: c.muted, margin: 0, fontSize: 14 }}>Todo o conteúdo do Atlas em um só lugar.</p>
         </div>
-        <button onClick={() => setNovoOpen(true)} style={btnPrimary(c.sageDark)}>Novo conteúdo</button>
+        {tipo !== "aula" && <button onClick={() => setNovoOpen(true)} style={btnPrimary(c.sageDark)}>Novo conteúdo</button>}
       </div>
 
       <div style={{ display: "flex", gap: 0, marginBottom: 24, borderBottom: `1px solid ${c.border}` }}>
