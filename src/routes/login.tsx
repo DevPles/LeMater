@@ -518,8 +518,8 @@ const css = `
 }
 
 .web-login-card {
-  width: min(520px, calc(100vw - 48px));
-  min-height: 340px;
+  width: min(440px, calc(100vw - 48px));
+  min-height: 280px;
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -606,7 +606,7 @@ const css = `
 
 .web-form-track {
   width: 100%;
-  min-height: 400px;
+  min-height: 320px;
   display: grid;
   grid-template-columns: 50% 50%;
 }
@@ -616,29 +616,29 @@ const css = `
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 44px;
+  padding: 24px 22px;
 }
 
 .web-form {
-  width: min(290px, 100%);
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .form-title {
   margin: 0;
   color: ${GREEN_DEEP};
   font-family: var(--font-display);
-  font-size: 36px;
+  font-size: 26px;
   font-weight: 600;
-  line-height: 1.08;
+  line-height: 1.1;
 }
 
 .form-subtitle {
-  margin: 6px 0 4px;
+  margin: 4px 0 2px;
   color: rgba(35, 71, 53, 0.72);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .field-group { display: flex; flex-direction: column; gap: 6px; }
@@ -652,14 +652,14 @@ const css = `
 }
 
 .neo-input {
-  height: 44px;
+  height: 38px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #f0e9d8;
   color: ${GREEN_DEEP};
-  padding: 0 16px;
-  font-size: 15px;
-  box-shadow: inset 4px 4px 8px rgba(168, 154, 120, 0.35), inset -4px -4px 8px rgba(255, 255, 255, 0.85);
+  padding: 0 12px;
+  font-size: 14px;
+  box-shadow: inset 3px 3px 6px rgba(168, 154, 120, 0.35), inset -3px -3px 6px rgba(255, 255, 255, 0.85);
 }
 
 .neo-input:focus-visible { outline: 2px solid ${GOLD}; outline-offset: 2px; }
@@ -683,41 +683,41 @@ const css = `
 }
 
 .web-secondary-button {
-  height: 44px;
+  height: 38px;
   border: 1.5px solid ${GREEN};
   background: transparent;
   color: ${GREEN};
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   cursor: pointer;
-  padding: 0 16px;
+  padding: 0 12px;
   border-radius: 6px;
 }
 
 .forgot-button {
   align-self: stretch;
   border-radius: 999px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .web-form-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 4px;
+  gap: 8px;
+  margin-top: 2px;
 }
 
 .web-primary-button {
-  height: 46px;
+  height: 40px;
   border: 0;
   border-radius: 6px;
   background: ${GREEN};
   color: #ffffff;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   cursor: pointer;
   box-shadow: 0 6px 14px -6px rgba(35, 71, 53, 0.6);
