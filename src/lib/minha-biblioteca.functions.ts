@@ -78,10 +78,51 @@ export const getMinhaBiblioteca = createServerFn({ method: "GET" })
     }
 
     // 5) all_access libera tudo
-    type LessonRow = Record<string, unknown> & { id: string };
-    type ModuleRow = Record<string, unknown> & { id: string };
-    type PathwayRow = Record<string, unknown> & { id: string };
-    type BundleRow = Record<string, unknown> & { id: string };
+    type LessonRow = {
+      id: string;
+      slug: string | null;
+      title: string;
+      subtitle: string | null;
+      short_description: string | null;
+      transformation: string | null;
+      thumbnail: string | null;
+      cover_image: string | null;
+      duration_sec: number | null;
+      difficulty: string | null;
+      tags: string[] | null;
+      free_or_paid: string | null;
+    };
+    type ModuleRow = {
+      id: string;
+      slug: string | null;
+      title: string;
+      subtitle: string | null;
+      description: string | null;
+      cover_image: string | null;
+      color: string | null;
+      order: number | null;
+    };
+    type PathwayRow = {
+      id: string;
+      slug: string | null;
+      title: string;
+      subtitle: string | null;
+      description: string | null;
+      cover_image: string | null;
+      color: string | null;
+      recommended_week_min: number | null;
+      recommended_week_max: number | null;
+      order: number | null;
+    };
+    type BundleRow = {
+      id: string;
+      slug: string | null;
+      title: string;
+      subtitle: string | null;
+      description: string | null;
+      cover_image: string | null;
+      order: number | null;
+    };
 
     let lessonsQuery = supabaseAdmin
       .from("lessons")
@@ -103,8 +144,6 @@ export const getMinhaBiblioteca = createServerFn({ method: "GET" })
       lessonsQuery = lessonsQuery.in("id", Array.from(lessonIds));
     }
 
-    const emptyArr = async <T,>() => ({ data: [] as T[] });
-
     const [lessonsRes, modulesRes, pathwaysRes, bundlesRes] = await Promise.all([
       lessonsQuery,
       allAccess
@@ -116,7 +155,7 @@ export const getMinhaBiblioteca = createServerFn({ method: "GET" })
             .order("order", { ascending: true })
         : moduleIds.size
         ? supabaseAdmin.from("modules").select(MODULE_COLS).in("id", Array.from(moduleIds))
-        : emptyArr<ModuleRow>(),
+        : Promise.resolve({ data: [] }),
       allAccess
         ? supabaseAdmin
             .from("pathways")
@@ -126,15 +165,14 @@ export const getMinhaBiblioteca = createServerFn({ method: "GET" })
             .order("order", { ascending: true })
         : pathwayIds.size
         ? supabaseAdmin.from("pathways").select(PATHWAY_COLS).in("id", Array.from(pathwayIds))
-        : emptyArr<PathwayRow>(),
+        : Promise.resolve({ data: [] }),
       bundleIds.size
         ? supabaseAdmin.from("bundles").select(BUNDLE_COLS).in("id", Array.from(bundleIds))
-        : emptyArr<BundleRow>(),
+        : Promise.resolve({ data: [] }),
     ]);
 
-    const lessons = (lessonsRes.data ?? []) as LessonRow[];
+    const lessons = (lessonsRes.data ?? []) as unknown as LessonRow[];
 
-    // 6) Continue assistindo (lesson_views recentes)
     const { data: views } = await supabaseAdmin
       .from("lesson_views")
       .select("lesson_id, viewed_at")
@@ -149,11 +187,12 @@ export const getMinhaBiblioteca = createServerFn({ method: "GET" })
 
     return {
       all_access: allAccess,
-      modules: (modulesRes.data ?? []) as ModuleRow[],
-      pathways: (pathwaysRes.data ?? []) as PathwayRow[],
-      bundles: (bundlesRes.data ?? []) as BundleRow[],
+      modules: (modulesRes.data ?? []) as unknown as ModuleRow[],
+      pathways: (pathwaysRes.data ?? []) as unknown as PathwayRow[],
+      bundles: (bundlesRes.data ?? []) as unknown as BundleRow[],
       lessons,
       continue_watching: continueWatching,
     };
   });
+
 
