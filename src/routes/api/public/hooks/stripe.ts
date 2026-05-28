@@ -47,18 +47,39 @@ export const Route = createFileRoute("/api/public/hooks/stripe")({
         const evt = JSON.parse(raw) as StripeEvent;
         const obj = evt.data?.object ?? {};
         const meta = obj.metadata ?? {};
-        const externalId = meta.product_external_id ?? meta.product_id ?? "";
-        if (!externalId) return new Response("ignored", { status: 200 });
-
-        const produto = await resolveProdutoByExternalId("stripe" as Plataforma, externalId);
-        if (!produto) return new Response("ignored", { status: 200 });
-
         const type = evt.type ?? "";
         const status: OrderStatus = type.includes("completed") || type.includes("succeeded")
           ? "aprovado"
           : type.includes("refund") ? "reembolsado"
           : type.includes("failed") || type.includes("canceled") ? "cancelado"
           : "pendente";
+
+        // --- Fluxo carrinho: order_id na metadata ---
+        const orderId = meta.order_id;
+        if (orderId) {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const update: Record<string, unknown> = {
+            status,
+            raw_payload: evt as never,
+            transaction_id_externo: obj.payment_intent ?? obj.id ?? evt.id ?? `${Date.now()}`,
+            plataforma: "stripe",
+          };
+          if (status === "aprovado") update.aprovado_em = new Date().toISOString();
+          await supabaseAdmin.from("orders").update(update).eq("id", orderId);
+          if (status === "aprovado") {
+            await supabaseAdmin.rpc("liberar_acesso_por_pedido", { _order_id: orderId });
+          } else if (status === "reembolsado" || status === "cancelado") {
+            await supabaseAdmin.rpc("revogar_acesso_por_pedido", { _order_id: orderId });
+          }
+          return new Response("ok", { status: 200 });
+        }
+
+        // --- Fluxo legado: produto resolvido via offer ---
+        const externalId = meta.product_external_id ?? meta.product_id ?? "";
+        if (!externalId) return new Response("ignored", { status: 200 });
+
+        const produto = await resolveProdutoByExternalId("stripe" as Plataforma, externalId);
+        if (!produto) return new Response("ignored", { status: 200 });
 
         const amount = (obj.amount_total ?? obj.amount ?? 0) as number;
         await upsertOrderFromWebhook({
