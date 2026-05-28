@@ -348,7 +348,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                           {a.titulo}
                         </span>
                         <span style={{ fontSize: 10, opacity: 0.75, letterSpacing: "0.08em" }}>
-                          {a.bloqueada ? "COMPRAR" : a.previa_gratis ? "PRÉVIA" : `${a.duracao_min}min`}
+                          {a.bloqueada ? (inCart ? "NO CARRINHO" : "+ CARRINHO") : a.previa_gratis ? "PRÉVIA" : `${a.duracao_min}min`}
                         </span>
                       </button>
                     </li>
