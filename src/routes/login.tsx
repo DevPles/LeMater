@@ -529,35 +529,49 @@ const css = `
 }
 
 .country-wrap { position: relative; }
-.country-flag {
+.country-flag-img {
   position: absolute;
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 18px;
+  width: 22px;
+  height: 16px;
+  object-fit: cover;
+  border-radius: 2px;
   pointer-events: none;
+  z-index: 1;
 }
 .country-select {
-  padding-left: 44px;
+  padding-left: 46px;
   appearance: none;
   cursor: pointer;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23234735' d='M6 8L0 0h12z'/></svg>");
   background-repeat: no-repeat;
   background-position: right 14px center;
 }
-.phone-wrap {
+.phone-combined {
   display: flex;
-  gap: 8px;
   align-items: center;
+  padding: 0 12px 0 14px;
+  gap: 8px;
 }
 .phone-dial {
   font-size: 14px;
   font-weight: 700;
   color: ${GREEN_DEEP};
-  min-width: 42px;
-  text-align: center;
 }
-.phone-input { flex: 1; }
+.phone-input-bare {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font-size: 15px;
+  color: ${GREEN_DEEP};
+  height: 100%;
+  padding: 0;
+  min-width: 0;
+}
+
 
 .web-back {
   position: absolute;
