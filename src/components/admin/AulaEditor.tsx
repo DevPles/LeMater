@@ -137,6 +137,9 @@ export default function AulaEditor({
         conteudo_html = String(fd.get("conteudo_html") ?? "");
       }
 
+      const beneficios = String(fd.get("beneficios") ?? "")
+        .split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 20);
+
       await fnSave({ data: {
         id: editing.id,
         titulo, slug,
@@ -151,8 +154,10 @@ export default function AulaEditor({
         preco_label: String(fd.get("preco_label") ?? "") || null,
         moeda: String(fd.get("moeda") ?? "BRL") || "BRL",
         link_compra_externo: String(fd.get("link_compra_externo") ?? "") || null,
+        beneficios,
         temas: temasSel,
       } as any });
+
       onSaved();
       onClose();
     } catch (e: any) { setErr(e?.message ?? "Erro ao salvar"); }
