@@ -245,6 +245,32 @@ export default function AulaEditor({
           <input type="checkbox" name="publicado" defaultChecked={editing.publicado ?? false} /> Publicar agora
         </label>
 
+        {/* Prévia do card */}
+        <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 16, marginTop: 8, marginBottom: 18 }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.muted, marginBottom: 12 }}>Prévia do card</div>
+          <div style={{ background: c.sageDark, color: "white", padding: 24, position: "relative", maxWidth: 360 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+              <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                {pvGratis && <div style={{ background: "rgba(255,255,255,0.15)", padding: "4px 10px", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Conteúdo grátis</div>}
+                <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>{pvTemaNome}</div>
+              </div>
+            </div>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 500, margin: "0 0 8px", lineHeight: 1.2 }}>{pvTitulo || "Título da aula"}</h3>
+            <p style={{ fontSize: 13, opacity: 0.85, margin: 0, lineHeight: 1.5 }}>{pvDesc || "Descrição aparece aqui."}</p>
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.2)", marginTop: 16, paddingTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.6, marginBottom: 2 }}>Formato</div>
+                <div style={{ fontSize: 13 }}>{tipoLabel[pvTipo] ?? "Vídeo"}</div>
+              </div>
+              <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>
+                {pvGratis ? "Assistir grátis" : (pvPrecoLabel || "Comprar")}
+              </div>
+            </div>
+          </div>
+          <p style={{ fontSize: 11, color: c.muted, marginTop: 8 }}>É assim que o card aparece na vitrine do Atlas.</p>
+        </div>
+
         {err && <p style={{ color: c.danger, fontSize: 13 }}>{err}</p>}
 
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
