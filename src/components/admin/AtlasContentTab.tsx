@@ -61,18 +61,20 @@ export default function AtlasContentTab() {
       </div>
 
       <div key={`${tipo}-${reloadKey}`}>
+        {tipo === "aula" && <AulasTab />}
         {tipo === "curso" && <CursosTab esconderNovo />}
         {tipo === "material" && <MateriaisTab esconderNovo />}
         {tipo === "servico" && <MateriaisTab esconderNovo forcarCategoria="Serviço" titulo="Serviços" ctaNovo="Novo serviço" />}
       </div>
 
-      {novoOpen && (
+      {novoOpen && tipo !== "aula" && (
         <NovoConteudoModal
           tipoInicial={tipo}
           onClose={() => setNovoOpen(false)}
           onSaved={() => setReloadKey((k) => k + 1)}
         />
       )}
+
     </div>
   );
 }
