@@ -683,41 +683,41 @@ const css = `
 }
 
 .web-secondary-button {
-  height: 44px;
+  height: 38px;
   border: 1.5px solid ${GREEN};
   background: transparent;
   color: ${GREEN};
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   cursor: pointer;
-  padding: 0 16px;
+  padding: 0 12px;
   border-radius: 6px;
 }
 
 .forgot-button {
   align-self: stretch;
   border-radius: 999px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .web-form-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 4px;
+  gap: 8px;
+  margin-top: 2px;
 }
 
 .web-primary-button {
-  height: 46px;
+  height: 40px;
   border: 0;
   border-radius: 6px;
   background: ${GREEN};
   color: #ffffff;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   cursor: pointer;
   box-shadow: 0 6px 14px -6px rgba(35, 71, 53, 0.6);
