@@ -170,6 +170,14 @@ export function CartDrawer() {
       setErr("Preencha nome e email para continuar.");
       return;
     }
+    const checkoutWindow =
+      provider === "stripe" && typeof window !== "undefined"
+        ? window.open("about:blank", "_blank")
+        : null;
+    if (checkoutWindow) {
+      checkoutWindow.opener = null;
+      checkoutWindow.document.write("<p style='font-family: sans-serif; padding: 24px'>Abrindo checkout seguro…</p>");
+    }
     setSubmitting(provider);
     try {
       const created = (await fnCheckout({
@@ -191,13 +199,22 @@ export function CartDrawer() {
         ? await fnStripe({ data: { order_id: created.order_id, origin } })
         : await fnMP({ data: { order_id: created.order_id, origin } });
 
-      clear();
       if (typeof window !== "undefined" && (res as { url: string }).url) {
-        window.location.href = (res as { url: string }).url;
+        const checkoutUrl = (res as { url: string }).url;
+        clear();
+        if (checkoutWindow && !checkoutWindow.closed) {
+          checkoutWindow.location.href = checkoutUrl;
+          setOpen(false);
+          setStep("cart");
+          return;
+        }
+        window.location.assign(checkoutUrl);
         return;
       }
+      clear();
       setStep("done");
     } catch (e: any) {
+      if (checkoutWindow && !checkoutWindow.closed) checkoutWindow.close();
       setErr(e?.message ?? "Erro ao processar pagamento.");
     } finally {
       setSubmitting(null);
