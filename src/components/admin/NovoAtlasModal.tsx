@@ -6,11 +6,10 @@ const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type Tipo = "aula" | "material" | "servico";
+type Tipo = "aula" | "servico";
 
 const OPTIONS: { tipo: Tipo; titulo: string; descricao: string }[] = [
-  { tipo: "aula", titulo: "Aula", descricao: "Vídeo, PDF ou texto. Vai para o Atlas, pertence a um ou mais temas e pode ser monetizada de forma independente." },
-  { tipo: "material", titulo: "Material", descricao: "Artigo, PDF ou vídeo de apoio. Aparece na biblioteca de materiais." },
+  { tipo: "aula", titulo: "Aula", descricao: "Vídeo, PDF ou texto. Vai para o Atlas, pertence a um ou mais temas, tem preço próprio e pode ter materiais de apoio anexados dentro dela." },
   { tipo: "servico", titulo: "Serviço", descricao: "Consulta, mentoria ou serviço pago oferecido pela Le Mater." },
 ];
 
@@ -20,8 +19,8 @@ export default function NovoAtlasModal({ onClose, onSaved }: { onClose: () => vo
   if (tipo === "aula") {
     return <AulaEditor onClose={onClose} onSaved={onSaved} />;
   }
-  if (tipo === "material" || tipo === "servico") {
-    return <NovoConteudoModal tipoInicial={tipo} onClose={onClose} onSaved={onSaved} />;
+  if (tipo === "servico") {
+    return <NovoConteudoModal tipoInicial="servico" onClose={onClose} onSaved={onSaved} />;
   }
 
   return (

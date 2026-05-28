@@ -11,7 +11,7 @@ const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
 type Aba = "conteudo" | "tema";
-type TipoFiltro = "aula" | "material" | "servico";
+type TipoFiltro = "aula" | "servico";
 
 export default function AtlasContentTab() {
   const [aba, setAba] = useState<Aba>("conteudo");
@@ -58,7 +58,6 @@ export default function AtlasContentTab() {
               <span style={selLabel}>Tipo</span>
               <select value={tipoFiltro} onChange={(e) => setTipoFiltro(e.target.value as TipoFiltro)} style={sel}>
                 <option value="aula">Aulas</option>
-                <option value="material">Materiais</option>
                 <option value="servico">Serviços</option>
               </select>
             </label>
@@ -74,7 +73,6 @@ export default function AtlasContentTab() {
           </div>
 
           {tipoFiltro === "aula" && <AulasTab reloadSignal={reloadKey} temaFilter={temaFiltro || null} />}
-          {tipoFiltro === "material" && <MateriaisTab esconderNovo titulo="Materiais" />}
           {tipoFiltro === "servico" && <MateriaisTab esconderNovo forcarCategoria="Serviço" titulo="Serviços" />}
         </>
       )}
