@@ -49,6 +49,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
   const [temaSel, setTemaSel] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [openSlug, setOpenSlug] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     fnTemas().then((t) => setTemas(t as AtlasTema[])).catch((e) => setErr(e?.message ?? "Erro"));
@@ -94,13 +95,90 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
           </h2>
 
           {temas.length > 0 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: isApp ? 12 : 18 }}>
-              <button onClick={() => setTemaSel(null)} style={chipBase(temaSel === null)}>Todos</button>
-              {temas.map((t) => (
-                <button key={t.id} onClick={() => setTemaSel(t.id)} style={chipBase(temaSel === t.id)}>
-                  {t.titulo}{t.total_aulas > 0 ? ` · ${t.total_aulas}` : ""}
-                </button>
-              ))}
+            <div style={{ marginTop: isApp ? 12 : 18 }}>
+              <button
+                onClick={() => setMenuOpen(true)}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 10,
+                  background: "transparent", border: `1px solid ${c.border}`,
+                  padding: isApp ? "10px 16px" : "12px 20px",
+                  fontSize: isApp ? 11 : 12, letterSpacing: "0.12em",
+                  textTransform: "uppercase", cursor: "pointer",
+                  fontFamily: sans, color: c.ink, borderRadius: 999,
+                }}
+              >
+                <span style={{ display: "inline-flex", flexDirection: "column", gap: 3 }}>
+                  <span style={{ width: 16, height: 1.5, background: c.ink }} />
+                  <span style={{ width: 16, height: 1.5, background: c.ink }} />
+                  <span style={{ width: 16, height: 1.5, background: c.ink }} />
+                </span>
+                Filtrar · {temaSel ? (temas.find((t) => t.id === temaSel)?.titulo ?? "Tema") : "Todos"}
+              </button>
+            </div>
+          )}
+
+          {menuOpen && (
+            <div
+              onClick={() => setMenuOpen(false)}
+              style={{
+                position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
+                zIndex: 1000, display: "flex", alignItems: "flex-end", justifyContent: "center",
+              }}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  background: c.cream, width: "100%", maxWidth: 520,
+                  borderTopLeftRadius: 20, borderTopRightRadius: 20,
+                  padding: "20px 20px 32px", maxHeight: "80vh", overflowY: "auto",
+                  boxShadow: "0 -10px 40px rgba(0,0,0,0.2)",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                  <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 500 }}>
+                    Filtrar por tema
+                  </span>
+                  <button onClick={() => setMenuOpen(false)} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: sans, fontSize: 12, color: c.muted, textTransform: "uppercase", letterSpacing: "0.12em" }}>
+                    Fechar
+                  </button>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <button
+                    onClick={() => { setTemaSel(null); setMenuOpen(false); }}
+                    style={{
+                      textAlign: "left", padding: "14px 16px",
+                      background: temaSel === null ? c.sageDark : "white",
+                      color: temaSel === null ? "white" : c.ink,
+                      border: `1px solid ${temaSel === null ? c.sageDark : c.border}`,
+                      fontFamily: sans, fontSize: 13, letterSpacing: "0.06em",
+                      textTransform: "uppercase", cursor: "pointer", borderRadius: 12,
+                    }}
+                  >
+                    Todos
+                  </button>
+                  {temas.map((t) => {
+                    const ativo = temaSel === t.id;
+                    return (
+                      <button
+                        key={t.id}
+                        onClick={() => { setTemaSel(t.id); setMenuOpen(false); }}
+                        style={{
+                          textAlign: "left", padding: "14px 16px",
+                          background: ativo ? c.sageDark : "white",
+                          color: ativo ? "white" : c.ink,
+                          border: `1px solid ${ativo ? c.sageDark : c.border}`,
+                          fontFamily: sans, fontSize: 13, letterSpacing: "0.06em",
+                          textTransform: "uppercase", cursor: "pointer", borderRadius: 12,
+                          display: "flex", justifyContent: "space-between", alignItems: "center",
+                        }}
+                      >
+                        <span>{t.titulo}</span>
+                        {t.total_aulas > 0 && <span style={{ fontSize: 11, opacity: 0.8 }}>{t.total_aulas}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
         </div>
