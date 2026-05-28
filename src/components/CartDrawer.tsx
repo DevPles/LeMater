@@ -251,9 +251,21 @@ export function CartDrawer() {
               </span>
             </div>
             {step === "cart" ? (
-              <button onClick={() => setStep("checkout")} style={btnPrimary}>
-                Finalizar compra
-              </button>
+              isAuthed ? (
+                <button onClick={() => setStep("checkout")} style={btnPrimary}>
+                  Finalizar compra
+                </button>
+              ) : (
+                <>
+                  <p style={{ fontSize: 12, color: c.muted, margin: "0 0 10px", textAlign: "center", lineHeight: 1.4 }}>
+                    Entre ou crie sua conta para finalizar a compra.
+                  </p>
+                  <button onClick={goLogin} style={btnPrimary}>
+                    Entrar / Criar conta
+                  </button>
+                </>
+              )
+
             ) : (
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => setStep("cart")} disabled={submitting} style={btnSecondary}>
