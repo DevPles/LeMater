@@ -150,7 +150,7 @@ export default function AulaEditor({
         publicado: fd.get("publicado") === "on",
         gratis: fd.get("gratis") === "on",
         previa_gratis: fd.get("previa_gratis") === "on",
-        preco_centavos: Number(fd.get("preco_centavos") ?? 0) || 0,
+        preco_centavos: Math.round((Number(fd.get("preco_reais") ?? 0) || 0) * 100),
         preco_label: String(fd.get("preco_label") ?? "") || null,
         moeda: String(fd.get("moeda") ?? "BRL") || "BRL",
         link_compra_externo: String(fd.get("link_compra_externo") ?? "") || null,
