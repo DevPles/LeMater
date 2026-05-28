@@ -171,106 +171,18 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
 
 
 
-  // ───────── Checkout enxuto ─────────
-  const renderCheckout = () => {
-    if (!bloqueioInfo) return null;
-    const paisLabel = PAISES.find((p) => p.code === pais)?.label ?? pais;
-    return (
-      <div style={{ background: "white", border: `1px solid ${c.border}`, overflow: "hidden" }}>
-        {/* Header: SUA COMPRA + país pill */}
-        <div style={{ padding: "12px 16px", borderBottom: `1px solid ${c.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: c.warm, gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-            {isMobile && (
-              <button onClick={voltarParaLista} style={{ background: "transparent", border: "none", color: c.sageDark, fontFamily: sans, fontSize: 12, cursor: "pointer", padding: 0, letterSpacing: "0.06em" }}>
-                ← Voltar
-              </button>
-            )}
-            <span style={{ fontSize: 10, letterSpacing: "0.22em", color: c.sageDark, fontFamily: sans, fontWeight: 600 }}>SUA COMPRA</span>
-          </div>
-          <div style={{ position: "relative" }}>
-            <select
-              value={pais}
-              onChange={(e) => setPais(e.target.value)}
-              aria-label="País de pagamento"
-              style={{
-                appearance: "none", WebkitAppearance: "none",
-                background: "white", border: `1px solid ${c.border}`,
-                padding: "6px 24px 6px 10px",
-                fontFamily: sans, fontSize: 11, color: c.ink, fontWeight: 500,
-                cursor: "pointer", borderRadius: 999, letterSpacing: "0.04em",
-              }}
-            >
-              {PAISES.map((p) => <option key={p.code} value={p.code}>{p.label}</option>)}
-            </select>
-            <span style={{ position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", color: c.muted, fontSize: 10 }}>▾</span>
-          </div>
-        </div>
-
-        {/* Item — só nome da aula, sem repetir capa+curso */}
-        <div style={{ padding: "14px 16px 4px", textAlign: "left" }}>
-          <div style={{ fontSize: 10, letterSpacing: "0.18em", color: c.gold, marginBottom: 4 }}>VOCÊ ESTÁ COMPRANDO</div>
-          <div style={{ fontFamily: serif, fontSize: 18, color: c.ink, lineHeight: 1.25 }}>{bloqueioInfo.titulo}</div>
-        </div>
-
-        {/* Ofertas — radio list unificada */}
-        <div style={{ padding: "12px 16px 4px", textAlign: "left" }}>
-          {ofertasCombinadas.length === 0 && (
-            <div style={{ fontSize: 12, color: c.muted, fontStyle: "italic", padding: "8px 0" }}>
-              Nenhuma oferta disponível para {paisLabel} ainda.
-            </div>
-          )}
-          <div style={{ display: "grid", gap: 8 }}>
-            {ofertasAulaAtual.map((o) => (
-              <OfferRow key={o.id} offer={o} secao="aula" ativo={offerAtiva?.offer.id === o.id} onClick={() => setOfferSel(o.id)} />
-            ))}
-            {cursoOffers.map((o) => (
-              <OfferRow key={o.id} offer={o} secao="curso" ativo={offerAtiva?.offer.id === o.id} onClick={() => setOfferSel(o.id)} />
-            ))}
-          </div>
-        </div>
-
-        {/* CTA único — total embutido no botão */}
-        {offerAtiva && (
-          <div style={{ padding: "14px 16px 16px" }}>
-            <button onClick={comprar} disabled={comprando}
-              style={{
-                width: "100%", background: c.gold, color: "white",
-                fontFamily: sans, padding: "14px 16px", border: "none",
-                cursor: comprando ? "not-allowed" : "pointer", opacity: comprando ? 0.6 : 1,
-                display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
-              }}>
-              <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" }}>
-                {comprando ? "Processando…" : "Finalizar"}
-              </span>
-              <span style={{ fontSize: 18, fontWeight: 600, fontVariantNumeric: "lining-nums tabular-nums" }}>
-                {fmtPreco(offerAtiva.offer.preco_centavos, offerAtiva.offer.moeda)}
-              </span>
-            </button>
-            <div style={{ marginTop: 8, fontSize: 11, color: c.muted, fontFamily: sans, textAlign: "center", letterSpacing: "0.02em" }}>
-              {platLabel(offerAtiva.offer.plataforma)}
-              {offerAtiva.offer.label ? ` · ${offerAtiva.offer.label}` : ""}
-              {" · pagamento seguro · acesso imediato"}
-            </div>
-            {checkoutErr && <div style={{ fontSize: 12, color: "#B23A48", marginTop: 8, textAlign: "center" }}>{checkoutErr}</div>}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   // ───────── Player ─────────
   const renderPlayer = () => (
     <div>
-      {renderCheckout()}
-
-      {!aulaSel && !bloqueioInfo && (
+      {!aulaSel && (
         <div style={{ color: c.muted, padding: 30, textAlign: "center", background: c.warm, border: `1px solid ${c.border}` }}>
           Selecione uma aula para começar.
         </div>
       )}
 
-      {aulaSel && !bloqueioInfo && (
+      {aulaSel && (
         <>
+
           {playerErr && <p style={{ color: "#B23A48" }}>{playerErr}</p>}
           {!player && !playerErr && (
             <div style={{ aspectRatio: "16/9", background: "#000", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.6)", fontSize: 13 }}>
