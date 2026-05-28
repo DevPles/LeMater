@@ -311,11 +311,15 @@ function RegisterForm({
   name,
   email,
   password,
+  country,
+  phone,
   showPassword,
   mobile = false,
   onNameChange,
   onEmailChange,
   onPasswordChange,
+  onCountryChange,
+  onPhoneChange,
   onTogglePassword,
   onBack,
   onSubmit,
@@ -323,21 +327,57 @@ function RegisterForm({
   name: string;
   email: string;
   password: string;
+  country: string;
+  phone: string;
   showPassword: boolean;
   mobile?: boolean;
   onNameChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onEmailChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onPasswordChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onCountryChange: (value: string) => void;
+  onPhoneChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onTogglePassword: () => void;
   onBack?: () => void;
   onSubmit: (event: FormEvent) => void;
 }) {
+  const dial = PAISES.find((p) => p.code === country)?.dial ?? "";
   return (
     <form className={mobile ? "mobile-form" : "web-form"} onSubmit={onSubmit}>
       <FormHeader title="Criar conta" subtitle="Solicite seu acesso." />
       <Field label="Nome" value={name} onChange={onNameChange} autoComplete="name" required />
       <Field label="E-mail" type="email" value={email} onChange={onEmailChange} autoComplete="email" required />
+      <div className="web-field">
+        <Label className="web-field-label">País</Label>
+        <select
+          className="web-field-input"
+          value={country}
+          onChange={(e) => onCountryChange(e.target.value)}
+          style={{ height: 44, background: "transparent", border: "1px solid rgba(0,0,0,0.15)", borderRadius: 8, padding: "0 12px" }}
+        >
+          {PAISES.map((p) => (
+            <option key={p.code} value={p.code}>{p.label} {p.dial && `(${p.dial})`}</option>
+          ))}
+        </select>
+      </div>
+      <div className="web-field">
+        <Label className="web-field-label">Celular</Label>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {dial && <span style={{ fontSize: 14, color: "#555", minWidth: 44 }}>{dial}</span>}
+          <Input
+            className="web-field-input"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={onPhoneChange}
+            placeholder="(00) 00000-0000"
+            required
+            style={{ flex: 1 }}
+          />
+        </div>
+      </div>
       <PasswordField value={password} show={showPassword} onChange={onPasswordChange} onToggle={onTogglePassword} />
+
       {mobile ? (
         <button className="web-primary-button" type="submit">
           Solicitar acesso
