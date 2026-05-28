@@ -34,12 +34,12 @@ export const Route = createFileRoute("/login")({
 type Mode = "login" | "register" | "recover";
 
 const PAISES = [
-  { code: "BR", label: "Brasil", dial: "+55" },
-  { code: "PT", label: "Portugal", dial: "+351" },
-  { code: "US", label: "Estados Unidos", dial: "+1" },
-  { code: "ES", label: "Espanha", dial: "+34" },
-  { code: "AR", label: "Argentina", dial: "+54" },
-  { code: "OUTRO", label: "Outro", dial: "" },
+  { code: "BR", label: "Brasil", dial: "+55", flag: "🇧🇷" },
+  { code: "PT", label: "Portugal", dial: "+351", flag: "🇵🇹" },
+  { code: "US", label: "Estados Unidos", dial: "+1", flag: "🇺🇸" },
+  { code: "ES", label: "Espanha", dial: "+34", flag: "🇪🇸" },
+  { code: "AR", label: "Argentina", dial: "+54", flag: "🇦🇷" },
+  { code: "OUTRO", label: "Outro", dial: "", flag: "🌐" },
 ];
 
 const initialForm = {
