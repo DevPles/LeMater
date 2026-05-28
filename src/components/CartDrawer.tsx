@@ -289,19 +289,28 @@ export function CartDrawer() {
                 ))}
               </div>
 
-              <section style={{ marginTop: 22, background: c.warm, border: `1px solid ${c.border}`, padding: 16, borderRadius: 8 }}>
-                <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sageDark, fontWeight: 600, marginBottom: 10 }}>
-                  Você está adquirindo
-                </div>
-                <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
-                  {BENEFITS.map((b) => (
-                    <li key={b} style={{ display: "flex", gap: 10, fontSize: 13, color: c.ink, lineHeight: 1.4 }}>
-                      <span style={{ color: c.sageDark, fontWeight: 600 }}>+</span>
-                      <span>{b}</span>
-                    </li>
-                  ))}
-                </ul>
-              </section>
+              {(() => {
+                const allBenefits = Array.from(
+                  new Set(items.flatMap((it) => it.beneficios ?? [])),
+                ).filter(Boolean);
+                if (allBenefits.length === 0) return null;
+                return (
+                  <section style={{ marginTop: 22, background: c.warm, border: `1px solid ${c.border}`, padding: 16, borderRadius: 8 }}>
+                    <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sageDark, fontWeight: 600, marginBottom: 10 }}>
+                      Você está adquirindo
+                    </div>
+                    <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+                      {allBenefits.map((b) => (
+                        <li key={b} style={{ display: "flex", gap: 10, fontSize: 13, color: c.ink, lineHeight: 1.4 }}>
+                          <span style={{ color: c.sageDark, fontWeight: 600 }}>+</span>
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                );
+              })()}
+
 
               {step === "checkout" && (
                 <section style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 12 }}>
