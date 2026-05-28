@@ -2360,6 +2360,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          altura_cm: number | null
           bairro: string | null
           bebe_sexo: string | null
           cidade: string | null
@@ -2377,12 +2378,14 @@ export type Database = {
           numero_gestacoes: number | null
           numero_partos: number | null
           partos_classificacao: Json | null
+          peso_inicial_kg: number | null
           telefone: string | null
           unidade_saude: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          altura_cm?: number | null
           bairro?: string | null
           bebe_sexo?: string | null
           cidade?: string | null
@@ -2400,12 +2403,14 @@ export type Database = {
           numero_gestacoes?: number | null
           numero_partos?: number | null
           partos_classificacao?: Json | null
+          peso_inicial_kg?: number | null
           telefone?: string | null
           unidade_saude?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          altura_cm?: number | null
           bairro?: string | null
           bebe_sexo?: string | null
           cidade?: string | null
@@ -2423,6 +2428,7 @@ export type Database = {
           numero_gestacoes?: number | null
           numero_partos?: number | null
           partos_classificacao?: Json | null
+          peso_inicial_kg?: number | null
           telefone?: string | null
           unidade_saude?: string | null
           updated_at?: string
