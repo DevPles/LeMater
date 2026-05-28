@@ -167,17 +167,19 @@ export default function AulaEditor({
           {editing.id ? "Editar aula" : "Nova aula"}
         </h2>
 
-        <Field label="Título"><input name="titulo" defaultValue={editing.titulo ?? ""} style={inp} required /></Field>
+        <Field label="Título"><input name="titulo" defaultValue={editing.titulo ?? ""} onChange={(e) => setPvTitulo(e.target.value)} style={inp} required /></Field>
         <Field label="Slug (URL)"><input name="slug" defaultValue={editing.slug ?? ""} placeholder="gerado automaticamente do título" style={inp} /></Field>
-        <Field label="Descrição"><textarea name="descricao" defaultValue={editing.descricao ?? ""} rows={3} style={{ ...inp, resize: "vertical" }} /></Field>
+        <Field label="Descrição"><textarea name="descricao" defaultValue={editing.descricao ?? ""} onChange={(e) => setPvDesc(e.target.value)} rows={3} style={{ ...inp, resize: "vertical" }} /></Field>
 
         <Field label="Temas (selecione um ou mais)">
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {temas.map((t) => {
-              const checked = (editing.temas as string[] | undefined)?.includes(t.id);
+              const checked = pvTemasIds.includes(t.id);
               return (
                 <label key={t.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, border: `1px solid ${c.border}`, padding: "6px 10px", background: "white", cursor: "pointer" }}>
-                  <input type="checkbox" name="temas" value={t.id} defaultChecked={checked} />
+                  <input type="checkbox" name="temas" value={t.id} checked={checked} onChange={(e) => {
+                    setPvTemasIds((prev) => e.target.checked ? [...prev, t.id] : prev.filter((x) => x !== t.id));
+                  }} />
                   <span style={{ fontSize: 13 }}>{t.titulo}</span>
                 </label>
               );
@@ -188,7 +190,7 @@ export default function AulaEditor({
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <Field label="Tipo de conteúdo">
-            <select name="tipo" defaultValue={editing.tipo ?? "video"} style={inp}>
+            <select name="tipo" defaultValue={editing.tipo ?? "video"} onChange={(e) => setPvTipo(e.target.value as any)} style={inp}>
               <option value="video">Vídeo</option>
               <option value="pdf">PDF</option>
               <option value="texto">Texto / Artigo</option>
