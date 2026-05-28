@@ -808,25 +808,6 @@ const css = `
   .web-login-card[data-mode="recover"] { --mobile-form-h: 260px; }
 
 
-@media (max-width: 767px) {
-  .web-login-desktop {
-    min-height: 100dvh;
-    padding: clamp(34px, 11dvh, 96px) 22px 22px;
-    align-items: flex-start;
-  }
-
-  .web-login-card {
-    --mobile-form-h: 374px;
-    width: min(348px, 100%);
-    min-height: 0;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-    border-radius: 12px;
-    box-shadow: 0 22px 34px -22px rgba(35, 71, 53, 0.45);
-  }
-
-  .web-login-card[data-mode="register"] { --mobile-form-h: 520px; }
-  .web-login-card[data-mode="recover"] { --mobile-form-h: 284px; }
 
   .web-form-side {
     grid-column: 1 / -1;
