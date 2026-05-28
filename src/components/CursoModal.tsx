@@ -235,7 +235,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       )}
 
       {/* Áudios do curso */}
-      {cursoAudios.length > 0 && !bloqueioInfo && (
+      {cursoAudios.length > 0 && (
         <div style={{ marginTop: 20 }}>
           <div style={{ fontSize: 10, letterSpacing: "0.22em", color: c.sageDark, marginBottom: 10, fontFamily: sans, fontWeight: 600 }}>OUÇA TAMBÉM</div>
           <div style={{ display: "grid", gap: 8 }}>
