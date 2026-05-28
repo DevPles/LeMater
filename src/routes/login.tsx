@@ -630,15 +630,15 @@ const css = `
   margin: 0;
   color: ${GREEN_DEEP};
   font-family: var(--font-display);
-  font-size: 36px;
+  font-size: 26px;
   font-weight: 600;
-  line-height: 1.08;
+  line-height: 1.1;
 }
 
 .form-subtitle {
-  margin: 6px 0 4px;
+  margin: 4px 0 2px;
   color: rgba(35, 71, 53, 0.72);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .field-group { display: flex; flex-direction: column; gap: 6px; }
