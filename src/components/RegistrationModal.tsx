@@ -225,11 +225,30 @@ export default function RegistrationModal({
 
   // Step 2 fields (pregnancy)
   const [dum, setDum] = useState("");
+  const [pesoInicial, setPesoInicial] = useState("");
+  const [altura, setAltura] = useState("");
   const [testeGravidez, setTesteGravidez] = useState<boolean | null>(null);
   const [qualTeste, setQualTeste] = useState("");
 
   const gestAge = dum ? calcGestationalAge(new Date(dum)) : null;
   const dueDate = dum ? calcDueDate(new Date(dum)) : null;
+
+  // IMC pré-gestacional: peso (kg) / altura² (m)
+  const imc = (() => {
+    const p = parseFloat(pesoInicial.replace(",", "."));
+    const a = parseFloat(altura.replace(",", "."));
+    if (!p || !a) return null;
+    const alturaM = a > 3 ? a / 100 : a; // aceita 165 ou 1.65
+    if (alturaM <= 0) return null;
+    return p / (alturaM * alturaM);
+  })();
+  const imcClass = (() => {
+    if (!imc) return null;
+    if (imc < 18.5) return { label: "Baixo peso", color: "#C4714A" };
+    if (imc < 25) return { label: "Peso adequado", color: "#2D5A42" };
+    if (imc < 30) return { label: "Sobrepeso", color: "#C4714A" };
+    return { label: "Obesidade", color: "#9B3D2E" };
+  })();
 
   const handleFoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -267,6 +286,10 @@ export default function RegistrationModal({
     setSubmitting(true);
     setSubmitErro(null);
     try {
+      const pesoNum = pesoInicial ? parseFloat(pesoInicial.replace(",", ".")) : null;
+      const alturaRaw = altura ? parseFloat(altura.replace(",", ".")) : null;
+      const alturaCm = alturaRaw ? (alturaRaw > 3 ? alturaRaw : alturaRaw * 100) : null;
+
       const { error } = await supabase.auth.signUp({
         email: email.trim(),
         password: senhaCadastro,
@@ -282,6 +305,8 @@ export default function RegistrationModal({
             unidade_saude: ubs || "",
             district_id: districtId || "",
             health_unit_id: healthUnitId || "",
+            peso_inicial_kg: pesoNum ? String(pesoNum) : "",
+            altura_cm: alturaCm ? String(alturaCm) : "",
           },
           emailRedirectTo: window.location.origin + "/app/home",
         },
@@ -313,6 +338,8 @@ export default function RegistrationModal({
           health_unit_id: healthUnitId,
           data_nascimento: dataNasc || null,
           ...(dumIso ? { dum: dumIso } : {}),
+          ...(pesoNum ? { peso_inicial_kg: pesoNum } : {}),
+          ...(alturaCm ? { altura_cm: alturaCm } : {}),
         };
         const { data: existingProfile, error: findProfileError } = await supabase
           .from("profiles")
@@ -325,6 +352,19 @@ export default function RegistrationModal({
           ? await supabase.from("profiles").update(profilePayload).eq("user_id", sess.session.user.id)
           : await supabase.from("profiles").insert({ ...profilePayload, user_id: sess.session.user.id });
         if (profileResult.error) throw profileResult.error;
+
+        // Registra o peso inicial como primeira medição clínica (para gráficos/histórico)
+        if (pesoNum && dumIso) {
+          const semana = gestAge ? gestAge.weeks : null;
+          await supabase.from("clinical_measurements").insert({
+            gestante_id: sess.session.user.id,
+            parametro: "peso",
+            valor: pesoNum,
+            semana_gestacional: semana,
+            data_medicao: new Date().toISOString().slice(0, 10),
+            observacao: "Peso informado no cadastro",
+          });
+        }
       }
       onOpenChange(false);
       navigate({ to: "/app/home" });
@@ -1059,6 +1099,53 @@ export default function RegistrationModal({
                   </div>
                 </motion.div>
               )}
+
+              {/* Peso e altura para IMC */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className={labelClass}>Peso atual (kg)</Label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    step="0.1"
+                    value={pesoInicial}
+                    onChange={(e) => setPesoInicial(e.target.value)}
+                    placeholder="Ex: 62.5"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <Label className={labelClass}>Altura (cm)</Label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    step="0.1"
+                    value={altura}
+                    onChange={(e) => setAltura(e.target.value)}
+                    placeholder="Ex: 165"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+
+              {imc && imcClass && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{ background: `${c.sageLight}15`, borderColor: `${c.sage}33` }}
+                  className="rounded-2xl p-4 space-y-2"
+                >
+                  <div className="flex justify-between items-center">
+                    <span style={{ color: c.muted }} className="text-sm">IMC pré-gestacional</span>
+                    <span style={{ color: c.sageDark }} className="font-bold">{imc.toFixed(1)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span style={{ color: c.muted }} className="text-sm">Classificação</span>
+                    <span style={{ color: imcClass.color }} className="font-bold">{imcClass.label}</span>
+                  </div>
+                </motion.div>
+              )}
+
 
               <div>
                 <Label className={labelClass}>Fez teste de gravidez?</Label>
