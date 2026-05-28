@@ -1632,8 +1632,8 @@ function MaterialPreview({ material, isServico }: { material: any; isServico: bo
       titulo={material.titulo || (isServico ? "Nome do serviço" : "Título do material")}
       descricao={descricaoPreview}
       capa_url={capaUrl}
-      metaLabel="Formato"
-      metaValor={tipoLabel[material.tipo] ?? "—"}
+      metaLabel={isServico ? "Tipo" : "Formato"}
+      metaValor={isServico ? "Serviço" : (tipoLabel[material.tipo] ?? "—")}
       precoLabel={precoLabel}
       ctaLabel={
         material.cta_label || (isServico ? "Agendar" : ehGratis ? "Baixar grátis" : "Comprar")
