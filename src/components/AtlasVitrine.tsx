@@ -230,6 +230,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                   metaValor={a.duracao_min ? `${a.duracao_min} min` : "—"}
                   precoLabel={!a.pode_consumir && !a.gratis ? a.preco_label : null}
                   ctaLabel={cta}
+                  ctaIcon={a.pode_consumir || a.gratis ? null : inCart ? "cart-check" : "cart"}
                   onAction={() => {
                     if (a.pode_consumir || a.gratis) {
                       if (a.temas[0]?.slug) setOpenSlug(a.temas[0].slug);
