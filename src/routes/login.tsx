@@ -34,12 +34,12 @@ export const Route = createFileRoute("/login")({
 type Mode = "login" | "register" | "recover";
 
 const PAISES = [
-  { code: "BR", label: "Brasil", dial: "+55" },
-  { code: "PT", label: "Portugal", dial: "+351" },
-  { code: "US", label: "Estados Unidos", dial: "+1" },
-  { code: "ES", label: "Espanha", dial: "+34" },
-  { code: "AR", label: "Argentina", dial: "+54" },
-  { code: "OUTRO", label: "Outro", dial: "" },
+  { code: "BR", label: "Brasil", dial: "+55", flag: "🇧🇷" },
+  { code: "PT", label: "Portugal", dial: "+351", flag: "🇵🇹" },
+  { code: "US", label: "Estados Unidos", dial: "+1", flag: "🇺🇸" },
+  { code: "ES", label: "Espanha", dial: "+34", flag: "🇪🇸" },
+  { code: "AR", label: "Argentina", dial: "+54", flag: "🇦🇷" },
+  { code: "OUTRO", label: "Outro", dial: "", flag: "🌐" },
 ];
 
 const initialForm = {
@@ -112,7 +112,7 @@ function LoginPage() {
       if (!phoneDigits || phoneDigits.length < 6) throw new Error("Informe um celular válido.");
       const fullPhone = dial ? `${dial}${phoneDigits}` : phoneDigits;
 
-      const { error } = await supabase.auth.signUp({
+      const { data: signData, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -122,9 +122,21 @@ function LoginPage() {
       });
       if (error) throw error;
 
-      toast.success("Cadastro realizado! Verifique seu e-mail para confirmar.");
-      goToMode("login");
-      setForm((current) => ({ ...current, loginEmail: email, signName: "", signEmail: "", signPassword: "", signPhone: "" }));
+      // Auto-login: if no session was returned (email confirmation flow), sign in directly
+      let session = signData.session;
+      if (!session) {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
+        session = signInData.session;
+      }
+
+      const activeSession = await waitForActiveSession(signData.user?.id);
+      const userId = activeSession?.user.id ?? session?.user.id;
+      if (!userId) throw new Error("Não foi possível iniciar a sessão.");
+      const destino = await resolvePostLoginPath(userId, "/app/membro");
+
+      toast.success("Conta criada! Bem-vinda.");
+      navigate({ to: destino });
     } catch (error) {
       toast.error((error as Error).message || "Não foi possível cadastrar.");
     } finally {
@@ -340,31 +352,34 @@ function RegisterForm({
   onBack?: () => void;
   onSubmit: (event: FormEvent) => void;
 }) {
-  const dial = PAISES.find((p) => p.code === country)?.dial ?? "";
+  const selected = PAISES.find((p) => p.code === country) ?? PAISES[0];
+  const dial = selected.dial;
   return (
     <form className={mobile ? "mobile-form" : "web-form"} onSubmit={onSubmit}>
-      <FormHeader title="Criar conta" subtitle="Solicite seu acesso." />
+      <FormHeader title="Criar conta" subtitle="É rápido e gratuito." />
       <Field label="Nome" value={name} onChange={onNameChange} autoComplete="name" required />
       <Field label="E-mail" type="email" value={email} onChange={onEmailChange} autoComplete="email" required />
-      <div className="web-field">
-        <Label className="web-field-label">País</Label>
-        <select
-          className="web-field-input"
-          value={country}
-          onChange={(e) => onCountryChange(e.target.value)}
-          style={{ height: 44, background: "transparent", border: "1px solid rgba(0,0,0,0.15)", borderRadius: 8, padding: "0 12px" }}
-        >
-          {PAISES.map((p) => (
-            <option key={p.code} value={p.code}>{p.label} {p.dial && `(${p.dial})`}</option>
-          ))}
-        </select>
+      <div className="field-group">
+        <Label className="field-label">País</Label>
+        <div className="country-wrap">
+          <span className="country-flag" aria-hidden>{selected.flag}</span>
+          <select
+            className="neo-input country-select"
+            value={country}
+            onChange={(e) => onCountryChange(e.target.value)}
+          >
+            {PAISES.map((p) => (
+              <option key={p.code} value={p.code}>{p.flag} {p.label} {p.dial && `(${p.dial})`}</option>
+            ))}
+          </select>
+        </div>
       </div>
-      <div className="web-field">
-        <Label className="web-field-label">Celular</Label>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {dial && <span style={{ fontSize: 14, color: "#555", minWidth: 44 }}>{dial}</span>}
+      <div className="field-group">
+        <Label className="field-label">Celular</Label>
+        <div className="phone-wrap">
+          {dial && <span className="phone-dial">{dial}</span>}
           <Input
-            className="web-field-input"
+            className="neo-input phone-input"
             type="tel"
             inputMode="tel"
             autoComplete="tel"
@@ -372,7 +387,6 @@ function RegisterForm({
             onChange={onPhoneChange}
             placeholder="(00) 00000-0000"
             required
-            style={{ flex: 1 }}
           />
         </div>
       </div>
@@ -380,7 +394,7 @@ function RegisterForm({
 
       {mobile ? (
         <button className="web-primary-button" type="submit">
-          Solicitar acesso
+          Cadastrar
         </button>
       ) : (
         <div className="web-form-actions">
@@ -390,7 +404,7 @@ function RegisterForm({
             </button>
           )}
           <button className="web-primary-button" type="submit">
-            Solicitar acesso
+            Cadastrar
           </button>
         </div>
       )}
@@ -499,16 +513,47 @@ const css = `
 }
 
 .web-login-card {
-  width: min(640px, calc(100vw - 64px));
-  min-height: 400px;
+  width: min(560px, calc(100vw - 64px));
+  min-height: 360px;
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 16px;
   background: ${CREAM_PANEL};
   box-shadow: 0 30px 60px -30px rgba(35, 71, 53, 0.35);
 }
+
+.country-wrap { position: relative; }
+.country-flag {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  pointer-events: none;
+}
+.country-select {
+  padding-left: 44px;
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23234735' d='M6 8L0 0h12z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+.phone-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.phone-dial {
+  font-size: 14px;
+  font-weight: 700;
+  color: ${GREEN_DEEP};
+  min-width: 42px;
+  text-align: center;
+}
+.phone-input { flex: 1; }
 
 .web-back {
   position: absolute;
@@ -738,7 +783,7 @@ const css = `
     box-shadow: 0 22px 34px -22px rgba(35, 71, 53, 0.45);
   }
 
-  .web-login-card[data-mode="register"] { --mobile-form-h: 356px; }
+  .web-login-card[data-mode="register"] { --mobile-form-h: 520px; }
   .web-login-card[data-mode="recover"] { --mobile-form-h: 284px; }
 
   .web-form-side {
