@@ -17,7 +17,7 @@ type AulaRow = {
   temas: { id: string; titulo: string }[];
 };
 
-export default function AulasTab({ reloadSignal }: { reloadSignal?: number }) {
+export default function AulasTab({ reloadSignal, temaFilter }: { reloadSignal?: number; temaFilter?: string | null }) {
   const fnList = useServerFn(adminListAulas);
   const fnDelete = useServerFn(adminDeleteAula);
 
