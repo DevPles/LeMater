@@ -11,6 +11,7 @@ import {
 } from "@/lib/membro.functions";
 import lemateLogo from "@/assets/lemater-logo.png";
 import { ContentCard } from "@/components/ContentCard";
+import { AtlasVitrine } from "@/components/AtlasVitrine";
 
 export const Route = createFileRoute("/_authenticated/app/membro")({
   head: () => ({
