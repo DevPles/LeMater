@@ -7,6 +7,38 @@ import { CursoModal } from "@/components/CursoModal";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 
+import vidEngravidar from "@/assets/curso-videos/engravidar.mp4";
+import vidPreNatal from "@/assets/curso-videos/pre-natal.mp4";
+import vidExercicios from "@/assets/curso-videos/exercicios.mp4";
+import vidAlimentacao from "@/assets/curso-videos/alimentacao.mp4";
+import vidPartoHumanizado from "@/assets/curso-videos/parto-humanizado.mp4";
+import vidPlanoParto from "@/assets/curso-videos/plano-parto.mp4";
+import vidPuerperio from "@/assets/curso-videos/puerperio.mp4";
+import vidAmamentacao from "@/assets/curso-videos/amamentacao.mp4";
+import vidPrimeirosCuidados from "@/assets/curso-videos/primeiros-cuidados.mp4";
+import vidSonoBebe from "@/assets/curso-videos/sono-bebe.mp4";
+
+function videoForAula(a: AtlasAulaVitrine): string {
+  if (a.capa_video_url) return a.capa_video_url;
+  const haystack = [
+    ...a.temas.map((t) => `${t.slug} ${t.titulo}`),
+    a.titulo,
+    a.descricao ?? "",
+  ].join(" ").toLowerCase();
+  const has = (...keys: string[]) => keys.some((k) => haystack.includes(k));
+  if (has("conceb", "concep", "engravid", "fertil")) return vidEngravidar;
+  if (has("amament", "leite", "peito")) return vidAmamentacao;
+  if (has("plano de parto", "plano-de-parto", "plano parto")) return vidPlanoParto;
+  if (has("parto", "trabalho de parto", "humaniz")) return vidPartoHumanizado;
+  if (has("puerp", "pos-parto", "pós-parto", "pos parto")) return vidPuerperio;
+  if (has("sono", "dormir")) return vidSonoBebe;
+  if (has("cuidad", "bebê", "bebe", "recem", "recém")) return vidPrimeirosCuidados;
+  if (has("exerc", "movimento", "yoga", "atividade")) return vidExercicios;
+  if (has("aliment", "nutri", "comida", "dieta")) return vidAlimentacao;
+  if (has("gesta", "pre-natal", "pré-natal", "pre natal", "grávid", "gravid")) return vidPreNatal;
+  return vidPreNatal;
+}
+
 export const Route = createFileRoute("/atlas")({
   head: () => ({
     meta: [
