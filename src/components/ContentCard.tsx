@@ -133,8 +133,3 @@ function CartCheckIcon() {
     </svg>
   );
 }
-      </div>
-
-    </div>
-  );
-}
