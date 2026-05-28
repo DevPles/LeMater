@@ -352,6 +352,12 @@ function RegisterForm({
 }) {
   const selected = PAISES.find((p) => p.code === country) ?? PAISES[0];
   const dial = selected.dial;
+  const [brBurstId, setBrBurstId] = useState(0);
+  const handleCountryClick = (code: string) => {
+    onCountryChange(code);
+    if (code === "BR") setBrBurstId((n) => n + 1);
+  };
+  const confettiPieces = Array.from({ length: 22 }, (_, i) => i);
   return (
     <form className={mobile ? "mobile-form" : "web-form"} onSubmit={onSubmit}>
       <FormHeader title="Criar conta" subtitle="É rápido e gratuito." />
@@ -365,7 +371,7 @@ function RegisterForm({
               key={p.code}
               type="button"
               className={`country-flag-btn${country === p.code ? " is-active" : ""}`}
-              onClick={() => onCountryChange(p.code)}
+              onClick={() => handleCountryClick(p.code)}
               aria-label={p.label}
               title={p.label}
             >
@@ -374,6 +380,32 @@ function RegisterForm({
                 srcSet={`https://flagcdn.com/w160/${p.flag}.png 2x`}
                 alt={p.code}
               />
+              {p.code === "BR" && brBurstId > 0 && (
+                <span key={brBurstId} className="confetti-burst" aria-hidden="true">
+                  {confettiPieces.map((i) => {
+                    const angle = (i / confettiPieces.length) * Math.PI * 2;
+                    const dist = 48 + Math.random() * 32;
+                    const tx = Math.cos(angle) * dist;
+                    const ty = Math.sin(angle) * dist;
+                    const rot = Math.random() * 720 - 360;
+                    const color = i % 2 === 0 ? "#00a859" : "#ffd700";
+                    const delay = Math.random() * 60;
+                    return (
+                      <span
+                        key={i}
+                        className="confetti-piece"
+                        style={{
+                          background: color,
+                          ["--tx" as string]: `${tx}px`,
+                          ["--ty" as string]: `${ty}px`,
+                          ["--rot" as string]: `${rot}deg`,
+                          animationDelay: `${delay}ms`,
+                        }}
+                      />
+                    );
+                  })}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -536,6 +568,7 @@ const css = `
   align-items: center;
 }
 .country-flag-btn {
+  position: relative;
   width: 56px;
   height: 40px;
   border-radius: 10px;
@@ -543,11 +576,41 @@ const css = `
   background: ${CREAM_PANEL};
   padding: 0;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: border-color 0.2s, transform 0.2s;
+}
+.country-flag-btn > img {
+  border-radius: 8px;
+  overflow: hidden;
+}
+.confetti-burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+.confetti-piece {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 10px;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: confettiFly 900ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  box-shadow: 0 0 6px rgba(0,0,0,0.15);
+}
+@keyframes confettiFly {
+  0% { opacity: 1; transform: translate(-50%, -50%) rotate(0deg) scale(0.6); }
+  60% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) rotate(var(--rot)) scale(1);
+  }
 }
 .country-flag-btn img {
   width: 100%;
