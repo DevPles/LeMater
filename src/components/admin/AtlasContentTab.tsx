@@ -2,18 +2,21 @@ import { useState, type CSSProperties } from "react";
 import CursosTab from "./CursosTab";
 import MateriaisTab from "./MateriaisTab";
 import NovoConteudoModal from "./NovoConteudoModal";
+import AulasTab from "./AulasTab";
 
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2" };
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type Tipo = "curso" | "material" | "servico";
+type Tipo = "aula" | "curso" | "material" | "servico";
 
 const LABELS: Record<Tipo, string> = {
-  curso: "Cursos",
+  aula: "Aulas",
+  curso: "Temas / Coleções",
   material: "Materiais",
   servico: "Serviços",
 };
+
 
 export default function AtlasContentTab() {
   const [tipo, setTipo] = useState<Tipo>("curso");
