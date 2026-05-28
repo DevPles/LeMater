@@ -17,7 +17,7 @@ type AulaRow = {
   temas: { id: string; titulo: string }[];
 };
 
-export default function AulasTab({ reloadSignal }: { reloadSignal?: number }) {
+export default function AulasTab({ reloadSignal, temaFilter }: { reloadSignal?: number; temaFilter?: string | null }) {
   const fnList = useServerFn(adminListAulas);
   const fnDelete = useServerFn(adminDeleteAula);
 
@@ -47,14 +47,17 @@ export default function AulasTab({ reloadSignal }: { reloadSignal?: number }) {
       </p>
 
       {err && <p style={{ color: c.danger }}>{err}</p>}
-      {!aulas ? <p style={{ color: c.muted }}>Carregando…</p>
-        : aulas.length === 0 ? (
+      {(() => {
+        const filtered = aulas?.filter((a) => !temaFilter || a.temas.some((t) => t.id === temaFilter));
+        if (!filtered) return <p style={{ color: c.muted }}>Carregando…</p>;
+        if (filtered.length === 0) return (
           <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: 40, textAlign: "center", color: c.muted }}>
-            Nenhuma aula ainda. Clique em <strong>Novo conteúdo</strong> no topo para começar.
+            {temaFilter ? "Nenhuma aula neste tema ainda." : <>Nenhuma aula ainda. Clique em <strong>Novo conteúdo</strong> no topo para começar.</>}
           </div>
-        ) : (
+        );
+        return (
           <div style={{ border: `1px solid ${c.border}`, background: "white" }}>
-            {aulas.map((a) => (
+            {filtered.map((a) => (
               <div key={a.id} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 16, padding: 16, borderBottom: `1px solid ${c.border}` }}>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -78,7 +81,9 @@ export default function AulasTab({ reloadSignal }: { reloadSignal?: number }) {
               </div>
             ))}
           </div>
-        )}
+        );
+      })()}
+
 
       {editing && (
         <AulaEditor
