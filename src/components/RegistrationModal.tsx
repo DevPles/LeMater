@@ -286,6 +286,10 @@ export default function RegistrationModal({
     setSubmitting(true);
     setSubmitErro(null);
     try {
+      const pesoNum = pesoInicial ? parseFloat(pesoInicial.replace(",", ".")) : null;
+      const alturaRaw = altura ? parseFloat(altura.replace(",", ".")) : null;
+      const alturaCm = alturaRaw ? (alturaRaw > 3 ? alturaRaw : alturaRaw * 100) : null;
+
       const { error } = await supabase.auth.signUp({
         email: email.trim(),
         password: senhaCadastro,
@@ -301,6 +305,8 @@ export default function RegistrationModal({
             unidade_saude: ubs || "",
             district_id: districtId || "",
             health_unit_id: healthUnitId || "",
+            peso_inicial_kg: pesoNum ? String(pesoNum) : "",
+            altura_cm: alturaCm ? String(alturaCm) : "",
           },
           emailRedirectTo: window.location.origin + "/app/home",
         },
@@ -332,6 +338,8 @@ export default function RegistrationModal({
           health_unit_id: healthUnitId,
           data_nascimento: dataNasc || null,
           ...(dumIso ? { dum: dumIso } : {}),
+          ...(pesoNum ? { peso_inicial_kg: pesoNum } : {}),
+          ...(alturaCm ? { altura_cm: alturaCm } : {}),
         };
         const { data: existingProfile, error: findProfileError } = await supabase
           .from("profiles")
@@ -344,6 +352,19 @@ export default function RegistrationModal({
           ? await supabase.from("profiles").update(profilePayload).eq("user_id", sess.session.user.id)
           : await supabase.from("profiles").insert({ ...profilePayload, user_id: sess.session.user.id });
         if (profileResult.error) throw profileResult.error;
+
+        // Registra o peso inicial como primeira medição clínica (para gráficos/histórico)
+        if (pesoNum && dumIso) {
+          const semana = gestAge ? gestAge.weeks : null;
+          await supabase.from("clinical_measurements").insert({
+            gestante_id: sess.session.user.id,
+            parametro: "peso",
+            valor: pesoNum,
+            semana_gestacional: semana,
+            data_medicao: new Date().toISOString().slice(0, 10),
+            observacao: "Peso informado no cadastro",
+          });
+        }
       }
       onOpenChange(false);
       navigate({ to: "/app/home" });
