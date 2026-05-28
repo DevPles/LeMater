@@ -109,23 +109,21 @@ function MembroPage() {
         {data.sugeridos.length > 0 && (
           <Section titulo="Cursos sugeridos" subtitulo="Conteúdos disponíveis para você adquirir">
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
-              {data.sugeridos.map((curso) => (
-                <article key={curso.id} style={cardStyle}>
-                  {curso.capa_url && <img src={curso.capa_url} alt="" style={cardImg} />}
-                  <div style={cardBody}>
-                    <span style={metaTag}>{curso.categoria} · {curso.total_aulas} aulas</span>
-                    <h3 style={cardTitle}>{curso.titulo}</h3>
-                    {curso.descricao_curta && <p style={{ fontSize: 13, color: c.muted, margin: 0, lineHeight: 1.5 }}>{curso.descricao_curta}</p>}
-                    {curso.preco_label && <span style={{ fontSize: 13, color: c.gold, fontWeight: 500 }}>{curso.preco_label}</span>}
-                    <Link
-                      to="/atlas/$slug"
-                      params={{ slug: curso.slug }}
-                      style={{ ...btn(c.gold), textDecoration: "none", textAlign: "center", marginTop: "auto" }}
-                    >
-                      Ver detalhes
-                    </Link>
-                  </div>
-                </article>
+              {data.sugeridos.map((curso, i) => (
+                <ContentCard
+                  key={curso.id}
+                  numero={String(i + 1).padStart(2, "0")}
+                  categoria={curso.categoria}
+                  badge={curso.preco_label ? { label: "Conteúdo pago", color: c.gold } : { label: "Grátis", color: c.sage }}
+                  titulo={curso.titulo}
+                  descricao={curso.descricao_curta}
+                  capa_url={curso.capa_url}
+                  metaLabel="Aulas"
+                  metaValor={`${curso.total_aulas} aulas`}
+                  precoLabel={curso.preco_label}
+                  ctaLabel="Ver detalhes"
+                  onAction={() => navigate({ to: "/atlas/$slug", params: { slug: curso.slug } })}
+                />
               ))}
             </div>
           </Section>
