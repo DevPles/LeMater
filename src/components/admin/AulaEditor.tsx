@@ -150,7 +150,7 @@ export default function AulaEditor({
         publicado: fd.get("publicado") === "on",
         gratis: fd.get("gratis") === "on",
         previa_gratis: fd.get("previa_gratis") === "on",
-        preco_centavos: Number(fd.get("preco_centavos") ?? 0) || 0,
+        preco_centavos: Math.round((Number(fd.get("preco_reais") ?? 0) || 0) * 100),
         preco_label: String(fd.get("preco_label") ?? "") || null,
         moeda: String(fd.get("moeda") ?? "BRL") || "BRL",
         link_compra_externo: String(fd.get("link_compra_externo") ?? "") || null,
@@ -233,7 +233,7 @@ export default function AulaEditor({
             </label>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-            <Field label="Preço (centavos)"><input name="preco_centavos" type="number" min={0} defaultValue={editing.preco_centavos ?? 0} style={inp} /></Field>
+            <Field label="Preço"><input name="preco_reais" type="number" min={0} step="0.01" defaultValue={((editing.preco_centavos ?? 0) / 100).toFixed(2)} placeholder="49.00" style={inp} /></Field>
             <Field label="Label do preço"><input name="preco_label" defaultValue={editing.preco_label ?? ""} onChange={(e) => setPvPrecoLabel(e.target.value)} placeholder="R$ 49 / US$ 9" style={inp} /></Field>
             <Field label="Moeda">
               <select name="moeda" defaultValue={editing.moeda ?? "BRL"} style={inp}>
