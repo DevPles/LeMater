@@ -352,6 +352,12 @@ function RegisterForm({
 }) {
   const selected = PAISES.find((p) => p.code === country) ?? PAISES[0];
   const dial = selected.dial;
+  const [brBurstId, setBrBurstId] = useState(0);
+  const handleCountryClick = (code: string) => {
+    onCountryChange(code);
+    if (code === "BR") setBrBurstId((n) => n + 1);
+  };
+  const confettiPieces = Array.from({ length: 22 }, (_, i) => i);
   return (
     <form className={mobile ? "mobile-form" : "web-form"} onSubmit={onSubmit}>
       <FormHeader title="Criar conta" subtitle="É rápido e gratuito." />
@@ -365,7 +371,7 @@ function RegisterForm({
               key={p.code}
               type="button"
               className={`country-flag-btn${country === p.code ? " is-active" : ""}`}
-              onClick={() => onCountryChange(p.code)}
+              onClick={() => handleCountryClick(p.code)}
               aria-label={p.label}
               title={p.label}
             >
@@ -374,6 +380,32 @@ function RegisterForm({
                 srcSet={`https://flagcdn.com/w160/${p.flag}.png 2x`}
                 alt={p.code}
               />
+              {p.code === "BR" && brBurstId > 0 && (
+                <span key={brBurstId} className="confetti-burst" aria-hidden="true">
+                  {confettiPieces.map((i) => {
+                    const angle = (i / confettiPieces.length) * Math.PI * 2;
+                    const dist = 48 + Math.random() * 32;
+                    const tx = Math.cos(angle) * dist;
+                    const ty = Math.sin(angle) * dist;
+                    const rot = Math.random() * 720 - 360;
+                    const color = i % 2 === 0 ? "#00a859" : "#ffd700";
+                    const delay = Math.random() * 60;
+                    return (
+                      <span
+                        key={i}
+                        className="confetti-piece"
+                        style={{
+                          background: color,
+                          ["--tx" as string]: `${tx}px`,
+                          ["--ty" as string]: `${ty}px`,
+                          ["--rot" as string]: `${rot}deg`,
+                          animationDelay: `${delay}ms`,
+                        }}
+                      />
+                    );
+                  })}
+                </span>
+              )}
             </button>
           ))}
         </div>
