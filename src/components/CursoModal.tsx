@@ -269,9 +269,11 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   );
 
   // ───────── Vitrine ─────────
-  const precoMin = cursoOffers.length > 0
-    ? fmtPreco(Math.min(...cursoOffers.map((o) => o.preco_centavos)), cursoOffers[0].moeda)
+  const aulasPagas = data?.modulos.flatMap((m) => m.aulas).filter((a) => (a.preco_centavos ?? 0) > 0) ?? [];
+  const precoMin = aulasPagas.length > 0
+    ? fmtPreco(Math.min(...aulasPagas.map((a) => a.preco_centavos)), "BRL")
     : null;
+
 
   const renderLista = () => (
     <div>
