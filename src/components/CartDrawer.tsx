@@ -314,19 +314,6 @@ export function CartDrawer() {
             </div>
           ) : (
             <>
-              {/* SOCIAL PROOF STRIP */}
-              {step === "cart" && (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 10, marginBottom: 14,
-                  padding: "10px 12px", background: "white", border: `1px solid ${c.border}`,
-                  borderRadius: 10, fontSize: 12, color: c.ink,
-                }}>
-                  <span style={{ display: "flex", gap: 1, color: c.gold, fontSize: 13 }}>★★★★★</span>
-                  <span style={{ color: c.muted }}>
-                    <strong style={{ color: c.ink }}>+2.400 gestantes</strong> já fazem parte
-                  </span>
-                </div>
-              )}
 
               {/* ITEM CARDS WITH VIDEO */}
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
