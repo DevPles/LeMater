@@ -34,6 +34,7 @@ import { Route as AppSalaRoomIdRouteImport } from './routes/app_.sala.$roomId'
 import { Route as ApiPublicMercadopagoWebhookRouteImport } from './routes/api/public/mercadopago-webhook'
 import { Route as ApiPublicHotmartWebhookRouteImport } from './routes/api/public/hotmart-webhook'
 import { Route as AuthenticatedAppMembroRouteImport } from './routes/_authenticated/app.membro'
+import { Route as AuthenticatedAppBibliotecaRouteImport } from './routes/_authenticated/app.biblioteca'
 import { Route as AuthenticatedAppAdminRouteImport } from './routes/_authenticated/app.admin'
 import { Route as ApiPublicHooksStripeRouteImport } from './routes/api/public/hooks/stripe'
 import { Route as ApiPublicHooksKiwifyRouteImport } from './routes/api/public/hooks/kiwify'
@@ -166,6 +167,12 @@ const AuthenticatedAppMembroRoute = AuthenticatedAppMembroRouteImport.update({
   path: '/app/membro',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAppBibliotecaRoute =
+  AuthenticatedAppBibliotecaRouteImport.update({
+    id: '/app/biblioteca',
+    path: '/app/biblioteca',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAppAdminRoute = AuthenticatedAppAdminRouteImport.update({
   id: '/app/admin',
   path: '/app/admin',
@@ -220,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/avaliacao/$token': typeof AvaliacaoTokenRoute
   '/biblioteca/$slug': typeof BibliotecaSlugRoute
   '/app/admin': typeof AuthenticatedAppAdminRoute
+  '/app/biblioteca': typeof AuthenticatedAppBibliotecaRoute
   '/app/membro': typeof AuthenticatedAppMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
@@ -252,6 +260,7 @@ export interface FileRoutesByTo {
   '/avaliacao/$token': typeof AvaliacaoTokenRoute
   '/biblioteca/$slug': typeof BibliotecaSlugRoute
   '/app/admin': typeof AuthenticatedAppAdminRoute
+  '/app/biblioteca': typeof AuthenticatedAppBibliotecaRoute
   '/app/membro': typeof AuthenticatedAppMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
@@ -286,6 +295,7 @@ export interface FileRoutesById {
   '/avaliacao/$token': typeof AvaliacaoTokenRoute
   '/biblioteca/$slug': typeof BibliotecaSlugRoute
   '/_authenticated/app/admin': typeof AuthenticatedAppAdminRoute
+  '/_authenticated/app/biblioteca': typeof AuthenticatedAppBibliotecaRoute
   '/_authenticated/app/membro': typeof AuthenticatedAppMembroRoute
   '/api/public/hotmart-webhook': typeof ApiPublicHotmartWebhookRoute
   '/api/public/mercadopago-webhook': typeof ApiPublicMercadopagoWebhookRoute
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/avaliacao/$token'
     | '/biblioteca/$slug'
     | '/app/admin'
+    | '/app/biblioteca'
     | '/app/membro'
     | '/api/public/hotmart-webhook'
     | '/api/public/mercadopago-webhook'
@@ -352,6 +363,7 @@ export interface FileRouteTypes {
     | '/avaliacao/$token'
     | '/biblioteca/$slug'
     | '/app/admin'
+    | '/app/biblioteca'
     | '/app/membro'
     | '/api/public/hotmart-webhook'
     | '/api/public/mercadopago-webhook'
@@ -385,6 +397,7 @@ export interface FileRouteTypes {
     | '/avaliacao/$token'
     | '/biblioteca/$slug'
     | '/_authenticated/app/admin'
+    | '/_authenticated/app/biblioteca'
     | '/_authenticated/app/membro'
     | '/api/public/hotmart-webhook'
     | '/api/public/mercadopago-webhook'
@@ -601,6 +614,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppMembroRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/app/biblioteca': {
+      id: '/_authenticated/app/biblioteca'
+      path: '/app/biblioteca'
+      fullPath: '/app/biblioteca'
+      preLoaderRoute: typeof AuthenticatedAppBibliotecaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/app/admin': {
       id: '/_authenticated/app/admin'
       path: '/app/admin'
@@ -649,6 +669,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedCarrinhoRoute: typeof AuthenticatedCarrinhoRoute
   AuthenticatedAppAdminRoute: typeof AuthenticatedAppAdminRoute
+  AuthenticatedAppBibliotecaRoute: typeof AuthenticatedAppBibliotecaRoute
   AuthenticatedAppMembroRoute: typeof AuthenticatedAppMembroRoute
   AuthenticatedAtlasSlugAprenderRoute: typeof AuthenticatedAtlasSlugAprenderRoute
 }
@@ -656,6 +677,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCarrinhoRoute: AuthenticatedCarrinhoRoute,
   AuthenticatedAppAdminRoute: AuthenticatedAppAdminRoute,
+  AuthenticatedAppBibliotecaRoute: AuthenticatedAppBibliotecaRoute,
   AuthenticatedAppMembroRoute: AuthenticatedAppMembroRoute,
   AuthenticatedAtlasSlugAprenderRoute: AuthenticatedAtlasSlugAprenderRoute,
 }
