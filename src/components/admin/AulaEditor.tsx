@@ -65,6 +65,16 @@ export default function AulaEditor({
     link_compra_externo: "", temas: [],
   };
 
+  // Preview state
+  const [pvTitulo, setPvTitulo] = useState(editing.titulo ?? "");
+  const [pvDesc, setPvDesc] = useState(editing.descricao ?? "");
+  const [pvTipo, setPvTipo] = useState(editing.tipo ?? "video");
+  const [pvGratis, setPvGratis] = useState(editing.gratis ?? false);
+  const [pvPrecoLabel, setPvPrecoLabel] = useState(editing.preco_label ?? "");
+  const [pvTemasIds, setPvTemasIds] = useState<string[]>(editing.temas ?? []);
+  const pvTemaNome = temas.find((t) => pvTemasIds.includes(t.id))?.titulo ?? "Tema";
+  const tipoLabel: Record<string, string> = { video: "Vídeo", pdf: "PDF", texto: "Texto" };
+
   useEffect(() => {
     fnTemas().then((t) => setTemas((t as any[]).map((x) => ({ id: x.id, titulo: x.titulo }))));
   }, []);
@@ -157,17 +167,19 @@ export default function AulaEditor({
           {editing.id ? "Editar aula" : "Nova aula"}
         </h2>
 
-        <Field label="Título"><input name="titulo" defaultValue={editing.titulo ?? ""} style={inp} required /></Field>
+        <Field label="Título"><input name="titulo" defaultValue={editing.titulo ?? ""} onChange={(e) => setPvTitulo(e.target.value)} style={inp} required /></Field>
         <Field label="Slug (URL)"><input name="slug" defaultValue={editing.slug ?? ""} placeholder="gerado automaticamente do título" style={inp} /></Field>
-        <Field label="Descrição"><textarea name="descricao" defaultValue={editing.descricao ?? ""} rows={3} style={{ ...inp, resize: "vertical" }} /></Field>
+        <Field label="Descrição"><textarea name="descricao" defaultValue={editing.descricao ?? ""} onChange={(e) => setPvDesc(e.target.value)} rows={3} style={{ ...inp, resize: "vertical" }} /></Field>
 
         <Field label="Temas (selecione um ou mais)">
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {temas.map((t) => {
-              const checked = (editing.temas as string[] | undefined)?.includes(t.id);
+              const checked = pvTemasIds.includes(t.id);
               return (
                 <label key={t.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, border: `1px solid ${c.border}`, padding: "6px 10px", background: "white", cursor: "pointer" }}>
-                  <input type="checkbox" name="temas" value={t.id} defaultChecked={checked} />
+                  <input type="checkbox" name="temas" value={t.id} checked={checked} onChange={(e) => {
+                    setPvTemasIds((prev) => e.target.checked ? [...prev, t.id] : prev.filter((x) => x !== t.id));
+                  }} />
                   <span style={{ fontSize: 13 }}>{t.titulo}</span>
                 </label>
               );
@@ -178,7 +190,7 @@ export default function AulaEditor({
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <Field label="Tipo de conteúdo">
-            <select name="tipo" defaultValue={editing.tipo ?? "video"} style={inp}>
+            <select name="tipo" defaultValue={editing.tipo ?? "video"} onChange={(e) => setPvTipo(e.target.value as any)} style={inp}>
               <option value="video">Vídeo</option>
               <option value="pdf">PDF</option>
               <option value="texto">Texto / Artigo</option>
@@ -207,7 +219,7 @@ export default function AulaEditor({
           <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 12 }}>Monetização</div>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 10 }}>
             <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
-              <input type="checkbox" name="gratis" defaultChecked={editing.gratis ?? false} /> Aula grátis
+              <input type="checkbox" name="gratis" defaultChecked={editing.gratis ?? false} onChange={(e) => setPvGratis(e.target.checked)} /> Aula grátis
             </label>
             <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
               <input type="checkbox" name="previa_gratis" defaultChecked={editing.previa_gratis ?? false} /> Prévia liberada para todos
@@ -215,7 +227,7 @@ export default function AulaEditor({
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
             <Field label="Preço (centavos)"><input name="preco_centavos" type="number" min={0} defaultValue={editing.preco_centavos ?? 0} style={inp} /></Field>
-            <Field label="Label do preço"><input name="preco_label" defaultValue={editing.preco_label ?? ""} placeholder="R$ 49 / US$ 9" style={inp} /></Field>
+            <Field label="Label do preço"><input name="preco_label" defaultValue={editing.preco_label ?? ""} onChange={(e) => setPvPrecoLabel(e.target.value)} placeholder="R$ 49 / US$ 9" style={inp} /></Field>
             <Field label="Moeda">
               <select name="moeda" defaultValue={editing.moeda ?? "BRL"} style={inp}>
                 <option value="BRL">BRL</option>
@@ -232,6 +244,32 @@ export default function AulaEditor({
         <label style={{ display: "inline-flex", gap: 8, alignItems: "center", margin: "8px 0 18px" }}>
           <input type="checkbox" name="publicado" defaultChecked={editing.publicado ?? false} /> Publicar agora
         </label>
+
+        {/* Prévia do card */}
+        <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 16, marginTop: 8, marginBottom: 18 }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.muted, marginBottom: 12 }}>Prévia do card</div>
+          <div style={{ background: c.sageDark, color: "white", padding: 24, position: "relative", maxWidth: 360 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+              <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                {pvGratis && <div style={{ background: "rgba(255,255,255,0.15)", padding: "4px 10px", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Conteúdo grátis</div>}
+                <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>{pvTemaNome}</div>
+              </div>
+            </div>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 500, margin: "0 0 8px", lineHeight: 1.2 }}>{pvTitulo || "Título da aula"}</h3>
+            <p style={{ fontSize: 13, opacity: 0.85, margin: 0, lineHeight: 1.5 }}>{pvDesc || "Descrição aparece aqui."}</p>
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.2)", marginTop: 16, paddingTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.6, marginBottom: 2 }}>Formato</div>
+                <div style={{ fontSize: 13 }}>{tipoLabel[pvTipo] ?? "Vídeo"}</div>
+              </div>
+              <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>
+                {pvGratis ? "Assistir grátis" : (pvPrecoLabel || "Comprar")}
+              </div>
+            </div>
+          </div>
+          <p style={{ fontSize: 11, color: c.muted, marginTop: 8 }}>É assim que o card aparece na vitrine do Atlas.</p>
+        </div>
 
         {err && <p style={{ color: c.danger, fontSize: 13 }}>{err}</p>}
 
