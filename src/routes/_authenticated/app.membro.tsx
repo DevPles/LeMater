@@ -11,6 +11,7 @@ import {
 } from "@/lib/membro.functions";
 import lemateLogo from "@/assets/lemater-logo.png";
 import { ContentCard } from "@/components/ContentCard";
+import { AtlasVitrine } from "@/components/AtlasVitrine";
 
 export const Route = createFileRoute("/_authenticated/app/membro")({
   head: () => ({
@@ -106,29 +107,13 @@ function MembroPage() {
           )}
         </Section>
 
-        {/* Sugeridos */}
-        {data.sugeridos.length > 0 && (
-          <Section titulo="Cursos sugeridos" subtitulo="Conteúdos disponíveis para você adquirir">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
-              {data.sugeridos.map((curso, i) => (
-                <ContentCard
-                  key={curso.id}
-                  numero={String(i + 1).padStart(2, "0")}
-                  categoria={curso.categoria}
-                  badge={curso.preco_label ? { label: "Conteúdo pago", color: c.gold } : { label: "Grátis", color: c.sage }}
-                  titulo={curso.titulo}
-                  descricao={curso.descricao_curta}
-                  capa_url={curso.capa_url}
-                  metaLabel="Aulas"
-                  metaValor={`${curso.total_aulas} aulas`}
-                  precoLabel={curso.preco_label}
-                  ctaLabel="Ver detalhes"
-                  onAction={() => navigate({ to: "/atlas/$slug", params: { slug: curso.slug } })}
-                />
-              ))}
-            </div>
-          </Section>
-        )}
+        {/* Vitrine Atlas — mesmos cards da página /atlas */}
+        <Section titulo="Atlas Materno" subtitulo="Aulas avulsas disponíveis para você">
+          <div style={{ margin: "0 -32px" }}>
+            <AtlasVitrine variant="site" />
+          </div>
+        </Section>
+
 
         {/* Perfil */}
         <Section
