@@ -38,8 +38,10 @@ export type AulaDraft = {
   video_url?: string | null;
   pdf_url?: string | null;
   conteudo_html?: string | null;
+  beneficios?: string[];
   temas?: string[];
 };
+
 
 type Tema = { id: string; titulo: string };
 
