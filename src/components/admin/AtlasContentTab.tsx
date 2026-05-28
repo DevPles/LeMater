@@ -8,29 +8,38 @@ const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type Tipo = "aula" | "curso" | "material" | "servico";
+type Tipo = "aula" | "tema" | "material" | "servico";
 
 const LABELS: Record<Tipo, string> = {
   aula: "Aulas",
-  curso: "Temas / Coleções",
+  tema: "Temas",
   material: "Materiais",
   servico: "Serviços",
 };
 
-
 export default function AtlasContentTab() {
-  const [tipo, setTipo] = useState<Tipo>("curso");
+  const [tipo, setTipo] = useState<Tipo>("aula");
   const [novoOpen, setNovoOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+
+  // "Novo conteúdo" só faz sentido para material/servico aqui no topo.
+  // Aula tem botão próprio dentro do AulasTab. Tema (= curso/coleção) tem botão dentro do CursosTab.
+  const mostrarNovoTopo = tipo === "material" || tipo === "servico";
 
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
         <div>
           <h1 style={{ fontFamily: serif, fontSize: 36, fontWeight: 300, margin: "0 0 6px" }}>Atlas Materno</h1>
-          <p style={{ color: c.muted, margin: 0, fontSize: 14 }}>Todo o conteúdo do Atlas em um só lugar.</p>
+          <p style={{ color: c.muted, margin: 0, fontSize: 14 }}>
+            Aulas são o coração do Atlas. Cada aula é monetizada de forma independente e pode pertencer a vários temas.
+          </p>
         </div>
-        {tipo !== "aula" && <button onClick={() => setNovoOpen(true)} style={btnPrimary(c.sageDark)}>Novo conteúdo</button>}
+        {mostrarNovoTopo && (
+          <button onClick={() => setNovoOpen(true)} style={btnPrimary(c.sageDark)}>
+            {tipo === "servico" ? "Novo serviço" : "Novo material"}
+          </button>
+        )}
       </div>
 
       <div style={{ display: "flex", gap: 0, marginBottom: 24, borderBottom: `1px solid ${c.border}` }}>
@@ -62,19 +71,18 @@ export default function AtlasContentTab() {
 
       <div key={`${tipo}-${reloadKey}`}>
         {tipo === "aula" && <AulasTab />}
-        {tipo === "curso" && <CursosTab esconderNovo />}
+        {tipo === "tema" && <CursosTab esconderNovo={false} />}
         {tipo === "material" && <MateriaisTab esconderNovo />}
         {tipo === "servico" && <MateriaisTab esconderNovo forcarCategoria="Serviço" titulo="Serviços" ctaNovo="Novo serviço" />}
       </div>
 
-      {novoOpen && tipo !== "aula" && (
+      {novoOpen && mostrarNovoTopo && (
         <NovoConteudoModal
-          tipoInicial={tipo}
+          tipoInicial={tipo as "material" | "servico"}
           onClose={() => setNovoOpen(false)}
           onSaved={() => setReloadKey((k) => k + 1)}
         />
       )}
-
     </div>
   );
 }
