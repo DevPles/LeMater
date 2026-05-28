@@ -715,9 +715,9 @@ const css = `
   border-radius: 6px;
   background: ${GREEN};
   color: #ffffff;
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 800;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
   box-shadow: 0 6px 14px -6px rgba(35, 71, 53, 0.6);
