@@ -49,7 +49,7 @@ const sans = "'DM Sans', sans-serif";
 type Tab =
   | "dash"
   | "atlas"
-  | "biblioteca"
+  
   | "consultas" | "gravacoes" | "profissionais"
   | "dados" | "parametros" | "relatorios"
   | "leads" | "alunos" | "usuarios" | "acessos" | "compras" | "vendas";
@@ -60,7 +60,6 @@ const TAB_GROUPS: { label: string; tabs: { id: Tab; label: string }[] }[] = [
     { id: "vendas", label: "Vendas & cupons" },
   ]},
   { label: "Conteúdos", tabs: [
-    { id: "biblioteca", label: "Biblioteca" },
     { id: "atlas", label: "Atlas" },
   ]},
   { label: "Operação", tabs: [
