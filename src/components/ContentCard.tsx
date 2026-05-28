@@ -81,16 +81,15 @@ export function ContentCard(p: ContentCardProps) {
         </p>
       )}
       {p.extra}
-      <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : c.border}`, paddingTop: 10, marginTop: "auto", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-          {p.metaLabel && (
-            <>
-              <div style={{ fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "rgba(255,255,255,0.6)" : c.muted }}>{p.metaLabel}</div>
-              <div style={{ fontSize: 11.5, color: isDark ? "white" : c.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.metaValor}</div>
-            </>
+      <div style={{ borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.18)" : c.border}`, paddingTop: 10, marginTop: "auto", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8, minWidth: 0, flex: "1 1 auto" }}>
+          {p.metaValor && (
+            <span style={{ fontSize: 11, color: isDark ? "rgba(255,255,255,0.85)" : c.muted, whiteSpace: "nowrap" }}>
+              {p.metaValor}
+            </span>
           )}
           {p.precoLabel && (
-            <div style={{ fontFamily: serif, fontSize: 15, color: isDark ? "white" : c.sageDark, marginTop: p.metaLabel ? 4 : 0 }}>{p.precoLabel}</div>
+            <span style={{ fontFamily: serif, fontSize: 15, color: isDark ? "white" : c.sageDark, whiteSpace: "nowrap" }}>{p.precoLabel}</span>
           )}
         </div>
         <button
@@ -99,7 +98,7 @@ export function ContentCard(p: ContentCardProps) {
           style={{
             background: isDark ? "white" : c.sageDark, color: isDark ? c.sageDark : "white",
             fontSize: 9, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase",
-            padding: "8px 14px", border: "none", cursor: "pointer", fontFamily: sans,
+            padding: "8px 12px", border: "none", cursor: "pointer", fontFamily: sans,
             whiteSpace: "nowrap", flexShrink: 0,
           } as CSSProperties}
         >
