@@ -513,16 +513,47 @@ const css = `
 }
 
 .web-login-card {
-  width: min(640px, calc(100vw - 64px));
-  min-height: 400px;
+  width: min(560px, calc(100vw - 64px));
+  min-height: 360px;
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 16px;
   background: ${CREAM_PANEL};
   box-shadow: 0 30px 60px -30px rgba(35, 71, 53, 0.35);
 }
+
+.country-wrap { position: relative; }
+.country-flag {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  pointer-events: none;
+}
+.country-select {
+  padding-left: 44px;
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23234735' d='M6 8L0 0h12z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+.phone-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.phone-dial {
+  font-size: 14px;
+  font-weight: 700;
+  color: ${GREEN_DEEP};
+  min-width: 42px;
+  text-align: center;
+}
+.phone-input { flex: 1; }
 
 .web-back {
   position: absolute;
