@@ -128,30 +128,30 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
               <div
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                  background: c.cream, width: "100%", maxWidth: 520,
-                  borderTopLeftRadius: 20, borderTopRightRadius: 20,
-                  padding: "20px 20px 32px", maxHeight: "80vh", overflowY: "auto",
+                  background: c.cream, width: "100%", maxWidth: 420,
+                  borderTopLeftRadius: 16, borderTopRightRadius: 16,
+                  padding: "12px 12px 18px", maxHeight: "70vh", overflowY: "auto",
                   boxShadow: "0 -10px 40px rgba(0,0,0,0.2)",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                  <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 500 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, padding: "0 4px" }}>
+                  <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: c.sage, fontWeight: 500 }}>
                     Filtrar por tema
                   </span>
-                  <button onClick={() => setMenuOpen(false)} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: sans, fontSize: 12, color: c.muted, textTransform: "uppercase", letterSpacing: "0.12em" }}>
+                  <button onClick={() => setMenuOpen(false)} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: sans, fontSize: 11, color: c.muted, textTransform: "uppercase", letterSpacing: "0.12em", padding: 4 }}>
                     Fechar
                   </button>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <button
                     onClick={() => { setTemaSel(null); setMenuOpen(false); }}
                     style={{
-                      textAlign: "left", padding: "14px 16px",
-                      background: temaSel === null ? c.sageDark : "white",
+                      textAlign: "left", padding: "8px 12px",
+                      background: temaSel === null ? c.sageDark : "transparent",
                       color: temaSel === null ? "white" : c.ink,
-                      border: `1px solid ${temaSel === null ? c.sageDark : c.border}`,
-                      fontFamily: sans, fontSize: 13, letterSpacing: "0.06em",
-                      textTransform: "uppercase", cursor: "pointer", borderRadius: 12,
+                      border: "none",
+                      fontFamily: sans, fontSize: 12, letterSpacing: "0.06em",
+                      textTransform: "uppercase", cursor: "pointer", borderRadius: 8,
                     }}
                   >
                     Todos
@@ -163,17 +163,17 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                         key={t.id}
                         onClick={() => { setTemaSel(t.id); setMenuOpen(false); }}
                         style={{
-                          textAlign: "left", padding: "14px 16px",
-                          background: ativo ? c.sageDark : "white",
+                          textAlign: "left", padding: "8px 12px",
+                          background: ativo ? c.sageDark : "transparent",
                           color: ativo ? "white" : c.ink,
-                          border: `1px solid ${ativo ? c.sageDark : c.border}`,
-                          fontFamily: sans, fontSize: 13, letterSpacing: "0.06em",
-                          textTransform: "uppercase", cursor: "pointer", borderRadius: 12,
-                          display: "flex", justifyContent: "space-between", alignItems: "center",
+                          border: "none",
+                          fontFamily: sans, fontSize: 12, letterSpacing: "0.06em",
+                          textTransform: "uppercase", cursor: "pointer", borderRadius: 8,
+                          display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8,
                         }}
                       >
                         <span>{t.titulo}</span>
-                        {t.total_aulas > 0 && <span style={{ fontSize: 11, opacity: 0.8 }}>{t.total_aulas}</span>}
+                        {t.total_aulas > 0 && <span style={{ fontSize: 10, opacity: 0.7 }}>{t.total_aulas}</span>}
                       </button>
                     );
                   })}
