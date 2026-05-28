@@ -61,6 +61,7 @@ export default function AulaEditor({
   const [temas, setTemas] = useState<Tema[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const ofertasRef = useRef<OfertasEditorHandle>(null);
   const editing: AulaDraft = initial ?? {
     titulo: "", slug: "", descricao: "", tipo: "video", duracao_min: 0,
     publicado: false, gratis: false, previa_gratis: false,
