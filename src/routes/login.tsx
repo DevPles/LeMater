@@ -352,31 +352,34 @@ function RegisterForm({
   onBack?: () => void;
   onSubmit: (event: FormEvent) => void;
 }) {
-  const dial = PAISES.find((p) => p.code === country)?.dial ?? "";
+  const selected = PAISES.find((p) => p.code === country) ?? PAISES[0];
+  const dial = selected.dial;
   return (
     <form className={mobile ? "mobile-form" : "web-form"} onSubmit={onSubmit}>
-      <FormHeader title="Criar conta" subtitle="Solicite seu acesso." />
+      <FormHeader title="Criar conta" subtitle="É rápido e gratuito." />
       <Field label="Nome" value={name} onChange={onNameChange} autoComplete="name" required />
       <Field label="E-mail" type="email" value={email} onChange={onEmailChange} autoComplete="email" required />
-      <div className="web-field">
-        <Label className="web-field-label">País</Label>
-        <select
-          className="web-field-input"
-          value={country}
-          onChange={(e) => onCountryChange(e.target.value)}
-          style={{ height: 44, background: "transparent", border: "1px solid rgba(0,0,0,0.15)", borderRadius: 8, padding: "0 12px" }}
-        >
-          {PAISES.map((p) => (
-            <option key={p.code} value={p.code}>{p.label} {p.dial && `(${p.dial})`}</option>
-          ))}
-        </select>
+      <div className="field-group">
+        <Label className="field-label">País</Label>
+        <div className="country-wrap">
+          <span className="country-flag" aria-hidden>{selected.flag}</span>
+          <select
+            className="neo-input country-select"
+            value={country}
+            onChange={(e) => onCountryChange(e.target.value)}
+          >
+            {PAISES.map((p) => (
+              <option key={p.code} value={p.code}>{p.flag} {p.label} {p.dial && `(${p.dial})`}</option>
+            ))}
+          </select>
+        </div>
       </div>
-      <div className="web-field">
-        <Label className="web-field-label">Celular</Label>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {dial && <span style={{ fontSize: 14, color: "#555", minWidth: 44 }}>{dial}</span>}
+      <div className="field-group">
+        <Label className="field-label">Celular</Label>
+        <div className="phone-wrap">
+          {dial && <span className="phone-dial">{dial}</span>}
           <Input
-            className="web-field-input"
+            className="neo-input phone-input"
             type="tel"
             inputMode="tel"
             autoComplete="tel"
@@ -384,7 +387,6 @@ function RegisterForm({
             onChange={onPhoneChange}
             placeholder="(00) 00000-0000"
             required
-            style={{ flex: 1 }}
           />
         </div>
       </div>
@@ -392,7 +394,7 @@ function RegisterForm({
 
       {mobile ? (
         <button className="web-primary-button" type="submit">
-          Solicitar acesso
+          Cadastrar
         </button>
       ) : (
         <div className="web-form-actions">
@@ -402,7 +404,7 @@ function RegisterForm({
             </button>
           )}
           <button className="web-primary-button" type="submit">
-            Solicitar acesso
+            Cadastrar
           </button>
         </div>
       )}
