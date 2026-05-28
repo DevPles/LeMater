@@ -3,6 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { listAtlasTemas, listAtlasAulas, type AtlasTema, type AtlasAulaVitrine } from "@/lib/cursos.functions";
 import { ContentCard } from "@/components/ContentCard";
 import { CursoModal } from "@/components/CursoModal";
+import { CartDrawer, CartFloatingButton } from "@/components/CartDrawer";
+import { useCart, openCart } from "@/lib/cart-store";
 
 const vidEngravidar = "/__l5e/assets-v1/fee6877d-6bbc-417b-9f9d-c37940580cd3/engravidar.mp4";
 const vidPreNatal = "/__l5e/assets-v1/50839f2b-be10-4be1-9dff-fe20596bd45f/pre-natal.mp4";
@@ -50,6 +52,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
   const [err, setErr] = useState<string | null>(null);
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const cart = useCart();
 
   useEffect(() => {
     fnTemas().then((t) => setTemas(t as AtlasTema[])).catch((e) => setErr(e?.message ?? "Erro"));
@@ -198,16 +201,21 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: gridTpl, gap: isApp ? 14 : 20 }}>
             {aulas.map((a, i) => {
+              const inCart = cart.has(a.id);
               const badge = a.pode_consumir
                 ? { label: "Seu acesso", color: c.sageDark }
                 : a.gratis
                   ? { label: "Grátis", color: c.sage }
-                  : { label: "Conteúdo pago", color: c.gold };
+                  : inCart
+                    ? { label: "No carrinho", color: c.sageDark }
+                    : { label: "Conteúdo pago", color: c.gold };
               const cta = a.pode_consumir
                 ? "Assistir aula"
-                : a.link_compra
-                  ? "Comprar aula"
-                  : "Saber mais";
+                : a.gratis
+                  ? "Saber mais"
+                  : inCart
+                    ? "Ver carrinho"
+                    : "Adicionar ao carrinho";
               return (
                 <ContentCard
                   key={a.id}
@@ -223,11 +231,26 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                   precoLabel={!a.pode_consumir && !a.gratis ? a.preco_label : null}
                   ctaLabel={cta}
                   onAction={() => {
-                    if (a.link_compra && !a.pode_consumir) {
-                      window.open(a.link_compra, "_blank");
-                    } else if (a.temas[0]?.slug) {
-                      setOpenSlug(a.temas[0].slug);
+                    if (a.pode_consumir || a.gratis) {
+                      if (a.temas[0]?.slug) setOpenSlug(a.temas[0].slug);
+                      return;
                     }
+                    if (inCart) {
+                      openCart();
+                      return;
+                    }
+                    cart.add({
+                      aula_id: a.id,
+                      slug: a.slug,
+                      titulo: a.titulo,
+                      capa_url: a.capa_url,
+                      preco_centavos: a.preco_centavos,
+                      preco_label: a.preco_label,
+                      moeda: a.moeda,
+                      link_compra: a.link_compra,
+                      tema: a.temas[0]?.titulo ?? null,
+                    });
+                    openCart();
                   }}
                 />
               );
@@ -235,6 +258,10 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
           </div>
         )}
       </main>
+
+      <CartFloatingButton />
+      <CartDrawer />
+
 
       {openSlug && <CursoModal slug={openSlug} onClose={() => setOpenSlug(null)} />}
     </div>
