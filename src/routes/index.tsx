@@ -593,33 +593,89 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             ))}
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
               <style>{`
-                @keyframes lm-light-trace { to { transform: rotate(360deg); } }
-                @keyframes lm-halo-pulse { 0%,100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
-                @keyframes lm-text-sheen { 0% { background-position: -150% 0; } 100% { background-position: 250% 0; } }
-                @keyframes lm-dot-blink { 0%,100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+                @keyframes lm-contour-light {
+                  0% { offset-distance: 0%; opacity: 0; transform: scaleX(0.7); }
+                  8% { opacity: 1; }
+                  88% { opacity: 1; }
+                  100% { offset-distance: 100%; opacity: 0; transform: scaleX(1); }
+                }
+                @keyframes lm-contour-breathe {
+                  0%, 100% { opacity: 0.42; box-shadow: 0 0 0 rgba(240, 192, 64, 0); }
+                  50% { opacity: 0.82; box-shadow: 0 0 10px rgba(240, 192, 64, 0.38); }
+                }
+                @keyframes lm-text-light-pass {
+                  0% { transform: translateX(-42px) skewX(-18deg); opacity: 0; }
+                  18% { opacity: 0.9; }
+                  62% { opacity: 0.9; }
+                  100% { transform: translateX(142px) skewX(-18deg); opacity: 0; }
+                }
+                @keyframes lm-text-color-pass {
+                  0% { clip-path: inset(0 100% 0 0); opacity: 0; }
+                  20% { opacity: 1; }
+                  58% { clip-path: inset(0 0 0 0); opacity: 1; }
+                  86%, 100% { clip-path: inset(0 0 0 100%); opacity: 0; }
+                }
+                .lm-app-logo-frame { --lm-trace-gold: #f0c040; --lm-trace-green: ${c.sage}; }
+                .lm-app-logo-contour {
+                  position: absolute;
+                  inset: -4px;
+                  border: 1px solid rgba(240, 192, 64, 0.42);
+                  border-radius: 12px;
+                  animation: lm-contour-breathe 2.4s ease-in-out infinite;
+                  pointer-events: none;
+                  z-index: 0;
+                }
+                .lm-app-logo-runner {
+                  position: absolute;
+                  left: -4px;
+                  top: -4px;
+                  width: 14px;
+                  height: 4px;
+                  border-radius: 999px;
+                  background: linear-gradient(90deg, transparent 0%, #fff 38%, var(--lm-trace-gold) 72%, var(--lm-trace-green) 100%);
+                  box-shadow: 0 0 8px rgba(240, 192, 64, 0.9), 0 0 14px rgba(92, 138, 110, 0.42);
+                  offset-path: path("M 6 0 H 38 Q 42 0 42 6 V 36 Q 42 42 36 42 H 6 Q 0 42 0 36 V 6 Q 0 0 6 0");
+                  offset-rotate: auto;
+                  animation: lm-contour-light 2.3s linear infinite;
+                  pointer-events: none;
+                  z-index: 2;
+                }
+                .lm-access-text {
+                  position: relative;
+                  display: inline-block;
+                  overflow: hidden;
+                  font-size: 10px;
+                  letter-spacing: 0.06em;
+                  text-transform: uppercase;
+                  font-weight: 600;
+                  line-height: 1.2;
+                  color: ${c.muted};
+                }
+                .lm-access-text::before {
+                  content: attr(data-text);
+                  position: absolute;
+                  inset: 0;
+                  color: ${c.sageDark};
+                  clip-path: inset(0 100% 0 0);
+                  animation: lm-text-color-pass 2.9s linear infinite;
+                  pointer-events: none;
+                }
+                .lm-access-text::after {
+                  content: "";
+                  position: absolute;
+                  top: -20%;
+                  bottom: -20%;
+                  left: 0;
+                  width: 22px;
+                  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.82), rgba(240, 192, 64, 0.65), transparent);
+                  animation: lm-text-light-pass 2.9s ease-in-out infinite;
+                  pointer-events: none;
+                }
               `}</style>
               <div style={{ height: 38, display: "flex", alignItems: "center", gap: 10, justifyContent: isMobile ? "center" : "flex-start" }}>
-                <Link to="/app" style={{ lineHeight: 0, position: "relative", display: "inline-block", width: 36, height: 36 }} aria-label="Abrir aplicativo">
-                  {/* Soft pulsing halo */}
-                  <span aria-hidden style={{
-                    position: "absolute", inset: -6, borderRadius: 12,
-                    background: `radial-gradient(circle, ${c.sage}40 0%, transparent 70%)`,
-                    animation: "lm-halo-pulse 2.2s ease-in-out infinite",
-                    pointerEvents: "none",
-                    filter: "blur(3px)",
-                  }} />
-                  {/* Light traveling around contour */}
-                  <span aria-hidden style={{
-                    position: "absolute", inset: -3, borderRadius: 11,
-                    background: `conic-gradient(from 0deg, transparent 0deg, transparent 270deg, ${c.terracotta} 320deg, #fff 350deg, ${c.sage} 360deg)`,
-                    animation: "lm-light-trace 2.4s linear infinite",
-                    WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-                    WebkitMaskComposite: "xor",
-                    maskComposite: "exclude",
-                    padding: 2,
-                    pointerEvents: "none",
-                    filter: `drop-shadow(0 0 4px ${c.terracotta}cc) drop-shadow(0 0 2px #fff)`,
-                  }} />
+                <Link to="/app" className="lm-app-logo-frame" style={{ lineHeight: 0, position: "relative", display: "inline-block", width: 36, height: 36 }} aria-label="Abrir aplicativo">
+                  <span aria-hidden className="lm-app-logo-contour" />
+                  <span aria-hidden className="lm-app-logo-runner" />
                   <img
                     src={appIcon}
                     alt="Le Mater App"
@@ -634,19 +690,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                 </Link>
               </div>
               <div style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, alignSelf: isMobile ? "center" : "flex-start" }}>
-                <span aria-hidden style={{ width: 5, height: 5, borderRadius: "50%", background: c.terracotta, animation: "lm-dot-blink 1.6s ease-in-out infinite" }} />
-                <div style={{
-                  fontSize: 10,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  fontWeight: 600,
-                  background: `linear-gradient(90deg, ${c.muted} 0%, ${c.muted} 40%, ${c.sageDark} 50%, ${c.muted} 60%, ${c.muted} 100%)`,
-                  backgroundSize: "200% 100%",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  animation: "lm-text-sheen 2.8s linear infinite",
-                }}>
+                <div className="lm-access-text" data-text="Acesse o aplicativo">
                   Acesse o aplicativo
                 </div>
               </div>
