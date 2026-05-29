@@ -8,7 +8,7 @@ import {
 } from "react";
 import rayssa from "@/assets/rayssa-portrait.jpg";
 import lemateLogo from "@/assets/logo_oficial.png";
-import appStoresBadges from "@/assets/app-stores.png";
+
 import appIcon from "@/assets/app-icon.png";
 import { LiquidCard } from "@/components/LiquidCard";
 import { InstagramIcon, YouTubeIcon, TikTokIcon, HotmartIcon, KiwifyIcon, SpotifyIcon } from "@/components/SocialIcons";
