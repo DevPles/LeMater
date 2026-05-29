@@ -168,6 +168,9 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
                 <button onClick={() => handleGo(id)} style={linkStyle(id)}>{label}</button>
               </li>
             ))}
+            <li>
+              <Link to="/app" style={{ ...linkStyle("inicio"), textDecoration: "none" }}>Acessar Aplicativo</Link>
+            </li>
             <li data-no-translate style={{ position: "relative" }}>
               <button
                 type="button"
