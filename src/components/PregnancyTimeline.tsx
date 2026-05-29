@@ -46,26 +46,96 @@ const GOLD = "#f0c040";
 
 export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
   const [medicoes, setMedicoes] = useState<Medicao[]>([]);
+  const [registros, setRegistros] = useState<ProntuarioRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"agenda" | "peso" | "pressao">("agenda");
 
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data } = await supabase
-        .from("clinical_measurements")
-        .select("parametro,valor,data_medicao,semana_gestacional")
-        .eq("gestante_id", userId)
-        .in("parametro", ["peso", "Peso", "pa_sistolica", "pa_diastolica", "altura", "Altura"])
-        .order("data_medicao", { ascending: true });
+      const [medRes, examRes, imgRes, vacRes, apptRes] = await Promise.all([
+        supabase
+          .from("clinical_measurements")
+          .select("parametro,valor,data_medicao,semana_gestacional")
+          .eq("gestante_id", userId)
+          .in("parametro", ["peso", "Peso", "pa_sistolica", "pa_diastolica", "altura", "Altura"])
+          .order("data_medicao", { ascending: true }),
+        supabase
+          .from("exam_results")
+          .select("tipo_exame,data_exame,appointment_id")
+          .eq("gestante_id", userId),
+        supabase
+          .from("image_exam_results")
+          .select("tipo_exame,data_exame,semana_gestacional")
+          .eq("gestante_id", userId),
+        supabase
+          .from("vaccinations")
+          .select("vacina,data_aplicacao")
+          .eq("gestante_id", userId),
+        supabase
+          .from("appointment_slots")
+          .select("data_hora,status,tipo_atendimento")
+          .eq("gestante_id", userId)
+          .in("status", ["atendida", "concluida", "reservada"]),
+      ]);
       if (!active) return;
-      setMedicoes((data ?? []) as Medicao[]);
+      setMedicoes((medRes.data ?? []) as Medicao[]);
+
+      const dumLocal = parseDate(dum);
+      const toSemana = (iso: string | null | undefined): number | null => {
+        if (!iso || !dumLocal) return null;
+        return Math.round(weeksBetween(dumLocal, new Date(iso)));
+      };
+
+      const recs: ProntuarioRecord[] = [];
+      for (const r of (examRes.data ?? []) as Array<{ tipo_exame: string; data_exame: string }>) {
+        recs.push({
+          source: "exam",
+          tipo: r.tipo_exame,
+          data: r.data_exame,
+          semana: toSemana(r.data_exame),
+        });
+      }
+      for (const r of (imgRes.data ?? []) as Array<{
+        tipo_exame: string;
+        data_exame: string;
+        semana_gestacional: number | null;
+      }>) {
+        recs.push({
+          source: "image",
+          tipo: r.tipo_exame,
+          data: r.data_exame,
+          semana: r.semana_gestacional ?? toSemana(r.data_exame),
+        });
+      }
+      for (const r of (vacRes.data ?? []) as Array<{ vacina: string; data_aplicacao: string }>) {
+        recs.push({
+          source: "vaccine",
+          tipo: r.vacina,
+          data: r.data_aplicacao,
+          semana: toSemana(r.data_aplicacao),
+        });
+      }
+      for (const r of (apptRes.data ?? []) as Array<{
+        data_hora: string;
+        status: string;
+        tipo_atendimento: string | null;
+      }>) {
+        recs.push({
+          source: "appointment",
+          tipo: r.tipo_atendimento ?? "consulta",
+          data: r.data_hora,
+          semana: toSemana(r.data_hora),
+        });
+      }
+      setRegistros(recs);
       setLoading(false);
     })();
     return () => {
       active = false;
     };
-  }, [userId]);
+  }, [userId, dum]);
+
 
   const dumDate = parseDate(dum);
 
