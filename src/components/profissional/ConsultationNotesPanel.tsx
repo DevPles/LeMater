@@ -475,10 +475,21 @@ function FormaExame({
       <Campo label="Tipo de exame">
         <input
           name="tipo"
-          placeholder="Ex.: Hemograma, Glicemia de jejum..."
+          list="sugestoes-exame-lab"
+          placeholder="Ex.: Hemograma, Glicemia, TOTG, Estreptococo B..."
           className={inputClass()}
           required
         />
+        <datalist id="sugestoes-exame-lab">
+          <option value="Hemograma" />
+          <option value="Glicemia de jejum" />
+          <option value="Urina (EAS)" />
+          <option value="TOTG (tolerância à glicose)" />
+          <option value="Estreptococo B" />
+          <option value="VDRL" />
+          <option value="HIV" />
+          <option value="Toxoplasmose IgG/IgM" />
+        </datalist>
       </Campo>
       <Campo label="Resultado">
         <input name="resultado" className={inputClass()} required />
