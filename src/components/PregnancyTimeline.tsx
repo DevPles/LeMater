@@ -358,49 +358,71 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
       {tab === "agenda" && (
         <div className="space-y-2">
           {MILESTONES.map((m) => {
-            const status =
-              m.week < semanaAtual ? "passado" : m.week === semanaAtual ? "agora" : "futuro";
+            const status = classifyMilestone(m, semanaAtual, registros);
             const tri = trimesterOfWeek(m.week);
+            const isConcluido = status.kind === "concluido";
+            const isAtrasado = status.kind === "atrasado";
+            const isAgora = status.kind === "agora";
+
+            const containerCls = isConcluido
+              ? "bg-[#ecfdf5] border-[#10b981]/30"
+              : isAtrasado
+              ? "bg-[#fff7ed] border-[#f59e0b]/40"
+              : isAgora
+              ? "bg-[#f0c040]/10 border-[#f0c040]/40"
+              : "bg-white border-[#1a1557]/10";
+
+            const badgeCls = isConcluido
+              ? "bg-[#10b981] text-white"
+              : isAtrasado
+              ? "bg-[#f59e0b] text-white"
+              : isAgora
+              ? "bg-[#f0c040] text-[#1a1557]"
+              : "bg-[#1a1557] text-[#f0c040]";
+
+            const titleCls = isConcluido
+              ? "line-through text-[#1a1557]/70"
+              : "text-[#1a1557]";
+
             return (
               <div
                 key={m.week}
-                className={`relative pl-10 pr-3 py-3 rounded-xl border transition-colors ${
-                  status === "agora"
-                    ? "bg-[#f0c040]/10 border-[#f0c040]/40"
-                    : status === "passado"
-                    ? "bg-white/40 border-[#1a1557]/5 opacity-60"
-                    : "bg-white border-[#1a1557]/10"
-                }`}
+                className={`relative pl-10 pr-3 py-3 rounded-xl border transition-colors ${containerCls}`}
               >
                 <div
-                  className={`absolute left-3 top-3 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                    status === "passado"
-                      ? "bg-[#1a1557]/20 text-[#1a1557]"
-                      : status === "agora"
-                      ? "bg-[#f0c040] text-[#1a1557]"
-                      : "bg-[#1a1557] text-[#f0c040]"
-                  }`}
+                  className={`absolute left-3 top-3 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${badgeCls}`}
                 >
-                  {status === "passado" ? "✓" : tri}
+                  {isConcluido ? "✓" : isAtrasado ? "!" : tri}
                 </div>
                 <div className="flex items-baseline justify-between gap-2">
-                  <p
-                    className={`font-display text-sm ${
-                      status === "passado" ? "line-through text-muted-foreground" : "text-[#1a1557]"
-                    }`}
-                  >
-                    {m.title}
-                  </p>
+                  <p className={`font-display text-sm ${titleCls}`}>{m.title}</p>
                   <span className="text-[10px] font-semibold text-[#1a1557]/70 whitespace-nowrap">
                     sem {m.week}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">{m.detail}</p>
+                {isConcluido && status.data && (
+                  <p className="text-[10px] text-[#047857] mt-1 font-semibold">
+                    Registrado em {formatBRDate(new Date(status.data))}
+                    {status.por ? ` · ${status.por}` : ""}
+                  </p>
+                )}
+                {isAtrasado && (
+                  <p className="text-[10px] text-[#b45309] mt-1 font-semibold">
+                    Sem registro — esperado até a semana {m.janelaSemanas[1]}
+                  </p>
+                )}
+                {isAgora && (
+                  <p className="text-[10px] text-[#1a1557]/80 mt-1 font-semibold">
+                    Janela atual — agende com seu profissional
+                  </p>
+                )}
               </div>
             );
           })}
         </div>
       )}
+
 
       {tab === "peso" && (
         <div className="space-y-3">
