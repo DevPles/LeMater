@@ -572,7 +572,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                   <img src={appIcon} alt="Le Mater App" style={{ width: 36, height: 36, borderRadius: 8, boxShadow: "0 2px 6px rgba(0,0,0,0.15)", cursor: "pointer" }} />
                 </Link>
               </div>
-              <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 6 }}>Baixar aplicativo</div>
+              <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 6 }}>Acesse o aplicativo</div>
             </div>
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
               <div style={{ height: 38, display: "flex", alignItems: "center", gap: 8, justifyContent: isMobile ? "center" : "flex-start", flexWrap: "wrap" }}>
