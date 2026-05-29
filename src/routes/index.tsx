@@ -673,27 +673,9 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                 }
               `}</style>
               <div style={{ height: 38, display: "flex", alignItems: "center", gap: 10, justifyContent: isMobile ? "center" : "flex-start" }}>
-                <Link to="/app" style={{ lineHeight: 0, position: "relative", display: "inline-block", width: 36, height: 36 }} aria-label="Abrir aplicativo">
-                  {/* Soft pulsing halo */}
-                  <span aria-hidden style={{
-                    position: "absolute", inset: -6, borderRadius: 12,
-                    background: `radial-gradient(circle, ${c.sage}40 0%, transparent 70%)`,
-                    animation: "lm-halo-pulse 2.2s ease-in-out infinite",
-                    pointerEvents: "none",
-                    filter: "blur(3px)",
-                  }} />
-                  {/* Light traveling around contour */}
-                  <span aria-hidden style={{
-                    position: "absolute", inset: -3, borderRadius: 11,
-                    background: `conic-gradient(from 0deg, transparent 0deg, transparent 270deg, ${c.terracotta} 320deg, #fff 350deg, ${c.sage} 360deg)`,
-                    animation: "lm-light-trace 2.4s linear infinite",
-                    WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-                    WebkitMaskComposite: "xor",
-                    maskComposite: "exclude",
-                    padding: 2,
-                    pointerEvents: "none",
-                    filter: `drop-shadow(0 0 4px ${c.terracotta}cc) drop-shadow(0 0 2px #fff)`,
-                  }} />
+                <Link to="/app" className="lm-app-logo-frame" style={{ lineHeight: 0, position: "relative", display: "inline-block", width: 36, height: 36 }} aria-label="Abrir aplicativo">
+                  <span aria-hidden className="lm-app-logo-contour" />
+                  <span aria-hidden className="lm-app-logo-runner" />
                   <img
                     src={appIcon}
                     alt="Le Mater App"
@@ -708,19 +690,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                 </Link>
               </div>
               <div style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, alignSelf: isMobile ? "center" : "flex-start" }}>
-                <span aria-hidden style={{ width: 5, height: 5, borderRadius: "50%", background: c.terracotta, animation: "lm-dot-blink 1.6s ease-in-out infinite" }} />
-                <div style={{
-                  fontSize: 10,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  fontWeight: 600,
-                  background: `linear-gradient(90deg, ${c.muted} 0%, ${c.muted} 40%, ${c.sageDark} 50%, ${c.muted} 60%, ${c.muted} 100%)`,
-                  backgroundSize: "200% 100%",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  animation: "lm-text-sheen 2.8s linear infinite",
-                }}>
+                <div className="lm-access-text" data-text="Acesse o aplicativo">
                   Acesse o aplicativo
                 </div>
               </div>
