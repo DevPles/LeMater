@@ -21,6 +21,7 @@ const NAV_ITEMS: ReadonlyArray<{ label: string; to: string; search?: Record<stri
   { label: "Sobre", to: "/", search: { s: "sobre" } },
   { label: "ATLAS MATERNO", to: "/atlas" },
   { label: "Contato", to: "/", search: { s: "contato" } },
+  { label: "Acessar Aplicativo", to: "/app" },
 ];
 
 export function SiteNav() {
