@@ -251,7 +251,11 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
   }));
 
   // Próximos marcos
-  const proximoMarco = MILESTONES.find((m) => m.week >= semanaAtual);
+  const proximoMarco = MILESTONES.find((m) => {
+    if (m.week < semanaAtual) return false;
+    const s = classifyMilestone(m, semanaAtual, registros);
+    return s.kind !== "concluido";
+  });
 
   return (
     <div className="space-y-4">
