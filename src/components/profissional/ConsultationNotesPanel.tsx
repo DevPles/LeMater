@@ -588,10 +588,17 @@ function FormaVacina({
       <Campo label="Vacina aplicada">
         <input
           name="vacina"
+          list="sugestoes-vacinas"
           placeholder="Ex.: dTpa, Influenza, Hepatite B..."
           className={inputClass()}
           required
         />
+        <datalist id="sugestoes-vacinas">
+          <option value="dTpa" />
+          <option value="Influenza" />
+          <option value="Hepatite B" />
+          <option value="COVID-19" />
+        </datalist>
       </Campo>
       <div className="grid grid-cols-2 gap-2">
         <Campo label="Lote">
