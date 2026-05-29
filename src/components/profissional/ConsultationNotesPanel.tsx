@@ -532,10 +532,19 @@ function FormaImagem({
       <Campo label="Tipo de exame">
         <input
           name="tipo"
-          placeholder="Ex.: USG obstétrico, USG morfológico..."
+          list="sugestoes-exame-imagem"
+          placeholder="Ex.: USG datação, Translucência nucal, USG morfológica..."
           className={inputClass()}
           required
         />
+        <datalist id="sugestoes-exame-imagem">
+          <option value="USG de datação" />
+          <option value="Translucência nucal" />
+          <option value="USG morfológica" />
+          <option value="USG de crescimento" />
+          <option value="USG obstétrica" />
+          <option value="Dopplerfluxometria" />
+        </datalist>
       </Campo>
       <Campo label="Status">
         <select name="status" className={inputClass()}>
