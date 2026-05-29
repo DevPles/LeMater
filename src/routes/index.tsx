@@ -593,29 +593,30 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             ))}
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
               <style>{`
-                @keyframes lm-orbit { to { transform: rotate(360deg); } }
-                @keyframes lm-glow { 0%,100% { opacity: 0.35; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.08); } }
-                @keyframes lm-underline { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+                @keyframes lm-ring-rotate { to { transform: rotate(360deg); } }
+                @keyframes lm-ring-pulse { 0%,100% { box-shadow: 0 0 0 0 ${c.sageDark}55, 0 0 0 0 ${c.terracotta}33; } 50% { box-shadow: 0 0 0 4px ${c.sageDark}00, 0 0 0 8px ${c.terracotta}00; } }
+                @keyframes lm-text-sheen { 0% { background-position: -150% 0; } 100% { background-position: 250% 0; } }
+                @keyframes lm-dot-blink { 0%,100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
               `}</style>
               <div style={{ height: 38, display: "flex", alignItems: "center", gap: 10, justifyContent: isMobile ? "center" : "flex-start" }}>
                 <Link to="/app" style={{ lineHeight: 0, position: "relative", display: "inline-block", width: 36, height: 36 }} aria-label="Abrir aplicativo">
-                  {/* Soft glow */}
+                  {/* Rotating gradient ring */}
                   <span aria-hidden style={{
-                    position: "absolute", inset: -6, borderRadius: "50%",
-                    background: `radial-gradient(circle, ${c.sage}66 0%, transparent 65%)`,
-                    animation: "lm-glow 2.4s ease-in-out infinite",
+                    position: "absolute", inset: -4, borderRadius: 12,
+                    background: `conic-gradient(from 0deg, ${c.sageDark}, ${c.terracotta}, ${c.sage}, ${c.sageDark})`,
+                    animation: "lm-ring-rotate 4s linear infinite",
+                    WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                    WebkitMaskComposite: "xor",
+                    maskComposite: "exclude",
+                    padding: 1.5,
                     pointerEvents: "none",
-                    filter: "blur(2px)",
                   }} />
-                  {/* Orbiting dots */}
+                  {/* Pulsing outer ring */}
                   <span aria-hidden style={{
-                    position: "absolute", inset: -5,
-                    animation: "lm-orbit 3.5s linear infinite",
+                    position: "absolute", inset: 0, borderRadius: 8,
+                    animation: "lm-ring-pulse 2s ease-out infinite",
                     pointerEvents: "none",
-                  }}>
-                    <span style={{ position: "absolute", top: -2, left: "50%", width: 5, height: 5, marginLeft: -2.5, borderRadius: "50%", background: c.sageDark, boxShadow: `0 0 6px ${c.sage}` }} />
-                    <span style={{ position: "absolute", bottom: -2, left: "50%", width: 3, height: 3, marginLeft: -1.5, borderRadius: "50%", background: c.terracotta, opacity: 0.85 }} />
-                  </span>
+                  }} />
                   <img
                     src={appIcon}
                     alt="Le Mater App"
@@ -629,18 +630,24 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                   />
                 </Link>
               </div>
-              <div style={{ position: "relative", display: "inline-block", marginTop: 6, alignSelf: isMobile ? "center" : "flex-start" }}>
-                <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 500 }}>
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, alignSelf: isMobile ? "center" : "flex-start" }}>
+                <span aria-hidden style={{ width: 5, height: 5, borderRadius: "50%", background: c.terracotta, animation: "lm-dot-blink 1.6s ease-in-out infinite" }} />
+                <div style={{
+                  fontSize: 10,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  fontWeight: 600,
+                  background: `linear-gradient(90deg, ${c.muted} 0%, ${c.muted} 40%, ${c.sageDark} 50%, ${c.muted} 60%, ${c.muted} 100%)`,
+                  backgroundSize: "200% 100%",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  animation: "lm-text-sheen 2.8s linear infinite",
+                }}>
                   Acesse o aplicativo
                 </div>
-                <div aria-hidden style={{ position: "absolute", left: 0, right: 0, bottom: -3, height: 1.5, overflow: "hidden", borderRadius: 2 }}>
-                  <div style={{
-                    width: "60%", height: "100%",
-                    background: `linear-gradient(90deg, transparent, ${c.sageDark}, transparent)`,
-                    animation: "lm-underline 2.4s ease-in-out infinite",
-                  }} />
-                </div>
               </div>
+
             </div>
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
               <div style={{ height: 38, display: "flex", alignItems: "center", gap: 8, justifyContent: isMobile ? "center" : "flex-start", flexWrap: "wrap" }}>
