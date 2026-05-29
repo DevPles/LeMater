@@ -22,6 +22,11 @@ import {
   expectedWeightRange,
   BP_NORMAL,
 } from "@/lib/pregnancy-norms";
+import {
+  MILESTONES,
+  classifyMilestone,
+  type ProntuarioRecord,
+} from "@/lib/pregnancy-milestones";
 
 type Props = {
   userId: string;
@@ -39,48 +44,98 @@ type Medicao = {
 const NAVY = "#1a1557";
 const GOLD = "#f0c040";
 
-type Milestone = {
-  week: number;
-  title: string;
-  detail: string;
-};
-
-const MILESTONES: Milestone[] = [
-  { week: 6, title: "1ª consulta de pré-natal", detail: "Confirmação, exames iniciais e BHCG" },
-  { week: 8, title: "USG de datação", detail: "Confirma IG e batimentos cardíacos" },
-  { week: 12, title: "Translucência nucal", detail: "Rastreio cromossômico do 1º trimestre" },
-  { week: 16, title: "Exames do 2º trimestre", detail: "Hemograma, urina, glicemia" },
-  { week: 20, title: "USG morfológica", detail: "Avaliação detalhada da anatomia fetal" },
-  { week: 24, title: "Teste de tolerância à glicose", detail: "Rastreio de diabetes gestacional" },
-  { week: 28, title: "Início do 3º trimestre", detail: "Consultas quinzenais, vacina dTpa" },
-  { week: 32, title: "USG de crescimento", detail: "Avalia peso e líquido amniótico" },
-  { week: 36, title: "Streptococcus B", detail: "Coleta vaginal e retal" },
-  { week: 37, title: "Termo precoce", detail: "Bebê considerado a termo" },
-  { week: 40, title: "Data provável do parto", detail: "DPP estimada pela DUM" },
-];
-
 export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
   const [medicoes, setMedicoes] = useState<Medicao[]>([]);
+  const [registros, setRegistros] = useState<ProntuarioRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"agenda" | "peso" | "pressao">("agenda");
 
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data } = await supabase
-        .from("clinical_measurements")
-        .select("parametro,valor,data_medicao,semana_gestacional")
-        .eq("gestante_id", userId)
-        .in("parametro", ["peso", "Peso", "pa_sistolica", "pa_diastolica", "altura", "Altura"])
-        .order("data_medicao", { ascending: true });
+      const [medRes, examRes, imgRes, vacRes, apptRes] = await Promise.all([
+        supabase
+          .from("clinical_measurements")
+          .select("parametro,valor,data_medicao,semana_gestacional")
+          .eq("gestante_id", userId)
+          .in("parametro", ["peso", "Peso", "pa_sistolica", "pa_diastolica", "altura", "Altura"])
+          .order("data_medicao", { ascending: true }),
+        supabase
+          .from("exam_results")
+          .select("tipo_exame,data_exame,appointment_id")
+          .eq("gestante_id", userId),
+        supabase
+          .from("image_exam_results")
+          .select("tipo_exame,data_exame,semana_gestacional")
+          .eq("gestante_id", userId),
+        supabase
+          .from("vaccinations")
+          .select("vacina,data_aplicacao")
+          .eq("gestante_id", userId),
+        supabase
+          .from("appointment_slots")
+          .select("data_hora,status,tipo_atendimento")
+          .eq("gestante_id", userId)
+          .in("status", ["atendida", "concluida", "reservada"]),
+      ]);
       if (!active) return;
-      setMedicoes((data ?? []) as Medicao[]);
+      setMedicoes((medRes.data ?? []) as Medicao[]);
+
+      const dumLocal = parseDate(dum);
+      const toSemana = (iso: string | null | undefined): number | null => {
+        if (!iso || !dumLocal) return null;
+        return Math.round(weeksBetween(dumLocal, new Date(iso)));
+      };
+
+      const recs: ProntuarioRecord[] = [];
+      for (const r of (examRes.data ?? []) as Array<{ tipo_exame: string; data_exame: string }>) {
+        recs.push({
+          source: "exam",
+          tipo: r.tipo_exame,
+          data: r.data_exame,
+          semana: toSemana(r.data_exame),
+        });
+      }
+      for (const r of (imgRes.data ?? []) as Array<{
+        tipo_exame: string;
+        data_exame: string;
+        semana_gestacional: number | null;
+      }>) {
+        recs.push({
+          source: "image",
+          tipo: r.tipo_exame,
+          data: r.data_exame,
+          semana: r.semana_gestacional ?? toSemana(r.data_exame),
+        });
+      }
+      for (const r of (vacRes.data ?? []) as Array<{ vacina: string; data_aplicacao: string }>) {
+        recs.push({
+          source: "vaccine",
+          tipo: r.vacina,
+          data: r.data_aplicacao,
+          semana: toSemana(r.data_aplicacao),
+        });
+      }
+      for (const r of (apptRes.data ?? []) as Array<{
+        data_hora: string;
+        status: string;
+        tipo_atendimento: string | null;
+      }>) {
+        recs.push({
+          source: "appointment",
+          tipo: r.tipo_atendimento ?? "consulta",
+          data: r.data_hora,
+          semana: toSemana(r.data_hora),
+        });
+      }
+      setRegistros(recs);
       setLoading(false);
     })();
     return () => {
       active = false;
     };
-  }, [userId]);
+  }, [userId, dum]);
+
 
   const dumDate = parseDate(dum);
 
@@ -196,7 +251,11 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
   }));
 
   // Próximos marcos
-  const proximoMarco = MILESTONES.find((m) => m.week >= semanaAtual);
+  const proximoMarco = MILESTONES.find((m) => {
+    if (m.week < semanaAtual) return false;
+    const s = classifyMilestone(m, semanaAtual, registros);
+    return s.kind !== "concluido";
+  });
 
   return (
     <div className="space-y-4">
@@ -303,49 +362,71 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
       {tab === "agenda" && (
         <div className="space-y-2">
           {MILESTONES.map((m) => {
-            const status =
-              m.week < semanaAtual ? "passado" : m.week === semanaAtual ? "agora" : "futuro";
+            const status = classifyMilestone(m, semanaAtual, registros);
             const tri = trimesterOfWeek(m.week);
+            const isConcluido = status.kind === "concluido";
+            const isAtrasado = status.kind === "atrasado";
+            const isAgora = status.kind === "agora";
+
+            const containerCls = isConcluido
+              ? "bg-[#ecfdf5] border-[#10b981]/30"
+              : isAtrasado
+              ? "bg-[#fff7ed] border-[#f59e0b]/40"
+              : isAgora
+              ? "bg-[#f0c040]/10 border-[#f0c040]/40"
+              : "bg-white border-[#1a1557]/10";
+
+            const badgeCls = isConcluido
+              ? "bg-[#10b981] text-white"
+              : isAtrasado
+              ? "bg-[#f59e0b] text-white"
+              : isAgora
+              ? "bg-[#f0c040] text-[#1a1557]"
+              : "bg-[#1a1557] text-[#f0c040]";
+
+            const titleCls = isConcluido
+              ? "line-through text-[#1a1557]/70"
+              : "text-[#1a1557]";
+
             return (
               <div
                 key={m.week}
-                className={`relative pl-10 pr-3 py-3 rounded-xl border transition-colors ${
-                  status === "agora"
-                    ? "bg-[#f0c040]/10 border-[#f0c040]/40"
-                    : status === "passado"
-                    ? "bg-white/40 border-[#1a1557]/5 opacity-60"
-                    : "bg-white border-[#1a1557]/10"
-                }`}
+                className={`relative pl-10 pr-3 py-3 rounded-xl border transition-colors ${containerCls}`}
               >
                 <div
-                  className={`absolute left-3 top-3 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                    status === "passado"
-                      ? "bg-[#1a1557]/20 text-[#1a1557]"
-                      : status === "agora"
-                      ? "bg-[#f0c040] text-[#1a1557]"
-                      : "bg-[#1a1557] text-[#f0c040]"
-                  }`}
+                  className={`absolute left-3 top-3 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${badgeCls}`}
                 >
-                  {status === "passado" ? "✓" : tri}
+                  {isConcluido ? "✓" : isAtrasado ? "!" : tri}
                 </div>
                 <div className="flex items-baseline justify-between gap-2">
-                  <p
-                    className={`font-display text-sm ${
-                      status === "passado" ? "line-through text-muted-foreground" : "text-[#1a1557]"
-                    }`}
-                  >
-                    {m.title}
-                  </p>
+                  <p className={`font-display text-sm ${titleCls}`}>{m.title}</p>
                   <span className="text-[10px] font-semibold text-[#1a1557]/70 whitespace-nowrap">
                     sem {m.week}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">{m.detail}</p>
+                {isConcluido && status.data && (
+                  <p className="text-[10px] text-[#047857] mt-1 font-semibold">
+                    Registrado em {formatBRDate(new Date(status.data))}
+                    {status.por ? ` · ${status.por}` : ""}
+                  </p>
+                )}
+                {isAtrasado && (
+                  <p className="text-[10px] text-[#b45309] mt-1 font-semibold">
+                    Sem registro — esperado até a semana {m.janelaSemanas[1]}
+                  </p>
+                )}
+                {isAgora && (
+                  <p className="text-[10px] text-[#1a1557]/80 mt-1 font-semibold">
+                    Janela atual — agende com seu profissional
+                  </p>
+                )}
               </div>
             );
           })}
         </div>
       )}
+
 
       {tab === "peso" && (
         <div className="space-y-3">

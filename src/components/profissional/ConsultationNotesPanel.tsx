@@ -475,10 +475,21 @@ function FormaExame({
       <Campo label="Tipo de exame">
         <input
           name="tipo"
-          placeholder="Ex.: Hemograma, Glicemia de jejum..."
+          list="sugestoes-exame-lab"
+          placeholder="Ex.: Hemograma, Glicemia, TOTG, Estreptococo B..."
           className={inputClass()}
           required
         />
+        <datalist id="sugestoes-exame-lab">
+          <option value="Hemograma" />
+          <option value="Glicemia de jejum" />
+          <option value="Urina (EAS)" />
+          <option value="TOTG (tolerância à glicose)" />
+          <option value="Estreptococo B" />
+          <option value="VDRL" />
+          <option value="HIV" />
+          <option value="Toxoplasmose IgG/IgM" />
+        </datalist>
       </Campo>
       <Campo label="Resultado">
         <input name="resultado" className={inputClass()} required />
@@ -521,10 +532,19 @@ function FormaImagem({
       <Campo label="Tipo de exame">
         <input
           name="tipo"
-          placeholder="Ex.: USG obstétrico, USG morfológico..."
+          list="sugestoes-exame-imagem"
+          placeholder="Ex.: USG datação, Translucência nucal, USG morfológica..."
           className={inputClass()}
           required
         />
+        <datalist id="sugestoes-exame-imagem">
+          <option value="USG de datação" />
+          <option value="Translucência nucal" />
+          <option value="USG morfológica" />
+          <option value="USG de crescimento" />
+          <option value="USG obstétrica" />
+          <option value="Dopplerfluxometria" />
+        </datalist>
       </Campo>
       <Campo label="Status">
         <select name="status" className={inputClass()}>
@@ -568,10 +588,17 @@ function FormaVacina({
       <Campo label="Vacina aplicada">
         <input
           name="vacina"
+          list="sugestoes-vacinas"
           placeholder="Ex.: dTpa, Influenza, Hepatite B..."
           className={inputClass()}
           required
         />
+        <datalist id="sugestoes-vacinas">
+          <option value="dTpa" />
+          <option value="Influenza" />
+          <option value="Hepatite B" />
+          <option value="COVID-19" />
+        </datalist>
       </Campo>
       <div className="grid grid-cols-2 gap-2">
         <Campo label="Lote">
