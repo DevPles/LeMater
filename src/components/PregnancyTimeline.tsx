@@ -22,6 +22,11 @@ import {
   expectedWeightRange,
   BP_NORMAL,
 } from "@/lib/pregnancy-norms";
+import {
+  MILESTONES,
+  classifyMilestone,
+  type ProntuarioRecord,
+} from "@/lib/pregnancy-milestones";
 
 type Props = {
   userId: string;
@@ -38,26 +43,6 @@ type Medicao = {
 
 const NAVY = "#1a1557";
 const GOLD = "#f0c040";
-
-type Milestone = {
-  week: number;
-  title: string;
-  detail: string;
-};
-
-const MILESTONES: Milestone[] = [
-  { week: 6, title: "1ª consulta de pré-natal", detail: "Confirmação, exames iniciais e BHCG" },
-  { week: 8, title: "USG de datação", detail: "Confirma IG e batimentos cardíacos" },
-  { week: 12, title: "Translucência nucal", detail: "Rastreio cromossômico do 1º trimestre" },
-  { week: 16, title: "Exames do 2º trimestre", detail: "Hemograma, urina, glicemia" },
-  { week: 20, title: "USG morfológica", detail: "Avaliação detalhada da anatomia fetal" },
-  { week: 24, title: "Teste de tolerância à glicose", detail: "Rastreio de diabetes gestacional" },
-  { week: 28, title: "Início do 3º trimestre", detail: "Consultas quinzenais, vacina dTpa" },
-  { week: 32, title: "USG de crescimento", detail: "Avalia peso e líquido amniótico" },
-  { week: 36, title: "Streptococcus B", detail: "Coleta vaginal e retal" },
-  { week: 37, title: "Termo precoce", detail: "Bebê considerado a termo" },
-  { week: 40, title: "Data provável do parto", detail: "DPP estimada pela DUM" },
-];
 
 export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
   const [medicoes, setMedicoes] = useState<Medicao[]>([]);
