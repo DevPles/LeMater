@@ -593,29 +593,32 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             ))}
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
               <style>{`
-                @keyframes lm-ring-rotate { to { transform: rotate(360deg); } }
-                @keyframes lm-ring-pulse { 0%,100% { box-shadow: 0 0 0 0 ${c.sageDark}55, 0 0 0 0 ${c.terracotta}33; } 50% { box-shadow: 0 0 0 4px ${c.sageDark}00, 0 0 0 8px ${c.terracotta}00; } }
+                @keyframes lm-light-trace { to { transform: rotate(360deg); } }
+                @keyframes lm-halo-pulse { 0%,100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
                 @keyframes lm-text-sheen { 0% { background-position: -150% 0; } 100% { background-position: 250% 0; } }
                 @keyframes lm-dot-blink { 0%,100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
               `}</style>
               <div style={{ height: 38, display: "flex", alignItems: "center", gap: 10, justifyContent: isMobile ? "center" : "flex-start" }}>
                 <Link to="/app" style={{ lineHeight: 0, position: "relative", display: "inline-block", width: 36, height: 36 }} aria-label="Abrir aplicativo">
-                  {/* Rotating gradient ring */}
+                  {/* Soft pulsing halo */}
                   <span aria-hidden style={{
-                    position: "absolute", inset: -4, borderRadius: 12,
-                    background: `conic-gradient(from 0deg, ${c.sageDark}, ${c.terracotta}, ${c.sage}, ${c.sageDark})`,
-                    animation: "lm-ring-rotate 4s linear infinite",
+                    position: "absolute", inset: -6, borderRadius: 12,
+                    background: `radial-gradient(circle, ${c.sage}40 0%, transparent 70%)`,
+                    animation: "lm-halo-pulse 2.2s ease-in-out infinite",
+                    pointerEvents: "none",
+                    filter: "blur(3px)",
+                  }} />
+                  {/* Light traveling around contour */}
+                  <span aria-hidden style={{
+                    position: "absolute", inset: -3, borderRadius: 11,
+                    background: `conic-gradient(from 0deg, transparent 0deg, transparent 270deg, ${c.terracotta} 320deg, #fff 350deg, ${c.sage} 360deg)`,
+                    animation: "lm-light-trace 2.4s linear infinite",
                     WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
                     WebkitMaskComposite: "xor",
                     maskComposite: "exclude",
-                    padding: 1.5,
+                    padding: 2,
                     pointerEvents: "none",
-                  }} />
-                  {/* Pulsing outer ring */}
-                  <span aria-hidden style={{
-                    position: "absolute", inset: 0, borderRadius: 8,
-                    animation: "lm-ring-pulse 2s ease-out infinite",
-                    pointerEvents: "none",
+                    filter: `drop-shadow(0 0 4px ${c.terracotta}cc) drop-shadow(0 0 2px #fff)`,
                   }} />
                   <img
                     src={appIcon}
@@ -647,6 +650,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                   Acesse o aplicativo
                 </div>
               </div>
+
 
             </div>
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
