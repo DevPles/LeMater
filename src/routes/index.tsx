@@ -675,7 +675,6 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               <div style={{ height: 38, display: "flex", alignItems: "center", gap: 10, justifyContent: isMobile ? "center" : "flex-start" }}>
                 <Link to="/app" className="lm-app-logo-frame" style={{ lineHeight: 0, position: "relative", display: "inline-block", width: 36, height: 36 }} aria-label="Abrir aplicativo">
                   <span aria-hidden className="lm-app-logo-contour" />
-                  <span aria-hidden className="lm-app-logo-runner" />
                   <img
                     src={appIcon}
                     alt="Le Mater App"
