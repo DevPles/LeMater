@@ -593,30 +593,29 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             ))}
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
               <style>{`
-                @keyframes lm-spin { to { transform: rotate(360deg); } }
-                @keyframes lm-pulse { 0%,100% { transform: scale(1); opacity: 0.55; } 50% { transform: scale(1.18); opacity: 0; } }
-                @keyframes lm-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-                @keyframes lm-shimmer { 0% { background-position: -120% 0; } 100% { background-position: 220% 0; } }
+                @keyframes lm-orbit { to { transform: rotate(360deg); } }
+                @keyframes lm-glow { 0%,100% { opacity: 0.35; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.08); } }
+                @keyframes lm-underline { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
               `}</style>
               <div style={{ height: 38, display: "flex", alignItems: "center", gap: 10, justifyContent: isMobile ? "center" : "flex-start" }}>
                 <Link to="/app" style={{ lineHeight: 0, position: "relative", display: "inline-block", width: 36, height: 36 }} aria-label="Abrir aplicativo">
-                  {/* Pulsing halo */}
+                  {/* Soft glow */}
                   <span aria-hidden style={{
-                    position: "absolute", inset: -4, borderRadius: 12,
-                    background: `radial-gradient(circle, ${c.sage}55 0%, transparent 70%)`,
-                    animation: "lm-pulse 2.2s ease-in-out infinite",
+                    position: "absolute", inset: -6, borderRadius: "50%",
+                    background: `radial-gradient(circle, ${c.sage}66 0%, transparent 65%)`,
+                    animation: "lm-glow 2.4s ease-in-out infinite",
                     pointerEvents: "none",
+                    filter: "blur(2px)",
                   }} />
-                  {/* Rotating gradient ring */}
+                  {/* Orbiting dots */}
                   <span aria-hidden style={{
-                    position: "absolute", inset: -2, borderRadius: 10, padding: 1.5,
-                    background: `conic-gradient(from 0deg, ${c.sage}, ${c.terracotta}, ${c.sageDark}, ${c.sage})`,
-                    WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-                    WebkitMaskComposite: "xor",
-                    maskComposite: "exclude",
-                    animation: "lm-spin 4s linear infinite",
+                    position: "absolute", inset: -5,
+                    animation: "lm-orbit 3.5s linear infinite",
                     pointerEvents: "none",
-                  }} />
+                  }}>
+                    <span style={{ position: "absolute", top: -2, left: "50%", width: 5, height: 5, marginLeft: -2.5, borderRadius: "50%", background: c.sageDark, boxShadow: `0 0 6px ${c.sage}` }} />
+                    <span style={{ position: "absolute", bottom: -2, left: "50%", width: 3, height: 3, marginLeft: -1.5, borderRadius: "50%", background: c.terracotta, opacity: 0.85 }} />
+                  </span>
                   <img
                     src={appIcon}
                     alt="Le Mater App"
@@ -630,22 +629,17 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                   />
                 </Link>
               </div>
-              <div
-                style={{
-                  fontSize: 10,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  marginTop: 6,
-                  fontWeight: 500,
-                  backgroundImage: `linear-gradient(90deg, ${c.muted} 0%, ${c.muted} 35%, ${c.sageDark} 50%, ${c.muted} 65%, ${c.muted} 100%)`,
-                  backgroundSize: "200% 100%",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  color: "transparent",
-                  animation: "lm-shimmer 2.8s linear infinite",
-                }}
-              >
-                Acesse o aplicativo
+              <div style={{ position: "relative", display: "inline-block", marginTop: 6, alignSelf: isMobile ? "center" : "flex-start" }}>
+                <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 500 }}>
+                  Acesse o aplicativo
+                </div>
+                <div aria-hidden style={{ position: "absolute", left: 0, right: 0, bottom: -3, height: 1.5, overflow: "hidden", borderRadius: 2 }}>
+                  <div style={{
+                    width: "60%", height: "100%",
+                    background: `linear-gradient(90deg, transparent, ${c.sageDark}, transparent)`,
+                    animation: "lm-underline 2.4s ease-in-out infinite",
+                  }} />
+                </div>
               </div>
             </div>
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
