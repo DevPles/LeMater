@@ -592,12 +592,60 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               </div>
             ))}
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
-              <div style={{ height: 38, display: "flex", alignItems: "center", gap: 10, justifyContent: isMobile ? "center" : "flex-start" }}>
-                <Link to="/app" style={{ lineHeight: 0 }} aria-label="Abrir aplicativo">
-                  <img src={appIcon} alt="Le Mater App" style={{ width: 36, height: 36, borderRadius: 8, boxShadow: "0 2px 6px rgba(0,0,0,0.15)", cursor: "pointer" }} />
+              <style>{`
+                @keyframes lm-spin { to { transform: rotate(360deg); } }
+                @keyframes lm-pulse { 0%,100% { transform: scale(1); opacity: 0.55; } 50% { transform: scale(1.18); opacity: 0; } }
+                @keyframes lm-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+                @keyframes lm-shimmer { 0% { background-position: -120% 0; } 100% { background-position: 220% 0; } }
+              `}</style>
+              <div style={{ height: 56, display: "flex", alignItems: "center", gap: 10, justifyContent: isMobile ? "center" : "flex-start" }}>
+                <Link to="/app" style={{ lineHeight: 0, position: "relative", display: "inline-block", width: 48, height: 48 }} aria-label="Abrir aplicativo">
+                  {/* Pulsing halo */}
+                  <span aria-hidden style={{
+                    position: "absolute", inset: -4, borderRadius: 14,
+                    background: `radial-gradient(circle, ${c.sage}55 0%, transparent 70%)`,
+                    animation: "lm-pulse 2.2s ease-in-out infinite",
+                  }} />
+                  {/* Rotating gradient ring */}
+                  <span aria-hidden style={{
+                    position: "absolute", inset: -3, borderRadius: 12, padding: 2,
+                    background: `conic-gradient(from 0deg, ${c.sage}, ${c.terracotta}, ${c.sageDark}, ${c.sage})`,
+                    WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                    WebkitMaskComposite: "xor",
+                    maskComposite: "exclude",
+                    animation: "lm-spin 4s linear infinite",
+                  }} />
+                  <img
+                    src={appIcon}
+                    alt="Le Mater App"
+                    style={{
+                      position: "relative", zIndex: 1,
+                      width: 48, height: 48, borderRadius: 10,
+                      boxShadow: "0 4px 14px rgba(45,90,66,0.28)",
+                      cursor: "pointer",
+                      animation: "lm-bob 3s ease-in-out infinite",
+                      display: "block",
+                    }}
+                  />
                 </Link>
               </div>
-              <div style={{ fontSize: 10, color: c.muted, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 6 }}>Acesse o aplicativo</div>
+              <div
+                style={{
+                  fontSize: 10,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  marginTop: 8,
+                  fontWeight: 600,
+                  backgroundImage: `linear-gradient(90deg, ${c.muted} 0%, ${c.muted} 35%, ${c.sageDark} 50%, ${c.muted} 65%, ${c.muted} 100%)`,
+                  backgroundSize: "200% 100%",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                  animation: "lm-shimmer 2.8s linear infinite",
+                }}
+              >
+                Acesse o aplicativo
+              </div>
             </div>
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
               <div style={{ height: 38, display: "flex", alignItems: "center", gap: 8, justifyContent: isMobile ? "center" : "flex-start", flexWrap: "wrap" }}>
