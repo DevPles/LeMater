@@ -168,6 +168,9 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
                 <button onClick={() => handleGo(id)} style={linkStyle(id)}>{label}</button>
               </li>
             ))}
+            <li>
+              <Link to="/app" style={{ ...linkStyle("inicio"), textDecoration: "none" }}>Acessar Aplicativo</Link>
+            </li>
             <li data-no-translate style={{ position: "relative" }}>
               <button
                 type="button"
@@ -394,6 +397,28 @@ function Nav({ active, go }: { active: SectionId; go: (id: SectionId) => void })
                   </button>
                 </li>
               ))}
+              <li>
+                <Link
+                  to="/app"
+                  onClick={() => setOpen(false)}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: "16px 0",
+                    borderBottom: `1px solid ${c.border}`,
+                    fontFamily: sans,
+                    fontSize: 14,
+                    fontWeight: 500,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: c.ink,
+                    textAlign: "left",
+                    textDecoration: "none",
+                  }}
+                >
+                  Acessar Aplicativo
+                </Link>
+              </li>
             </ul>
           </div>
           <div style={{ marginTop: "auto", padding: "0 28px 32px" }}>
