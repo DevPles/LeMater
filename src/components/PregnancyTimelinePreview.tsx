@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LiquidCard } from "@/components/LiquidCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@tanstack/react-router";
+import { videoForAulaCover } from "@/lib/atlas-cover-video";
 import { listCursosVitrine, type CursoVitrine } from "@/lib/cursos.functions";
 import {
   GESTATION_WEEKS,
@@ -351,15 +352,25 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
         className="flex items-stretch gap-3 w-full no-underline"
       >
         <div className="relative w-20 h-24 rounded-lg overflow-hidden bg-[#1a1557]/10 flex-shrink-0">
-          {cursoRecente.capa_url ? (
-            <img
-              src={cursoRecente.capa_url}
-              alt={cursoRecente.titulo}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-[#1a1557]/30 to-[#f0c040]/30" />
-          )}
+          {(() => {
+            const videoSrc = videoForAulaCover({
+              capa_video_url: cursoRecente.capa_video_url,
+              titulo: cursoRecente.titulo,
+              descricao: cursoRecente.descricao_curta,
+            });
+            return (
+              <video
+                src={videoSrc}
+                poster={cursoRecente.capa_url ?? undefined}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            );
+          })()}
         </div>
         <div className="flex flex-col justify-between min-w-0 flex-1">
           <div>
