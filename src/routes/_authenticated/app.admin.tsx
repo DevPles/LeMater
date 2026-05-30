@@ -10,7 +10,7 @@ import {
 import AtlasContentTab from "@/components/admin/AtlasContentTab";
 import { ConsultasTab } from "@/components/admin/ConsultasTab";
 import { GravacoesTab } from "@/components/admin/GravacoesTab";
-import { ProfissionaisTab } from "@/components/admin/ProfissionaisTab";
+
 import { UsuariosTab } from "@/components/admin/UsuariosTab";
 import { AcessosUsuariosTab } from "@/components/admin/AcessosUsuariosTab";
 import { DadosClinicosTab } from "@/components/admin/DadosClinicosTab";
@@ -53,7 +53,7 @@ type Tab =
   | "dash"
   | "atlas"
   
-  | "consultas" | "gravacoes" | "profissionais"
+  | "consultas" | "gravacoes"
   | "dados" | "parametros" | "relatorios"
   | "leads" | "alunos" | "usuarios" | "acessos" | "compras" | "vendas";
 
@@ -70,7 +70,6 @@ const TAB_GROUPS: { label: string; tabs: { id: Tab; label: string }[] }[] = [
   { label: "Operação", tabs: [
     { id: "consultas", label: "Consultas" },
     { id: "gravacoes", label: "Gravações" },
-    { id: "profissionais", label: "Profissionais" },
   ]},
   { label: "Clínica", tabs: [
     { id: "dados", label: "Dados clínicos" },
@@ -190,7 +189,7 @@ function AdminPage() {
           
           {tab === "consultas" && <ConsultasTab />}
           {tab === "gravacoes" && <GravacoesTab />}
-          {tab === "profissionais" && <ProfissionaisTab />}
+          
           {tab === "dados" && <DadosClinicosTab />}
           {tab === "parametros" && <ParametrosTab />}
           {tab === "relatorios" && (
