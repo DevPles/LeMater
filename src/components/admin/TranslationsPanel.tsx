@@ -71,9 +71,10 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
       .eq("item_type", itemType)
       .eq("item_id", itemId)
       .then(({ data }) => {
-        const next: Record<Pais, Row> = { BR: empty(), ES: empty(), US: empty() };
+        const next: Record<Pais, Row> = { BR: empty("BR"), ES: empty("ES"), US: empty("US") };
         (data as any[] | null)?.forEach((t) => {
-          next[t.pais as Pais] = {
+          const p = t.pais as Pais;
+          next[p] = {
             id: t.id,
             titulo: t.titulo ?? "",
             descricao: t.descricao ?? "",
@@ -83,9 +84,13 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             audio_url: t.audio_url ?? "",
             legenda_url: t.legenda_url ?? "",
             conteudo_html: t.conteudo_html ?? "",
+            preco_centavos: t.preco_centavos ?? 0,
+            moeda: t.moeda ?? MOEDA_PADRAO[p],
+            preco_label: t.preco_label ?? "",
           };
         });
         setRows(next);
+        onRowsChange?.(next);
       });
   }, [itemType, itemId]);
 
@@ -96,7 +101,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
       for (const pais of ["ES", "US"] as Pais[]) {
         const r = rows[pais];
         if (!isFilled(r)) continue;
-        const payload = {
+        const payload: any = {
           item_type: itemType,
           item_id: newId,
           pais,
@@ -108,6 +113,9 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
           audio_url: r.audio_url || null,
           legenda_url: r.legenda_url || null,
           conteudo_html: r.conteudo_html || null,
+          preco_centavos: r.preco_centavos > 0 ? r.preco_centavos : null,
+          moeda: r.moeda || null,
+          preco_label: r.preco_label || null,
         };
         const { error } = await supabase
           .from("content_translations")
