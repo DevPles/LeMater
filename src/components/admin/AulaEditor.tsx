@@ -288,7 +288,7 @@ export default function AulaEditor({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
         <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-          <span title={paisTab} style={{ fontSize: 18, lineHeight: 1 }}>{flag}</span>
+          <FlagMark pais={paisTab} size={20} />
           {pvGratis
             ? <div style={{ background: "rgba(255,255,255,0.18)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Grátis</div>
             : <div style={{ background: "rgba(0,0,0,0.25)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Pago</div>}
@@ -334,7 +334,7 @@ export default function AulaEditor({
                 {pvTitulo || (editing.id ? "Aula sem título" : "Nova aula no Atlas")}
               </h2>
               <div style={{ fontSize: 12, opacity: 0.7, marginTop: 4 }}>
-                Um cadastro · três idiomas. Use as abas abaixo para enviar vídeo e PDF dublados.
+                Um cadastro · três idiomas. Use as abas abaixo para definir capa, mídia, preço e acesso.
               </div>
             </div>
             <button type="button" onClick={onClose} disabled={busy}
@@ -366,7 +366,7 @@ export default function AulaEditor({
                     borderBottom: active ? `3px solid ${c.cream}` : "3px solid transparent",
                     marginBottom: -1,
                   }}>
-                  <span style={{ fontSize: 16 }}>{t.flag}</span>
+                  <FlagMark pais={t.p} size={18} />
                   <span>{t.label}</span>
                   {t.p === "BR" && <span style={{ background: "rgba(0,0,0,0.12)", color: active ? c.muted : "rgba(255,255,255,0.7)", fontSize: 9, padding: "2px 6px", letterSpacing: "0.1em", marginLeft: 4 }}>Base</span>}
                 </button>
@@ -506,7 +506,7 @@ export default function AulaEditor({
 
             {/* Coluna lateral: preview SEMPRE visível, reflete país ativo */}
             <div style={{ position: wide ? "sticky" : "static", top: 0, alignSelf: "start" }}>
-              <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>Prévia do card <span style={{ fontSize: 16 }}>{flag}</span></div>
+              <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>Prévia do card <FlagMark pais={paisTab} size={18} /></div>
               {PreviewCard}
               <p style={{ fontSize: 11, color: c.muted, marginTop: 8, lineHeight: 1.5 }}>É assim que aparece na vitrine para usuários do país <strong>{paisTab}</strong>. Atualiza em tempo real.</p>
             </div>
