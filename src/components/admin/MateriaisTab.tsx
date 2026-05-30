@@ -235,6 +235,31 @@ export default function MateriaisTab({
   );
 }
 
+function MaterialPreviewCard({ edit, isServico }: { edit: Partial<MaterialRow>; isServico: boolean }) {
+  const tipoLabel: Record<string, string> = { pdf: "PDF", video_externo: "Vídeo", video_upload: "Vídeo", artigo: "Artigo" };
+  return (
+    <div style={{ background: c.sageDark, color: "white", padding: 20, position: "relative" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>
+          {edit.categoria || (isServico ? "Serviço" : "Material")}
+        </div>
+        {edit.area === "gratis" && !isServico && (
+          <div style={{ background: "rgba(255,255,255,0.15)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase" }}>Grátis</div>
+        )}
+      </div>
+      {edit.capa_url && <img src={edit.capa_url} alt="" style={{ width: "100%", height: 120, objectFit: "cover", marginBottom: 12 }} />}
+      <h3 style={{ fontFamily: serif, fontSize: 20, fontWeight: 500, margin: "0 0 6px", lineHeight: 1.2 }}>{edit.titulo || "Título"}</h3>
+      <p style={{ fontSize: 12, opacity: 0.85, margin: 0, lineHeight: 1.5 }}>{edit.descricao || "Descrição aparece aqui."}</p>
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.2)", marginTop: 14, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ fontSize: 11 }}>{tipoLabel[edit.tipo ?? ""] ?? "—"}</div>
+        <div style={{ background: "white", color: c.sageDark, padding: "8px 12px", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>
+          {edit.cta_label || edit.preco_label || (isServico ? "Agendar" : "Acessar")}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AcessosSection({ materialId }: { materialId: string }) {
   const listFn = useServerFn(listMaterialAcessos);
   const buscarFn = useServerFn(buscarUsuarios);
