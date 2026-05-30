@@ -284,7 +284,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
         </Panel>
       </div>
 
-      <div style={listsGrid}>
+      <div className="admin-lists-grid" style={listsGrid}>
         <Panel
           title="Pedidos recentes"
           action={<button onClick={() => onGoTo?.("vendas")} style={linkBtn}>Ver tudo</button>}
