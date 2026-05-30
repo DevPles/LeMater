@@ -171,19 +171,19 @@ function AdminPage() {
       )}
 
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-        <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 24px", borderBottom: `1px solid ${c.border}`, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(10px)", position: "sticky", top: 0, zIndex: 30 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <header className="admin-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 24px", borderBottom: `1px solid ${c.border}`, background: "rgba(250,245,238,0.95)", backdropFilter: "blur(10px)", position: "sticky", top: 0, zIndex: 30 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
             <button
               onClick={() => setMobileOpen(true)}
               className="admin-burger"
-              style={{ display: "none", background: c.sageDark, color: "white", border: 0, padding: "8px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+              style={{ display: "none", background: c.sageDark, color: "white", border: 0, padding: "8px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer", flexShrink: 0 }}
             >
               Menu
             </button>
-            <h2 style={{ fontFamily: serif, fontSize: 22, fontWeight: 400, margin: 0 }}>{currentLabel}</h2>
+            <h2 className="admin-title" style={{ fontFamily: serif, fontSize: 22, fontWeight: 400, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{currentLabel}</h2>
           </div>
         </header>
-        <main style={{ maxWidth: 1280, width: "100%", margin: "0 auto", padding: "28px 24px 80px", flex: 1 }}>
+        <main className="admin-main" style={{ maxWidth: 1280, width: "100%", margin: "0 auto", padding: "28px 24px 80px", flex: 1, minWidth: 0 }}>
           {tab === "dash" && <DashboardTab onGoTo={setTab} />}
           {tab === "atlas" && <AtlasContentTab />}
           
@@ -210,10 +210,25 @@ function AdminPage() {
 
       <style>{`
         @media (max-width: 900px) {
-          .admin-sidebar { position: fixed !important; top: 0; left: 0; z-index: 50; transform: translateX(-100%); transition: transform 0.25s; }
+          .admin-sidebar { position: fixed !important; top: 0; left: 0; z-index: 50; transform: translateX(-100%); transition: transform 0.25s; width: 84vw !important; max-width: 320px; }
           .admin-sidebar-open { transform: translateX(0) !important; }
           .admin-burger { display: inline-flex !important; }
         }
+        @media (max-width: 640px) {
+          .admin-header { padding: 10px 14px !important; }
+          .admin-title { font-size: 16px !important; }
+          .admin-main { padding: 16px 12px 96px !important; }
+          .admin-main h1 { font-size: 24px !important; margin-bottom: 16px !important; }
+          .admin-main table { font-size: 12px !important; }
+          .admin-main table th, .admin-main table td { padding: 8px 8px !important; white-space: nowrap; }
+          .admin-main .admin-charts-grid { grid-template-columns: 1fr !important; }
+          .admin-main .admin-lists-grid { grid-template-columns: 1fr !important; }
+          .admin-main .admin-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+          .admin-modal { padding: 20px !important; max-height: 92vh !important; overflow: auto !important; }
+          .admin-tabs-bar { overflow-x: auto !important; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; }
+          .admin-filters-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+        .admin-main .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
       `}</style>
     </div>
   );
@@ -243,7 +258,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
     <div>
       <h1 style={h1}>Painel geral</h1>
 
-      <div style={kpiGrid}>
+      <div className="admin-kpi-grid" style={kpiGrid}>
         <Kpi label="Receita do mês" value={fmtBRL(k.receita_mes_centavos)} hint={`${dReceita >= 0 ? "+" : ""}${dReceita}% vs mês ant.`} tone={dReceita >= 0 ? "ok" : "danger"} accent />
         <Kpi label="Pedidos pagos no mês" value={k.pedidos_mes} hint={`${dPedidos >= 0 ? "+" : ""}${dPedidos}% vs mês ant.`} tone={dPedidos >= 0 ? "ok" : "danger"} onClick={() => onGoTo?.("vendas")} />
         <Kpi label="Alunos com acesso ativo" value={k.alunos_ativos} onClick={() => onGoTo?.("alunos")} />
@@ -254,7 +269,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
         <Kpi label="Materiais publicados" value={k.materiais_publicados} />
       </div>
 
-      <div style={chartsGrid}>
+      <div className="admin-charts-grid" style={chartsGrid}>
         <Panel title="Pedidos pagos · últimos 14 dias">
           <DailyBars data={d.series.pedidos_14d} color={c.navy} />
         </Panel>
@@ -269,7 +284,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
         </Panel>
       </div>
 
-      <div style={listsGrid}>
+      <div className="admin-lists-grid" style={listsGrid}>
         <Panel
           title="Pedidos recentes"
           action={<button onClick={() => onGoTo?.("vendas")} style={linkBtn}>Ver tudo</button>}
@@ -277,7 +292,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
           {d.pedidos_recentes.length === 0 ? (
             <Empty>Nenhum pedido ainda.</Empty>
           ) : (
-            <table style={mini}>
+            <div className="table-scroll"><table style={mini}>
               <thead>
                 <tr>
                   <ThMini>Data</ThMini>
@@ -300,7 +315,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </Panel>
 
@@ -311,7 +326,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
           {d.leads_recentes.length === 0 ? (
             <Empty>Nenhum lead ainda.</Empty>
           ) : (
-            <table style={mini}>
+            <div className="table-scroll"><table style={mini}>
               <thead>
                 <tr><ThMini>Data</ThMini><ThMini>Nome</ThMini><ThMini>E-mail</ThMini><ThMini>Material</ThMini></tr>
               </thead>
@@ -325,7 +340,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </Panel>
       </div>
