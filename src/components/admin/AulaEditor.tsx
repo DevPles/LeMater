@@ -108,7 +108,6 @@ export default function AulaEditor({
   const [pvTipo, setPvTipo] = useState(editing.tipo ?? "video");
   const [pvGratis, setPvGratis] = useState(editing.gratis ?? false);
   const [pvPrecoLabel, setPvPrecoLabel] = useState(editing.preco_label ?? "");
-  const [pvVideoExt, setPvVideoExt] = useState<string>(editing.video_url && String(editing.video_url).startsWith("http") ? String(editing.video_url) : "");
   const [pvCapaFile, setPvCapaFile] = useState("");
   const [pvCapaVideoFile, setPvCapaVideoFile] = useState("");
 
@@ -434,7 +433,6 @@ export default function AulaEditor({
                       name="video_url_externa"
                       placeholder="https://youtube.com/..."
                       defaultValue={editing.video_url && String(editing.video_url).startsWith("http") ? editing.video_url : ""}
-                      onChange={(e) => setPvVideoExt(e.target.value)}
                       style={{ ...inp, minHeight: 42 }}
                     />
                   </MediaField>
