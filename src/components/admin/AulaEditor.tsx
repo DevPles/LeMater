@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { adminListCursos, adminUpsertAulaAvulsa } from "@/lib/cursos.functions";
 import OfertasEditor, { type OfertasEditorHandle } from "@/components/admin/OfertasEditor";
-import TranslationsPanel from "@/components/admin/TranslationsPanel";
+import TranslationsPanel, { type TranslationsPanelHandle } from "@/components/admin/TranslationsPanel";
 
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48" };
 const sans = "'DM Sans', sans-serif";
@@ -64,6 +64,8 @@ export default function AulaEditor({
   const [err, setErr] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const ofertasRef = useRef<OfertasEditorHandle>(null);
+  const traducoesRef = useRef<TranslationsPanelHandle>(null);
+
   const editing: AulaDraft = initial ?? {
     titulo: "", slug: "", descricao: "", tipo: "video", duracao_min: 0,
     publicado: false, gratis: false, previa_gratis: false,
@@ -170,14 +172,18 @@ export default function AulaEditor({
       if (ofertasRef.current && saved?.id) {
         await ofertasRef.current.flush(saved.id);
       }
+      if (traducoesRef.current && saved?.id) {
+        await traducoesRef.current.flush(saved.id);
+      }
 
       onSaved();
       const wasNew = !(savedId ?? editing.id);
       if (wasNew) {
-        setOk("Aula salva. Agora você pode enviar as versões em Espanhol e Inglês abaixo.");
+        setOk("Aula salva com sucesso. As versões ES/EN preenchidas também foram salvas. Você pode fechar ou continuar editando.");
       } else {
         onClose();
       }
+
     } catch (e: any) { setErr(e?.message ?? "Erro ao salvar"); }
     finally { setBusy(false); }
   };
@@ -331,7 +337,7 @@ export default function AulaEditor({
                 <div style={{ fontSize: 12, color: c.muted, marginBottom: 12 }}>
                   PT é o conteúdo padrão (preenchido acima). Envie aqui o vídeo dublado, ebook/PDF e capa em <strong>Espanhol</strong> e <strong>Inglês</strong>. Quando o usuário trocar a bandeira no topo, ele verá a versão do país dele.
                 </div>
-                <TranslationsPanel itemType="curso_aula" itemId={savedId ?? null} />
+                <TranslationsPanel ref={traducoesRef} itemType="curso_aula" itemId={savedId ?? null} />
               </div>
             </div>
 
