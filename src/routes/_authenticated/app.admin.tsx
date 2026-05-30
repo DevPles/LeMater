@@ -292,7 +292,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
           {d.pedidos_recentes.length === 0 ? (
             <Empty>Nenhum pedido ainda.</Empty>
           ) : (
-            <table style={mini}>
+            <div className="table-scroll"><table style={mini}>
               <thead>
                 <tr>
                   <ThMini>Data</ThMini>
