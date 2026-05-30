@@ -149,9 +149,12 @@ export default function MateriaisTab({
 
       {edit && (
         <div onClick={() => setEdit(null)} style={modalBg}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "white", maxWidth: 720, width: "100%", padding: 32, border: `1px solid ${c.border}`, maxHeight: "90vh", overflow: "auto" }}>
-            <h2 style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, margin: "0 0 20px" }}>{edit.id ? `Editar ${isServicoMode ? "serviço" : titulo.toLowerCase()}` : `Novo ${isServicoMode ? "serviço" : titulo.toLowerCase()}`}</h2>
-            <div style={{ display: "grid", gap: 14 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "white", maxWidth: 1080, width: "100%", padding: 0, border: `1px solid ${c.border}`, maxHeight: "92vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "24px 28px 12px" }}>
+              <h2 style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, margin: 0 }}>{edit.id ? `Editar ${isServicoMode ? "serviço" : titulo.toLowerCase()}` : `Novo ${isServicoMode ? "serviço" : titulo.toLowerCase()}`}</h2>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 320px", flex: 1, minHeight: 0, overflow: "hidden" }}>
+              <div style={{ padding: "8px 28px 20px", overflow: "auto", display: "grid", gap: 14 }}>
               <Field label="Título"><input value={edit.titulo ?? ""} onChange={(e) => setEdit({ ...edit, titulo: e.target.value })} style={inp} /></Field>
               <Field label="Descrição"><textarea value={edit.descricao ?? ""} onChange={(e) => setEdit({ ...edit, descricao: e.target.value })} style={{ ...inp, minHeight: 80 }} /></Field>
               {!isServicoMode && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
@@ -213,8 +216,15 @@ export default function MateriaisTab({
               {edit.id && edit.acesso === "restrito" && (
                 <AcessosSection materialId={edit.id} />
               )}
+              </div>
+
+              <aside style={{ borderLeft: `1px solid ${c.border}`, background: c.warm, padding: "20px 18px", overflow: "auto" }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600 }}>Prévia do card</div>
+                <MaterialPreviewCard edit={edit} isServico={isServicoMode} />
+                <p style={{ fontSize: 10.5, color: c.muted, marginTop: 14, lineHeight: 1.5 }}>É assim que o card aparece na vitrine. Atualiza em tempo real.</p>
+              </aside>
             </div>
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 24 }}>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", padding: "14px 28px", borderTop: `1px solid ${c.border}`, background: c.cream }}>
               <button onClick={() => setEdit(null)} style={btn(c.muted)}>Cancelar</button>
               <button onClick={salvar} disabled={busy} style={{ ...btn(c.sageDark), opacity: busy ? 0.6 : 1 }}>{busy ? "Salvando…" : "Salvar"}</button>
             </div>
