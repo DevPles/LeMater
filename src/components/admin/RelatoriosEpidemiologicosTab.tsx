@@ -69,6 +69,17 @@ function faixaEtaria(idade: number | null): "<18" | "18-34" | "≥35" | "—" {
 
 import { useAdminFilters } from "@/contexts/AdminFiltersContext";
 
+function presetRange(days: number): DateRange {
+  const to = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - days + 1);
+  from.setHours(0, 0, 0, 0);
+  to.setHours(23, 59, 59, 999);
+  return { from, to };
+}
+const fmtDayBR = (d: Date) =>
+  d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+
 export function RelatoriosEpidemiologicosTab() {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [measurements, setMeasurements] = useState<MeasurementRow[]>([]);
@@ -76,6 +87,8 @@ export function RelatoriosEpidemiologicosTab() {
   const [vaccinations, setVaccinations] = useState<VaccinationRow[]>([]);
   const [imageResults, setImageResults] = useState<ImageResultRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [range, setRange] = useState<DateRange | undefined>(presetRange(365));
+  const [calOpen, setCalOpen] = useState(false);
 
   // Consome filtros globais do topbar (evita duplicação na UI)
   const { filters } = useAdminFilters();
@@ -87,7 +100,7 @@ export function RelatoriosEpidemiologicosTab() {
         supabase
           .from("profiles")
           .select(
-            "user_id, cidade, bairro, unidade_saude, data_nascimento, dum, numero_gestacoes, numero_partos, numero_abortos, partos_classificacao",
+            "user_id, cidade, bairro, unidade_saude, data_nascimento, dum, numero_gestacoes, numero_partos, numero_abortos, partos_classificacao, created_at",
           ),
         supabase.from("clinical_measurements").select("gestante_id, parametro, valor, semana_gestacional"),
         supabase.from("exam_results").select("gestante_id, tipo_exame, status"),
@@ -104,9 +117,17 @@ export function RelatoriosEpidemiologicosTab() {
     load();
   }, []);
 
-  // Aplica filtros globais
+  // Aplica filtros globais + período (created_at do cadastro)
   const filtered = useMemo(() => {
+    const fromTs = range?.from ? new Date(new Date(range.from).setHours(0, 0, 0, 0)).getTime() : null;
+    const toTs = range?.to ? new Date(new Date(range.to).setHours(23, 59, 59, 999)).getTime() : null;
     return profiles.filter((p) => {
+      if (fromTs !== null || toTs !== null) {
+        const t = p.created_at ? new Date(p.created_at).getTime() : null;
+        if (t === null) return false;
+        if (fromTs !== null && t < fromTs) return false;
+        if (toTs !== null && t > toTs) return false;
+      }
       if (filters.cidades.length > 0 && (!p.cidade || !filters.cidades.includes(p.cidade))) return false;
       if (filters.bairro !== "todos" && p.bairro !== filters.bairro) return false;
       if (filters.ubs !== "todas" && p.unidade_saude !== filters.ubs) return false;
@@ -117,7 +138,8 @@ export function RelatoriosEpidemiologicosTab() {
       if (filters.trimestre !== "todos" && trimestre(w) !== trimMap[filters.trimestre]) return false;
       return true;
     });
-  }, [profiles, filters]);
+  }, [profiles, filters, range]);
+
 
   const filteredIds = useMemo(() => new Set(filtered.map((p) => p.user_id)), [filtered]);
 
