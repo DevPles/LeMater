@@ -82,7 +82,6 @@ function HomePage() {
         <div className="space-y-5">
           <WeekProgress currentWeek={currentWeek} />
           <BabySize week={currentWeek} />
-          <QuickActions />
 
           <PregnancyTimelinePreview
             userId={profile!.user_id}
