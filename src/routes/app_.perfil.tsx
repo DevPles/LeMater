@@ -605,9 +605,6 @@ function PerfilPage() {
           >
             {saving ? "Salvando..." : "Salvar alterações"}
           </button>
-          <div className="border-t border-border pt-3">
-            <NotificacoesCard />
-          </div>
         </form>
       </motion.div>
     </div>
