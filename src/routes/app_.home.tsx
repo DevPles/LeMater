@@ -1,7 +1,7 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { WeekProgress } from "@/components/WeekProgress";
 import { BabySize } from "@/components/BabySize";
-import { QuickActions } from "@/components/QuickActions";
+
 import { UserAvatar } from "@/components/UserAvatar";
 import { FlyingStork } from "@/components/FlyingStork";
 import { PregnancyTimelinePreview } from "@/components/PregnancyTimelinePreview";
