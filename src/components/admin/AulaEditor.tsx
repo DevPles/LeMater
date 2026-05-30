@@ -257,6 +257,8 @@ export default function AulaEditor({
   const isGratisPreview = paisTab === "BR"
     ? pvGratis === true
     : (typeof trCurrent?.gratis === "boolean" ? trCurrent.gratis : pvGratis === true);
+  const acessoPreviewLabel = isGratisPreview ? "GRÁTIS" : "PAGO";
+  const acessoPreviewCta = isGratisPreview ? "ASSISTIR" : "COMPRAR";
   const pvPrecoShow = isGratisPreview
     ? "Assistir grátis"
     : trCurrent
@@ -268,31 +270,30 @@ export default function AulaEditor({
   const pvCapaShow = toPublicStorageUrl("materiais-capas", (trCurrent?.capa_url) || pvCapaFile || editing.capa_url || "");
 
   const PreviewCard = (
-    <div style={{ background: c.sageDark, color: "white", position: "relative", width: "100%", overflow: "hidden" }}>
-      {(pvCapaVideoShow || pvCapaShow) && (
-        <div style={{ width: "100%", aspectRatio: "16 / 9", background: "#000", position: "relative" }}>
-          {pvCapaVideoShow ? (
-            <video
-              key={pvCapaVideoShow}
-              src={pvCapaVideoShow}
-              poster={pvCapaShow || undefined}
-              autoPlay muted loop playsInline
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-            />
-          ) : (
-            <img src={pvCapaShow} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-          )}
-        </div>
-      )}
+    <div key={`${paisTab}-${acessoPreviewLabel}-${pvCapaVideoShow || pvCapaShow || "sem-capa"}`} style={{ background: c.sageDark, color: "white", position: "relative", width: "100%", minHeight: 330, overflow: "hidden" }}>
+      {pvCapaVideoShow ? (
+        <video
+          key={pvCapaVideoShow}
+          src={pvCapaVideoShow}
+          poster={pvCapaShow || undefined}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+      ) : pvCapaShow ? (
+        <img src={pvCapaShow} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      ) : null}
+      {(pvCapaVideoShow || pvCapaShow) && <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(45,90,66,0.45), rgba(45,90,66,0.88))" }} />}
 
-      <div style={{ padding: 24 }}>
+      <div style={{ padding: 24, position: "relative", zIndex: 1 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
         <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
           <FlagMark pais={paisTab} size={20} />
-          {isGratisPreview
-            ? <div style={{ background: "rgba(255,255,255,0.18)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Grátis</div>
-            : <div style={{ background: "rgba(0,0,0,0.25)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Pago</div>}
+          <div style={{ background: isGratisPreview ? "rgba(255,255,255,0.22)" : "rgba(0,0,0,0.25)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>{acessoPreviewLabel}</div>
           <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>{pvTemaNome}</div>
         </div>
       </div>
@@ -306,7 +307,7 @@ export default function AulaEditor({
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {!isGratisPreview && pvPrecoShow !== "Comprar" && <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16 }}>{pvPrecoShow}</span>}
           <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>
-            {isGratisPreview ? "Assistir" : "Comprar"}
+            {acessoPreviewCta}
           </div>
         </div>
       </div>
