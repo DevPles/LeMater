@@ -178,6 +178,25 @@ function LoginPage() {
 
   return (
     <main className="web-login-shell">
+      {successOpen && (
+        <div className="login-success-overlay" role="status" aria-live="polite">
+          <div className="login-success-bg" aria-hidden="true">
+            <span className="ls-orb ls-orb-1" />
+            <span className="ls-orb ls-orb-2" />
+            <span className="ls-orb ls-orb-3" />
+          </div>
+          <div className="login-success-card">
+            <div className="ls-ring">
+              <span className="ls-ring-spin" aria-hidden="true" />
+              <span className="ls-ring-pulse" aria-hidden="true" />
+              <img src={logoMonograma} alt="Le Mater" className="ls-logo" />
+            </div>
+            <h2 className="ls-title">Bem-vinda de volta</h2>
+            <p className="ls-subtitle">Login realizado com sucesso</p>
+            <div className="ls-progress" aria-hidden="true"><span /></div>
+          </div>
+        </div>
+      )}
       <section className="web-login-desktop" aria-label="Login web">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
