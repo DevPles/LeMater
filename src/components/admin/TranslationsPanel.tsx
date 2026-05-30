@@ -63,8 +63,6 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
   const [rows, setRows] = useState<Record<Pais, Row>>({ BR: empty("BR"), ES: empty("ES"), US: empty("US") });
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
   // Carrega traduções existentes quando há itemId
   useEffect(() => {
