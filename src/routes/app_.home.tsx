@@ -5,6 +5,7 @@ import { BabySize } from "@/components/BabySize";
 import { UserAvatar } from "@/components/UserAvatar";
 import { FlyingStork } from "@/components/FlyingStork";
 import { PregnancyTimelinePreview } from "@/components/PregnancyTimelinePreview";
+import { SafeBoundary } from "@/components/SafeBoundary";
 import { motion } from "framer-motion";
 import { useGestanteProfile, weeksFromDum } from "@/hooks/useGestanteProfile";
 import { LoadingMessage } from "@/components/LoadingMessage";
@@ -83,11 +84,13 @@ function HomePage() {
           <WeekProgress currentWeek={currentWeek} />
           <BabySize week={currentWeek} />
 
-          <PregnancyTimelinePreview
-            userId={profile!.user_id}
-            dum={profile?.dum}
-            cadastroISO={(profile as { created_at?: string } | null)?.created_at ?? null}
-          />
+          <SafeBoundary label="PregnancyTimelinePreview">
+            <PregnancyTimelinePreview
+              userId={profile!.user_id}
+              dum={profile?.dum}
+              cadastroISO={(profile as { created_at?: string } | null)?.created_at ?? null}
+            />
+          </SafeBoundary>
 
 
 
