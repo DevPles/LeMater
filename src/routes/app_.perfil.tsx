@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useGestanteProfile } from "@/hooks/useGestanteProfile";
 import { LoadingMessage } from "@/components/LoadingMessage";
-import { NotificacoesCard } from "@/components/NotificacoesCard";
+
 
 export const Route = createFileRoute("/app_/perfil")({
   head: () => ({
@@ -605,9 +605,6 @@ function PerfilPage() {
           >
             {saving ? "Salvando..." : "Salvar alterações"}
           </button>
-          <div className="border-t border-border pt-3">
-            <NotificacoesCard />
-          </div>
         </form>
       </motion.div>
     </div>
