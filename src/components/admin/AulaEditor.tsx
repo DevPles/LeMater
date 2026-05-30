@@ -202,36 +202,61 @@ export default function AulaEditor({
     return () => mq.removeEventListener("change", h);
   }, []);
 
+  // Aba de país no topo do modal
+  const [paisTab, setPaisTab] = useState<Pais>("BR");
+  const PAISES: { p: Pais; flag: string; label: string; hint: string }[] = [
+    { p: "BR", flag: "🇧🇷", label: "Português", hint: "Conteúdo original" },
+    { p: "ES", flag: "🇪🇸", label: "Español", hint: "Versão dublada / traduzida" },
+    { p: "US", flag: "🇺🇸", label: "English", hint: "Dubbed / translated version" },
+  ];
+
+  // Resolve o que mostrar na prévia para o país ativo (com fallback PT)
+  const formatPreco = (centavos: number, moeda: string) => {
+    if (!centavos) return "";
+    const v = (centavos / 100).toFixed(2);
+    if (moeda === "EUR") return `€ ${v.replace(".", ",")}`;
+    if (moeda === "USD") return `$ ${v}`;
+    return `R$ ${v.replace(".", ",")}`;
+  };
+  const trCurrent = paisTab !== "BR" ? trRows?.[paisTab] : undefined;
+  const pvTituloShow = (trCurrent?.titulo) || pvTitulo || "Título da aula";
+  const pvDescShow = (trCurrent?.descricao) || pvDesc || "Descrição aparece aqui.";
+  const pvPrecoShow = pvGratis
+    ? "Assistir grátis"
+    : trCurrent
+      ? (trCurrent.preco_label || formatPreco(trCurrent.preco_centavos, trCurrent.moeda || MOEDA_PADRAO[paisTab]) || pvPrecoLabel || "Comprar")
+      : (pvPrecoLabel || "Comprar");
+  const flag = paisTab === "BR" ? "🇧🇷" : paisTab === "ES" ? "🇪🇸" : "🇺🇸";
+
   const PreviewCard = (
     <div style={{ background: c.sageDark, color: "white", padding: 24, position: "relative", width: "100%" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
         <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+          <div style={{ fontSize: 11, opacity: 0.8 }}>{flag} <span style={{ letterSpacing: "0.1em" }}>{paisTab}</span></div>
           {pvGratis && <div style={{ background: "rgba(255,255,255,0.15)", padding: "4px 10px", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Conteúdo grátis</div>}
           <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>{pvTemaNome}</div>
         </div>
       </div>
-      <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 500, margin: "0 0 8px", lineHeight: 1.2 }}>{pvTitulo || "Título da aula"}</h3>
-      <p style={{ fontSize: 13, opacity: 0.85, margin: 0, lineHeight: 1.5 }}>{pvDesc || "Descrição aparece aqui."}</p>
+      <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 500, margin: "0 0 8px", lineHeight: 1.2 }}>{pvTituloShow}</h3>
+      <p style={{ fontSize: 13, opacity: 0.85, margin: 0, lineHeight: 1.5 }}>{pvDescShow}</p>
       <div style={{ borderTop: "1px solid rgba(255,255,255,0.2)", marginTop: 16, paddingTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.6, marginBottom: 2 }}>Formato</div>
           <div style={{ fontSize: 13 }}>{tipoLabel[pvTipo] ?? "Vídeo"}</div>
         </div>
         <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>
-          {pvGratis ? "Assistir grátis" : (pvPrecoLabel || "Comprar")}
+          {pvPrecoShow}
         </div>
       </div>
+      {paisTab !== "BR" && !trCurrent?.titulo && !trCurrent?.descricao && (
+        <div style={{ marginTop: 10, fontSize: 10, letterSpacing: "0.08em", opacity: 0.7 }}>
+          Sem tradução {paisTab} — usando PT como fallback.
+        </div>
+      )}
     </div>
   );
 
-  // Aba de país no topo do modal
-  const [paisTab, setPaisTab] = useState<"BR" | "ES" | "US">("BR");
-  const PAISES: { p: "BR" | "ES" | "US"; flag: string; label: string; hint: string }[] = [
-    { p: "BR", flag: "🇧🇷", label: "Português", hint: "Conteúdo original" },
-    { p: "ES", flag: "🇪🇸", label: "Español", hint: "Versão dublada / traduzida" },
-    { p: "US", flag: "🇺🇸", label: "English", hint: "Dubbed / translated version" },
-  ];
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(28,28,26,0.72)", zIndex: 320, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(4px)" }}>
