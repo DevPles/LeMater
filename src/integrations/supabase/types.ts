@@ -507,6 +507,7 @@ export type Database = {
         Row: {
           audio_url: string | null
           capa_url: string | null
+          capa_video_url: string | null
           conteudo_html: string | null
           created_at: string
           descricao: string | null
@@ -527,6 +528,7 @@ export type Database = {
         Insert: {
           audio_url?: string | null
           capa_url?: string | null
+          capa_video_url?: string | null
           conteudo_html?: string | null
           created_at?: string
           descricao?: string | null
@@ -547,6 +549,7 @@ export type Database = {
         Update: {
           audio_url?: string | null
           capa_url?: string | null
+          capa_video_url?: string | null
           conteudo_html?: string | null
           created_at?: string
           descricao?: string | null
