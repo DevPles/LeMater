@@ -528,9 +528,13 @@ export default function AulaEditor({
         {/* ============ FOOTER STICKY ============ */}
         <div style={{ position: "sticky", bottom: 0, background: "white", borderTop: `1px solid ${c.border}`, padding: "14px 28px", display: "flex", gap: 10, justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ fontSize: 11, color: c.muted, letterSpacing: "0.06em" }}>
-            {paisTab === "BR"
-              ? "Os campos PT são a base da aula. ES/EN herdam quando não preenchidos."
-              : `Versão ${paisTab} é opcional — sem ela, ${paisTab === "ES" ? "🇪🇸" : "🇺🇸"} verão o conteúdo em PT.`}
+            {paisTab === "BR" ? (
+              "Os campos PT são a base da aula. ES/EN herdam quando não preenchidos."
+            ) : (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                Versão {paisTab} é opcional — sem ela, <FlagMark pais={paisTab} size={16} /> verão o conteúdo em PT.
+              </span>
+            )}
           </div>
           <div style={{ display: "flex", gap: 10 }}>
             <button type="button" onClick={onClose} style={btn("transparent", c.ink)} disabled={busy}>{savedId ? "Fechar" : "Cancelar"}</button>
