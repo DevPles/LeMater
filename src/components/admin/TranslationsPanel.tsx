@@ -292,6 +292,36 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             <textarea value={current.conteudo_html} onChange={(e) => update("conteudo_html", e.target.value)} rows={4} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} />
           </Row>
 
+          <div style={{ background: "white", border: `1px solid ${c.border}`, padding: 12, marginTop: 6, marginBottom: 12 }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sageDark, fontWeight: 600, marginBottom: 10 }}>
+              Preço para compradores de {tab === "ES" ? "🇪🇸 Espanha" : "🇺🇸 EUA / Inglês"}
+            </div>
+            <div style={{ fontSize: 12, color: c.muted, marginBottom: 10, lineHeight: 1.5 }}>
+              Quando o usuário estiver com a bandeira <strong>{tab}</strong> no topo do app, ele verá esta aula com este preço e moeda. Deixe em branco para usar o preço base (PT-BR).
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", gap: 8 }}>
+              <Row label={`Preço (${tab === "ES" ? "EUR" : "USD"})`}>
+                <input
+                  type="number" min={0} step="0.01"
+                  value={current.preco_centavos ? (current.preco_centavos / 100).toFixed(2) : ""}
+                  onChange={(e) => update("preco_centavos", Math.round((parseFloat(e.target.value) || 0) * 100))}
+                  placeholder={tab === "ES" ? "9.90" : "9.99"}
+                  style={inp}
+                />
+              </Row>
+              <Row label="Moeda">
+                <select value={current.moeda || MOEDA_PADRAO[tab]} onChange={(e) => update("moeda", e.target.value)} style={inp}>
+                  <option value="BRL">BRL</option>
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                </select>
+              </Row>
+              <Row label="Label do preço (opcional)">
+                <input value={current.preco_label} onChange={(e) => update("preco_label", e.target.value)} placeholder={tab === "ES" ? "€ 9,90" : "$ 9.99"} style={inp} />
+              </Row>
+            </div>
+          </div>
+
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             {(current.id || (!itemId && isFilled(current))) && (
               <button type="button" onClick={remover} disabled={busy} style={{ background: "transparent", color: c.danger, border: `1px solid ${c.border}`, padding: "8px 14px", fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", fontFamily: sans }}>
