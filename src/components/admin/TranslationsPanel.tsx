@@ -17,6 +17,7 @@ export type TranslationRow = {
   id?: string;
   titulo: string;
   descricao: string;
+  gratis: boolean | null;
   video_url: string;
   pdf_url: string;
   capa_url: string;
@@ -31,10 +32,10 @@ type Row = TranslationRow;
 
 export const MOEDA_PADRAO: Record<Pais, string> = { BR: "BRL", ES: "EUR", US: "USD" };
 
-const empty = (pais: Pais = "BR"): Row => ({ id: undefined, titulo: "", descricao: "", video_url: "", pdf_url: "", capa_url: "", audio_url: "", legenda_url: "", conteudo_html: "", preco_centavos: 0, moeda: MOEDA_PADRAO[pais], preco_label: "" });
+const empty = (pais: Pais = "BR"): Row => ({ id: undefined, titulo: "", descricao: "", gratis: null, video_url: "", pdf_url: "", capa_url: "", audio_url: "", legenda_url: "", conteudo_html: "", preco_centavos: 0, moeda: MOEDA_PADRAO[pais], preco_label: "" });
 
 const isFilled = (r: Row) =>
-  !!(r.titulo || r.descricao || r.video_url || r.pdf_url || r.capa_url || r.audio_url || r.legenda_url || r.conteudo_html || (r.preco_centavos && r.preco_centavos > 0) || r.preco_label);
+  !!(r.titulo || r.descricao || r.gratis !== null || r.video_url || r.pdf_url || r.capa_url || r.audio_url || r.legenda_url || r.conteudo_html || (r.preco_centavos && r.preco_centavos > 0) || r.preco_label);
 
 export type TranslationsPanelHandle = {
   /** Persist all buffered (ES/EN) translations against the given itemId. */
@@ -80,6 +81,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             id: t.id,
             titulo: t.titulo ?? "",
             descricao: t.descricao ?? "",
+            gratis: typeof t.gratis === "boolean" ? t.gratis : null,
             video_url: t.video_url ?? "",
             pdf_url: t.pdf_url ?? "",
             capa_url: t.capa_url ?? "",
@@ -109,6 +111,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
           pais,
           titulo: r.titulo || null,
           descricao: r.descricao || null,
+          gratis: r.gratis,
           video_url: r.video_url || null,
           pdf_url: r.pdf_url || null,
           capa_url: r.capa_url || null,
@@ -148,7 +151,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
     finally { setBusy(false); }
   };
 
-  const update = (field: keyof Row, value: string | number) => {
+  const update = (field: keyof Row, value: string | number | boolean | null) => {
     setRows((prev) => {
       const next = { ...prev, [tab]: { ...prev[tab], [field]: value as any } };
       onRowsChange?.(next);
@@ -170,6 +173,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
         pais: tab,
         titulo: r.titulo || null,
         descricao: r.descricao || null,
+        gratis: r.gratis,
         video_url: r.video_url || null,
         pdf_url: r.pdf_url || null,
         capa_url: r.capa_url || null,
@@ -260,33 +264,31 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             <textarea value={current.descricao} onChange={(e) => update("descricao", e.target.value)} rows={3} style={{ ...inp, resize: "vertical" }} />
           </Row>
 
-          <Row label={`Vídeo dublado (${tab}) — arquivo`}>
-            <input type="file" accept="video/*" onChange={(e) => onFile("video_url", "materiais-video", "aulas", e.target.files?.[0] ?? null)} style={inp} />
-            {current.video_url && <Hint url={current.video_url} />}
-          </Row>
-          <Row label={`Vídeo (${tab}) — OU URL externa (YouTube/Vimeo)`}>
-            <input value={current.video_url.startsWith("http") ? current.video_url : ""} onChange={(e) => update("video_url", e.target.value)} placeholder="https://..." style={inp} />
-          </Row>
-
-          <Row label={`PDF / Ebook (${tab})`}>
-            <input type="file" accept="application/pdf" onChange={(e) => onFile("pdf_url", "materiais-pdf", "materiais", e.target.files?.[0] ?? null)} style={inp} />
-            {current.pdf_url && <Hint url={current.pdf_url} />}
-          </Row>
-
-          <Row label={`Capa (${tab}) — opcional`}>
-            <input type="file" accept="image/*" onChange={(e) => onFile("capa_url", "materiais-capas", "capas", e.target.files?.[0] ?? null)} style={inp} />
-            {current.capa_url && <Hint url={current.capa_url} />}
-          </Row>
-
-          <Row label={`Áudio (${tab}) — opcional`}>
-            <input type="file" accept="audio/*" onChange={(e) => onFile("audio_url", "materiais-video", "audios", e.target.files?.[0] ?? null)} style={inp} />
-            {current.audio_url && <Hint url={current.audio_url} />}
-          </Row>
-
-          <Row label={`Legenda (${tab}) — .vtt/.srt (opcional)`}>
-            <input type="file" accept=".vtt,.srt,text/vtt" onChange={(e) => onFile("legenda_url", "materiais-capas", "legendas", e.target.files?.[0] ?? null)} style={inp} />
-            {current.legenda_url && <Hint url={current.legenda_url} />}
-          </Row>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10, alignItems: "stretch" }}>
+            <Row label={`Vídeo dublado (${tab}) — arquivo`}>
+              <input type="file" accept="video/*" onChange={(e) => onFile("video_url", "materiais-video", "aulas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.video_url && <Hint url={current.video_url} />}
+            </Row>
+            <Row label={`Vídeo (${tab}) — OU URL externa`}>
+              <input value={current.video_url.startsWith("http") ? current.video_url : ""} onChange={(e) => update("video_url", e.target.value)} placeholder="https://..." style={{ ...inp, minHeight: 42 }} />
+            </Row>
+            <Row label={`PDF / Ebook (${tab})`}>
+              <input type="file" accept="application/pdf" onChange={(e) => onFile("pdf_url", "materiais-pdf", "materiais", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.pdf_url && <Hint url={current.pdf_url} />}
+            </Row>
+            <Row label={`Capa (${tab}) — opcional`}>
+              <input type="file" accept="image/*" onChange={(e) => onFile("capa_url", "materiais-capas", "capas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.capa_url && <Hint url={current.capa_url} />}
+            </Row>
+            <Row label={`Áudio (${tab}) — opcional`}>
+              <input type="file" accept="audio/*" onChange={(e) => onFile("audio_url", "materiais-video", "audios", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.audio_url && <Hint url={current.audio_url} />}
+            </Row>
+            <Row label={`Legenda (${tab}) — opcional`}>
+              <input type="file" accept=".vtt,.srt,text/vtt" onChange={(e) => onFile("legenda_url", "materiais-capas", "legendas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.legenda_url && <Hint url={current.legenda_url} />}
+            </Row>
+          </div>
 
           <Row label={`HTML / Conteúdo de texto (${tab}) — opcional`}>
             <textarea value={current.conteudo_html} onChange={(e) => update("conteudo_html", e.target.value)} rows={4} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} />
@@ -298,6 +300,16 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             </div>
             <div style={{ fontSize: 12, color: c.muted, marginBottom: 10, lineHeight: 1.5 }}>
               Quando o usuário estiver com a bandeira <strong>{tab}</strong> no topo do app, ele verá esta aula com este preço e moeda. Deixe em branco para usar o preço base (PT-BR).
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
+              <button type="button" onClick={() => update("gratis", true)} style={{ background: current.gratis === true ? c.sageDark : c.cream, color: current.gratis === true ? "white" : c.ink, border: `1px solid ${current.gratis === true ? c.sageDark : c.border}`, padding: 10, textAlign: "left", cursor: "pointer", fontFamily: sans }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>Grátis neste país</div>
+                <div style={{ fontSize: 11, opacity: 0.75 }}>Mostra Assistir</div>
+              </button>
+              <button type="button" onClick={() => update("gratis", false)} style={{ background: current.gratis === false ? c.sageDark : c.cream, color: current.gratis === false ? "white" : c.ink, border: `1px solid ${current.gratis === false ? c.sageDark : c.border}`, padding: 10, textAlign: "left", cursor: "pointer", fontFamily: sans }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>Pago neste país</div>
+                <div style={{ fontSize: 11, opacity: 0.75 }}>Mostra Comprar</div>
+              </button>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", gap: 8 }}>
               <Row label={`Preço (${tab === "ES" ? "EUR" : "USD"})`}>

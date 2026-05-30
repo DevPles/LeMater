@@ -5,6 +5,7 @@ import { ContentCard } from "@/components/ContentCard";
 import { CursoModal } from "@/components/CursoModal";
 import { CartDrawer, CartFloatingButton } from "@/components/CartDrawer";
 import { useCart, openCart } from "@/lib/cart-store";
+import { applyTranslation, useTranslatedList } from "@/hooks/useTranslatedContent";
 
 const vidEngravidar = "/__l5e/assets-v1/fee6877d-6bbc-417b-9f9d-c37940580cd3/engravidar.mp4";
 const vidPreNatal = "/__l5e/assets-v1/50839f2b-be10-4be1-9dff-fe20596bd45f/pre-natal.mp4";
@@ -53,6 +54,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const cart = useCart();
+  const { byId: translations } = useTranslatedList("curso_aula", aulas?.map((a) => a.id) ?? []);
 
   useEffect(() => {
     fnTemas().then((t) => setTemas(t as AtlasTema[])).catch((e) => setErr(e?.message ?? "Erro"));
@@ -201,18 +203,23 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: gridTpl, gap: isApp ? 14 : 20 }}>
             {aulas.map((a, i) => {
+              const tr = translations[a.id] ?? null;
+              const shown = applyTranslation(a, tr) as AtlasAulaVitrine;
+              const countryControlsAccess = typeof tr?.gratis === "boolean";
+              const gratis = countryControlsAccess ? tr?.gratis === true : shown.gratis;
+              const podeConsumir = countryControlsAccess ? (gratis || (a.pode_consumir && !a.gratis)) : shown.pode_consumir;
               const inCart = cart.has(a.id);
-              const badge = a.pode_consumir
+              const badge = podeConsumir
                 ? { label: "Seu acesso", color: c.sageDark }
-                : a.gratis
+                : gratis
                   ? { label: "Grátis", color: c.sage }
                   : inCart
                     ? { label: "No carrinho", color: c.sageDark }
                     : { label: "Conteúdo pago", color: c.gold };
-              const cta = a.pode_consumir
+              const cta = podeConsumir
                 ? "Assistir aula"
-                : a.gratis
-                  ? "Saber mais"
+                : gratis
+                  ? "Assistir"
                   : inCart
                     ? "Ver carrinho"
                     : "Adicionar ao carrinho";
@@ -222,17 +229,16 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                   numero={String(i + 1).padStart(2, "0")}
                   categoria={a.temas.map((t) => t.titulo).join(" · ") || "Aula"}
                   badge={badge}
-                  titulo={a.titulo}
-                  descricao={a.descricao}
-                  capa_url={a.capa_url}
-                  capa_video_url={videoForAula(a)}
+                  titulo={shown.titulo}
+                  descricao={shown.descricao}
+                  capa_url={shown.capa_url}
+                  capa_video_url={videoForAula(shown)}
                   metaLabel="Duração"
                   metaValor={a.duracao_min ? `${a.duracao_min} min` : "—"}
-                  precoLabel={!a.pode_consumir && !a.gratis ? a.preco_label : null}
+                  precoLabel={!podeConsumir && !gratis ? shown.preco_label : null}
                   ctaLabel={cta}
-                  ctaIcon={a.pode_consumir || a.gratis ? null : inCart ? "cart-check" : "cart"}
                   onAction={() => {
-                    if (a.pode_consumir || a.gratis) {
+                    if (podeConsumir || gratis) {
                       if (a.temas[0]?.slug) setOpenSlug(a.temas[0].slug);
                       return;
                     }
@@ -243,12 +249,12 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                     cart.add({
                       aula_id: a.id,
                       slug: a.slug,
-                      titulo: a.titulo,
-                      capa_url: a.capa_url,
-                      capa_video_url: videoForAula(a),
-                      preco_centavos: a.preco_centavos,
-                      preco_label: a.preco_label,
-                      moeda: a.moeda,
+                      titulo: shown.titulo,
+                      capa_url: shown.capa_url,
+                      capa_video_url: videoForAula(shown),
+                      preco_centavos: shown.preco_centavos,
+                      preco_label: shown.preco_label,
+                      moeda: shown.moeda,
                       link_compra: a.link_compra,
                       tema: a.temas[0]?.titulo ?? null,
                       beneficios: a.beneficios ?? [],

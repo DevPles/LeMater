@@ -18,12 +18,30 @@ const Field = ({ label, children }: any) => (
   </label>
 );
 const MediaField = ({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) => (
-  <label style={{ display: "flex", flexDirection: "column", marginBottom: 14, minHeight: 92 }}>
-    <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6, minHeight: 30 }}>{label}</div>
-    <div>{children}</div>
+  <label style={{ display: "flex", flexDirection: "column", marginBottom: 0, minHeight: 96, height: "100%" }}>
+    <div style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6, minHeight: 34, display: "flex", alignItems: "flex-end", lineHeight: 1.25 }}>{label}</div>
+    <div style={{ marginTop: "auto" }}>{children}</div>
     <div style={{ fontSize: 11, color: c.muted, marginTop: 4, minHeight: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hint}</div>
   </label>
 );
+
+const FlagMark = ({ pais, size = 18 }: { pais: Pais; size?: number }) => {
+  const style: CSSProperties = {
+    width: size,
+    height: Math.round(size * 0.68),
+    borderRadius: 2,
+    display: "inline-block",
+    boxShadow: "0 0 0 1px rgba(0,0,0,0.14) inset",
+    flexShrink: 0,
+    background:
+      pais === "BR"
+        ? "radial-gradient(circle at 50% 50%, #1f4fa3 0 18%, transparent 19%), linear-gradient(135deg, transparent 25%, #f7d34a 26% 50%, transparent 51%), #229a4b"
+        : pais === "ES"
+          ? "linear-gradient(to bottom, #c60b1e 0 25%, #ffc400 25% 75%, #c60b1e 75%)"
+          : "linear-gradient(to bottom, #b22234 0 8%, #fff 8% 16%, #b22234 16% 24%, #fff 24% 32%, #b22234 32% 40%, #fff 40% 48%, #b22234 48% 56%, #fff 56% 64%, #b22234 64% 72%, #fff 72% 80%, #b22234 80% 88%, #fff 88% 96%, #b22234 96%)",
+  };
+  return <span aria-label={pais} title={pais} style={style} />;
+};
 
 const slugify = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -91,6 +109,13 @@ export default function AulaEditor({
   const [pvGratis, setPvGratis] = useState(editing.gratis ?? false);
   const [pvPrecoLabel, setPvPrecoLabel] = useState(editing.preco_label ?? "");
   const [pvVideoExt, setPvVideoExt] = useState<string>(editing.video_url && String(editing.video_url).startsWith("http") ? String(editing.video_url) : "");
+  const [pvCapaFile, setPvCapaFile] = useState("");
+  const [pvCapaVideoFile, setPvCapaVideoFile] = useState("");
+
+  useEffect(() => () => {
+    if (pvCapaFile) URL.revokeObjectURL(pvCapaFile);
+    if (pvCapaVideoFile) URL.revokeObjectURL(pvCapaVideoFile);
+  }, [pvCapaFile, pvCapaVideoFile]);
 
   const [pvTemasIds, setPvTemasIds] = useState<string[]>(editing.temas ?? []);
   const pvTemaNome = temas.find((t) => pvTemasIds.includes(t.id))?.titulo ?? "Tema";
@@ -230,50 +255,25 @@ export default function AulaEditor({
   const trCurrent = paisTab !== "BR" ? trRows?.[paisTab] : undefined;
   const pvTituloShow = (trCurrent?.titulo) || pvTitulo || "Título da aula";
   const pvDescShow = (trCurrent?.descricao) || pvDesc || "Descrição aparece aqui.";
-  const pvPrecoShow = pvGratis
+  const pvGratisShow = typeof trCurrent?.gratis === "boolean" ? trCurrent.gratis : pvGratis;
+  const pvPrecoShow = pvGratisShow
     ? "Assistir grátis"
     : trCurrent
       ? (trCurrent.preco_label || formatPreco(trCurrent.preco_centavos, trCurrent.moeda || MOEDA_PADRAO[paisTab]) || pvPrecoLabel || "Comprar")
       : (pvPrecoLabel || "Comprar");
-  const flag = paisTab === "BR" ? "🇧🇷" : paisTab === "ES" ? "🇪🇸" : "🇺🇸";
 
-  // Mídia para a prévia: prioriza tradução do país ativo; cai p/ PT
-  const ytId = (u: string) => {
-    const m = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/);
-    return m?.[1];
-  };
-  const vimeoId = (u: string) => u.match(/vimeo\.com\/(\d+)/)?.[1];
-  const embedUrl = (u: string): string | null => {
-    if (!u) return null;
-    const y = ytId(u); if (y) return `https://www.youtube.com/embed/${y}?autoplay=1&mute=1&loop=1&playlist=${y}&controls=0&modestbranding=1`;
-    const v = vimeoId(u); if (v) return `https://player.vimeo.com/video/${v}?autoplay=1&muted=1&loop=1&background=1`;
-    return null;
-  };
-  const pvVideoFile =
-    (trCurrent?.video_url && !embedUrl(String(trCurrent.video_url)) ? String(trCurrent.video_url) : "") ||
-    (editing.capa_video_url || "") ||
-    (editing.video_url && !embedUrl(String(editing.video_url)) ? String(editing.video_url) : "");
-  const pvVideoEmbed =
-    embedUrl(String(trCurrent?.video_url || "")) ||
-    embedUrl(pvVideoExt) ||
-    embedUrl(String(editing.video_url || ""));
-  const pvCapaShow = (trCurrent?.capa_url) || editing.capa_url || "";
+  // A prévia do card mostra apenas a mídia de capa, nunca o vídeo interno da aula.
+  const pvCapaVideoShow = pvCapaVideoFile || editing.capa_video_url || "";
+  const pvCapaShow = (trCurrent?.capa_url) || pvCapaFile || editing.capa_url || "";
 
   const PreviewCard = (
     <div style={{ background: c.sageDark, color: "white", position: "relative", width: "100%", overflow: "hidden" }}>
-      {(pvVideoFile || pvVideoEmbed || pvCapaShow) && (
+      {(pvCapaVideoShow || pvCapaShow) && (
         <div style={{ width: "100%", aspectRatio: "16 / 9", background: "#000", position: "relative" }}>
-          {pvVideoEmbed ? (
-            <iframe
-              key={pvVideoEmbed}
-              src={pvVideoEmbed}
-              allow="autoplay; encrypted-media; picture-in-picture"
-              style={{ width: "100%", height: "100%", border: 0, display: "block" }}
-            />
-          ) : pvVideoFile ? (
+          {pvCapaVideoShow ? (
             <video
-              key={pvVideoFile}
-              src={pvVideoFile}
+              key={pvCapaVideoShow}
+              src={pvCapaVideoShow}
               poster={pvCapaShow || undefined}
               autoPlay muted loop playsInline
               style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
@@ -288,8 +288,8 @@ export default function AulaEditor({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
         <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-          <span title={paisTab} style={{ fontSize: 18, lineHeight: 1 }}>{flag}</span>
-          {pvGratis
+          <FlagMark pais={paisTab} size={20} />
+          {pvGratisShow
             ? <div style={{ background: "rgba(255,255,255,0.18)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Grátis</div>
             : <div style={{ background: "rgba(0,0,0,0.25)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Pago</div>}
           <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>{pvTemaNome}</div>
@@ -303,7 +303,7 @@ export default function AulaEditor({
           <div style={{ fontSize: 13 }}>{tipoLabel[pvTipo] ?? "Vídeo"}</div>
         </div>
         <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>
-          {pvGratis ? "▶ Assistir" : pvPrecoShow}
+          {pvGratisShow ? "Assistir" : pvPrecoShow}
         </div>
       </div>
       {paisTab !== "BR" && !trCurrent?.titulo && !trCurrent?.descricao && (
@@ -334,7 +334,7 @@ export default function AulaEditor({
                 {pvTitulo || (editing.id ? "Aula sem título" : "Nova aula no Atlas")}
               </h2>
               <div style={{ fontSize: 12, opacity: 0.7, marginTop: 4 }}>
-                Um cadastro · três idiomas. Use as abas abaixo para enviar vídeo e PDF dublados.
+                Um cadastro · três idiomas. Use as abas abaixo para definir capa, mídia, preço e acesso.
               </div>
             </div>
             <button type="button" onClick={onClose} disabled={busy}
@@ -366,7 +366,7 @@ export default function AulaEditor({
                     borderBottom: active ? `3px solid ${c.cream}` : "3px solid transparent",
                     marginBottom: -1,
                   }}>
-                  <span style={{ fontSize: 16 }}>{t.flag}</span>
+                  <FlagMark pais={t.p} size={18} />
                   <span>{t.label}</span>
                   {t.p === "BR" && <span style={{ background: "rgba(0,0,0,0.12)", color: active ? c.muted : "rgba(255,255,255,0.7)", fontSize: 9, padding: "2px 6px", letterSpacing: "0.1em", marginLeft: 4 }}>Base</span>}
                 </button>
@@ -415,15 +415,19 @@ export default function AulaEditor({
                 </div>
 
                 <SectionTitle>Mídia em Português</SectionTitle>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "stretch" }}>
+                <div style={{ display: "grid", gridTemplateColumns: wide ? "repeat(4, minmax(0, 1fr))" : "repeat(2, minmax(0, 1fr))", gap: 12, alignItems: "stretch" }}>
                   <MediaField label="Capa (imagem) — usada como poster" hint={editing.capa_url ? `Atual: ${editing.capa_url}` : ""}>
-                    <input name="capa" type="file" accept="image/*" style={inp} />
+                    <input name="capa" type="file" accept="image/*" onChange={(e) => {
+                      setPvCapaFile((prev) => { if (prev) URL.revokeObjectURL(prev); return e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : ""; });
+                    }} style={{ ...inp, minHeight: 42 }} />
                   </MediaField>
                   <MediaField label="Capa em vídeo (loop curto, MP4) — opcional" hint={editing.capa_video_url ? `Atual: ${editing.capa_video_url}` : ""}>
-                    <input name="capa_video" type="file" accept="video/*" style={inp} />
+                    <input name="capa_video" type="file" accept="video/*" onChange={(e) => {
+                      setPvCapaVideoFile((prev) => { if (prev) URL.revokeObjectURL(prev); return e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : ""; });
+                    }} style={{ ...inp, minHeight: 42 }} />
                   </MediaField>
                   <MediaField label="Vídeo da aula — arquivo (MP4)" hint="">
-                    <input name="video_file" type="file" accept="video/*" style={inp} />
+                    <input name="video_file" type="file" accept="video/*" style={{ ...inp, minHeight: 42 }} />
                   </MediaField>
                   <MediaField label="Vídeo da aula — OU URL externa (YouTube/Vimeo)" hint="">
                     <input
@@ -431,7 +435,7 @@ export default function AulaEditor({
                       placeholder="https://youtube.com/..."
                       defaultValue={editing.video_url && String(editing.video_url).startsWith("http") ? editing.video_url : ""}
                       onChange={(e) => setPvVideoExt(e.target.value)}
-                      style={inp}
+                      style={{ ...inp, minHeight: 42 }}
                     />
                   </MediaField>
                 </div>
@@ -440,10 +444,18 @@ export default function AulaEditor({
                 <Field label="HTML (se tipo = Texto)"><textarea name="conteudo_html" defaultValue={editing.conteudo_html ?? ""} rows={5} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} /></Field>
 
                 <SectionTitle>Monetização — Brasil (preço base)</SectionTitle>
+                <input type="checkbox" name="gratis" checked={pvGratis} readOnly style={{ display: "none" }} />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+                  <button type="button" onClick={() => setPvGratis(true)} style={{ background: pvGratis ? c.sageDark : "white", color: pvGratis ? "white" : c.ink, border: `1px solid ${pvGratis ? c.sageDark : c.border}`, padding: 14, textAlign: "left", cursor: "pointer", fontFamily: sans }}>
+                    <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>Conteúdo grátis</div>
+                    <div style={{ fontSize: 12, opacity: 0.75 }}>O card mostra Grátis e o botão Assistir.</div>
+                  </button>
+                  <button type="button" onClick={() => setPvGratis(false)} style={{ background: !pvGratis ? c.sageDark : "white", color: !pvGratis ? "white" : c.ink, border: `1px solid ${!pvGratis ? c.sageDark : c.border}`, padding: 14, textAlign: "left", cursor: "pointer", fontFamily: sans }}>
+                    <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>Conteúdo pago</div>
+                    <div style={{ fontSize: 12, opacity: 0.75 }}>O card mostra Pago e o botão Comprar.</div>
+                  </button>
+                </div>
                 <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 10 }}>
-                  <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
-                    <input type="checkbox" name="gratis" defaultChecked={editing.gratis ?? false} onChange={(e) => setPvGratis(e.target.checked)} style={{ accentColor: c.sageDark }} /> Aula grátis
-                  </label>
                   <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
                     <input type="checkbox" name="previa_gratis" defaultChecked={editing.previa_gratis ?? false} style={{ accentColor: c.sageDark }} /> Prévia liberada para todos
                   </label>
@@ -506,7 +518,7 @@ export default function AulaEditor({
 
             {/* Coluna lateral: preview SEMPRE visível, reflete país ativo */}
             <div style={{ position: wide ? "sticky" : "static", top: 0, alignSelf: "start" }}>
-              <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>Prévia do card <span style={{ fontSize: 16 }}>{flag}</span></div>
+              <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>Prévia do card <FlagMark pais={paisTab} size={18} /></div>
               {PreviewCard}
               <p style={{ fontSize: 11, color: c.muted, marginTop: 8, lineHeight: 1.5 }}>É assim que aparece na vitrine para usuários do país <strong>{paisTab}</strong>. Atualiza em tempo real.</p>
             </div>
