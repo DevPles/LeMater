@@ -231,25 +231,44 @@ export default function AulaEditor({
   const flag = paisTab === "BR" ? "🇧🇷" : paisTab === "ES" ? "🇪🇸" : "🇺🇸";
 
   // Mídia para a prévia: prioriza tradução do país ativo; cai p/ PT
-  const pvVideoShow =
-    (trCurrent?.video_url && String(trCurrent.video_url)) ||
+  const ytId = (u: string) => {
+    const m = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/);
+    return m?.[1];
+  };
+  const vimeoId = (u: string) => u.match(/vimeo\.com\/(\d+)/)?.[1];
+  const embedUrl = (u: string): string | null => {
+    if (!u) return null;
+    const y = ytId(u); if (y) return `https://www.youtube.com/embed/${y}?autoplay=1&mute=1&loop=1&playlist=${y}&controls=0&modestbranding=1`;
+    const v = vimeoId(u); if (v) return `https://player.vimeo.com/video/${v}?autoplay=1&muted=1&loop=1&background=1`;
+    return null;
+  };
+  const pvVideoFile =
+    (trCurrent?.video_url && !embedUrl(String(trCurrent.video_url)) ? String(trCurrent.video_url) : "") ||
     (editing.capa_video_url || "") ||
-    (editing.video_url && !String(editing.video_url).match(/youtube|vimeo/i) ? String(editing.video_url) : "");
+    (editing.video_url && !embedUrl(String(editing.video_url)) ? String(editing.video_url) : "");
+  const pvVideoEmbed =
+    embedUrl(String(trCurrent?.video_url || "")) ||
+    embedUrl(pvVideoExt) ||
+    embedUrl(String(editing.video_url || ""));
   const pvCapaShow = (trCurrent?.capa_url) || editing.capa_url || "";
 
   const PreviewCard = (
     <div style={{ background: c.sageDark, color: "white", position: "relative", width: "100%", overflow: "hidden" }}>
-      {(pvVideoShow || pvCapaShow) && (
+      {(pvVideoFile || pvVideoEmbed || pvCapaShow) && (
         <div style={{ width: "100%", aspectRatio: "16 / 9", background: "#000", position: "relative" }}>
-          {pvVideoShow ? (
+          {pvVideoEmbed ? (
+            <iframe
+              key={pvVideoEmbed}
+              src={pvVideoEmbed}
+              allow="autoplay; encrypted-media; picture-in-picture"
+              style={{ width: "100%", height: "100%", border: 0, display: "block" }}
+            />
+          ) : pvVideoFile ? (
             <video
-              key={pvVideoShow}
-              src={pvVideoShow}
+              key={pvVideoFile}
+              src={pvVideoFile}
               poster={pvCapaShow || undefined}
-              autoPlay
-              muted
-              loop
-              playsInline
+              autoPlay muted loop playsInline
               style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             />
           ) : (
@@ -257,6 +276,7 @@ export default function AulaEditor({
           )}
         </div>
       )}
+
       <div style={{ padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
         <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
