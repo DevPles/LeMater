@@ -196,10 +196,11 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
             <button
               onClick={gerarLink}
               disabled={gerando || !userId}
-              className="w-full bg-primary text-primary-foreground text-xs font-bold py-2.5 rounded-full disabled:opacity-50 hover:opacity-90"
+              className="w-full mt-4 bg-primary text-primary-foreground text-xs font-bold py-2.5 rounded-full disabled:opacity-50 hover:opacity-90"
             >
               {gerando ? "Gerando..." : "Gerar link da avaliação"}
             </button>
+
           </LiquidCard>
 
           {novoLink && (
