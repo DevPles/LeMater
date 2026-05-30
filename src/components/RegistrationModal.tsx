@@ -7,6 +7,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistritos, useBairros, useUbs } from "@/hooks/useLocalidades";
 import { resolvePostLoginPath, waitForActiveSession } from "@/lib/auth-routing";
+import { WelcomeOverlay } from "@/components/WelcomeOverlay";
 
 const c = {
   cream: "#FAF5EE",
@@ -86,6 +87,7 @@ export default function RegistrationModal({
   const [mode, setMode] = useState<Mode>(initialMode);
   const [step, setStep] = useState<1 | 2>(1);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -384,6 +386,8 @@ export default function RegistrationModal({
   const labelClass = `text-[#1C1C1A]/90 text-xs font-medium mb-1.5 block`;
 
   return (
+    <>
+      {welcomeOpen && <WelcomeOverlay />}
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
         className="w-[calc(100vw-1rem)] max-w-md max-h-[85vh] p-0 rounded-2xl relative overflow-hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fixed [&>button[type=button]]:z-50"
@@ -632,8 +636,11 @@ export default function RegistrationModal({
                     const session = await waitForActiveSession(signInData.user?.id);
                     if (!session) throw new Error("Sessão não foi confirmada. Tente entrar novamente.");
                     const destino = await resolvePostLoginPath(session.user.id, "/app/home");
-                    onOpenChange(false);
-                    navigate({ to: destino });
+                    setWelcomeOpen(true);
+                    window.setTimeout(() => {
+                      onOpenChange(false);
+                      navigate({ to: destino });
+                    }, 2000);
                   } catch (e) {
                     setLoginErro((e as Error).message || "Falha no login");
                   } finally {
@@ -1227,5 +1234,6 @@ export default function RegistrationModal({
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
