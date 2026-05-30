@@ -444,10 +444,18 @@ export default function AulaEditor({
                 <Field label="HTML (se tipo = Texto)"><textarea name="conteudo_html" defaultValue={editing.conteudo_html ?? ""} rows={5} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} /></Field>
 
                 <SectionTitle>Monetização — Brasil (preço base)</SectionTitle>
+                <input type="checkbox" name="gratis" checked={pvGratis} readOnly style={{ display: "none" }} />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+                  <button type="button" onClick={() => setPvGratis(true)} style={{ background: pvGratis ? c.sageDark : "white", color: pvGratis ? "white" : c.ink, border: `1px solid ${pvGratis ? c.sageDark : c.border}`, padding: 14, textAlign: "left", cursor: "pointer", fontFamily: sans }}>
+                    <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>Conteúdo grátis</div>
+                    <div style={{ fontSize: 12, opacity: 0.75 }}>O card mostra Grátis e o botão Assistir.</div>
+                  </button>
+                  <button type="button" onClick={() => setPvGratis(false)} style={{ background: !pvGratis ? c.sageDark : "white", color: !pvGratis ? "white" : c.ink, border: `1px solid ${!pvGratis ? c.sageDark : c.border}`, padding: 14, textAlign: "left", cursor: "pointer", fontFamily: sans }}>
+                    <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700, marginBottom: 4 }}>Conteúdo pago</div>
+                    <div style={{ fontSize: 12, opacity: 0.75 }}>O card mostra Pago e o botão Comprar.</div>
+                  </button>
+                </div>
                 <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 10 }}>
-                  <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
-                    <input type="checkbox" name="gratis" defaultChecked={editing.gratis ?? false} onChange={(e) => setPvGratis(e.target.checked)} style={{ accentColor: c.sageDark }} /> Aula grátis
-                  </label>
                   <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
                     <input type="checkbox" name="previa_gratis" defaultChecked={editing.previa_gratis ?? false} style={{ accentColor: c.sageDark }} /> Prévia liberada para todos
                   </label>
