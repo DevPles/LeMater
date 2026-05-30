@@ -184,6 +184,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
         video_url: r.video_url || null,
         pdf_url: r.pdf_url || null,
         capa_url: r.capa_url || null,
+          capa_video_url: r.capa_video_url || null,
         audio_url: r.audio_url || null,
         legenda_url: r.legenda_url || null,
         conteudo_html: r.conteudo_html || null,
@@ -271,27 +272,31 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             <textarea value={current.descricao} onChange={(e) => update("descricao", e.target.value)} rows={3} style={{ ...inp, resize: "vertical" }} />
           </Row>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10, alignItems: "stretch" }}>
-            <Row label={`Vídeo dublado (${tab}) — arquivo`}>
-              <input type="file" accept="video/*" onChange={(e) => onFile("video_url", "materiais-video", "aulas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
-              {current.video_url && <Hint url={current.video_url} />}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, alignItems: "stretch" }}>
+            <Row label={`Vídeo de capa (${tab}) — aparece no card`} compact>
+              <input type="file" accept="video/*" onChange={(e) => onFile("capa_video_url", "materiais-capas", "capas-video", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.capa_video_url && <Hint url={current.capa_video_url} />}
             </Row>
-            <Row label={`Vídeo (${tab}) — OU URL externa`}>
-              <input value={current.video_url.startsWith("http") ? current.video_url : ""} onChange={(e) => update("video_url", e.target.value)} placeholder="https://..." style={{ ...inp, minHeight: 42 }} />
-            </Row>
-            <Row label={`PDF / Ebook (${tab})`}>
-              <input type="file" accept="application/pdf" onChange={(e) => onFile("pdf_url", "materiais-pdf", "materiais", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
-              {current.pdf_url && <Hint url={current.pdf_url} />}
-            </Row>
-            <Row label={`Capa (${tab}) — opcional`}>
+            <Row label={`Capa imagem (${tab}) — poster do card`} compact>
               <input type="file" accept="image/*" onChange={(e) => onFile("capa_url", "materiais-capas", "capas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
               {current.capa_url && <Hint url={current.capa_url} />}
             </Row>
-            <Row label={`Áudio (${tab}) — opcional`}>
+            <Row label={`Vídeo dublado (${tab}) — aula`} compact>
+              <input type="file" accept="video/*" onChange={(e) => onFile("video_url", "materiais-video", "aulas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.video_url && <Hint url={current.video_url} />}
+            </Row>
+            <Row label={`Vídeo da aula (${tab}) — OU URL externa`} compact>
+              <input value={current.video_url.startsWith("http") ? current.video_url : ""} onChange={(e) => update("video_url", e.target.value)} placeholder="https://..." style={{ ...inp, minHeight: 42 }} />
+            </Row>
+            <Row label={`PDF / Ebook (${tab})`} compact>
+              <input type="file" accept="application/pdf" onChange={(e) => onFile("pdf_url", "materiais-pdf", "materiais", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.pdf_url && <Hint url={current.pdf_url} />}
+            </Row>
+            <Row label={`Áudio (${tab}) — opcional`} compact>
               <input type="file" accept="audio/*" onChange={(e) => onFile("audio_url", "materiais-video", "audios", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
               {current.audio_url && <Hint url={current.audio_url} />}
             </Row>
-            <Row label={`Legenda (${tab}) — opcional`}>
+            <Row label={`Legenda (${tab}) — opcional`} compact>
               <input type="file" accept=".vtt,.srt,text/vtt" onChange={(e) => onFile("legenda_url", "materiais-capas", "legendas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
               {current.legenda_url && <Hint url={current.legenda_url} />}
             </Row>
