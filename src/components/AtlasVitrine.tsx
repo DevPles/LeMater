@@ -6,7 +6,7 @@ import { CursoModal } from "@/components/CursoModal";
 import { CartDrawer, CartFloatingButton } from "@/components/CartDrawer";
 import { useCart, openCart } from "@/lib/cart-store";
 import { applyTranslation, useTranslatedList } from "@/hooks/useTranslatedContent";
-import { usePais } from "@/lib/translate.context";
+import { usePais, useLang, PAIS_TO_LANG, type Pais } from "@/lib/translate.context";
 import { videoForAulaCover } from "@/lib/atlas-cover-video";
 
 function formatAulaPreco(centavos: number, moeda: string) {
@@ -33,6 +33,8 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
   const [err, setErr] = useState<string | null>(null);
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [paisMenuOpen, setPaisMenuOpen] = useState(false);
+  const { setLang } = useLang();
   const cart = useCart();
   const pais = usePais();
   const { byId: translations } = useTranslatedList("curso_aula", aulas?.map((a) => a.id) ?? []);
@@ -77,27 +79,99 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
               <span style={{ width: 24, height: 1, background: c.sage }} />
               ATLAS MATERNO
             </div>
-            {temas.length > 0 && (
-              <button
-                onClick={() => setMenuOpen(true)}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 10,
-                  background: "transparent", border: `1px solid ${c.border}`,
-                  padding: isApp ? "8px 14px" : "10px 18px",
-                  fontSize: isApp ? 10 : 11, letterSpacing: "0.12em",
-                  textTransform: "uppercase", cursor: "pointer",
-                  fontFamily: sans, color: c.ink, borderRadius: 999,
-                  flexShrink: 0,
-                }}
-              >
-                <span style={{ display: "inline-flex", flexDirection: "column", gap: 3 }}>
-                  <span style={{ width: 14, height: 1.5, background: c.ink }} />
-                  <span style={{ width: 14, height: 1.5, background: c.ink }} />
-                  <span style={{ width: 14, height: 1.5, background: c.ink }} />
-                </span>
-                {temaSel ? (temas.find((t) => t.id === temaSel)?.titulo ?? "Filtrar") : "Filtrar"}
-              </button>
-            )}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+              {(() => {
+                const PAISES: { p: Pais; flag: string; label: string }[] = [
+                  { p: "BR", flag: "br", label: "Brasil" },
+                  { p: "ES", flag: "es", label: "España" },
+                  { p: "US", flag: "us", label: "USA" },
+                ];
+                const atual = PAISES.find((x) => x.p === pais) ?? PAISES[0];
+                return (
+                  <div style={{ position: "relative" }}>
+                    <button
+                      onClick={() => setPaisMenuOpen((v) => !v)}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 8,
+                        background: "transparent", border: `1px solid ${c.border}`,
+                        padding: isApp ? "8px 12px" : "10px 14px",
+                        fontSize: isApp ? 10 : 11, letterSpacing: "0.12em",
+                        textTransform: "uppercase", cursor: "pointer",
+                        fontFamily: sans, color: c.ink, borderRadius: 999,
+                        flexShrink: 0,
+                      }}
+                      aria-label="Selecionar país"
+                    >
+                      <img
+                        src={`https://flagcdn.com/w40/${atual.flag}.png`}
+                        srcSet={`https://flagcdn.com/w80/${atual.flag}.png 2x`}
+                        alt={atual.label}
+                        style={{ width: 18, height: 12, objectFit: "cover", borderRadius: 2, display: "block" }}
+                      />
+                      {atual.p}
+                    </button>
+                    {paisMenuOpen && (
+                      <>
+                        <div onClick={() => setPaisMenuOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 998 }} />
+                        <div style={{
+                          position: "absolute", top: "calc(100% + 6px)", right: 0,
+                          background: c.cream, border: `1px solid ${c.border}`, borderRadius: 12,
+                          padding: 4, minWidth: 160, zIndex: 999,
+                          boxShadow: "0 12px 36px rgba(0,0,0,0.18)",
+                        }}>
+                          {PAISES.map((opt) => {
+                            const ativo = opt.p === pais;
+                            return (
+                              <button
+                                key={opt.p}
+                                onClick={() => { setLang(PAIS_TO_LANG[opt.p]); setPaisMenuOpen(false); }}
+                                style={{
+                                  display: "flex", alignItems: "center", gap: 10, width: "100%",
+                                  textAlign: "left", padding: "8px 12px",
+                                  background: ativo ? c.sageDark : "transparent",
+                                  color: ativo ? "white" : c.ink, border: "none",
+                                  fontFamily: sans, fontSize: 12, letterSpacing: "0.06em",
+                                  textTransform: "uppercase", cursor: "pointer", borderRadius: 8,
+                                }}
+                              >
+                                <img
+                                  src={`https://flagcdn.com/w40/${opt.flag}.png`}
+                                  srcSet={`https://flagcdn.com/w80/${opt.flag}.png 2x`}
+                                  alt={opt.label}
+                                  style={{ width: 20, height: 14, objectFit: "cover", borderRadius: 2, display: "block" }}
+                                />
+                                {opt.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })()}
+              {temas.length > 0 && (
+                <button
+                  onClick={() => setMenuOpen(true)}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 10,
+                    background: "transparent", border: `1px solid ${c.border}`,
+                    padding: isApp ? "8px 14px" : "10px 18px",
+                    fontSize: isApp ? 10 : 11, letterSpacing: "0.12em",
+                    textTransform: "uppercase", cursor: "pointer",
+                    fontFamily: sans, color: c.ink, borderRadius: 999,
+                    flexShrink: 0,
+                  }}
+                >
+                  <span style={{ display: "inline-flex", flexDirection: "column", gap: 3 }}>
+                    <span style={{ width: 14, height: 1.5, background: c.ink }} />
+                    <span style={{ width: 14, height: 1.5, background: c.ink }} />
+                    <span style={{ width: 14, height: 1.5, background: c.ink }} />
+                  </span>
+                  {temaSel ? (temas.find((t) => t.id === temaSel)?.titulo ?? "Filtrar") : "Filtrar"}
+                </button>
+              )}
+            </div>
           </div>
 
 
