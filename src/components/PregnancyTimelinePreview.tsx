@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LiquidCard } from "@/components/LiquidCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@tanstack/react-router";
+import { videoForAulaCover } from "@/lib/atlas-cover-video";
 import { listCursosVitrine, type CursoVitrine } from "@/lib/cursos.functions";
 import {
   GESTATION_WEEKS,
