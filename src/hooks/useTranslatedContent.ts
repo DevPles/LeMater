@@ -17,6 +17,9 @@ export type ContentTranslation = {
   audio_url: string | null;
   legenda_url: string | null;
   conteudo_html: string | null;
+  preco_centavos: number | null;
+  moeda: string | null;
+  preco_label: string | null;
 };
 
 /**
@@ -59,8 +62,12 @@ export function useTranslatedContent(itemType: ContentItemType, itemId: string |
 export function applyTranslation<T extends Record<string, any>>(base: T, t: ContentTranslation | null): T {
   if (!t) return base;
   const out: any = { ...base };
-  for (const k of ["titulo","descricao","video_url","pdf_url","capa_url","audio_url","legenda_url","conteudo_html"] as const) {
+  for (const k of ["titulo","descricao","video_url","pdf_url","capa_url","audio_url","legenda_url","conteudo_html","preco_label"] as const) {
     if (t[k]) out[k] = t[k];
+  }
+  if (t.preco_centavos && t.preco_centavos > 0) {
+    out.preco_centavos = t.preco_centavos;
+    if (t.moeda) out.moeda = t.moeda;
   }
   return out;
 }

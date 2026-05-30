@@ -13,7 +13,7 @@ const TABS: { pais: Pais; flag: string; label: string }[] = [
   { pais: "US", flag: "🇺🇸", label: "English (EN)" },
 ];
 
-type Row = {
+export type TranslationRow = {
   id?: string;
   titulo: string;
   descricao: string;
@@ -23,12 +23,18 @@ type Row = {
   audio_url: string;
   legenda_url: string;
   conteudo_html: string;
+  preco_centavos: number;
+  moeda: string;
+  preco_label: string;
 };
+type Row = TranslationRow;
 
-const empty = (): Row => ({ id: undefined, titulo: "", descricao: "", video_url: "", pdf_url: "", capa_url: "", audio_url: "", legenda_url: "", conteudo_html: "" });
+export const MOEDA_PADRAO: Record<Pais, string> = { BR: "BRL", ES: "EUR", US: "USD" };
+
+const empty = (pais: Pais = "BR"): Row => ({ id: undefined, titulo: "", descricao: "", video_url: "", pdf_url: "", capa_url: "", audio_url: "", legenda_url: "", conteudo_html: "", preco_centavos: 0, moeda: MOEDA_PADRAO[pais], preco_label: "" });
 
 const isFilled = (r: Row) =>
-  !!(r.titulo || r.descricao || r.video_url || r.pdf_url || r.capa_url || r.audio_url || r.legenda_url || r.conteudo_html);
+  !!(r.titulo || r.descricao || r.video_url || r.pdf_url || r.capa_url || r.audio_url || r.legenda_url || r.conteudo_html || (r.preco_centavos && r.preco_centavos > 0) || r.preco_label);
 
 export type TranslationsPanelHandle = {
   /** Persist all buffered (ES/EN) translations against the given itemId. */
@@ -48,11 +54,13 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
   /** Trava o painel em um país e oculta as abas internas (usado quando o modal-pai já oferece abas de país). */
   lockedPais?: Pais;
   hideTabs?: boolean;
-}>(function TranslationsPanel({ itemType, itemId, lockedPais, hideTabs }, ref) {
+  /** Notifica o pai sempre que algum campo de tradução muda (para preview ao vivo). */
+  onRowsChange?: (rows: Record<Pais, Row>) => void;
+}>(function TranslationsPanel({ itemType, itemId, lockedPais, hideTabs, onRowsChange }, ref) {
   const [tab, setTab] = useState<Pais>(lockedPais ?? "ES");
   useEffect(() => { if (lockedPais) setTab(lockedPais); }, [lockedPais]);
 
-  const [rows, setRows] = useState<Record<Pais, Row>>({ BR: empty(), ES: empty(), US: empty() });
+  const [rows, setRows] = useState<Record<Pais, Row>>({ BR: empty("BR"), ES: empty("ES"), US: empty("US") });
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
@@ -65,9 +73,10 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
       .eq("item_type", itemType)
       .eq("item_id", itemId)
       .then(({ data }) => {
-        const next: Record<Pais, Row> = { BR: empty(), ES: empty(), US: empty() };
+        const next: Record<Pais, Row> = { BR: empty("BR"), ES: empty("ES"), US: empty("US") };
         (data as any[] | null)?.forEach((t) => {
-          next[t.pais as Pais] = {
+          const p = t.pais as Pais;
+          next[p] = {
             id: t.id,
             titulo: t.titulo ?? "",
             descricao: t.descricao ?? "",
@@ -77,9 +86,13 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             audio_url: t.audio_url ?? "",
             legenda_url: t.legenda_url ?? "",
             conteudo_html: t.conteudo_html ?? "",
+            preco_centavos: t.preco_centavos ?? 0,
+            moeda: t.moeda ?? MOEDA_PADRAO[p],
+            preco_label: t.preco_label ?? "",
           };
         });
         setRows(next);
+        onRowsChange?.(next);
       });
   }, [itemType, itemId]);
 
@@ -90,7 +103,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
       for (const pais of ["ES", "US"] as Pais[]) {
         const r = rows[pais];
         if (!isFilled(r)) continue;
-        const payload = {
+        const payload: any = {
           item_type: itemType,
           item_id: newId,
           pais,
@@ -102,6 +115,9 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
           audio_url: r.audio_url || null,
           legenda_url: r.legenda_url || null,
           conteudo_html: r.conteudo_html || null,
+          preco_centavos: r.preco_centavos > 0 ? r.preco_centavos : null,
+          moeda: r.moeda || null,
+          preco_label: r.preco_label || null,
         };
         const { error } = await supabase
           .from("content_translations")
@@ -123,13 +139,21 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
     setBusy(true); setMsg(null);
     try {
       const url = await upload(bucket, file, subfolder);
-      setRows((prev) => ({ ...prev, [tab]: { ...prev[tab], [field]: url } }));
+      setRows((prev) => {
+        const next = { ...prev, [tab]: { ...prev[tab], [field]: url } };
+        onRowsChange?.(next);
+        return next;
+      });
     } catch (e: any) { setMsg({ kind: "err", text: e?.message ?? "Erro ao subir arquivo" }); }
     finally { setBusy(false); }
   };
 
-  const update = (field: keyof Row, value: string) => {
-    setRows((prev) => ({ ...prev, [tab]: { ...prev[tab], [field]: value } }));
+  const update = (field: keyof Row, value: string | number) => {
+    setRows((prev) => {
+      const next = { ...prev, [tab]: { ...prev[tab], [field]: value as any } };
+      onRowsChange?.(next);
+      return next;
+    });
   };
 
   const salvar = async () => {
@@ -140,7 +164,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
     setBusy(true); setMsg(null);
     try {
       const r = rows[tab];
-      const payload = {
+      const payload: any = {
         item_type: itemType,
         item_id: itemId,
         pais: tab,
@@ -152,6 +176,9 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
         audio_url: r.audio_url || null,
         legenda_url: r.legenda_url || null,
         conteudo_html: r.conteudo_html || null,
+        preco_centavos: r.preco_centavos > 0 ? r.preco_centavos : null,
+        moeda: r.moeda || null,
+        preco_label: r.preco_label || null,
       };
       const { data, error } = await supabase
         .from("content_translations")
@@ -167,12 +194,12 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
 
   const remover = async () => {
     const id = rows[tab].id;
-    if (!id) { setRows((prev) => ({ ...prev, [tab]: empty() })); return; }
+    if (!id) { setRows((prev) => { const next = { ...prev, [tab]: empty(tab) }; onRowsChange?.(next); return next; }); return; }
     if (!confirm(`Remover a tradução ${tab} deste conteúdo?`)) return;
     setBusy(true); setMsg(null);
     const { error } = await supabase.from("content_translations").delete().eq("id", id);
     if (error) { setMsg({ kind: "err", text: error.message }); }
-    else { setRows((prev) => ({ ...prev, [tab]: empty() })); setMsg({ kind: "ok", text: `Tradução ${tab} removida.` }); }
+    else { setRows((prev) => { const next = { ...prev, [tab]: empty(tab) }; onRowsChange?.(next); return next; }); setMsg({ kind: "ok", text: `Tradução ${tab} removida.` }); }
     setBusy(false);
   };
 
@@ -264,6 +291,36 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
           <Row label={`HTML / Conteúdo de texto (${tab}) — opcional`}>
             <textarea value={current.conteudo_html} onChange={(e) => update("conteudo_html", e.target.value)} rows={4} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} />
           </Row>
+
+          <div style={{ background: "white", border: `1px solid ${c.border}`, padding: 12, marginTop: 6, marginBottom: 12 }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sageDark, fontWeight: 600, marginBottom: 10 }}>
+              Preço para compradores de {tab === "ES" ? "🇪🇸 Espanha" : "🇺🇸 EUA / Inglês"}
+            </div>
+            <div style={{ fontSize: 12, color: c.muted, marginBottom: 10, lineHeight: 1.5 }}>
+              Quando o usuário estiver com a bandeira <strong>{tab}</strong> no topo do app, ele verá esta aula com este preço e moeda. Deixe em branco para usar o preço base (PT-BR).
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", gap: 8 }}>
+              <Row label={`Preço (${tab === "ES" ? "EUR" : "USD"})`}>
+                <input
+                  type="number" min={0} step="0.01"
+                  value={current.preco_centavos ? (current.preco_centavos / 100).toFixed(2) : ""}
+                  onChange={(e) => update("preco_centavos", Math.round((parseFloat(e.target.value) || 0) * 100))}
+                  placeholder={tab === "ES" ? "9.90" : "9.99"}
+                  style={inp}
+                />
+              </Row>
+              <Row label="Moeda">
+                <select value={current.moeda || MOEDA_PADRAO[tab]} onChange={(e) => update("moeda", e.target.value)} style={inp}>
+                  <option value="BRL">BRL</option>
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                </select>
+              </Row>
+              <Row label="Label do preço (opcional)">
+                <input value={current.preco_label} onChange={(e) => update("preco_label", e.target.value)} placeholder={tab === "ES" ? "€ 9,90" : "$ 9.99"} style={inp} />
+              </Row>
+            </div>
+          </div>
 
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
             {(current.id || (!itemId && isFilled(current))) && (
