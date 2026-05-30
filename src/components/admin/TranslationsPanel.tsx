@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState, type CSSProperties } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { ContentItemType } from "@/hooks/useTranslatedContent";
 import type { Pais } from "@/lib/translate.context";
@@ -27,23 +27,31 @@ type Row = {
 
 const empty = (): Row => ({ id: undefined, titulo: "", descricao: "", video_url: "", pdf_url: "", capa_url: "", audio_url: "", legenda_url: "", conteudo_html: "" });
 
+const isFilled = (r: Row) =>
+  !!(r.titulo || r.descricao || r.video_url || r.pdf_url || r.capa_url || r.audio_url || r.legenda_url || r.conteudo_html);
+
+export type TranslationsPanelHandle = {
+  /** Persist all buffered (ES/EN) translations against the given itemId. */
+  flush: (itemId: string) => Promise<void>;
+  /** True if any ES/EN field is filled and not yet saved. */
+  hasPending: () => boolean;
+};
+
 /**
  * Painel reutilizável para gerenciar traduções (ES / EN) de qualquer item.
- * A aba PT é informativa — os campos PT continuam vindo do formulário principal do editor (zero quebra).
+ * Funciona em modo "novo" (sem itemId): mantém rascunho em memória + uploads no storage,
+ * e persiste tudo via `flush(itemId)` chamado pelo editor depois de salvar o item-pai.
  */
-export default function TranslationsPanel({
-  itemType,
-  itemId,
-}: {
+const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
   itemType: ContentItemType;
   itemId: string | null | undefined;
-}) {
+}>(function TranslationsPanel({ itemType, itemId }, ref) {
   const [tab, setTab] = useState<Pais>("ES");
   const [rows, setRows] = useState<Record<Pais, Row>>({ BR: empty(), ES: empty(), US: empty() });
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
-  // carrega traduções existentes
+  // Carrega traduções existentes quando há itemId
   useEffect(() => {
     if (!itemId) return;
     supabase
@@ -70,13 +78,33 @@ export default function TranslationsPanel({
       });
   }, [itemType, itemId]);
 
-  if (!itemId) {
-    return (
-      <div style={{ padding: 14, border: `1px dashed ${c.border}`, background: c.warm, fontSize: 13, color: c.muted, fontFamily: sans }}>
-        Salve este conteúdo primeiro. Depois você poderá enviar as versões em <strong>Espanhol</strong> e <strong>Inglês</strong> aqui mesmo.
-      </div>
-    );
-  }
+  // Expor flush p/ o editor pai persistir após criar o item
+  useImperativeHandle(ref, () => ({
+    hasPending: () => isFilled(rows.ES) || isFilled(rows.US),
+    flush: async (newId: string) => {
+      for (const pais of ["ES", "US"] as Pais[]) {
+        const r = rows[pais];
+        if (!isFilled(r)) continue;
+        const payload = {
+          item_type: itemType,
+          item_id: newId,
+          pais,
+          titulo: r.titulo || null,
+          descricao: r.descricao || null,
+          video_url: r.video_url || null,
+          pdf_url: r.pdf_url || null,
+          capa_url: r.capa_url || null,
+          audio_url: r.audio_url || null,
+          legenda_url: r.legenda_url || null,
+          conteudo_html: r.conteudo_html || null,
+        };
+        const { error } = await supabase
+          .from("content_translations")
+          .upsert(payload, { onConflict: "item_type,item_id,pais" });
+        if (error) throw new Error(`Tradução ${pais}: ${error.message}`);
+      }
+    },
+  }), [rows, itemType]);
 
   const upload = async (bucket: string, file: File, subfolder: string): Promise<string> => {
     const path = `${subfolder}/${tab.toLowerCase()}/${Date.now()}-${file.name.replace(/[^\w.-]/g, "_")}`;
@@ -100,7 +128,10 @@ export default function TranslationsPanel({
   };
 
   const salvar = async () => {
-    if (!itemId) return;
+    if (!itemId) {
+      setMsg({ kind: "ok", text: "Conteúdo guardado. Será salvo junto quando você clicar em Salvar no topo." });
+      return;
+    }
     setBusy(true); setMsg(null);
     try {
       const r = rows[tab];
@@ -144,11 +175,17 @@ export default function TranslationsPanel({
 
   return (
     <div style={{ border: `1px solid ${c.border}`, background: c.warm, padding: 14, fontFamily: sans }}>
+      {!itemId && (
+        <div style={{ padding: 10, border: `1px dashed ${c.border}`, background: "white", fontSize: 12, color: c.muted, marginBottom: 12 }}>
+          Você pode preencher as versões em <strong>Espanhol</strong> e <strong>Inglês</strong> agora — elas serão salvas automaticamente junto com o conteúdo principal.
+        </div>
+      )}
+
       {/* Tabs de país */}
       <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
         {TABS.map((t) => {
           const active = t.pais === tab;
-          const hasContent = t.pais === "BR" ? true : !!rows[t.pais].id;
+          const hasContent = t.pais === "BR" ? true : (rows[t.pais].id ? true : isFilled(rows[t.pais]));
           return (
             <button
               key={t.pais}
@@ -169,7 +206,7 @@ export default function TranslationsPanel({
             >
               <span style={{ fontSize: 16 }}>{t.flag}</span>
               <span>{t.label}</span>
-              {hasContent && t.pais !== "BR" && <span style={{ background: c.ok, color: "white", fontSize: 9, padding: "1px 5px", letterSpacing: "0.08em" }}>OK</span>}
+              {hasContent && t.pais !== "BR" && <span style={{ background: rows[t.pais].id ? c.ok : "#B58A2E", color: "white", fontSize: 9, padding: "1px 5px", letterSpacing: "0.08em" }}>{rows[t.pais].id ? "OK" : "RASCUNHO"}</span>}
             </button>
           );
         })}
@@ -221,14 +258,16 @@ export default function TranslationsPanel({
           </Row>
 
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
-            {current.id && (
+            {(current.id || (!itemId && isFilled(current))) && (
               <button type="button" onClick={remover} disabled={busy} style={{ background: "transparent", color: c.danger, border: `1px solid ${c.border}`, padding: "8px 14px", fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", fontFamily: sans }}>
-                Remover {tab}
+                Limpar {tab}
               </button>
             )}
-            <button type="button" onClick={salvar} disabled={busy} style={{ background: c.sageDark, color: "white", border: "none", padding: "8px 16px", fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", fontFamily: sans }}>
-              {busy ? "Salvando…" : `Salvar tradução ${tab}`}
-            </button>
+            {itemId && (
+              <button type="button" onClick={salvar} disabled={busy} style={{ background: c.sageDark, color: "white", border: "none", padding: "8px 16px", fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", fontFamily: sans }}>
+                {busy ? "Salvando…" : `Salvar tradução ${tab}`}
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -240,7 +279,9 @@ export default function TranslationsPanel({
       )}
     </div>
   );
-}
+});
+
+export default TranslationsPanel;
 
 const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <label style={{ display: "block", marginBottom: 10 }}>
