@@ -93,9 +93,8 @@ function Player() {
         {/* Conteúdo da aula */}
         <main style={{ padding: 32, maxWidth: 1000 }}>
           {!aulaAtual ? <p style={{ color: c.muted }}>Selecione uma aula ao lado.</p> : (
-            <AulaConteudo aulaAtual={aulaAtual} player={player} />
-          )}
-
+            <>
+              <AulaConteudo aulaAtual={aulaAtual} player={player} />
               <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${c.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
                 <button onClick={toggleConcluida} style={btn(aulaAtual.concluida ? c.muted : c.sageDark)}>
                   {aulaAtual.concluida ? "Marcar como NÃO concluída" : "Marcar como concluída"}
