@@ -56,7 +56,7 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
   useEffect(() => {
     let active = true;
     (async () => {
-      const [medRes, examRes, imgRes, vacRes, apptRes] = await Promise.all([
+      const [medRes, examRes, imgRes, vacRes, apptRes, iesRes, vsRes, vseRes] = await Promise.all([
         supabase
           .from("clinical_measurements")
           .select("parametro,valor,data_medicao,semana_gestacional")
@@ -80,6 +80,15 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
           .select("data_hora,status,tipo_atendimento")
           .eq("gestante_id", userId)
           .in("status", ["atendida", "concluida", "reservada"]),
+        supabase
+          .from("image_exam_schedule")
+          .select("tipo_exame,semana_min,semana_max,obrigatorio,mensagem"),
+        supabase
+          .from("vaccine_schedule")
+          .select("vacina,semana_min,semana_max,obrigatoria,mensagem"),
+        supabase
+          .from("vaccine_schedule_extra")
+          .select("vacina,semana_min,semana_max,mensagem"),
       ]);
       if (!active) return;
       setMedicoes((medRes.data ?? []) as Medicao[]);
