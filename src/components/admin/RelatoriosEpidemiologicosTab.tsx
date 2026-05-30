@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { DateRange } from "react-day-picker";
 import {
   ResponsiveContainer,
   BarChart,
@@ -15,6 +16,9 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 import { supabase } from "@/integrations/supabase/client";
 import { DRS_XIII_CIDADES } from "@/lib/drs-xiii";
 
@@ -29,7 +33,9 @@ type ProfileRow = {
   numero_partos: number | null;
   numero_abortos: number | null;
   partos_classificacao: { tipo?: string; ano?: number }[] | null;
+  created_at: string | null;
 };
+
 
 type MeasurementRow = { gestante_id: string; parametro: string; valor: number; semana_gestacional: number | null };
 type ExamRow = { gestante_id: string; tipo_exame: string; status: string };
@@ -63,6 +69,17 @@ function faixaEtaria(idade: number | null): "<18" | "18-34" | "≥35" | "—" {
 
 import { useAdminFilters } from "@/contexts/AdminFiltersContext";
 
+function presetRange(days: number): DateRange {
+  const to = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - days + 1);
+  from.setHours(0, 0, 0, 0);
+  to.setHours(23, 59, 59, 999);
+  return { from, to };
+}
+const fmtDayBR = (d: Date) =>
+  d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+
 export function RelatoriosEpidemiologicosTab() {
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [measurements, setMeasurements] = useState<MeasurementRow[]>([]);
@@ -70,6 +87,8 @@ export function RelatoriosEpidemiologicosTab() {
   const [vaccinations, setVaccinations] = useState<VaccinationRow[]>([]);
   const [imageResults, setImageResults] = useState<ImageResultRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [range, setRange] = useState<DateRange | undefined>(presetRange(365));
+  const [calOpen, setCalOpen] = useState(false);
 
   // Consome filtros globais do topbar (evita duplicação na UI)
   const { filters } = useAdminFilters();
@@ -81,7 +100,7 @@ export function RelatoriosEpidemiologicosTab() {
         supabase
           .from("profiles")
           .select(
-            "user_id, cidade, bairro, unidade_saude, data_nascimento, dum, numero_gestacoes, numero_partos, numero_abortos, partos_classificacao",
+            "user_id, cidade, bairro, unidade_saude, data_nascimento, dum, numero_gestacoes, numero_partos, numero_abortos, partos_classificacao, created_at",
           ),
         supabase.from("clinical_measurements").select("gestante_id, parametro, valor, semana_gestacional"),
         supabase.from("exam_results").select("gestante_id, tipo_exame, status"),
@@ -98,9 +117,17 @@ export function RelatoriosEpidemiologicosTab() {
     load();
   }, []);
 
-  // Aplica filtros globais
+  // Aplica filtros globais + período (created_at do cadastro)
   const filtered = useMemo(() => {
+    const fromTs = range?.from ? new Date(new Date(range.from).setHours(0, 0, 0, 0)).getTime() : null;
+    const toTs = range?.to ? new Date(new Date(range.to).setHours(23, 59, 59, 999)).getTime() : null;
     return profiles.filter((p) => {
+      if (fromTs !== null || toTs !== null) {
+        const t = p.created_at ? new Date(p.created_at).getTime() : null;
+        if (t === null) return false;
+        if (fromTs !== null && t < fromTs) return false;
+        if (toTs !== null && t > toTs) return false;
+      }
       if (filters.cidades.length > 0 && (!p.cidade || !filters.cidades.includes(p.cidade))) return false;
       if (filters.bairro !== "todos" && p.bairro !== filters.bairro) return false;
       if (filters.ubs !== "todas" && p.unidade_saude !== filters.ubs) return false;
@@ -111,7 +138,8 @@ export function RelatoriosEpidemiologicosTab() {
       if (filters.trimestre !== "todos" && trimestre(w) !== trimMap[filters.trimestre]) return false;
       return true;
     });
-  }, [profiles, filters]);
+  }, [profiles, filters, range]);
+
 
   const filteredIds = useMemo(() => new Set(filtered.map((p) => p.user_id)), [filtered]);
 
@@ -205,7 +233,53 @@ export function RelatoriosEpidemiologicosTab() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-      {/* Filtros internos removidos — esta aba consome os filtros globais do topbar (cidade → bairro → UBS, idade, trimestre). */}
+      {/* Calendário inteligente de período */}
+      <div className="bg-card border border-border rounded-2xl p-4 flex flex-wrap items-center gap-2">
+        <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground mr-2">Período</span>
+        {[
+          { label: "Hoje", days: 1 },
+          { label: "7 dias", days: 7 },
+          { label: "30 dias", days: 30 },
+          { label: "90 dias", days: 90 },
+          { label: "365 dias", days: 365 },
+        ].map((p) => (
+          <button
+            key={p.label}
+            onClick={() => setRange(presetRange(p.days))}
+            className="px-3 h-8 rounded-full border border-border bg-background text-xs font-semibold hover:bg-muted transition"
+          >
+            {p.label}
+          </button>
+        ))}
+        <Popover open={calOpen} onOpenChange={setCalOpen}>
+          <PopoverTrigger asChild>
+            <button className="px-3 h-8 rounded-full border border-[#234735] bg-[#234735] text-white text-xs font-semibold hover:opacity-90 transition">
+              {range?.from && range?.to
+                ? `${fmtDayBR(range.from)} — ${fmtDayBR(range.to)}`
+                : "Selecionar intervalo"}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="range"
+              numberOfMonths={2}
+              selected={range}
+              onSelect={(r) => setRange(r)}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+        {range?.from && (
+          <button
+            onClick={() => setRange(undefined)}
+            className="px-3 h-8 rounded-full text-xs font-semibold text-muted-foreground hover:text-foreground"
+          >
+            Limpar
+          </button>
+        )}
+      </div>
+
+
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
