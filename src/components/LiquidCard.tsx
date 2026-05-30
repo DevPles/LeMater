@@ -38,7 +38,24 @@ export const LiquidCard = forwardRef<HTMLDivElement, LiquidCardProps>(
         style={liquidStyle}
         {...props}
       >
-        {children}
+        {/* Glossy highlight sweep */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-1/2"
+          style={{
+            background:
+              "linear-gradient(180deg, oklch(1 0 0 / 0.35) 0%, oklch(1 0 0 / 0) 100%)",
+          }}
+        />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -top-1/2 -left-1/4 h-[200%] w-1/3 rotate-12"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.18) 50%, transparent 100%)",
+          }}
+        />
+        <div className="relative z-[1]">{children}</div>
       </div>
     );
   },
