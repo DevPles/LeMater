@@ -54,11 +54,15 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
   /** Trava o painel em um país e oculta as abas internas (usado quando o modal-pai já oferece abas de país). */
   lockedPais?: Pais;
   hideTabs?: boolean;
-}>(function TranslationsPanel({ itemType, itemId, lockedPais, hideTabs }, ref) {
+  /** Notifica o pai sempre que algum campo de tradução muda (para preview ao vivo). */
+  onRowsChange?: (rows: Record<Pais, Row>) => void;
+}>(function TranslationsPanel({ itemType, itemId, lockedPais, hideTabs, onRowsChange }, ref) {
   const [tab, setTab] = useState<Pais>(lockedPais ?? "ES");
   useEffect(() => { if (lockedPais) setTab(lockedPais); }, [lockedPais]);
 
-  const [rows, setRows] = useState<Record<Pais, Row>>({ BR: empty(), ES: empty(), US: empty() });
+  const [rows, setRows] = useState<Record<Pais, Row>>({ BR: empty("BR"), ES: empty("ES"), US: empty("US") });
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
