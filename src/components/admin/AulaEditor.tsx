@@ -6,6 +6,7 @@ import OfertasEditor, { type OfertasEditorHandle } from "@/components/admin/Ofer
 import TranslationsPanel, { type TranslationsPanelHandle, type TranslationRow, MOEDA_PADRAO } from "@/components/admin/TranslationsPanel";
 import type { Pais } from "@/lib/translate.context";
 import { ContentCard } from "@/components/ContentCard";
+import { videoForAulaCover } from "@/lib/atlas-cover-video";
 
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48" };
 const sans = "'DM Sans', sans-serif";
@@ -118,7 +119,8 @@ export default function AulaEditor({
   }, [pvCapaFile, pvCapaVideoFile]);
 
   const [pvTemasIds, setPvTemasIds] = useState<string[]>(editing.temas ?? []);
-  const pvTemaNome = temas.find((t) => pvTemasIds.includes(t.id))?.titulo ?? "Tema";
+  const selectedPreviewTemas = temas.filter((t) => pvTemasIds.includes(t.id));
+  const pvTemaNome = selectedPreviewTemas[0]?.titulo ?? "Tema";
   const tipoLabel: Record<string, string> = { video: "Vídeo", pdf: "PDF", texto: "Texto" };
 
   // Buffer ao vivo das traduções (atualizado pelo TranslationsPanel via onRowsChange)
@@ -266,8 +268,9 @@ export default function AulaEditor({
       ? (trCurrent.preco_label || formatPreco(trCurrent.preco_centavos, trCurrent.moeda || MOEDA_PADRAO[paisTab]) || pvPrecoLabel || "Comprar")
       : (pvPrecoLabel || "Comprar");
 
-  // A prévia do card mostra apenas a mídia de capa, nunca o vídeo interno da aula.
-  const pvCapaVideoShow = toPublicStorageUrl("materiais-capas", (trCurrent?.capa_video_url) || pvCapaVideoFile || editing.capa_video_url || "");
+  // A prévia usa a mesma capa em vídeo da vitrine Atlas: vídeo cadastrado, ou o vídeo automático do tema.
+  const pvCapaVideoExplicit = toPublicStorageUrl("materiais-capas", (trCurrent?.capa_video_url) || pvCapaVideoFile || editing.capa_video_url || "");
+  const pvCapaVideoShow = pvCapaVideoExplicit || videoForAulaCover({ titulo: pvTituloShow, descricao: pvDescShow, temas: selectedPreviewTemas });
   const pvCapaShow = toPublicStorageUrl("materiais-capas", (trCurrent?.capa_url) || pvCapaFile || editing.capa_url || "");
 
   const previewCategoria = pvTemaNome && pvTemaNome !== "Tema" ? pvTemaNome : null;
