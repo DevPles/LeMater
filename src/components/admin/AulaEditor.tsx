@@ -423,13 +423,6 @@ export default function AulaEditor({
                 />
               </div>
 
-              {/* ES / EN: bloco visual + painel mantido montado para preservar buffer */}
-              <div style={{ display: paisTab !== "BR" ? "block" : "none" }}>
-                <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: "14px 18px", marginBottom: 18, fontSize: 13, color: c.ink, lineHeight: 1.55 }}>
-                  <strong>Você está editando a versão {paisTab === "ES" ? "em Espanhol 🇪🇸" : "em Inglês 🇺🇸"}.</strong>{" "}
-                  Envie o vídeo dublado, o ebook/PDF traduzido, a capa específica e o preço na moeda local. Quando o usuário trocar a bandeira no topo do app, ele verá esta versão automaticamente.
-                </div>
-              </div>
 
               {/* Painel de traduções: sempre montado, escondido em BR para preservar buffer e refletir no preview */}
               <div style={{ display: paisTab !== "BR" ? "block" : "none" }}>
