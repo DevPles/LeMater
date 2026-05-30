@@ -234,7 +234,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                   ? "Assistir"
                   : inCart
                     ? "Ver carrinho"
-                    : "Adicionar ao carrinho";
+                    : "Comprar";
               const precoLabel = shown.preco_label || formatAulaPreco(shown.preco_centavos, shown.moeda);
               return (
                 <ContentCard
