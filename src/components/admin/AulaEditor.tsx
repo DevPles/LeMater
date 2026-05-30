@@ -83,6 +83,8 @@ export default function AulaEditor({
   const [pvTipo, setPvTipo] = useState(editing.tipo ?? "video");
   const [pvGratis, setPvGratis] = useState(editing.gratis ?? false);
   const [pvPrecoLabel, setPvPrecoLabel] = useState(editing.preco_label ?? "");
+  const [pvVideoExt, setPvVideoExt] = useState<string>(editing.video_url && String(editing.video_url).startsWith("http") ? String(editing.video_url) : "");
+
   const [pvTemasIds, setPvTemasIds] = useState<string[]>(editing.temas ?? []);
   const pvTemaNome = temas.find((t) => pvTemasIds.includes(t.id))?.titulo ?? "Tema";
   const tipoLabel: Record<string, string> = { video: "Vídeo", pdf: "PDF", texto: "Texto" };
@@ -229,25 +231,44 @@ export default function AulaEditor({
   const flag = paisTab === "BR" ? "🇧🇷" : paisTab === "ES" ? "🇪🇸" : "🇺🇸";
 
   // Mídia para a prévia: prioriza tradução do país ativo; cai p/ PT
-  const pvVideoShow =
-    (trCurrent?.video_url && String(trCurrent.video_url)) ||
+  const ytId = (u: string) => {
+    const m = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/);
+    return m?.[1];
+  };
+  const vimeoId = (u: string) => u.match(/vimeo\.com\/(\d+)/)?.[1];
+  const embedUrl = (u: string): string | null => {
+    if (!u) return null;
+    const y = ytId(u); if (y) return `https://www.youtube.com/embed/${y}?autoplay=1&mute=1&loop=1&playlist=${y}&controls=0&modestbranding=1`;
+    const v = vimeoId(u); if (v) return `https://player.vimeo.com/video/${v}?autoplay=1&muted=1&loop=1&background=1`;
+    return null;
+  };
+  const pvVideoFile =
+    (trCurrent?.video_url && !embedUrl(String(trCurrent.video_url)) ? String(trCurrent.video_url) : "") ||
     (editing.capa_video_url || "") ||
-    (editing.video_url && !String(editing.video_url).match(/youtube|vimeo/i) ? String(editing.video_url) : "");
+    (editing.video_url && !embedUrl(String(editing.video_url)) ? String(editing.video_url) : "");
+  const pvVideoEmbed =
+    embedUrl(String(trCurrent?.video_url || "")) ||
+    embedUrl(pvVideoExt) ||
+    embedUrl(String(editing.video_url || ""));
   const pvCapaShow = (trCurrent?.capa_url) || editing.capa_url || "";
 
   const PreviewCard = (
     <div style={{ background: c.sageDark, color: "white", position: "relative", width: "100%", overflow: "hidden" }}>
-      {(pvVideoShow || pvCapaShow) && (
+      {(pvVideoFile || pvVideoEmbed || pvCapaShow) && (
         <div style={{ width: "100%", aspectRatio: "16 / 9", background: "#000", position: "relative" }}>
-          {pvVideoShow ? (
+          {pvVideoEmbed ? (
+            <iframe
+              key={pvVideoEmbed}
+              src={pvVideoEmbed}
+              allow="autoplay; encrypted-media; picture-in-picture"
+              style={{ width: "100%", height: "100%", border: 0, display: "block" }}
+            />
+          ) : pvVideoFile ? (
             <video
-              key={pvVideoShow}
-              src={pvVideoShow}
+              key={pvVideoFile}
+              src={pvVideoFile}
               poster={pvCapaShow || undefined}
-              autoPlay
-              muted
-              loop
-              playsInline
+              autoPlay muted loop playsInline
               style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             />
           ) : (
@@ -255,6 +276,7 @@ export default function AulaEditor({
           )}
         </div>
       )}
+
       <div style={{ padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
         <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
@@ -384,19 +406,29 @@ export default function AulaEditor({
                 </div>
 
                 <SectionTitle>Mídia em Português</SectionTitle>
-                <Field label="Capa (imagem) — usada como poster">
-                  <input name="capa" type="file" accept="image/*" style={inp} />
-                  {editing.capa_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_url}</div>}
-                </Field>
-                <Field label="Capa em vídeo (loop curto, MP4) — opcional, aparece no card">
-                  <input name="capa_video" type="file" accept="video/*" style={inp} />
-                  {editing.capa_video_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_video_url}</div>}
-                </Field>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <Field label="Capa (imagem) — usada como poster">
+                    <input name="capa" type="file" accept="image/*" style={inp} />
+                    {editing.capa_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_url}</div>}
+                  </Field>
+                  <Field label="Capa em vídeo (loop curto, MP4) — opcional">
+                    <input name="capa_video" type="file" accept="video/*" style={inp} />
+                    {editing.capa_video_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_video_url}</div>}
+                  </Field>
+                  <Field label="Vídeo da aula — arquivo (MP4)">
+                    <input name="video_file" type="file" accept="video/*" style={inp} />
+                  </Field>
+                  <Field label="Vídeo da aula — OU URL externa (YouTube/Vimeo)">
+                    <input
+                      name="video_url_externa"
+                      placeholder="https://youtube.com/..."
+                      defaultValue={editing.video_url && String(editing.video_url).startsWith("http") ? editing.video_url : ""}
+                      onChange={(e) => setPvVideoExt(e.target.value)}
+                      style={inp}
+                    />
+                  </Field>
+                </div>
 
-                <Field label="Vídeo da aula: arquivo OU URL externa (YouTube/Vimeo)">
-                  <input name="video_file" type="file" accept="video/*" style={{ ...inp, marginBottom: 8 }} />
-                  <input name="video_url_externa" placeholder="https://youtube.com/..." defaultValue={editing.video_url && String(editing.video_url).startsWith("http") ? editing.video_url : ""} style={inp} />
-                </Field>
                 <Field label="PDF (se tipo = PDF)"><input name="pdf_file" type="file" accept="application/pdf" style={inp} /></Field>
                 <Field label="HTML (se tipo = Texto)"><textarea name="conteudo_html" defaultValue={editing.conteudo_html ?? ""} rows={5} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} /></Field>
 
