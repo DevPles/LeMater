@@ -6,11 +6,15 @@ import type { Pais } from "@/lib/translate.context";
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48", ok: "#2E7D32" };
 const sans = "'DM Sans', sans-serif";
 const inp: CSSProperties = { width: "100%", background: "white", border: `1px solid ${c.border}`, padding: "10px 12px", fontSize: 14, fontFamily: sans, color: c.ink, outline: "none" };
+const FLAG_CODE: Record<Pais, string> = { BR: "br", ES: "es", US: "us" };
+const FlagMark = ({ pais, size = 18 }: { pais: Pais; size?: number }) => (
+  <img src={`https://flagcdn.com/w80/${FLAG_CODE[pais]}.png`} srcSet={`https://flagcdn.com/w160/${FLAG_CODE[pais]}.png 2x`} alt="" aria-label={pais} title={pais} style={{ width: size, height: Math.round(size * 0.68), objectFit: "cover", borderRadius: 2, boxShadow: "0 0 0 1px rgba(0,0,0,0.14) inset", flexShrink: 0 }} />
+);
 
-const TABS: { pais: Pais; flag: string; label: string }[] = [
-  { pais: "BR", flag: "🇧🇷", label: "Português (PT)" },
-  { pais: "ES", flag: "🇪🇸", label: "Español (ES)" },
-  { pais: "US", flag: "🇺🇸", label: "English (EN)" },
+const TABS: { pais: Pais; label: string }[] = [
+  { pais: "BR", label: "Português (PT)" },
+  { pais: "ES", label: "Español (ES)" },
+  { pais: "US", label: "English (EN)" },
 ];
 
 export type TranslationRow = {
@@ -21,6 +25,7 @@ export type TranslationRow = {
   video_url: string;
   pdf_url: string;
   capa_url: string;
+  capa_video_url: string;
   audio_url: string;
   legenda_url: string;
   conteudo_html: string;
@@ -32,10 +37,10 @@ type Row = TranslationRow;
 
 export const MOEDA_PADRAO: Record<Pais, string> = { BR: "BRL", ES: "EUR", US: "USD" };
 
-const empty = (pais: Pais = "BR"): Row => ({ id: undefined, titulo: "", descricao: "", gratis: null, video_url: "", pdf_url: "", capa_url: "", audio_url: "", legenda_url: "", conteudo_html: "", preco_centavos: 0, moeda: MOEDA_PADRAO[pais], preco_label: "" });
+const empty = (pais: Pais = "BR"): Row => ({ id: undefined, titulo: "", descricao: "", gratis: null, video_url: "", pdf_url: "", capa_url: "", capa_video_url: "", audio_url: "", legenda_url: "", conteudo_html: "", preco_centavos: 0, moeda: MOEDA_PADRAO[pais], preco_label: "" });
 
 const isFilled = (r: Row) =>
-  !!(r.titulo || r.descricao || r.gratis !== null || r.video_url || r.pdf_url || r.capa_url || r.audio_url || r.legenda_url || r.conteudo_html || (r.preco_centavos && r.preco_centavos > 0) || r.preco_label);
+  !!(r.titulo || r.descricao || r.gratis !== null || r.video_url || r.pdf_url || r.capa_url || r.capa_video_url || r.audio_url || r.legenda_url || r.conteudo_html || (r.preco_centavos && r.preco_centavos > 0) || r.preco_label);
 
 export type TranslationsPanelHandle = {
   /** Persist all buffered (ES/EN) translations against the given itemId. */
@@ -85,6 +90,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             video_url: t.video_url ?? "",
             pdf_url: t.pdf_url ?? "",
             capa_url: t.capa_url ?? "",
+            capa_video_url: t.capa_video_url ?? "",
             audio_url: t.audio_url ?? "",
             legenda_url: t.legenda_url ?? "",
             conteudo_html: t.conteudo_html ?? "",
@@ -115,6 +121,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
           video_url: r.video_url || null,
           pdf_url: r.pdf_url || null,
           capa_url: r.capa_url || null,
+          capa_video_url: r.capa_video_url || null,
           audio_url: r.audio_url || null,
           legenda_url: r.legenda_url || null,
           conteudo_html: r.conteudo_html || null,
@@ -177,6 +184,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
         video_url: r.video_url || null,
         pdf_url: r.pdf_url || null,
         capa_url: r.capa_url || null,
+        capa_video_url: r.capa_video_url || null,
         audio_url: r.audio_url || null,
         legenda_url: r.legenda_url || null,
         conteudo_html: r.conteudo_html || null,
@@ -241,7 +249,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
                   gap: 8,
                 }}
               >
-                <span style={{ fontSize: 16 }}>{t.flag}</span>
+                <FlagMark pais={t.pais} size={18} />
                 <span>{t.label}</span>
                 {hasContent && t.pais !== "BR" && <span style={{ background: rows[t.pais].id ? c.ok : "#B58A2E", color: "white", fontSize: 9, padding: "1px 5px", letterSpacing: "0.08em" }}>{rows[t.pais].id ? "OK" : "RASCUNHO"}</span>}
               </button>
@@ -264,27 +272,31 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             <textarea value={current.descricao} onChange={(e) => update("descricao", e.target.value)} rows={3} style={{ ...inp, resize: "vertical" }} />
           </Row>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10, alignItems: "stretch" }}>
-            <Row label={`Vídeo dublado (${tab}) — arquivo`}>
-              <input type="file" accept="video/*" onChange={(e) => onFile("video_url", "materiais-video", "aulas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
-              {current.video_url && <Hint url={current.video_url} />}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, alignItems: "stretch" }}>
+            <Row label={`Vídeo de capa (${tab}) — aparece no card`} compact>
+              <input type="file" accept="video/*" onChange={(e) => onFile("capa_video_url", "materiais-capas", "capas-video", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.capa_video_url && <Hint url={current.capa_video_url} />}
             </Row>
-            <Row label={`Vídeo (${tab}) — OU URL externa`}>
-              <input value={current.video_url.startsWith("http") ? current.video_url : ""} onChange={(e) => update("video_url", e.target.value)} placeholder="https://..." style={{ ...inp, minHeight: 42 }} />
-            </Row>
-            <Row label={`PDF / Ebook (${tab})`}>
-              <input type="file" accept="application/pdf" onChange={(e) => onFile("pdf_url", "materiais-pdf", "materiais", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
-              {current.pdf_url && <Hint url={current.pdf_url} />}
-            </Row>
-            <Row label={`Capa (${tab}) — opcional`}>
+            <Row label={`Capa imagem (${tab}) — poster do card`} compact>
               <input type="file" accept="image/*" onChange={(e) => onFile("capa_url", "materiais-capas", "capas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
               {current.capa_url && <Hint url={current.capa_url} />}
             </Row>
-            <Row label={`Áudio (${tab}) — opcional`}>
+            <Row label={`Vídeo dublado (${tab}) — aula`} compact>
+              <input type="file" accept="video/*" onChange={(e) => onFile("video_url", "materiais-video", "aulas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.video_url && <Hint url={current.video_url} />}
+            </Row>
+            <Row label={`Vídeo da aula (${tab}) — OU URL externa`} compact>
+              <input value={current.video_url.startsWith("http") ? current.video_url : ""} onChange={(e) => update("video_url", e.target.value)} placeholder="https://..." style={{ ...inp, minHeight: 42 }} />
+            </Row>
+            <Row label={`PDF / Ebook (${tab})`} compact>
+              <input type="file" accept="application/pdf" onChange={(e) => onFile("pdf_url", "materiais-pdf", "materiais", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.pdf_url && <Hint url={current.pdf_url} />}
+            </Row>
+            <Row label={`Áudio (${tab}) — opcional`} compact>
               <input type="file" accept="audio/*" onChange={(e) => onFile("audio_url", "materiais-video", "audios", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
               {current.audio_url && <Hint url={current.audio_url} />}
             </Row>
-            <Row label={`Legenda (${tab}) — opcional`}>
+            <Row label={`Legenda (${tab}) — opcional`} compact>
               <input type="file" accept=".vtt,.srt,text/vtt" onChange={(e) => onFile("legenda_url", "materiais-capas", "legendas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
               {current.legenda_url && <Hint url={current.legenda_url} />}
             </Row>
@@ -295,8 +307,8 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
           </Row>
 
           <div style={{ background: "white", border: `1px solid ${c.border}`, padding: 12, marginTop: 6, marginBottom: 12 }}>
-            <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sageDark, fontWeight: 600, marginBottom: 10 }}>
-              Preço para compradores de {tab === "ES" ? "🇪🇸 Espanha" : "🇺🇸 EUA / Inglês"}
+            <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sageDark, fontWeight: 600, marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
+              Preço para compradores de <FlagMark pais={tab} size={18} /> {tab === "ES" ? "Espanha" : "EUA / Inglês"}
             </div>
             <div style={{ fontSize: 12, color: c.muted, marginBottom: 10, lineHeight: 1.5 }}>
               Quando o usuário estiver com a bandeira <strong>{tab}</strong> no topo do app, ele verá esta aula com este preço e moeda. Deixe em branco para usar o preço base (PT-BR).
@@ -360,9 +372,9 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
 
 export default TranslationsPanel;
 
-const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <label style={{ display: "block", marginBottom: 10 }}>
-    <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6 }}>{label}</div>
+const Row = ({ label, compact = false, children }: { label: string; compact?: boolean; children: React.ReactNode }) => (
+  <label style={{ display: compact ? "flex" : "block", flexDirection: compact ? "column" : undefined, marginBottom: compact ? 0 : 10, minHeight: compact ? 94 : undefined, height: compact ? "100%" : undefined }}>
+    <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6, minHeight: compact ? 34 : undefined, display: compact ? "flex" : undefined, alignItems: compact ? "flex-end" : undefined, lineHeight: 1.2 }}>{label}</div>
     {children}
   </label>
 );
