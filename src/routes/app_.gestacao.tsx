@@ -476,7 +476,7 @@ function GestacaoPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
           >
-            <LiquidCard className="p-5">
+            <LiquidCard className="p-5" bgOpacity={0.28}>
             <div className="flex items-baseline justify-between mb-3">
               <h3 className="text-lg font-bold font-display text-foreground">
                 Mês {mes.mes}
