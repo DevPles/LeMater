@@ -17,6 +17,9 @@ export type ContentTranslation = {
   audio_url: string | null;
   legenda_url: string | null;
   conteudo_html: string | null;
+  preco_centavos: number | null;
+  moeda: string | null;
+  preco_label: string | null;
 };
 
 /**
