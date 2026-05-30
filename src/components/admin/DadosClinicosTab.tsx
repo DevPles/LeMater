@@ -110,8 +110,8 @@ export function DadosClinicosTab() {
                 onClick={() => setTab(t.v)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
                   tab === t.v
-                    ? "bg-[#1a1557] text-white border-[#1a1557]"
-                    : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50"
+                    ? "bg-[#234735] text-white border-[#234735]"
+                    : "bg-background text-muted-foreground border-border hover:border-[#234735]/50"
                 }`}
               >
                 {t.l}
@@ -363,7 +363,7 @@ function ImagemView({ gestanteId }: { gestanteId: string }) {
               <button
                 type="button"
                 onClick={() => verImagem(e.imagem_path!)}
-                className="mt-1 text-[10px] font-semibold text-[#1a1557] hover:underline"
+                className="mt-1 text-[10px] font-semibold text-[#234735] hover:underline"
               >
                 Ver imagem / laudo →
               </button>
@@ -411,7 +411,7 @@ function AlertasCalculados({ gestanteId }: { gestanteId: string }) {
         </p>
         <button
           onClick={load}
-          className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+          className="text-[10px] font-semibold text-[#234735] hover:underline"
         >
           Recalcular
         </button>

@@ -189,8 +189,8 @@ export function TelasTab() {
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors",
               activeKey === s.key
-                ? "bg-[#1a1557] text-white border-[#1a1557]"
-                : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50",
+                ? "bg-[#234735] text-white border-[#234735]"
+                : "bg-background text-muted-foreground border-border hover:border-[#234735]/50",
             )}
           >
             {s.label}
@@ -228,7 +228,7 @@ export function TelasTab() {
               type="button"
               disabled={saving || loading}
               onClick={handleSave}
-              className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a] disabled:opacity-50"
+              className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#234735] text-white hover:bg-[#241e7a] disabled:opacity-50"
             >
               {saving ? "Salvando..." : "Salvar alterações"}
             </button>
@@ -327,7 +327,7 @@ function FieldRenderer({
         <button
           type="button"
           onClick={() => onAddList(field.path, field.itemFields)}
-          className="px-2 py-1 rounded-full text-[10px] font-bold bg-[#f0c040] text-[#1a1557] hover:bg-[#e5b535]"
+          className="px-2 py-1 rounded-full text-[10px] font-bold bg-[#c9a24a] text-[#234735] hover:bg-[#e5b535]"
         >
           + Adicionar
         </button>

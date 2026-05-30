@@ -94,19 +94,19 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8f3] flex">
+    <div className="min-h-screen bg-[#f5efe2] flex">
       {/* Sidebar */}
       <aside
         className={cn(
           "fixed md:sticky top-0 left-0 h-screen z-40 flex-shrink-0 transition-all duration-300 flex flex-col text-white",
-          "bg-[#1a1557] border-r border-white/5",
+          "bg-[#234735] border-r border-white/5",
           widthClass,
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}
       >
         {/* Header */}
         <div className="relative px-4 py-5 border-b border-white/10 flex items-center gap-3 min-h-[72px]">
-          <div className="w-9 h-9 rounded-xl bg-[#f0c040] flex items-center justify-center text-[#1a1557] font-extrabold text-xs flex-shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-[#c9a24a] flex items-center justify-center text-[#234735] font-extrabold text-xs flex-shrink-0">
             CD
           </div>
           {!collapsed && (
@@ -117,7 +117,7 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
               >
                 Cartão Digital
               </p>
-              <p className="text-[10px] text-[#f0c040]/90 uppercase tracking-[0.18em] truncate font-semibold mt-1.5">
+              <p className="text-[10px] text-[#c9a24a]/90 uppercase tracking-[0.18em] truncate font-semibold mt-1.5">
                 Materno · Admin
               </p>
             </div>
@@ -130,8 +130,8 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
           onClick={() => setCollapsed((v) => !v)}
           className={cn(
             "hidden md:flex items-center justify-center absolute top-7 -right-3 z-50",
-            "w-7 h-7 rounded-full bg-[#f0c040] text-[#1a1557] text-sm font-bold",
-            "shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3)] ring-2 ring-[#1a1557]",
+            "w-7 h-7 rounded-full bg-[#c9a24a] text-[#234735] text-sm font-bold",
+            "shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3)] ring-2 ring-[#234735]",
             "hover:scale-110 transition-transform",
           )}
           aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
@@ -160,7 +160,7 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                     "w-full text-left transition-colors flex items-center gap-3 rounded-lg",
                     collapsed ? "px-2 py-2.5 justify-center" : "px-3 py-2",
                     singleActive
-                      ? "bg-white/10 text-[#f0c040] font-medium"
+                      ? "bg-white/10 text-[#c9a24a] font-medium"
                       : "text-white/70 hover:text-white hover:bg-white/5",
                   )}
                 >
@@ -168,7 +168,7 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                     className={cn(
                       "flex items-center justify-center font-semibold rounded-md flex-shrink-0 text-[11px]",
                       collapsed ? "w-8 h-8" : "w-6 h-6",
-                      singleActive ? "bg-[#f0c040] text-[#1a1557]" : "bg-white/10 text-white/70",
+                      singleActive ? "bg-[#c9a24a] text-[#234735]" : "bg-white/10 text-white/70",
                     )}
                   >
                     {group.label.charAt(0)}
@@ -177,7 +177,7 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                     <>
                       <span className="truncate flex-1 text-sm">{group.label}</span>
                       {singleItem.badge && (
-                        <span className="text-[9px] bg-[#f0c040] text-[#1a1557] px-1.5 py-0.5 rounded-full font-bold">
+                        <span className="text-[9px] bg-[#c9a24a] text-[#234735] px-1.5 py-0.5 rounded-full font-bold">
                           {singleItem.badge}
                         </span>
                       )}
@@ -199,14 +199,14 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                     className={cn(
                       "w-full text-left transition-colors flex items-center gap-3 rounded-lg px-3 py-2",
                       groupHasActive
-                        ? "text-[#f0c040] font-medium"
+                        ? "text-[#c9a24a] font-medium"
                         : "text-white/70 hover:text-white hover:bg-white/5",
                     )}
                   >
                     <span
                       className={cn(
                         "flex items-center justify-center font-semibold rounded-md flex-shrink-0 text-[11px] w-6 h-6",
-                        groupHasActive ? "bg-[#f0c040] text-[#1a1557]" : "bg-white/10 text-white/70",
+                        groupHasActive ? "bg-[#c9a24a] text-[#234735]" : "bg-white/10 text-white/70",
                       )}
                     >
                       {group.label.charAt(0)}
@@ -245,7 +245,7 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                               ? "px-2 py-2.5 justify-center mx-1 text-sm"
                               : "pl-11 pr-3 py-1.5 text-[13px]",
                             isActive
-                              ? "text-[#f0c040] font-medium"
+                              ? "text-[#c9a24a] font-medium"
                               : "text-white/55 hover:text-white/85",
                           )}
                         >
@@ -253,7 +253,7 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                             <span
                               className={cn(
                                 "text-[11px] font-semibold w-7 h-7 rounded-md flex items-center justify-center",
-                                isActive ? "bg-[#f0c040] text-[#1a1557]" : "bg-white/10",
+                                isActive ? "bg-[#c9a24a] text-[#234735]" : "bg-white/10",
                               )}
                             >
                               {it.label.charAt(0)}
@@ -263,12 +263,12 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
                               <span
                                 className={cn(
                                   "w-1 h-1 rounded-full flex-shrink-0",
-                                  isActive ? "bg-[#f0c040]" : "bg-white/30",
+                                  isActive ? "bg-[#c9a24a]" : "bg-white/30",
                                 )}
                               />
                               <span className="truncate flex-1">{it.label}</span>
                               {it.badge && (
-                                <span className="text-[9px] bg-[#f0c040]/80 text-[#1a1557] px-1.5 py-0.5 rounded-full font-bold">
+                                <span className="text-[9px] bg-[#c9a24a]/80 text-[#234735] px-1.5 py-0.5 rounded-full font-bold">
                                   {it.badge}
                                 </span>
                               )}
@@ -290,7 +290,7 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
             type="button"
             onClick={onLogout}
             className={cn(
-              "w-full text-xs bg-white/5 hover:bg-[#f0c040] hover:text-[#1a1557] border border-white/10 hover:border-[#f0c040] rounded-lg py-2 font-semibold transition-colors",
+              "w-full text-xs bg-white/5 hover:bg-[#c9a24a] hover:text-[#234735] border border-white/10 hover:border-[#c9a24a] rounded-lg py-2 font-semibold transition-colors",
               collapsed && "px-0",
             )}
             title="Sair"
@@ -312,11 +312,11 @@ export function AdminLayout({ active, onChange, topbar, children, onLogout }: Pr
 
       {/* Main */}
       <main className="flex-1 min-w-0 flex flex-col">
-        <div className="md:hidden bg-[#1a1557] text-white px-4 py-3 flex items-center justify-between sticky top-0 z-20">
+        <div className="md:hidden bg-[#234735] text-white px-4 py-3 flex items-center justify-between sticky top-0 z-20">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="bg-white/10 hover:bg-[#f0c040] hover:text-[#1a1557] px-3 py-1.5 rounded-full text-xs font-bold transition-colors"
+            className="bg-white/10 hover:bg-[#c9a24a] hover:text-[#234735] px-3 py-1.5 rounded-full text-xs font-bold transition-colors"
           >
             Menu
           </button>

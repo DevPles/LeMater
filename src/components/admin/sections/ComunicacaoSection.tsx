@@ -61,7 +61,7 @@ export function ComunicacaoSection({ profiles, alerts }: Props) {
             onClick={() => setTab(t.v)}
             className={`px-4 py-2 text-sm font-semibold border-b-2 -mb-px ${
               tab === t.v
-                ? "border-[#1a1557] text-[#1a1557]"
+                ? "border-[#234735] text-[#234735]"
                 : "border-transparent text-muted-foreground"
             }`}
           >
@@ -455,7 +455,7 @@ function CampanhasView({ profiles, alerts }: Props) {
                 onClick={() => setPublico(p.v)}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold ${
                   publico === p.v
-                    ? "bg-[#1a1557] text-white"
+                    ? "bg-[#234735] text-white"
                     : "bg-background border border-border text-muted-foreground"
                 }`}
               >
@@ -475,7 +475,7 @@ function CampanhasView({ profiles, alerts }: Props) {
                 onClick={() => setCanal(c)}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold ${
                   canal === c
-                    ? "bg-[#1a1557] text-white"
+                    ? "bg-[#234735] text-white"
                     : "bg-background border border-border text-muted-foreground"
                 }`}
               >
@@ -516,7 +516,7 @@ function CampanhasView({ profiles, alerts }: Props) {
           type="button"
           onClick={disparar}
           disabled={enviando || totalSelecionados === 0}
-          className="w-full px-4 py-2 rounded-full text-sm font-bold bg-[#f0c040] text-[#1a1557] hover:bg-[#e5b535] disabled:opacity-50"
+          className="w-full px-4 py-2 rounded-full text-sm font-bold bg-[#c9a24a] text-[#234735] hover:bg-[#e5b535] disabled:opacity-50"
         >
           {enviando ? "Enviando..." : `Disparar para ${totalSelecionados} destinatário(s)`}
         </button>
@@ -544,7 +544,7 @@ function CampanhasView({ profiles, alerts }: Props) {
             <button
               type="button"
               onClick={selecionarTodas}
-              className="text-[10px] font-bold text-[#1a1557] hover:underline"
+              className="text-[10px] font-bold text-[#234735] hover:underline"
             >
               Todos
             </button>
@@ -586,7 +586,7 @@ function CampanhasView({ profiles, alerts }: Props) {
                           type="checkbox"
                           checked={checked}
                           onChange={() => toggle(p.user_id)}
-                          className="h-4 w-4 accent-[#1a1557]"
+                          className="h-4 w-4 accent-[#234735]"
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-semibold truncate">{p.nome ?? p.email}</p>
@@ -636,7 +636,7 @@ function CampanhasView({ profiles, alerts }: Props) {
                             type="checkbox"
                             checked={checked}
                             onChange={() => toggleProf(p.user_id)}
-                            className="h-4 w-4 accent-[#1a1557]"
+                            className="h-4 w-4 accent-[#234735]"
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold truncate">{p.nome}</p>
@@ -687,7 +687,7 @@ function CampanhasView({ profiles, alerts }: Props) {
               </p>
               <div className="bg-white/95 backdrop-blur rounded-2xl p-3 shadow-md border border-white">
                 <div className="flex items-start gap-2">
-                  <div className="h-8 w-8 rounded-lg bg-[#1a1557] flex items-center justify-center text-[#f0c040] text-[10px] font-bold shrink-0">
+                  <div className="h-8 w-8 rounded-lg bg-[#234735] flex items-center justify-center text-[#c9a24a] text-[10px] font-bold shrink-0">
                     MD
                   </div>
                   <div className="flex-1 min-w-0">
@@ -790,7 +790,7 @@ function GruposView({ profiles, alerts }: Props) {
           type="button"
           onClick={salvar}
           disabled={!nome.trim()}
-          className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#1a1557] text-white disabled:opacity-50"
+          className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#234735] text-white disabled:opacity-50"
         >
           Salvar grupo com filtros atuais
         </button>
@@ -821,7 +821,7 @@ function GruposView({ profiles, alerts }: Props) {
                     <button
                       type="button"
                       onClick={() => aplicarGrupo(g)}
-                      className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+                      className="text-[10px] font-semibold text-[#234735] hover:underline"
                     >
                       Aplicar filtros
                     </button>

@@ -142,7 +142,7 @@ export function GravacoesTab() {
                           <button
                             onClick={() => gerarLink(item)}
                             disabled={generatingId === item.id}
-                            className="bg-[#1a1557] text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
+                            className="bg-[#234735] text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
                           >
                             {generatingId === item.id ? "..." : "Gerar link"}
                           </button>
