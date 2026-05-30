@@ -634,8 +634,11 @@ export default function RegistrationModal({
                     const session = await waitForActiveSession(signInData.user?.id);
                     if (!session) throw new Error("Sessão não foi confirmada. Tente entrar novamente.");
                     const destino = await resolvePostLoginPath(session.user.id, "/app/home");
-                    onOpenChange(false);
-                    navigate({ to: destino });
+                    setWelcomeOpen(true);
+                    window.setTimeout(() => {
+                      onOpenChange(false);
+                      navigate({ to: destino });
+                    }, 2000);
                   } catch (e) {
                     setLoginErro((e as Error).message || "Falha no login");
                   } finally {
