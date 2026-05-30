@@ -139,13 +139,21 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
     setBusy(true); setMsg(null);
     try {
       const url = await upload(bucket, file, subfolder);
-      setRows((prev) => ({ ...prev, [tab]: { ...prev[tab], [field]: url } }));
+      setRows((prev) => {
+        const next = { ...prev, [tab]: { ...prev[tab], [field]: url } };
+        onRowsChange?.(next);
+        return next;
+      });
     } catch (e: any) { setMsg({ kind: "err", text: e?.message ?? "Erro ao subir arquivo" }); }
     finally { setBusy(false); }
   };
 
-  const update = (field: keyof Row, value: string) => {
-    setRows((prev) => ({ ...prev, [tab]: { ...prev[tab], [field]: value } }));
+  const update = (field: keyof Row, value: string | number) => {
+    setRows((prev) => {
+      const next = { ...prev, [tab]: { ...prev[tab], [field]: value as any } };
+      onRowsChange?.(next);
+      return next;
+    });
   };
 
   const salvar = async () => {
@@ -156,7 +164,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
     setBusy(true); setMsg(null);
     try {
       const r = rows[tab];
-      const payload = {
+      const payload: any = {
         item_type: itemType,
         item_id: itemId,
         pais: tab,
@@ -168,6 +176,9 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
         audio_url: r.audio_url || null,
         legenda_url: r.legenda_url || null,
         conteudo_html: r.conteudo_html || null,
+        preco_centavos: r.preco_centavos > 0 ? r.preco_centavos : null,
+        moeda: r.moeda || null,
+        preco_label: r.preco_label || null,
       };
       const { data, error } = await supabase
         .from("content_translations")
@@ -183,12 +194,12 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
 
   const remover = async () => {
     const id = rows[tab].id;
-    if (!id) { setRows((prev) => ({ ...prev, [tab]: empty() })); return; }
+    if (!id) { setRows((prev) => { const next = { ...prev, [tab]: empty(tab) }; onRowsChange?.(next); return next; }); return; }
     if (!confirm(`Remover a tradução ${tab} deste conteúdo?`)) return;
     setBusy(true); setMsg(null);
     const { error } = await supabase.from("content_translations").delete().eq("id", id);
     if (error) { setMsg({ kind: "err", text: error.message }); }
-    else { setRows((prev) => ({ ...prev, [tab]: empty() })); setMsg({ kind: "ok", text: `Tradução ${tab} removida.` }); }
+    else { setRows((prev) => { const next = { ...prev, [tab]: empty(tab) }; onRowsChange?.(next); return next; }); setMsg({ kind: "ok", text: `Tradução ${tab} removida.` }); }
     setBusy(false);
   };
 
