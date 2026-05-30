@@ -33,7 +33,9 @@ type ProfileRow = {
   numero_partos: number | null;
   numero_abortos: number | null;
   partos_classificacao: { tipo?: string; ano?: number }[] | null;
+  created_at: string | null;
 };
+
 
 type MeasurementRow = { gestante_id: string; parametro: string; valor: number; semana_gestacional: number | null };
 type ExamRow = { gestante_id: string; tipo_exame: string; status: string };
