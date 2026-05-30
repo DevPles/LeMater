@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { listVendas, listCupons, saveCupom, deleteCupom, listCursosBasic } from "@/lib/vendas.functions";
 import { listOrders, aprovarPedidoManual, reembolsarPedido } from "@/lib/orders.functions";
+import { VendasReportView } from "./VendasReportView";
 
 type Venda = { id: string; processado_em: string; email_comprador: string; nome_comprador: string | null; produto: string | null; evento: string; status: string; transaction_id: string | null; curso_id: string | null; curso_titulo: string | null; cupom_codigo: string | null; valor_centavos: number | null; plataforma: string | null };
 type Cupom = { id: string; codigo: string; descricao: string | null; desconto_pct: number | null; desconto_centavos: number | null; curso_id: string | null; valido_de: string | null; valido_ate: string | null; max_usos: number | null; usos: number; ativo: boolean; created_at: string };
@@ -11,14 +12,14 @@ type Order = { id: string; created_at: string; aprovado_em: string | null; plata
 const moeda = (c: number | null | undefined, m = "BRL") => c == null ? "—" : `${m} ${(c / 100).toFixed(2).replace(".", ",")}`;
 const dataFmt = (d: string | null) => d ? new Date(d).toLocaleString("pt-BR") : "—";
 
-type Aba = "pedidos" | "vendas" | "cupons" | "integracoes";
+type Aba = "pedidos" | "relatorios" | "vendas" | "cupons" | "integracoes";
 
 export function VendasTab() {
   const [aba, setAba] = useState<Aba>("pedidos");
   return (
     <div className="space-y-4">
       <div className="flex gap-2 border-b border-[#234735]/10 flex-wrap">
-        {([["pedidos", "Pedidos"], ["vendas", "Vendas (legado)"], ["cupons", "Cupons"], ["integracoes", "Integrações"]] as [Aba, string][]).map(([k, l]) => (
+        {([["pedidos", "Pedidos"], ["relatorios", "Relatórios"], ["vendas", "Vendas (legado)"], ["cupons", "Cupons"], ["integracoes", "Integrações"]] as [Aba, string][]).map(([k, l]) => (
           <button key={k} onClick={() => setAba(k)}
             className={`px-4 py-2 text-sm font-semibold transition-colors ${aba === k ? "text-[#234735] border-b-2 border-[#c9a24a]" : "text-[#234735]/50 hover:text-[#234735]"}`}>
             {l}
@@ -26,12 +27,14 @@ export function VendasTab() {
         ))}
       </div>
       {aba === "pedidos" && <PedidosView />}
+      {aba === "relatorios" && <VendasReportView />}
       {aba === "vendas" && <VendasView />}
       {aba === "cupons" && <CuponsView />}
       {aba === "integracoes" && <IntegracoesView />}
     </div>
   );
 }
+
 
 function PedidosView() {
   const fn = useServerFn(listOrders);

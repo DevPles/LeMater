@@ -22,6 +22,58 @@ export const listOrders = createServerFn({ method: "GET" })
     return { orders: data ?? [] };
   });
 
+// ---------- RELATÓRIO DE VENDAS ----------
+export const getSalesReport = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) =>
+    z
+      .object({
+        from: z.string().optional(),
+        to: z.string().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.userId);
+    let q = supabaseAdmin
+      .from("orders")
+      .select(
+        "id, created_at, aprovado_em, plataforma, produto_tipo, produto_id, status, valor_centavos, moeda, pais, cupom_codigo, comprador_email",
+      )
+      .order("created_at", { ascending: false })
+      .limit(5000);
+    if (data.from) q = q.gte("created_at", data.from);
+    if (data.to) q = q.lte("created_at", data.to);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+
+    // Resolver títulos de produto (curso/aula/material) em lote
+    const ids: Record<string, Set<string>> = { curso: new Set(), aula: new Set(), material: new Set() };
+    (rows ?? []).forEach((r: any) => {
+      if (r.produto_id && ids[r.produto_tipo]) ids[r.produto_tipo].add(r.produto_id);
+    });
+    const titulos: Record<string, string> = {};
+    const loadTitulos = async (
+      tabela: "cursos" | "aulas" | "materiais",
+      keyTipo: "curso" | "aula" | "material",
+      set: Set<string>,
+    ) => {
+      if (!set.size) return;
+      const { data: ts } = await (supabaseAdmin as any)
+        .from(tabela)
+        .select("id, titulo")
+        .in("id", [...set]);
+      (ts ?? []).forEach((t: any) => (titulos[`${keyTipo}:${t.id}`] = t.titulo));
+    };
+    await Promise.all([
+      loadTitulos("cursos", "curso", ids.curso),
+      loadTitulos("aulas", "aula", ids.aula),
+      loadTitulos("materiais", "material", ids.material),
+    ]);
+
+    return { orders: rows ?? [], titulos };
+  });
+
 export const aprovarPedidoManual = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ order_id: z.string().uuid() }).parse(d))
