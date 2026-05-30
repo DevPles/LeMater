@@ -458,8 +458,8 @@ export default function AulaEditor({
                     <input type="checkbox" name="publicado" defaultChecked={editing.publicado ?? false} style={{ accentColor: c.sageDark }} /> Publicar agora
                   </label>
                 </div>
-                <div style={{ fontSize: 12, color: c.muted, marginBottom: 10 }}>
-                  Este é o preço para 🇧🇷 BR. Para 🇪🇸 ES e 🇺🇸 EN, defina o preço em cada aba acima.
+                <div style={{ fontSize: 12, color: c.muted, marginBottom: 10, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                  Este é o preço para <FlagMark pais="BR" size={16} /> Brasil. Para <FlagMark pais="ES" size={16} /> Espanha e <FlagMark pais="US" size={16} /> EUA, defina o preço em cada aba acima.
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
                   <Field label="Preço (R$)"><input name="preco_reais" type="number" min={0} step="0.01" defaultValue={((editing.preco_centavos ?? 0) / 100).toFixed(2)} placeholder="49.00" style={inp} /></Field>
