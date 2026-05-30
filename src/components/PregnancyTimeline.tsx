@@ -335,7 +335,7 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
   }));
 
   // Próximos marcos
-  const proximoMarco = MILESTONES.find((m) => {
+  const proximoMarco = dbMilestones.find((m) => {
     if (m.week < semanaAtual) return false;
     const s = classifyMilestone(m, semanaAtual, registros);
     return s.kind !== "concluido";
@@ -445,7 +445,7 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
       {/* Tab content */}
       {tab === "agenda" && (
         <div className="space-y-2">
-          {MILESTONES.map((m) => {
+          {dbMilestones.map((m) => {
             const status = classifyMilestone(m, semanaAtual, registros);
             const tri = trimesterOfWeek(m.week);
             const isConcluido = status.kind === "concluido";
