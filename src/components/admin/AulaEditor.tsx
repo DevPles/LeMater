@@ -349,11 +349,13 @@ export default function AulaEditor({
         </div>
 
         {err && <p style={{ color: c.danger, fontSize: 13 }}>{err}</p>}
+        {ok && <p style={{ color: "#2E7D32", fontSize: 13, background: "#EAF5EC", border: "1px solid #CDE6D2", padding: "10px 12px" }}>{ok}</p>}
 
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${c.border}`, paddingTop: 16, marginTop: 8 }}>
-          <button type="button" onClick={onClose} style={btn("transparent", c.ink)} disabled={busy}>Cancelar</button>
-          <button type="submit" style={btn(c.sageDark)} disabled={busy}>{busy ? "Salvando…" : "Salvar"}</button>
+          <button type="button" onClick={onClose} style={btn("transparent", c.ink)} disabled={busy}>{savedId ? "Fechar" : "Cancelar"}</button>
+          <button type="submit" style={btn(c.sageDark)} disabled={busy}>{busy ? "Salvando…" : (savedId ? "Salvar alterações" : "Salvar")}</button>
         </div>
+
       </form>
     </div>
   );
