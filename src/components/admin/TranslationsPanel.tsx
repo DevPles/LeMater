@@ -264,33 +264,31 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             <textarea value={current.descricao} onChange={(e) => update("descricao", e.target.value)} rows={3} style={{ ...inp, resize: "vertical" }} />
           </Row>
 
-          <Row label={`Vídeo dublado (${tab}) — arquivo`}>
-            <input type="file" accept="video/*" onChange={(e) => onFile("video_url", "materiais-video", "aulas", e.target.files?.[0] ?? null)} style={inp} />
-            {current.video_url && <Hint url={current.video_url} />}
-          </Row>
-          <Row label={`Vídeo (${tab}) — OU URL externa (YouTube/Vimeo)`}>
-            <input value={current.video_url.startsWith("http") ? current.video_url : ""} onChange={(e) => update("video_url", e.target.value)} placeholder="https://..." style={inp} />
-          </Row>
-
-          <Row label={`PDF / Ebook (${tab})`}>
-            <input type="file" accept="application/pdf" onChange={(e) => onFile("pdf_url", "materiais-pdf", "materiais", e.target.files?.[0] ?? null)} style={inp} />
-            {current.pdf_url && <Hint url={current.pdf_url} />}
-          </Row>
-
-          <Row label={`Capa (${tab}) — opcional`}>
-            <input type="file" accept="image/*" onChange={(e) => onFile("capa_url", "materiais-capas", "capas", e.target.files?.[0] ?? null)} style={inp} />
-            {current.capa_url && <Hint url={current.capa_url} />}
-          </Row>
-
-          <Row label={`Áudio (${tab}) — opcional`}>
-            <input type="file" accept="audio/*" onChange={(e) => onFile("audio_url", "materiais-video", "audios", e.target.files?.[0] ?? null)} style={inp} />
-            {current.audio_url && <Hint url={current.audio_url} />}
-          </Row>
-
-          <Row label={`Legenda (${tab}) — .vtt/.srt (opcional)`}>
-            <input type="file" accept=".vtt,.srt,text/vtt" onChange={(e) => onFile("legenda_url", "materiais-capas", "legendas", e.target.files?.[0] ?? null)} style={inp} />
-            {current.legenda_url && <Hint url={current.legenda_url} />}
-          </Row>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10, alignItems: "stretch" }}>
+            <Row label={`Vídeo dublado (${tab}) — arquivo`}>
+              <input type="file" accept="video/*" onChange={(e) => onFile("video_url", "materiais-video", "aulas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.video_url && <Hint url={current.video_url} />}
+            </Row>
+            <Row label={`Vídeo (${tab}) — OU URL externa`}>
+              <input value={current.video_url.startsWith("http") ? current.video_url : ""} onChange={(e) => update("video_url", e.target.value)} placeholder="https://..." style={{ ...inp, minHeight: 42 }} />
+            </Row>
+            <Row label={`PDF / Ebook (${tab})`}>
+              <input type="file" accept="application/pdf" onChange={(e) => onFile("pdf_url", "materiais-pdf", "materiais", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.pdf_url && <Hint url={current.pdf_url} />}
+            </Row>
+            <Row label={`Capa (${tab}) — opcional`}>
+              <input type="file" accept="image/*" onChange={(e) => onFile("capa_url", "materiais-capas", "capas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.capa_url && <Hint url={current.capa_url} />}
+            </Row>
+            <Row label={`Áudio (${tab}) — opcional`}>
+              <input type="file" accept="audio/*" onChange={(e) => onFile("audio_url", "materiais-video", "audios", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.audio_url && <Hint url={current.audio_url} />}
+            </Row>
+            <Row label={`Legenda (${tab}) — opcional`}>
+              <input type="file" accept=".vtt,.srt,text/vtt" onChange={(e) => onFile("legenda_url", "materiais-capas", "legendas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
+              {current.legenda_url && <Hint url={current.legenda_url} />}
+            </Row>
+          </div>
 
           <Row label={`HTML / Conteúdo de texto (${tab}) — opcional`}>
             <textarea value={current.conteudo_html} onChange={(e) => update("conteudo_html", e.target.value)} rows={4} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} />
