@@ -81,10 +81,10 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
             </div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
               {(() => {
-                const PAISES: { p: Pais; flag: string; label: string }[] = [
-                  { p: "BR", flag: "br", label: "Brasil" },
-                  { p: "ES", flag: "es", label: "España" },
-                  { p: "US", flag: "us", label: "USA" },
+                const PAISES: { p: Pais; flag: string; label: string; code: string }[] = [
+                  { p: "BR", flag: "br", label: "Brasil", code: "BR" },
+                  { p: "ES", flag: "es", label: "España", code: "ES" },
+                  { p: "US", flag: "us", label: "USA", code: "EN" },
                 ];
                 const atual = PAISES.find((x) => x.p === pais) ?? PAISES[0];
                 return (
@@ -108,7 +108,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                         alt={atual.label}
                         style={{ width: 18, height: 12, objectFit: "cover", borderRadius: 2, display: "block" }}
                       />
-                      {atual.p}
+                      {atual.code}
                     </button>
                     {paisMenuOpen && (
                       <>
