@@ -87,6 +87,9 @@ export default function AulaEditor({
   const pvTemaNome = temas.find((t) => pvTemasIds.includes(t.id))?.titulo ?? "Tema";
   const tipoLabel: Record<string, string> = { video: "Vídeo", pdf: "PDF", texto: "Texto" };
 
+  // Buffer ao vivo das traduções (atualizado pelo TranslationsPanel via onRowsChange)
+  const [trRows, setTrRows] = useState<Record<Pais, TranslationRow> | null>(null);
+
   useEffect(() => {
     fnTemas().then((t) => setTemas((t as any[]).map((x) => ({ id: x.id, titulo: x.titulo }))));
   }, []);
