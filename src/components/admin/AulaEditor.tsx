@@ -148,7 +148,7 @@ export default function AulaEditor({
         .split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 20);
 
       const saved = await fnSave({ data: {
-        id: editing.id,
+        id: savedId ?? editing.id,
         titulo, slug,
         descricao: String(fd.get("descricao") ?? "") || null,
         tipo, video_url, pdf_url, conteudo_html,
@@ -165,15 +165,23 @@ export default function AulaEditor({
         temas: temasSel,
       } as any }) as { id: string };
 
+      if (saved?.id) setSavedId(saved.id);
+
       if (ofertasRef.current && saved?.id) {
         await ofertasRef.current.flush(saved.id);
       }
 
       onSaved();
-      onClose();
+      const wasNew = !(savedId ?? editing.id);
+      if (wasNew) {
+        setOk("Aula salva. Agora você pode enviar as versões em Espanhol e Inglês abaixo.");
+      } else {
+        onClose();
+      }
     } catch (e: any) { setErr(e?.message ?? "Erro ao salvar"); }
     finally { setBusy(false); }
   };
+
 
   const isWide = typeof window !== "undefined" && window.matchMedia("(min-width: 900px)").matches;
   const [wide, setWide] = useState(isWide);
