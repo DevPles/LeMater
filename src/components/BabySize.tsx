@@ -187,22 +187,32 @@ export function BabySize({ week }: { week: number }) {
               </div>
 
               <div className="p-4 space-y-3">
-                {grupo.dicas.map((d, i) => (
-                  <motion.div
-                    key={d.titulo}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                  >
-                    <LiquidCard className="p-4" bgOpacity={0.28}>
-                      <p className="font-display font-bold text-sm text-foreground mb-1">{d.titulo}</p>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{d.texto}</p>
-                    </LiquidCard>
-                  </motion.div>
-                ))}
+                {grupo.dicas.map((d, i) => {
+                  const tints = [
+                    "oklch(0.88 0.07 25)",   // soft rose
+                    "oklch(0.90 0.08 70)",   // warm peach/gold
+                    "oklch(0.90 0.06 160)",  // mint
+                    "oklch(0.88 0.07 250)",  // soft sky
+                    "oklch(0.88 0.08 320)",  // lavender
+                  ];
+                  const tint = tints[i % tints.length];
+                  return (
+                    <motion.div
+                      key={d.titulo}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.06 }}
+                    >
+                      <LiquidCard className="p-4" bgOpacity={0.32} tint={tint}>
+                        <p className="font-display font-bold text-sm text-foreground mb-1">{d.titulo}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{d.texto}</p>
+                      </LiquidCard>
+                    </motion.div>
+                  );
+                })}
 
                 {week >= 32 && (
-                  <LiquidCard className="p-4" bgOpacity={0.28}>
+                  <LiquidCard className="p-4" bgOpacity={0.32} tint="oklch(0.90 0.09 85)">
                     <p className="text-[10px] uppercase tracking-wider font-bold text-primary mb-1">Lembrete carinhoso</p>
                     <p className="text-xs text-foreground leading-relaxed">
                       Quanto mais perto da reta final, mais importante é deixar tudo organizado. Mala pronta, contatos da maternidade salvos e seu acompanhante avisado. Você está quase lá. 💛

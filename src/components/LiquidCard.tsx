@@ -6,6 +6,8 @@ interface LiquidCardProps extends HTMLAttributes<HTMLDivElement> {
   rounded?: "2xl" | "3xl";
   /** Background opacity (0–1). Default 0.85. Use lower values for a more transparent card. */
   bgOpacity?: number;
+  /** Optional harmonic tint color (any CSS color). Adds a soft colored wash to the glass. */
+  tint?: string;
   /** kept for backward compat — ignored */
   withCoralDroplet?: boolean;
 }
@@ -16,14 +18,23 @@ interface LiquidCardProps extends HTMLAttributes<HTMLDivElement> {
  * Looks frosted but doesn't trigger expensive GPU compositing per frame.
  */
 export const LiquidCard = forwardRef<HTMLDivElement, LiquidCardProps>(
-  ({ children, className, rounded = "2xl", bgOpacity = 0.85, style, withCoralDroplet: _ignored, ...props }, ref) => {
+  ({ children, className, rounded = "2xl", bgOpacity = 0.85, tint, style, withCoralDroplet: _ignored, ...props }, ref) => {
+    const top = Math.min(bgOpacity + 0.05, 1);
+    const bot = Math.max(bgOpacity - 0.15, 0.1);
+    const background = tint
+      ? `linear-gradient(135deg, color-mix(in oklab, ${tint} 35%, oklch(1 0 0 / ${top})) 0%, color-mix(in oklab, ${tint} 18%, oklch(1 0 0 / ${bot})) 100%)`
+      : `linear-gradient(135deg, oklch(1 0 0 / ${top}) 0%, oklch(1 0 0 / ${bot}) 100%)`;
+    const borderColor = tint
+      ? `color-mix(in oklab, ${tint} 40%, oklch(1 0 0 / 0.55))`
+      : "oklch(1 0 0 / 0.45)";
     const liquidStyle: CSSProperties = {
-      background: `linear-gradient(135deg, oklch(1 0 0 / ${Math.min(bgOpacity + 0.05, 1)}) 0%, oklch(1 0 0 / ${Math.max(bgOpacity - 0.15, 0.1)}) 100%)`,
-      borderColor: "oklch(1 0 0 / 0.45)",
+      background,
+      borderColor,
       backdropFilter: "blur(18px) saturate(140%)",
       WebkitBackdropFilter: "blur(18px) saturate(140%)",
-      boxShadow:
-        "0 8px 32px -12px color-mix(in oklab, var(--foreground) 22%, transparent), 0 2px 6px -2px color-mix(in oklab, var(--foreground) 10%, transparent), inset 0 1px 0 0 oklch(1 0 0 / 0.8), inset 0 -1px 0 0 oklch(1 0 0 / 0.2)",
+      boxShadow: tint
+        ? `0 8px 32px -12px color-mix(in oklab, ${tint} 35%, transparent), 0 2px 6px -2px color-mix(in oklab, var(--foreground) 10%, transparent), inset 0 1px 0 0 oklch(1 0 0 / 0.8), inset 0 -1px 0 0 oklch(1 0 0 / 0.2)`
+        : "0 8px 32px -12px color-mix(in oklab, var(--foreground) 22%, transparent), 0 2px 6px -2px color-mix(in oklab, var(--foreground) 10%, transparent), inset 0 1px 0 0 oklch(1 0 0 / 0.8), inset 0 -1px 0 0 oklch(1 0 0 / 0.2)",
       ...style,
     };
 
