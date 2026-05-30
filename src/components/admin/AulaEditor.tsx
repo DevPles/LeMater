@@ -25,23 +25,17 @@ const MediaField = ({ label, hint, children }: { label: string; hint?: string; c
   </label>
 );
 
-const FlagMark = ({ pais, size = 18 }: { pais: Pais; size?: number }) => {
-  const style: CSSProperties = {
-    width: size,
-    height: Math.round(size * 0.68),
-    borderRadius: 2,
-    display: "inline-block",
-    boxShadow: "0 0 0 1px rgba(0,0,0,0.14) inset",
-    flexShrink: 0,
-    background:
-      pais === "BR"
-        ? "radial-gradient(circle at 50% 50%, #1f4fa3 0 18%, transparent 19%), linear-gradient(135deg, transparent 25%, #f7d34a 26% 50%, transparent 51%), #229a4b"
-        : pais === "ES"
-          ? "linear-gradient(to bottom, #c60b1e 0 25%, #ffc400 25% 75%, #c60b1e 75%)"
-          : "linear-gradient(to bottom, #b22234 0 8%, #fff 8% 16%, #b22234 16% 24%, #fff 24% 32%, #b22234 32% 40%, #fff 40% 48%, #b22234 48% 56%, #fff 56% 64%, #b22234 64% 72%, #fff 72% 80%, #b22234 80% 88%, #fff 88% 96%, #b22234 96%)",
-  };
-  return <span aria-label={pais} title={pais} style={style} />;
-};
+const FLAG_CODE: Record<Pais, string> = { BR: "br", ES: "es", US: "us" };
+const FlagMark = ({ pais, size = 18 }: { pais: Pais; size?: number }) => (
+  <img
+    src={`https://flagcdn.com/w80/${FLAG_CODE[pais]}.png`}
+    srcSet={`https://flagcdn.com/w160/${FLAG_CODE[pais]}.png 2x`}
+    alt=""
+    aria-label={pais}
+    title={pais}
+    style={{ width: size, height: Math.round(size * 0.68), objectFit: "cover", borderRadius: 2, boxShadow: "0 0 0 1px rgba(0,0,0,0.14) inset", flexShrink: 0, display: "inline-block" }}
+  />
+);
 
 const slugify = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -237,10 +231,10 @@ export default function AulaEditor({
 
   // Aba de país no topo do modal
   const [paisTab, setPaisTab] = useState<Pais>("BR");
-  const PAISES: { p: Pais; flag: string; label: string; hint: string }[] = [
-    { p: "BR", flag: "🇧🇷", label: "Português", hint: "Conteúdo original" },
-    { p: "ES", flag: "🇪🇸", label: "Español", hint: "Versão dublada / traduzida" },
-    { p: "US", flag: "🇺🇸", label: "English", hint: "Dubbed / translated version" },
+  const PAISES: { p: Pais; label: string; hint: string }[] = [
+    { p: "BR", label: "Português", hint: "Conteúdo original" },
+    { p: "ES", label: "Español", hint: "Versão dublada / traduzida" },
+    { p: "US", label: "English", hint: "Dubbed / translated version" },
   ];
 
   // Resolve o que mostrar na prévia para o país ativo (com fallback PT)
@@ -262,7 +256,7 @@ export default function AulaEditor({
       : (pvPrecoLabel || "Comprar");
 
   // A prévia do card mostra apenas a mídia de capa, nunca o vídeo interno da aula.
-  const pvCapaVideoShow = pvCapaVideoFile || editing.capa_video_url || "";
+  const pvCapaVideoShow = (trCurrent?.capa_video_url) || pvCapaVideoFile || editing.capa_video_url || "";
   const pvCapaShow = (trCurrent?.capa_url) || pvCapaFile || editing.capa_url || "";
 
   const PreviewCard = (
@@ -301,8 +295,11 @@ export default function AulaEditor({
           <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.6, marginBottom: 2 }}>Formato</div>
           <div style={{ fontSize: 13 }}>{tipoLabel[pvTipo] ?? "Vídeo"}</div>
         </div>
-        <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>
-          {pvGratisShow ? "Assistir" : pvPrecoShow}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {!pvGratisShow && pvPrecoShow !== "Comprar" && <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16 }}>{pvPrecoShow}</span>}
+          <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>
+            {pvGratisShow ? "Assistir" : "Comprar"}
+          </div>
         </div>
       </div>
       {paisTab !== "BR" && !trCurrent?.titulo && !trCurrent?.descricao && (
