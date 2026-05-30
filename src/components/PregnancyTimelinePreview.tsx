@@ -347,8 +347,7 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
       onClick={(e) => e.stopPropagation()}
     >
       <Link
-        to="/atlas/$slug"
-        params={{ slug: cursoRecente.slug }}
+        to="/app/videos"
         className="flex items-stretch gap-3 w-full no-underline"
       >
         <div className="relative w-20 h-24 rounded-lg overflow-hidden bg-[#1a1557]/10 flex-shrink-0">
