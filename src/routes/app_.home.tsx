@@ -5,6 +5,7 @@ import { BabySize } from "@/components/BabySize";
 import { UserAvatar } from "@/components/UserAvatar";
 import { FlyingStork } from "@/components/FlyingStork";
 import { PregnancyTimelinePreview } from "@/components/PregnancyTimelinePreview";
+import { SafeBoundary } from "@/components/SafeBoundary";
 import { motion } from "framer-motion";
 import { useGestanteProfile, weeksFromDum } from "@/hooks/useGestanteProfile";
 import { LoadingMessage } from "@/components/LoadingMessage";
