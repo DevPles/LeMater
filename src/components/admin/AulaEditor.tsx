@@ -398,7 +398,9 @@ export default function AulaEditor({
                 <p style={{ fontSize: 11, color: c.muted, marginTop: 8, lineHeight: 1.5 }}>É assim que aparece na vitrine do Atlas. Atualiza em tempo real.</p>
               </div>
             </div>
-          ) : (
+
+          {/* ES / EN: só renderizam quando ativos (form PT acima continua montado) */}
+          {paisTab !== "BR" && (
             <div>
               <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: "14px 18px", marginBottom: 18, fontSize: 13, color: c.ink, lineHeight: 1.55 }}>
                 <strong>Você está editando a versão {paisTab === "ES" ? "em Espanhol 🇪🇸" : "em Inglês 🇺🇸"}.</strong>{" "}
@@ -413,6 +415,7 @@ export default function AulaEditor({
               />
             </div>
           )}
+
 
           {err && <p style={{ color: c.danger, fontSize: 13, marginTop: 16 }}>{err}</p>}
           {ok && <p style={{ color: "#2E7D32", fontSize: 13, background: "#EAF5EC", border: "1px solid #CDE6D2", padding: "10px 12px", marginTop: 16 }}>{ok}</p>}
