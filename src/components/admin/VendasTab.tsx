@@ -35,27 +35,6 @@ export function VendasTab() {
   );
 }
 
-type Aba = "pedidos" | "vendas" | "cupons" | "integracoes";
-
-export function VendasTab() {
-  const [aba, setAba] = useState<Aba>("pedidos");
-  return (
-    <div className="space-y-4">
-      <div className="flex gap-2 border-b border-[#234735]/10 flex-wrap">
-        {([["pedidos", "Pedidos"], ["vendas", "Vendas (legado)"], ["cupons", "Cupons"], ["integracoes", "Integrações"]] as [Aba, string][]).map(([k, l]) => (
-          <button key={k} onClick={() => setAba(k)}
-            className={`px-4 py-2 text-sm font-semibold transition-colors ${aba === k ? "text-[#234735] border-b-2 border-[#c9a24a]" : "text-[#234735]/50 hover:text-[#234735]"}`}>
-            {l}
-          </button>
-        ))}
-      </div>
-      {aba === "pedidos" && <PedidosView />}
-      {aba === "vendas" && <VendasView />}
-      {aba === "cupons" && <CuponsView />}
-      {aba === "integracoes" && <IntegracoesView />}
-    </div>
-  );
-}
 
 function PedidosView() {
   const fn = useServerFn(listOrders);
