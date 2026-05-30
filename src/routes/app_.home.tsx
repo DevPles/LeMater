@@ -84,11 +84,13 @@ function HomePage() {
           <WeekProgress currentWeek={currentWeek} />
           <BabySize week={currentWeek} />
 
-          <PregnancyTimelinePreview
-            userId={profile!.user_id}
-            dum={profile?.dum}
-            cadastroISO={(profile as { created_at?: string } | null)?.created_at ?? null}
-          />
+          <SafeBoundary label="PregnancyTimelinePreview">
+            <PregnancyTimelinePreview
+              userId={profile!.user_id}
+              dum={profile?.dum}
+              cadastroISO={(profile as { created_at?: string } | null)?.created_at ?? null}
+            />
+          </SafeBoundary>
 
 
 
