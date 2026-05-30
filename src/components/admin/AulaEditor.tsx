@@ -289,8 +289,9 @@ export default function AulaEditor({
 
         {/* ============ BODY SCROLLÁVEL ============ */}
         <div style={{ overflow: "auto", padding: "24px 28px", flex: 1 }}>
-          {paisTab === "BR" ? (
-            <div style={{ display: "grid", gridTemplateColumns: wide ? "minmax(0,1fr) 340px" : "1fr", gap: 28, alignItems: "start" }}>
+          {/* PT-BR: sempre montado (preserva form data ao trocar de aba) */}
+          <div style={{ display: paisTab === "BR" ? "grid" : "none", gridTemplateColumns: wide ? "minmax(0,1fr) 340px" : "1fr", gap: 28, alignItems: "start" }}>
+
               <div style={{ minWidth: 0 }}>
                 <SectionTitle>Sobre a aula</SectionTitle>
                 <Field label="Título"><input name="titulo" defaultValue={editing.titulo ?? ""} onChange={(e) => setPvTitulo(e.target.value)} style={inp} required /></Field>
