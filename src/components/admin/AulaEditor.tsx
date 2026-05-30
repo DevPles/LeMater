@@ -83,6 +83,8 @@ export default function AulaEditor({
   const [pvTipo, setPvTipo] = useState(editing.tipo ?? "video");
   const [pvGratis, setPvGratis] = useState(editing.gratis ?? false);
   const [pvPrecoLabel, setPvPrecoLabel] = useState(editing.preco_label ?? "");
+  const [pvVideoExt, setPvVideoExt] = useState<string>(editing.video_url && String(editing.video_url).startsWith("http") ? String(editing.video_url) : "");
+
   const [pvTemasIds, setPvTemasIds] = useState<string[]>(editing.temas ?? []);
   const pvTemaNome = temas.find((t) => pvTemasIds.includes(t.id))?.titulo ?? "Tema";
   const tipoLabel: Record<string, string> = { video: "Vídeo", pdf: "PDF", texto: "Texto" };
