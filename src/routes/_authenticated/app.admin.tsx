@@ -17,6 +17,7 @@ import { DadosClinicosTab } from "@/components/admin/DadosClinicosTab";
 import { ParametrosTab } from "@/components/admin/ParametrosTab";
 import { RelatoriosEpidemiologicosTab } from "@/components/admin/RelatoriosEpidemiologicosTab";
 import { VendasTab } from "@/components/admin/VendasTab";
+import { AdminFiltersProvider } from "@/contexts/AdminFiltersContext";
 
 import lemateLogo from "@/assets/logo_monograma.png";
 
@@ -188,7 +189,11 @@ function AdminPage() {
           {tab === "profissionais" && <ProfissionaisTab />}
           {tab === "dados" && <DadosClinicosTab />}
           {tab === "parametros" && <ParametrosTab />}
-          {tab === "relatorios" && <RelatoriosEpidemiologicosTab />}
+          {tab === "relatorios" && (
+            <AdminFiltersProvider>
+              <RelatoriosEpidemiologicosTab />
+            </AdminFiltersProvider>
+          )}
           {tab === "leads" && <LeadsTab />}
           {tab === "alunos" && <AlunosTab />}
           {tab === "usuarios" && <UsuariosTab />}
