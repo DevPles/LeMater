@@ -53,13 +53,15 @@ type Tab =
   
   | "consultas" | "gravacoes" | "profissionais"
   | "dados" | "parametros" | "relatorios"
-  | "leads" | "alunos" | "usuarios" | "acessos" | "compras" | "vendas";
+  | "leads" | "alunos" | "usuarios" | "acessos" | "compras" | "vendas" | "vendas_rel";
 
 const TAB_GROUPS: { label: string; tabs: { id: Tab; label: string }[] }[] = [
   { label: "Painel", tabs: [{ id: "dash", label: "Painel" }] },
   { label: "Vendas", tabs: [
     { id: "vendas", label: "Vendas & cupons" },
+    { id: "vendas_rel", label: "Relatórios de vendas" },
   ]},
+
   { label: "Conteúdos", tabs: [
     { id: "atlas", label: "Atlas" },
   ]},
