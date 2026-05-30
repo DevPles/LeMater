@@ -346,47 +346,43 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
       className="flex items-stretch gap-3"
       onClick={(e) => e.stopPropagation()}
     >
-      <Link
-        to="/app/videos"
-        className="flex items-stretch gap-3 w-full no-underline"
-      >
-        <div className="relative w-20 h-24 rounded-lg overflow-hidden bg-[#1a1557]/10 flex-shrink-0">
-          {(() => {
-            const videoSrc = videoForAulaCover({
-              capa_video_url: cursoRecente.capa_video_url,
-              titulo: cursoRecente.titulo,
-              descricao: cursoRecente.descricao_curta,
-            });
-            return (
-              <video
-                src={videoSrc}
-                poster={cursoRecente.capa_url ?? undefined}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="metadata"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-            );
-          })()}
+      <div className="relative w-20 h-24 rounded-lg overflow-hidden bg-[#1a1557]/10 flex-shrink-0">
+        {(() => {
+          const videoSrc = videoForAulaCover({
+            capa_video_url: cursoRecente.capa_video_url,
+            titulo: cursoRecente.titulo,
+            descricao: cursoRecente.descricao_curta,
+          });
+          return (
+            <video
+              src={videoSrc}
+              poster={cursoRecente.capa_url ?? undefined}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            />
+          );
+        })()}
+      </div>
+      <div className="flex flex-col justify-between min-w-0 flex-1">
+        <div>
+          <span className="inline-block text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-[#f0c040]/15 text-[#a87a10]">
+            Novo no Atlas
+          </span>
+          <h4 className="font-display text-lg font-medium text-[#1a1557] leading-tight mt-1.5 line-clamp-2">
+            {cursoRecente.titulo}
+          </h4>
         </div>
-        <div className="flex flex-col justify-between min-w-0 flex-1">
-          <div>
-            <span className="inline-block text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-[#f0c040]/15 text-[#a87a10]">
-              Novo no Atlas
-            </span>
-            <h4 className="font-display text-lg font-medium text-[#1a1557] leading-tight mt-1.5 line-clamp-2">
-              {cursoRecente.titulo}
-            </h4>
-          </div>
-          <p className="text-[10px] text-muted-foreground line-clamp-1">
-            {cursoRecente.instrutor_nome ?? "Atlas Materno"} ·{" "}
-            {cursoRecente.total_aulas} {cursoRecente.total_aulas === 1 ? "aula" : "aulas"}
-          </p>
-        </div>
-      </Link>
+        <p className="text-[10px] text-muted-foreground line-clamp-1">
+          {cursoRecente.instrutor_nome ?? "Atlas Materno"} ·{" "}
+          {cursoRecente.total_aulas} {cursoRecente.total_aulas === 1 ? "aula" : "aulas"}
+        </p>
+      </div>
     </div>
+
   ) : null;
 
   const slides = [
