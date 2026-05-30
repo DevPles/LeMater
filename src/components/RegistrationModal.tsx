@@ -1234,5 +1234,6 @@ export default function RegistrationModal({
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
