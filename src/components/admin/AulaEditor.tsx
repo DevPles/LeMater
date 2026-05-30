@@ -17,6 +17,13 @@ const Field = ({ label, children }: any) => (
     {children}
   </label>
 );
+const MediaField = ({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) => (
+  <label style={{ display: "flex", flexDirection: "column", marginBottom: 14, minHeight: 92 }}>
+    <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6, minHeight: 30 }}>{label}</div>
+    <div>{children}</div>
+    <div style={{ fontSize: 11, color: c.muted, marginTop: 4, minHeight: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hint}</div>
+  </label>
+);
 
 const slugify = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
