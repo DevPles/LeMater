@@ -17,6 +17,13 @@ const Field = ({ label, children }: any) => (
     {children}
   </label>
 );
+const MediaField = ({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) => (
+  <label style={{ display: "flex", flexDirection: "column", marginBottom: 14, minHeight: 92 }}>
+    <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6, minHeight: 30 }}>{label}</div>
+    <div>{children}</div>
+    <div style={{ fontSize: 11, color: c.muted, marginTop: 4, minHeight: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hint}</div>
+  </label>
+);
 
 const slugify = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -281,20 +288,22 @@ export default function AulaEditor({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
         <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-          <div style={{ fontSize: 11, opacity: 0.8 }}>{flag} <span style={{ letterSpacing: "0.1em" }}>{paisTab}</span></div>
-          {pvGratis && <div style={{ background: "rgba(255,255,255,0.15)", padding: "4px 10px", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Conteúdo grátis</div>}
+          <span title={paisTab} style={{ fontSize: 18, lineHeight: 1 }}>{flag}</span>
+          {pvGratis
+            ? <div style={{ background: "rgba(255,255,255,0.18)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Grátis</div>
+            : <div style={{ background: "rgba(0,0,0,0.25)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Pago</div>}
           <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>{pvTemaNome}</div>
         </div>
       </div>
       <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 500, margin: "0 0 8px", lineHeight: 1.2 }}>{pvTituloShow}</h3>
       <p style={{ fontSize: 13, opacity: 0.85, margin: 0, lineHeight: 1.5 }}>{pvDescShow}</p>
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.2)", marginTop: 16, paddingTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.2)", marginTop: 16, paddingTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
         <div>
           <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.6, marginBottom: 2 }}>Formato</div>
           <div style={{ fontSize: 13 }}>{tipoLabel[pvTipo] ?? "Vídeo"}</div>
         </div>
-        <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>
-          {pvPrecoShow}
+        <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>
+          {pvGratis ? "▶ Assistir" : pvPrecoShow}
         </div>
       </div>
       {paisTab !== "BR" && !trCurrent?.titulo && !trCurrent?.descricao && (
@@ -406,19 +415,17 @@ export default function AulaEditor({
                 </div>
 
                 <SectionTitle>Mídia em Português</SectionTitle>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <Field label="Capa (imagem) — usada como poster">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "stretch" }}>
+                  <MediaField label="Capa (imagem) — usada como poster" hint={editing.capa_url ? `Atual: ${editing.capa_url}` : ""}>
                     <input name="capa" type="file" accept="image/*" style={inp} />
-                    {editing.capa_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_url}</div>}
-                  </Field>
-                  <Field label="Capa em vídeo (loop curto, MP4) — opcional">
+                  </MediaField>
+                  <MediaField label="Capa em vídeo (loop curto, MP4) — opcional" hint={editing.capa_video_url ? `Atual: ${editing.capa_video_url}` : ""}>
                     <input name="capa_video" type="file" accept="video/*" style={inp} />
-                    {editing.capa_video_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_video_url}</div>}
-                  </Field>
-                  <Field label="Vídeo da aula — arquivo (MP4)">
+                  </MediaField>
+                  <MediaField label="Vídeo da aula — arquivo (MP4)" hint="">
                     <input name="video_file" type="file" accept="video/*" style={inp} />
-                  </Field>
-                  <Field label="Vídeo da aula — OU URL externa (YouTube/Vimeo)">
+                  </MediaField>
+                  <MediaField label="Vídeo da aula — OU URL externa (YouTube/Vimeo)" hint="">
                     <input
                       name="video_url_externa"
                       placeholder="https://youtube.com/..."
@@ -426,7 +433,7 @@ export default function AulaEditor({
                       onChange={(e) => setPvVideoExt(e.target.value)}
                       style={inp}
                     />
-                  </Field>
+                  </MediaField>
                 </div>
 
                 <Field label="PDF (se tipo = PDF)"><input name="pdf_file" type="file" accept="application/pdf" style={inp} /></Field>
@@ -499,7 +506,7 @@ export default function AulaEditor({
 
             {/* Coluna lateral: preview SEMPRE visível, reflete país ativo */}
             <div style={{ position: wide ? "sticky" : "static", top: 0, alignSelf: "start" }}>
-              <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600 }}>Prévia do card · {flag} {paisTab}</div>
+              <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>Prévia do card <span style={{ fontSize: 16 }}>{flag}</span></div>
               {PreviewCard}
               <p style={{ fontSize: 11, color: c.muted, marginTop: 8, lineHeight: 1.5 }}>É assim que aparece na vitrine para usuários do país <strong>{paisTab}</strong>. Atualiza em tempo real.</p>
             </div>
