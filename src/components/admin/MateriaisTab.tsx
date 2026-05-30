@@ -149,9 +149,12 @@ export default function MateriaisTab({
 
       {edit && (
         <div onClick={() => setEdit(null)} style={modalBg}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "white", maxWidth: 720, width: "100%", padding: 32, border: `1px solid ${c.border}`, maxHeight: "90vh", overflow: "auto" }}>
-            <h2 style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, margin: "0 0 20px" }}>{edit.id ? `Editar ${isServicoMode ? "serviço" : titulo.toLowerCase()}` : `Novo ${isServicoMode ? "serviço" : titulo.toLowerCase()}`}</h2>
-            <div style={{ display: "grid", gap: 14 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "white", maxWidth: 1080, width: "100%", padding: 0, border: `1px solid ${c.border}`, maxHeight: "92vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "24px 28px 12px" }}>
+              <h2 style={{ fontFamily: serif, fontSize: 26, fontWeight: 400, margin: 0 }}>{edit.id ? `Editar ${isServicoMode ? "serviço" : titulo.toLowerCase()}` : `Novo ${isServicoMode ? "serviço" : titulo.toLowerCase()}`}</h2>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 320px", flex: 1, minHeight: 0, overflow: "hidden" }}>
+              <div style={{ padding: "8px 28px 20px", overflow: "auto", display: "grid", gap: 14 }}>
               <Field label="Título"><input value={edit.titulo ?? ""} onChange={(e) => setEdit({ ...edit, titulo: e.target.value })} style={inp} /></Field>
               <Field label="Descrição"><textarea value={edit.descricao ?? ""} onChange={(e) => setEdit({ ...edit, descricao: e.target.value })} style={{ ...inp, minHeight: 80 }} /></Field>
               {!isServicoMode && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
@@ -213,14 +216,46 @@ export default function MateriaisTab({
               {edit.id && edit.acesso === "restrito" && (
                 <AcessosSection materialId={edit.id} />
               )}
+              </div>
+
+              <aside style={{ borderLeft: `1px solid ${c.border}`, background: c.warm, padding: "20px 18px", overflow: "auto" }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600 }}>Prévia do card</div>
+                <MaterialPreviewCard edit={edit} isServico={isServicoMode} />
+                <p style={{ fontSize: 10.5, color: c.muted, marginTop: 14, lineHeight: 1.5 }}>É assim que o card aparece na vitrine. Atualiza em tempo real.</p>
+              </aside>
             </div>
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 24 }}>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", padding: "14px 28px", borderTop: `1px solid ${c.border}`, background: c.cream }}>
               <button onClick={() => setEdit(null)} style={btn(c.muted)}>Cancelar</button>
               <button onClick={salvar} disabled={busy} style={{ ...btn(c.sageDark), opacity: busy ? 0.6 : 1 }}>{busy ? "Salvando…" : "Salvar"}</button>
             </div>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function MaterialPreviewCard({ edit, isServico }: { edit: Partial<MaterialRow>; isServico: boolean }) {
+  const tipoLabel: Record<string, string> = { pdf: "PDF", video_externo: "Vídeo", video_upload: "Vídeo", artigo: "Artigo" };
+  return (
+    <div style={{ background: c.sageDark, color: "white", padding: 20, position: "relative" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>
+          {edit.categoria || (isServico ? "Serviço" : "Material")}
+        </div>
+        {edit.area === "gratis" && !isServico && (
+          <div style={{ background: "rgba(255,255,255,0.15)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase" }}>Grátis</div>
+        )}
+      </div>
+      {edit.capa_url && <img src={edit.capa_url} alt="" style={{ width: "100%", height: 120, objectFit: "cover", marginBottom: 12 }} />}
+      <h3 style={{ fontFamily: serif, fontSize: 20, fontWeight: 500, margin: "0 0 6px", lineHeight: 1.2 }}>{edit.titulo || "Título"}</h3>
+      <p style={{ fontSize: 12, opacity: 0.85, margin: 0, lineHeight: 1.5 }}>{edit.descricao || "Descrição aparece aqui."}</p>
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.2)", marginTop: 14, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ fontSize: 11 }}>{tipoLabel[edit.tipo ?? ""] ?? "—"}</div>
+        <div style={{ background: "white", color: c.sageDark, padding: "8px 12px", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>
+          {edit.cta_label || edit.preco_label || (isServico ? "Agendar" : "Acessar")}
+        </div>
+      </div>
     </div>
   );
 }
