@@ -39,6 +39,16 @@ function videoForAula(a: AtlasAulaVitrine): string {
   return vidPreNatal;
 }
 
+function formatAulaPreco(centavos: number, moeda: string) {
+  if (!centavos) return null;
+  const locale = moeda === "BRL" ? "pt-BR" : moeda === "EUR" ? "es-ES" : "en-US";
+  try {
+    return new Intl.NumberFormat(locale, { style: "currency", currency: moeda || "BRL" }).format(centavos / 100);
+  } catch {
+    return `${moeda || "BRL"} ${(centavos / 100).toFixed(2)}`;
+  }
+}
+
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", gold: "#B8923A" };
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
@@ -223,6 +233,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                   : inCart
                     ? "Ver carrinho"
                     : "Adicionar ao carrinho";
+              const precoLabel = shown.preco_label || formatAulaPreco(shown.preco_centavos, shown.moeda);
               return (
                 <ContentCard
                   key={a.id}
@@ -235,7 +246,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                   capa_video_url={videoForAula(shown)}
                   metaLabel="Duração"
                   metaValor={a.duracao_min ? `${a.duracao_min} min` : "—"}
-                  precoLabel={!podeConsumir && !gratis ? shown.preco_label : null}
+                  precoLabel={!podeConsumir && !gratis ? precoLabel : null}
                   ctaLabel={cta}
                   onAction={() => {
                     if (podeConsumir || gratis) {
@@ -253,7 +264,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                       capa_url: shown.capa_url,
                       capa_video_url: videoForAula(shown),
                       preco_centavos: shown.preco_centavos,
-                      preco_label: shown.preco_label,
+                      preco_label: precoLabel,
                       moeda: shown.moeda,
                       link_compra: a.link_compra,
                       tema: a.temas[0]?.titulo ?? null,
