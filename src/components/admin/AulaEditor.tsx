@@ -5,6 +5,7 @@ import { adminListCursos, adminUpsertAulaAvulsa } from "@/lib/cursos.functions";
 import OfertasEditor, { type OfertasEditorHandle } from "@/components/admin/OfertasEditor";
 import TranslationsPanel, { type TranslationsPanelHandle, type TranslationRow, MOEDA_PADRAO } from "@/components/admin/TranslationsPanel";
 import type { Pais } from "@/lib/translate.context";
+import { ContentCard } from "@/components/ContentCard";
 
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48" };
 const sans = "'DM Sans', sans-serif";
@@ -269,54 +270,31 @@ export default function AulaEditor({
   const pvCapaVideoShow = toPublicStorageUrl("materiais-capas", (trCurrent?.capa_video_url) || pvCapaVideoFile || editing.capa_video_url || "");
   const pvCapaShow = toPublicStorageUrl("materiais-capas", (trCurrent?.capa_url) || pvCapaFile || editing.capa_url || "");
 
+  const previewCategoria = pvTemaNome && pvTemaNome !== "Tema" ? pvTemaNome : null;
   const PreviewCard = (
-    <div key={`${paisTab}-${acessoPreviewLabel}-${pvCapaVideoShow || pvCapaShow || "sem-capa"}`} style={{ background: c.sageDark, color: "white", position: "relative", width: "100%", minHeight: 330, overflow: "hidden" }}>
-      {pvCapaVideoShow ? (
-        <video
-          key={pvCapaVideoShow}
-          src={pvCapaVideoShow}
-          poster={pvCapaShow || undefined}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-        />
-      ) : pvCapaShow ? (
-        <img src={pvCapaShow} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-      ) : null}
-      {(pvCapaVideoShow || pvCapaShow) && <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(45,90,66,0.45), rgba(45,90,66,0.88))" }} />}
-
-      <div style={{ padding: 24, position: "relative", zIndex: 1 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-        <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-          <FlagMark pais={paisTab} size={20} />
-          <div style={{ background: isGratisPreview ? "rgba(255,255,255,0.22)" : "rgba(0,0,0,0.25)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>{acessoPreviewLabel}</div>
-          <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>{pvTemaNome}</div>
-        </div>
+    <div key={`${paisTab}-${acessoPreviewLabel}-${pvCapaVideoShow || pvCapaShow || "sem-capa"}`} style={{ position: "relative", width: "100%" }}>
+      <div style={{ position: "absolute", top: 8, left: 8, zIndex: 2, background: "rgba(255,255,255,0.92)", padding: "3px 5px", borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.18)", display: "inline-flex", alignItems: "center" }}>
+        <FlagMark pais={paisTab} size={16} />
       </div>
-      <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 500, margin: "0 0 8px", lineHeight: 1.2 }}>{pvTituloShow}</h3>
-      <p style={{ fontSize: 13, opacity: 0.85, margin: 0, lineHeight: 1.5 }}>{pvDescShow}</p>
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.2)", marginTop: 16, paddingTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-        <div>
-          <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.6, marginBottom: 2 }}>Formato</div>
-          <div style={{ fontSize: 13 }}>{tipoLabel[pvTipo] ?? "Vídeo"}</div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {!isGratisPreview && pvPrecoShow !== "Comprar" && <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16 }}>{pvPrecoShow}</span>}
-          <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>
-            {acessoPreviewCta}
-          </div>
-        </div>
-      </div>
+      <ContentCard
+        numero="01"
+        categoria={previewCategoria}
+        badge={{ label: isGratisPreview ? "Grátis" : "Conteúdo pago", color: isGratisPreview ? c.sage : "#B8923A" }}
+        titulo={pvTituloShow}
+        descricao={pvDescShow}
+        capa_url={pvCapaShow || null}
+        capa_video_url={pvCapaVideoShow || null}
+        metaLabel="Formato"
+        metaValor={tipoLabel[pvTipo] ?? "Vídeo"}
+        precoLabel={!isGratisPreview ? (pvPrecoShow !== "Comprar" ? pvPrecoShow : null) : null}
+        ctaLabel={acessoPreviewCta}
+        onAction={() => {}}
+      />
       {paisTab !== "BR" && !trCurrent?.titulo && !trCurrent?.descricao && (
-        <div style={{ marginTop: 10, fontSize: 10, letterSpacing: "0.08em", opacity: 0.7 }}>
+        <div style={{ marginTop: 10, fontSize: 10, letterSpacing: "0.08em", color: c.muted }}>
           Sem tradução {paisTab} — usando PT como fallback.
         </div>
       )}
-      </div>
     </div>
   );
 
