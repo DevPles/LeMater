@@ -23,8 +23,10 @@ import {
   BP_NORMAL,
 } from "@/lib/pregnancy-norms";
 import {
-  MILESTONES,
+  MILESTONES as STATIC_MILESTONES,
   classifyMilestone,
+  normalize,
+  type Milestone,
   type ProntuarioRecord,
 } from "@/lib/pregnancy-milestones";
 
@@ -47,6 +49,7 @@ const GOLD = "#f0c040";
 export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
   const [medicoes, setMedicoes] = useState<Medicao[]>([]);
   const [registros, setRegistros] = useState<ProntuarioRecord[]>([]);
+  const [dbMilestones, setDbMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"agenda" | "peso" | "pressao">("agenda");
 
