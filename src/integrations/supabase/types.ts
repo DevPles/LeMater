@@ -514,8 +514,11 @@ export type Database = {
           item_id: string
           item_type: string
           legenda_url: string | null
+          moeda: string | null
           pais: string
           pdf_url: string | null
+          preco_centavos: number | null
+          preco_label: string | null
           titulo: string | null
           updated_at: string
           video_url: string | null
@@ -530,8 +533,11 @@ export type Database = {
           item_id: string
           item_type: string
           legenda_url?: string | null
+          moeda?: string | null
           pais: string
           pdf_url?: string | null
+          preco_centavos?: number | null
+          preco_label?: string | null
           titulo?: string | null
           updated_at?: string
           video_url?: string | null
@@ -546,8 +552,11 @@ export type Database = {
           item_id?: string
           item_type?: string
           legenda_url?: string | null
+          moeda?: string | null
           pais?: string
           pdf_url?: string | null
+          preco_centavos?: number | null
+          preco_label?: string | null
           titulo?: string | null
           updated_at?: string
           video_url?: string | null
