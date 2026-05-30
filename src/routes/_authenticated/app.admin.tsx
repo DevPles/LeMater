@@ -326,7 +326,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
           {d.leads_recentes.length === 0 ? (
             <Empty>Nenhum lead ainda.</Empty>
           ) : (
-            <table style={mini}>
+            <div className="table-scroll"><table style={mini}>
               <thead>
                 <tr><ThMini>Data</ThMini><ThMini>Nome</ThMini><ThMini>E-mail</ThMini><ThMini>Material</ThMini></tr>
               </thead>
