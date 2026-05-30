@@ -172,14 +172,18 @@ export default function AulaEditor({
       if (ofertasRef.current && saved?.id) {
         await ofertasRef.current.flush(saved.id);
       }
+      if (traducoesRef.current && saved?.id) {
+        await traducoesRef.current.flush(saved.id);
+      }
 
       onSaved();
       const wasNew = !(savedId ?? editing.id);
       if (wasNew) {
-        setOk("Aula salva. Agora você pode enviar as versões em Espanhol e Inglês abaixo.");
+        setOk("Aula salva com sucesso. As versões ES/EN preenchidas também foram salvas. Você pode fechar ou continuar editando.");
       } else {
         onClose();
       }
+
     } catch (e: any) { setErr(e?.message ?? "Erro ao salvar"); }
     finally { setBusy(false); }
   };
