@@ -315,7 +315,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </Panel>
 
