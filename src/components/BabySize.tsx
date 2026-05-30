@@ -123,7 +123,7 @@ export function BabySize({ week }: { week: number }) {
           className="w-full text-left focus:outline-none focus:ring-2 focus:ring-primary/40 rounded-2xl"
           aria-label="Ver dicas do bebê"
         >
-          <LiquidCard className="p-5" bgOpacity={0.55}>
+          <LiquidCard className="p-5" bgOpacity={0.28}>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-accent-foreground font-medium">Tamanho do bebê</p>
               <span className="text-[10px] uppercase tracking-wider font-bold text-primary">Toque para dicas</span>
