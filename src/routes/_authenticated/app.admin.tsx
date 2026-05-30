@@ -17,7 +17,7 @@ import { DadosClinicosTab } from "@/components/admin/DadosClinicosTab";
 import { ParametrosTab } from "@/components/admin/ParametrosTab";
 import { RelatoriosEpidemiologicosTab } from "@/components/admin/RelatoriosEpidemiologicosTab";
 import { VendasTab } from "@/components/admin/VendasTab";
-import { VendasReportView } from "@/components/admin/VendasReportView";
+
 
 import { AdminFiltersProvider } from "@/contexts/AdminFiltersContext";
 
