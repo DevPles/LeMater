@@ -186,36 +186,39 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
         </div>
       )}
 
-      {/* Tabs de país */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
-        {TABS.map((t) => {
-          const active = t.pais === tab;
-          const hasContent = t.pais === "BR" ? true : (rows[t.pais].id ? true : isFilled(rows[t.pais]));
-          return (
-            <button
-              key={t.pais}
-              type="button"
-              onClick={() => { setTab(t.pais); setMsg(null); }}
-              style={{
-                background: active ? c.sageDark : "white",
-                color: active ? "white" : c.ink,
-                border: `1px solid ${active ? c.sageDark : c.border}`,
-                padding: "8px 14px",
-                fontSize: 12,
-                fontFamily: sans,
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <span style={{ fontSize: 16 }}>{t.flag}</span>
-              <span>{t.label}</span>
-              {hasContent && t.pais !== "BR" && <span style={{ background: rows[t.pais].id ? c.ok : "#B58A2E", color: "white", fontSize: 9, padding: "1px 5px", letterSpacing: "0.08em" }}>{rows[t.pais].id ? "OK" : "RASCUNHO"}</span>}
-            </button>
-          );
-        })}
-      </div>
+      {/* Tabs de país (ocultadas quando o modal-pai já oferece abas) */}
+      {!hideTabs && (
+        <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+          {TABS.map((t) => {
+            const active = t.pais === tab;
+            const hasContent = t.pais === "BR" ? true : (rows[t.pais].id ? true : isFilled(rows[t.pais]));
+            return (
+              <button
+                key={t.pais}
+                type="button"
+                onClick={() => { setTab(t.pais); setMsg(null); }}
+                style={{
+                  background: active ? c.sageDark : "white",
+                  color: active ? "white" : c.ink,
+                  border: `1px solid ${active ? c.sageDark : c.border}`,
+                  padding: "8px 14px",
+                  fontSize: 12,
+                  fontFamily: sans,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <span style={{ fontSize: 16 }}>{t.flag}</span>
+                <span>{t.label}</span>
+                {hasContent && t.pais !== "BR" && <span style={{ background: rows[t.pais].id ? c.ok : "#B58A2E", color: "white", fontSize: 9, padding: "1px 5px", letterSpacing: "0.08em" }}>{rows[t.pais].id ? "OK" : "RASCUNHO"}</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
 
       {tab === "BR" ? (
         <div style={{ padding: 14, border: `1px dashed ${c.border}`, background: "white", fontSize: 13, color: c.muted }}>
