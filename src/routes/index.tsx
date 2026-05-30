@@ -16,6 +16,27 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { translateBatch } from "@/lib/translate.functions";
 import { useLang, FLAG_TO_LANG, isTranslatable, type Lang } from "@/lib/translate.context";
 
+function AccessText({ children }: { children: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const sync = () => {
+      const txt = (el.textContent ?? "").trim();
+      if (txt) el.setAttribute("data-text", txt);
+    };
+    sync();
+    const obs = new MutationObserver(sync);
+    obs.observe(el, { childList: true, characterData: true, subtree: true });
+    return () => obs.disconnect();
+  }, []);
+  return (
+    <div ref={ref} className="lm-access-text" data-text={children}>
+      {children}
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -689,10 +710,9 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                 </Link>
               </div>
               <div style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, alignSelf: isMobile ? "center" : "flex-start" }}>
-                <div className="lm-access-text" data-text="Acesse o aplicativo">
-                  Acesse o aplicativo
-                </div>
+                <AccessText>Acesse o aplicativo</AccessText>
               </div>
+
 
 
             </div>
