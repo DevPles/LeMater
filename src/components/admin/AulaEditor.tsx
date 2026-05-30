@@ -18,12 +18,30 @@ const Field = ({ label, children }: any) => (
   </label>
 );
 const MediaField = ({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) => (
-  <label style={{ display: "flex", flexDirection: "column", marginBottom: 14, minHeight: 92 }}>
-    <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6, minHeight: 30 }}>{label}</div>
-    <div>{children}</div>
+  <label style={{ display: "flex", flexDirection: "column", marginBottom: 0, minHeight: 96, height: "100%" }}>
+    <div style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6, minHeight: 34, display: "flex", alignItems: "flex-end", lineHeight: 1.25 }}>{label}</div>
+    <div style={{ marginTop: "auto" }}>{children}</div>
     <div style={{ fontSize: 11, color: c.muted, marginTop: 4, minHeight: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hint}</div>
   </label>
 );
+
+const FlagMark = ({ pais, size = 18 }: { pais: Pais; size?: number }) => {
+  const style: CSSProperties = {
+    width: size,
+    height: Math.round(size * 0.68),
+    borderRadius: 2,
+    display: "inline-block",
+    boxShadow: "0 0 0 1px rgba(0,0,0,0.14) inset",
+    flexShrink: 0,
+    background:
+      pais === "BR"
+        ? "radial-gradient(circle at 50% 50%, #1f4fa3 0 18%, transparent 19%), linear-gradient(135deg, transparent 25%, #f7d34a 26% 50%, transparent 51%), #229a4b"
+        : pais === "ES"
+          ? "linear-gradient(to bottom, #c60b1e 0 25%, #ffc400 25% 75%, #c60b1e 75%)"
+          : "linear-gradient(to bottom, #b22234 0 8%, #fff 8% 16%, #b22234 16% 24%, #fff 24% 32%, #b22234 32% 40%, #fff 40% 48%, #b22234 48% 56%, #fff 56% 64%, #b22234 64% 72%, #fff 72% 80%, #b22234 80% 88%, #fff 88% 96%, #b22234 96%)",
+  };
+  return <span aria-label={pais} title={pais} style={style} />;
+};
 
 const slugify = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
