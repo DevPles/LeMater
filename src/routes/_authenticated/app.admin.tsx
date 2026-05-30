@@ -202,6 +202,8 @@ function AdminPage() {
           {tab === "acessos" && <AcessosUsuariosTab />}
           {tab === "compras" && <ComprasTab />}
           {tab === "vendas" && <VendasTab />}
+          {tab === "vendas_rel" && <VendasReportView />}
+
         </main>
       </div>
 
