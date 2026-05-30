@@ -155,3 +155,56 @@ function btn(bg: string): CSSProperties {
 function btnSm(bg: string): CSSProperties {
   return { background: bg, color: "white", fontSize: 11, fontWeight: 500, letterSpacing: "0.10em", padding: "8px 14px", border: "none", cursor: "pointer", fontFamily: sans };
 }
+
+function AulaConteudo({ aulaAtual, player }: { aulaAtual: any; player: AulaPlayer | null }) {
+  const { translation, isFallback, pais } = useTranslatedContent("curso_aula", aulaAtual?.id ?? null);
+  const titulo = translation?.titulo || aulaAtual.titulo;
+  const descricao = translation?.descricao || aulaAtual.descricao;
+
+  // Override do player conforme tradução do país
+  let conteudo = player?.conteudo;
+  if (translation && conteudo) {
+    if (translation.video_url) {
+      if (/^https?:\/\//.test(translation.video_url) && /(youtube|youtu\.be|vimeo)/i.test(translation.video_url)) {
+        const m = translation.video_url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([\w-]+)/);
+        const vimeoM = translation.video_url.match(/vimeo\.com\/(\d+)/);
+        const embedUrl = m ? `https://www.youtube.com/embed/${m[1]}` : vimeoM ? `https://player.vimeo.com/video/${vimeoM[1]}` : translation.video_url;
+        conteudo = { kind: "video_externo", embedUrl } as any;
+      } else {
+        conteudo = { kind: "video_upload", url: translation.video_url } as any;
+      }
+    } else if (translation.pdf_url) {
+      conteudo = { kind: "pdf", url: translation.pdf_url } as any;
+    } else if (translation.conteudo_html) {
+      conteudo = { kind: "texto", html: translation.conteudo_html } as any;
+    }
+  }
+
+  return (
+    <>
+      <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.sage, marginBottom: 8 }}>
+        {aulaAtual.tipo.toUpperCase()} · {aulaAtual.duracao_min} MIN
+        {isFallback && <span style={{ marginLeft: 12, background: c.warm, color: c.muted, padding: "3px 8px", letterSpacing: "0.1em" }}>Em breve em {pais}</span>}
+      </div>
+      <h1 style={{ fontFamily: serif, fontSize: 36, fontWeight: 300, margin: "0 0 24px" }}>{titulo}</h1>
+
+      {!conteudo ? <p style={{ color: c.muted }}>Carregando conteúdo…</p>
+        : conteudo.kind === "video_externo" ? (
+          <div style={{ aspectRatio: "16/9", background: "black" }}>
+            <iframe src={(conteudo as any).embedUrl} style={{ width: "100%", height: "100%", border: "none" }} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+          </div>
+        ) : conteudo.kind === "video_upload" ? (
+          <video src={(conteudo as any).url} controls style={{ width: "100%", background: "black" }} />
+        ) : conteudo.kind === "pdf" ? (
+          <>
+            <a href={(conteudo as any).url} target="_blank" rel="noreferrer" style={{ ...btn(c.sageDark), textDecoration: "none", display: "inline-block", marginBottom: 16 }}>Baixar PDF</a>
+            <iframe src={(conteudo as any).url} style={{ width: "100%", height: "75vh", border: `1px solid ${c.border}` }} />
+          </>
+        ) : conteudo.kind === "texto" ? (
+          <div style={{ background: "white", padding: 32, border: `1px solid ${c.border}`, lineHeight: 1.7, fontSize: 15 }} dangerouslySetInnerHTML={{ __html: (conteudo as any).html }} />
+        ) : <p style={{ color: c.muted }}>Esta aula ainda não tem conteúdo.</p>}
+
+      {descricao && <p style={{ marginTop: 24, color: c.muted, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{descricao}</p>}
+    </>
+  );
+}
