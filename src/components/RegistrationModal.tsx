@@ -386,6 +386,8 @@ export default function RegistrationModal({
   const labelClass = `text-[#1C1C1A]/90 text-xs font-medium mb-1.5 block`;
 
   return (
+    <>
+      {welcomeOpen && <WelcomeOverlay />}
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
         className="w-[calc(100vw-1rem)] max-w-md max-h-[85vh] p-0 rounded-2xl relative overflow-hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 fixed [&>button[type=button]]:z-50"
