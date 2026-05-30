@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getCursoBySlug, getAulaPlayer, marcarAulaConcluida, type CursoDetalhe, type AulaPlayer } from "@/lib/cursos.functions";
 import lemateLogo from "@/assets/lemater-logo.png";
+import { useTranslatedContent } from "@/hooks/useTranslatedContent";
 
 export const Route = createFileRoute("/_authenticated/atlas/$slug/aprender")({
   head: () => ({
@@ -92,27 +93,8 @@ function Player() {
         {/* Conteúdo da aula */}
         <main style={{ padding: 32, maxWidth: 1000 }}>
           {!aulaAtual ? <p style={{ color: c.muted }}>Selecione uma aula ao lado.</p> : (
-            <>
-              <div style={{ fontSize: 11, letterSpacing: "0.18em", color: c.sage, marginBottom: 8 }}>{aulaAtual.tipo.toUpperCase()} · {aulaAtual.duracao_min} MIN</div>
-              <h1 style={{ fontFamily: serif, fontSize: 36, fontWeight: 300, margin: "0 0 24px" }}>{aulaAtual.titulo}</h1>
-
-              {!player ? <p style={{ color: c.muted }}>Carregando conteúdo…</p>
-                : player.conteudo.kind === "video_externo" ? (
-                  <div style={{ aspectRatio: "16/9", background: "black" }}>
-                    <iframe src={player.conteudo.embedUrl} style={{ width: "100%", height: "100%", border: "none" }} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
-                  </div>
-                ) : player.conteudo.kind === "video_upload" ? (
-                  <video src={player.conteudo.url} controls style={{ width: "100%", background: "black" }} />
-                ) : player.conteudo.kind === "pdf" ? (
-                  <>
-                    <a href={player.conteudo.url} target="_blank" rel="noreferrer" style={{ ...btn(c.sageDark), textDecoration: "none", display: "inline-block", marginBottom: 16 }}>Baixar PDF</a>
-                    <iframe src={player.conteudo.url} style={{ width: "100%", height: "75vh", border: `1px solid ${c.border}` }} />
-                  </>
-                ) : player.conteudo.kind === "texto" ? (
-                  <div style={{ background: "white", padding: 32, border: `1px solid ${c.border}`, lineHeight: 1.7, fontSize: 15 }} dangerouslySetInnerHTML={{ __html: player.conteudo.html }} />
-                ) : <p style={{ color: c.muted }}>Esta aula ainda não tem conteúdo.</p>}
-
-              {aulaAtual.descricao && <p style={{ marginTop: 24, color: c.muted, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{aulaAtual.descricao}</p>}
+            <AulaConteudo aulaAtual={aulaAtual} player={player} />
+          )}
 
               <div style={{ marginTop: 32, paddingTop: 24, borderTop: `1px solid ${c.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
                 <button onClick={toggleConcluida} style={btn(aulaAtual.concluida ? c.muted : c.sageDark)}>
