@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import TranslationsPanel from "@/components/admin/TranslationsPanel";
 import {
   listAllMateriais, upsertMaterial, deleteMaterial,
   buscarUsuarios, listMaterialAcessos, liberarAcessoMaterial, revogarAcessoMaterial,
@@ -216,6 +217,16 @@ export default function MateriaisTab({
               {edit.id && edit.acesso === "restrito" && (
                 <AcessosSection materialId={edit.id} />
               )}
+
+              <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${c.border}` }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 10 }}>
+                  Conteúdo por país (PT · ES · EN)
+                </div>
+                <div style={{ fontSize: 12, color: c.muted, marginBottom: 12 }}>
+                  PT é o conteúdo padrão acima. Envie aqui a versão do ebook/PDF em <strong>Espanhol</strong> e <strong>Inglês</strong>. O download entrega o arquivo do país do visitante.
+                </div>
+                <TranslationsPanel itemType="material" itemId={edit.id ?? null} />
+              </div>
               </div>
 
               <aside style={{ borderLeft: `1px solid ${c.border}`, background: c.warm, padding: "20px 18px", overflow: "auto" }}>
