@@ -193,20 +193,21 @@ export function BabySize({ week }: { week: number }) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.06 }}
-                    className="rounded-2xl border border-border bg-background/60 p-4"
                   >
-                    <p className="font-display font-bold text-sm text-foreground mb-1">{d.titulo}</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{d.texto}</p>
+                    <LiquidCard className="p-4" bgOpacity={0.28}>
+                      <p className="font-display font-bold text-sm text-foreground mb-1">{d.titulo}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{d.texto}</p>
+                    </LiquidCard>
                   </motion.div>
                 ))}
 
                 {week >= 32 && (
-                  <div className="rounded-2xl bg-primary/10 border border-primary/30 p-4">
+                  <LiquidCard className="p-4" bgOpacity={0.28}>
                     <p className="text-[10px] uppercase tracking-wider font-bold text-primary mb-1">Lembrete carinhoso</p>
                     <p className="text-xs text-foreground leading-relaxed">
                       Quanto mais perto da reta final, mais importante é deixar tudo organizado. Mala pronta, contatos da maternidade salvos e seu acompanhante avisado. Você está quase lá. 💛
                     </p>
-                  </div>
+                  </LiquidCard>
                 )}
               </div>
             </motion.div>
