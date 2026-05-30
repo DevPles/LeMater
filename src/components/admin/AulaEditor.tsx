@@ -41,6 +41,12 @@ const slugify = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-").replace(/(^-+|-+$)/g, "").slice(0, 120);
 
+const toPublicStorageUrl = (bucket: string, value?: string | null) => {
+  if (!value) return "";
+  if (/^(https?:|blob:|data:|\/)/i.test(value)) return value;
+  return supabase.storage.from(bucket).getPublicUrl(value).data.publicUrl;
+};
+
 export type AulaDraft = {
   id?: string;
   titulo?: string;
@@ -248,16 +254,18 @@ export default function AulaEditor({
   const trCurrent = paisTab !== "BR" ? trRows?.[paisTab] : undefined;
   const pvTituloShow = (trCurrent?.titulo) || pvTitulo || "Título da aula";
   const pvDescShow = (trCurrent?.descricao) || pvDesc || "Descrição aparece aqui.";
-  const pvGratisShow = typeof trCurrent?.gratis === "boolean" ? trCurrent.gratis : pvGratis;
-  const pvPrecoShow = pvGratisShow
+  const isGratisPreview = paisTab === "BR"
+    ? pvGratis === true
+    : (typeof trCurrent?.gratis === "boolean" ? trCurrent.gratis : pvGratis === true);
+  const pvPrecoShow = isGratisPreview
     ? "Assistir grátis"
     : trCurrent
       ? (trCurrent.preco_label || formatPreco(trCurrent.preco_centavos, trCurrent.moeda || MOEDA_PADRAO[paisTab]) || pvPrecoLabel || "Comprar")
       : (pvPrecoLabel || "Comprar");
 
   // A prévia do card mostra apenas a mídia de capa, nunca o vídeo interno da aula.
-  const pvCapaVideoShow = (trCurrent?.capa_video_url) || pvCapaVideoFile || editing.capa_video_url || "";
-  const pvCapaShow = (trCurrent?.capa_url) || pvCapaFile || editing.capa_url || "";
+  const pvCapaVideoShow = toPublicStorageUrl("materiais-capas", (trCurrent?.capa_video_url) || pvCapaVideoFile || editing.capa_video_url || "");
+  const pvCapaShow = toPublicStorageUrl("materiais-capas", (trCurrent?.capa_url) || pvCapaFile || editing.capa_url || "");
 
   const PreviewCard = (
     <div style={{ background: c.sageDark, color: "white", position: "relative", width: "100%", overflow: "hidden" }}>
@@ -282,7 +290,7 @@ export default function AulaEditor({
         <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
           <FlagMark pais={paisTab} size={20} />
-          {pvGratisShow
+          {isGratisPreview
             ? <div style={{ background: "rgba(255,255,255,0.18)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Grátis</div>
             : <div style={{ background: "rgba(0,0,0,0.25)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Pago</div>}
           <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>{pvTemaNome}</div>
@@ -296,9 +304,9 @@ export default function AulaEditor({
           <div style={{ fontSize: 13 }}>{tipoLabel[pvTipo] ?? "Vídeo"}</div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {!pvGratisShow && pvPrecoShow !== "Comprar" && <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16 }}>{pvPrecoShow}</span>}
+          {!isGratisPreview && pvPrecoShow !== "Comprar" && <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16 }}>{pvPrecoShow}</span>}
           <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>
-            {pvGratisShow ? "Assistir" : "Comprar"}
+            {isGratisPreview ? "Assistir" : "Comprar"}
           </div>
         </div>
       </div>
