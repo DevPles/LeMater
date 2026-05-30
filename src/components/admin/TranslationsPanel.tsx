@@ -45,8 +45,13 @@ export type TranslationsPanelHandle = {
 const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
   itemType: ContentItemType;
   itemId: string | null | undefined;
-}>(function TranslationsPanel({ itemType, itemId }, ref) {
-  const [tab, setTab] = useState<Pais>("ES");
+  /** Trava o painel em um país e oculta as abas internas (usado quando o modal-pai já oferece abas de país). */
+  lockedPais?: Pais;
+  hideTabs?: boolean;
+}>(function TranslationsPanel({ itemType, itemId, lockedPais, hideTabs }, ref) {
+  const [tab, setTab] = useState<Pais>(lockedPais ?? "ES");
+  useEffect(() => { if (lockedPais) setTab(lockedPais); }, [lockedPais]);
+
   const [rows, setRows] = useState<Record<Pais, Row>>({ BR: empty(), ES: empty(), US: empty() });
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
