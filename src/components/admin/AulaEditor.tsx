@@ -62,6 +62,7 @@ export default function AulaEditor({
   const [temas, setTemas] = useState<Tema[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
   const ofertasRef = useRef<OfertasEditorHandle>(null);
   const editing: AulaDraft = initial ?? {
     titulo: "", slug: "", descricao: "", tipo: "video", duracao_min: 0,
@@ -69,6 +70,9 @@ export default function AulaEditor({
     preco_centavos: 0, preco_label: "", moeda: "BRL",
     link_compra_externo: "", temas: [],
   };
+  // ID corrente do item (existente OU recém-salvo) — habilita Ofertas e Traduções logo após o 1º salvar
+  const [savedId, setSavedId] = useState<string | undefined>(editing.id);
+
 
   // Preview state
   const [pvTitulo, setPvTitulo] = useState(editing.titulo ?? "");
