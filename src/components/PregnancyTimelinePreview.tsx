@@ -139,14 +139,20 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
   const [sist, setSist] = useState<Medicao[]>([]);
   const [dias, setDias] = useState<Medicao[]>([]);
 
-  const fetchCursos = useServerFn(listCursosVitrine);
-  const { data: cursos } = useQuery({
-    queryKey: ["cursos-vitrine-preview"],
-    queryFn: () => fetchCursos(),
-    staleTime: 60_000,
-  });
+  const [cursos, setCursos] = useState<CursoVitrine[]>([]);
+  useEffect(() => {
+    let active = true;
+    listCursosVitrine()
+      .then((list) => {
+        if (active) setCursos(list ?? []);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
   const cursoRecente: CursoVitrine | null = useMemo(() => {
-    return (cursos ?? []).find((c) => c.publicado) ?? cursos?.[0] ?? null;
+    return cursos.find((c) => c.publicado) ?? cursos[0] ?? null;
   }, [cursos]);
 
   useEffect(() => {
