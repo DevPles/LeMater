@@ -597,7 +597,10 @@ export const listAtlasTemas = createServerFn({ method: "GET" }).handler(async ()
 
 export const listAtlasAulas = createServerFn({ method: "GET" })
   .inputValidator((i: unknown) =>
-    z.object({ tema_id: z.string().uuid().nullable().optional() }).parse(i ?? {}),
+    z.object({
+      tema_id: z.string().uuid().nullable().optional(),
+      pais: z.enum(["BR", "ES", "US"]).nullable().optional(),
+    }).parse(i ?? {}),
   )
   .handler(async ({ data }): Promise<AtlasAulaVitrine[]> => {
     const userId = await getUserIdFromAuthHeader();
@@ -622,6 +625,17 @@ export const listAtlasAulas = createServerFn({ method: "GET" })
     if (!aulas?.length) return [];
 
     const ids = aulas.map((a) => a.id);
+    const pais = data.pais && data.pais !== "BR" ? data.pais : null;
+    const traducoesPorAula: Record<string, any> = {};
+    if (pais) {
+      const { data: traducoes } = await supabaseAdmin
+        .from("content_translations")
+        .select("item_id, titulo, descricao, capa_url, preco_centavos, preco_label, moeda, gratis")
+        .eq("item_type", "curso_aula")
+        .eq("pais", pais)
+        .in("item_id", ids);
+      for (const t of (traducoes ?? []) as any[]) traducoesPorAula[t.item_id] = t;
+    }
 
     // 2. Temas vinculados (para mostrar chips no card)
     const { data: vinculos } = await supabaseAdmin
@@ -651,17 +665,19 @@ export const listAtlasAulas = createServerFn({ method: "GET" })
     }
 
     return aulas.map((a) => {
+      const tr = traducoesPorAula[a.id];
+      const gratis = typeof tr?.gratis === "boolean" ? tr.gratis : a.gratis;
       const temas = temasPorAula[a.id] ?? [];
       const cobertoPorCurso = temas.some((t) => matriculasCurso.has(t.id));
       const pode_consumir =
-        admin || a.gratis || a.previa_gratis || paid ||
+        admin || gratis || a.previa_gratis || paid ||
         matriculasAula.has(a.id) || cobertoPorCurso;
       return {
-        id: a.id, slug: a.slug ?? a.id, titulo: a.titulo, descricao: a.descricao,
-        capa_url: a.capa_url, capa_video_url: a.capa_video_url,
+        id: a.id, slug: a.slug ?? a.id, titulo: tr?.titulo || a.titulo, descricao: tr?.descricao || a.descricao,
+        capa_url: tr?.capa_url || a.capa_url, capa_video_url: a.capa_video_url,
         duracao_min: a.duracao_min, tipo: a.tipo as AtlasAulaVitrine["tipo"],
-        gratis: a.gratis, preco_label: a.preco_label, preco_centavos: a.preco_centavos ?? 0,
-        moeda: a.moeda ?? "BRL",
+        gratis, preco_label: gratis ? "Grátis" : (tr?.preco_label || a.preco_label), preco_centavos: gratis ? 0 : (tr?.preco_centavos ?? a.preco_centavos ?? 0),
+        moeda: tr?.moeda || a.moeda || "BRL",
         link_compra: a.link_compra_externo,
         temas, pode_consumir, matriculado: pode_consumir,
         previa_gratis: a.previa_gratis,
