@@ -689,10 +689,9 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                 </Link>
               </div>
               <div style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, alignSelf: isMobile ? "center" : "flex-start" }}>
-                <div className="lm-access-text" data-text="Acesse o aplicativo">
-                  Acesse o aplicativo
-                </div>
+                <AccessText>Acesse o aplicativo</AccessText>
               </div>
+
 
 
             </div>
