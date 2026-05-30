@@ -58,6 +58,7 @@ function LoginPage() {
   const [form, setForm] = useState(initialForm);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
 
   const isRegister = mode === "register";
   const isRecover = mode === "recover";
