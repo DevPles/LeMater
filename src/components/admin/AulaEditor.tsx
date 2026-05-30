@@ -62,6 +62,7 @@ export default function AulaEditor({
   const [temas, setTemas] = useState<Tema[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
   const ofertasRef = useRef<OfertasEditorHandle>(null);
   const editing: AulaDraft = initial ?? {
     titulo: "", slug: "", descricao: "", tipo: "video", duracao_min: 0,
@@ -69,6 +70,9 @@ export default function AulaEditor({
     preco_centavos: 0, preco_label: "", moeda: "BRL",
     link_compra_externo: "", temas: [],
   };
+  // ID corrente do item (existente OU recém-salvo) — habilita Ofertas e Traduções logo após o 1º salvar
+  const [savedId, setSavedId] = useState<string | undefined>(editing.id);
+
 
   // Preview state
   const [pvTitulo, setPvTitulo] = useState(editing.titulo ?? "");
@@ -144,7 +148,7 @@ export default function AulaEditor({
         .split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 20);
 
       const saved = await fnSave({ data: {
-        id: editing.id,
+        id: savedId ?? editing.id,
         titulo, slug,
         descricao: String(fd.get("descricao") ?? "") || null,
         tipo, video_url, pdf_url, conteudo_html,
@@ -161,15 +165,23 @@ export default function AulaEditor({
         temas: temasSel,
       } as any }) as { id: string };
 
+      if (saved?.id) setSavedId(saved.id);
+
       if (ofertasRef.current && saved?.id) {
         await ofertasRef.current.flush(saved.id);
       }
 
       onSaved();
-      onClose();
+      const wasNew = !(savedId ?? editing.id);
+      if (wasNew) {
+        setOk("Aula salva. Agora você pode enviar as versões em Espanhol e Inglês abaixo.");
+      } else {
+        onClose();
+      }
     } catch (e: any) { setErr(e?.message ?? "Erro ao salvar"); }
     finally { setBusy(false); }
   };
+
 
   const isWide = typeof window !== "undefined" && window.matchMedia("(min-width: 900px)").matches;
   const [wide, setWide] = useState(isWide);
@@ -307,7 +319,7 @@ export default function AulaEditor({
                 <OfertasEditor
                   ref={ofertasRef}
                   produtoTipo="aula"
-                  produtoId={editing.id ?? null}
+                  produtoId={savedId ?? null}
                   titulo="Ofertas da aula"
                 />
               </div>
@@ -319,7 +331,7 @@ export default function AulaEditor({
                 <div style={{ fontSize: 12, color: c.muted, marginBottom: 12 }}>
                   PT é o conteúdo padrão (preenchido acima). Envie aqui o vídeo dublado, ebook/PDF e capa em <strong>Espanhol</strong> e <strong>Inglês</strong>. Quando o usuário trocar a bandeira no topo, ele verá a versão do país dele.
                 </div>
-                <TranslationsPanel itemType="curso_aula" itemId={editing.id ?? null} />
+                <TranslationsPanel itemType="curso_aula" itemId={savedId ?? null} />
               </div>
             </div>
 
@@ -337,11 +349,13 @@ export default function AulaEditor({
         </div>
 
         {err && <p style={{ color: c.danger, fontSize: 13 }}>{err}</p>}
+        {ok && <p style={{ color: "#2E7D32", fontSize: 13, background: "#EAF5EC", border: "1px solid #CDE6D2", padding: "10px 12px" }}>{ok}</p>}
 
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${c.border}`, paddingTop: 16, marginTop: 8 }}>
-          <button type="button" onClick={onClose} style={btn("transparent", c.ink)} disabled={busy}>Cancelar</button>
-          <button type="submit" style={btn(c.sageDark)} disabled={busy}>{busy ? "Salvando…" : "Salvar"}</button>
+          <button type="button" onClick={onClose} style={btn("transparent", c.ink)} disabled={busy}>{savedId ? "Fechar" : "Cancelar"}</button>
+          <button type="submit" style={btn(c.sageDark)} disabled={busy}>{busy ? "Salvando…" : (savedId ? "Salvar alterações" : "Salvar")}</button>
         </div>
+
       </form>
     </div>
   );
