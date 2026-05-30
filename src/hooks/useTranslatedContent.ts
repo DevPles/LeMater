@@ -17,6 +17,7 @@ export type ContentTranslation = {
   audio_url: string | null;
   legenda_url: string | null;
   conteudo_html: string | null;
+  gratis: boolean | null;
   preco_centavos: number | null;
   moeda: string | null;
   preco_label: string | null;
@@ -64,6 +65,13 @@ export function applyTranslation<T extends Record<string, any>>(base: T, t: Cont
   const out: any = { ...base };
   for (const k of ["titulo","descricao","video_url","pdf_url","capa_url","audio_url","legenda_url","conteudo_html","preco_label"] as const) {
     if (t[k]) out[k] = t[k];
+  }
+  if (typeof t.gratis === "boolean") {
+    out.gratis = t.gratis;
+    if (t.gratis) {
+      out.preco_centavos = 0;
+      out.preco_label = "Grátis";
+    }
   }
   if (t.preco_centavos && t.preco_centavos > 0) {
     out.preco_centavos = t.preco_centavos;
