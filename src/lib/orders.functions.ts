@@ -53,15 +53,22 @@ export const getSalesReport = createServerFn({ method: "POST" })
       if (r.produto_id && ids[r.produto_tipo]) ids[r.produto_tipo].add(r.produto_id);
     });
     const titulos: Record<string, string> = {};
-    const fetchTitulos = async (tabela: string, set: Set<string>) => {
+    const loadTitulos = async (
+      tabela: "cursos" | "aulas" | "materiais",
+      keyTipo: "curso" | "aula" | "material",
+      set: Set<string>,
+    ) => {
       if (!set.size) return;
-      const { data: ts } = await supabaseAdmin.from(tabela).select("id, titulo").in("id", [...set]);
-      (ts ?? []).forEach((t: any) => (titulos[`${tabela}:${t.id}`] = t.titulo));
+      const { data: ts } = await (supabaseAdmin as any)
+        .from(tabela)
+        .select("id, titulo")
+        .in("id", [...set]);
+      (ts ?? []).forEach((t: any) => (titulos[`${keyTipo}:${t.id}`] = t.titulo));
     };
     await Promise.all([
-      fetchTitulos("cursos", ids.curso),
-      fetchTitulos("aulas", ids.aula),
-      fetchTitulos("materiais", ids.material),
+      loadTitulos("cursos", "curso", ids.curso),
+      loadTitulos("aulas", "aula", ids.aula),
+      loadTitulos("materiais", "material", ids.material),
     ]);
 
     return { orders: rows ?? [], titulos };
