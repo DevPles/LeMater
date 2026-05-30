@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { DateRange } from "react-day-picker";
 import {
   ResponsiveContainer,
   BarChart,
@@ -15,6 +16,9 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 import { supabase } from "@/integrations/supabase/client";
 import { DRS_XIII_CIDADES } from "@/lib/drs-xiii";
 
