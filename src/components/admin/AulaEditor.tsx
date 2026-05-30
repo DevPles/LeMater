@@ -319,7 +319,7 @@ export default function AulaEditor({
                 <OfertasEditor
                   ref={ofertasRef}
                   produtoTipo="aula"
-                  produtoId={editing.id ?? null}
+                  produtoId={savedId ?? null}
                   titulo="Ofertas da aula"
                 />
               </div>
