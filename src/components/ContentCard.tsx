@@ -20,7 +20,6 @@ export type ContentCardProps = {
   precoLabel?: string | null;   // ex: "R$ 197"
   precoTituloLabel?: string | null; // ex: "Investimento"
   ctaLabel: string;
-  ctaIcon?: "cart" | "cart-check" | null;
   onAction: () => void;
   forceDark?: boolean;
   extra?: ReactNode;
@@ -101,35 +100,14 @@ export function ContentCard(p: ContentCardProps) {
           style={{
             background: isDark ? "white" : c.sageDark, color: isDark ? c.sageDark : "white",
             fontSize: 9, fontWeight: 500, letterSpacing: "0.12em", textTransform: "uppercase",
-            padding: p.ctaIcon ? "8px 10px" : "8px 12px", border: "none", cursor: "pointer", fontFamily: sans,
+            padding: "8px 12px", border: "none", cursor: "pointer", fontFamily: sans,
             whiteSpace: "nowrap", flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
           } as CSSProperties}
         >
-          {p.ctaIcon === "cart" ? <CartIcon /> : p.ctaIcon === "cart-check" ? <CartCheckIcon /> : p.ctaLabel}
+          {p.ctaLabel}
         </button>
       </div>
 
     </div>
-  );
-}
-
-function CartIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="9" cy="20" r="1.4" />
-      <circle cx="17" cy="20" r="1.4" />
-      <path d="M3 4h2.2l2.3 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6" />
-    </svg>
-  );
-}
-
-function CartCheckIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="9" cy="20" r="1.4" />
-      <circle cx="17" cy="20" r="1.4" />
-      <path d="M3 4h2.2l2.3 11.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.5L21 8H6" />
-      <path d="M10 11l2 2 4-4" />
-    </svg>
   );
 }
