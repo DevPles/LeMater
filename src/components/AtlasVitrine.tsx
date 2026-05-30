@@ -6,6 +6,7 @@ import { CursoModal } from "@/components/CursoModal";
 import { CartDrawer, CartFloatingButton } from "@/components/CartDrawer";
 import { useCart, openCart } from "@/lib/cart-store";
 import { applyTranslation, useTranslatedList } from "@/hooks/useTranslatedContent";
+import { usePais } from "@/lib/translate.context";
 
 const vidEngravidar = "/__l5e/assets-v1/fee6877d-6bbc-417b-9f9d-c37940580cd3/engravidar.mp4";
 const vidPreNatal = "/__l5e/assets-v1/50839f2b-be10-4be1-9dff-fe20596bd45f/pre-natal.mp4";
@@ -64,6 +65,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const cart = useCart();
+  const pais = usePais();
   const { byId: translations } = useTranslatedList("curso_aula", aulas?.map((a) => a.id) ?? []);
 
   useEffect(() => {
@@ -72,10 +74,10 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
 
   useEffect(() => {
     setAulas(null);
-    fnAulas({ data: { tema_id: temaSel } })
+    fnAulas({ data: { tema_id: temaSel, pais } })
       .then((d) => setAulas(d as AtlasAulaVitrine[]))
       .catch((e) => setErr(e?.message ?? "Erro"));
-  }, [temaSel]);
+  }, [temaSel, pais]);
 
   const isApp = variant === "app";
 
