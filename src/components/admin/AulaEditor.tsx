@@ -170,148 +170,164 @@ export default function AulaEditor({
     finally { setBusy(false); }
   };
 
+  const isWide = typeof window !== "undefined" && window.matchMedia("(min-width: 900px)").matches;
+  const [wide, setWide] = useState(isWide);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 900px)");
+    const h = () => setWide(mq.matches);
+    mq.addEventListener("change", h);
+    return () => mq.removeEventListener("change", h);
+  }, []);
+
+  const PreviewCard = (
+    <div style={{ background: c.sageDark, color: "white", padding: 24, position: "relative", width: "100%" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+        <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+          {pvGratis && <div style={{ background: "rgba(255,255,255,0.15)", padding: "4px 10px", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Conteúdo grátis</div>}
+          <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>{pvTemaNome}</div>
+        </div>
+      </div>
+      <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 500, margin: "0 0 8px", lineHeight: 1.2 }}>{pvTitulo || "Título da aula"}</h3>
+      <p style={{ fontSize: 13, opacity: 0.85, margin: 0, lineHeight: 1.5 }}>{pvDesc || "Descrição aparece aqui."}</p>
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.2)", marginTop: 16, paddingTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.6, marginBottom: 2 }}>Formato</div>
+          <div style={{ fontSize: 13 }}>{tipoLabel[pvTipo] ?? "Vídeo"}</div>
+        </div>
+        <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>
+          {pvGratis ? "Assistir grátis" : (pvPrecoLabel || "Comprar")}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(28,28,26,0.65)", zIndex: 320, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <form
         onSubmit={(e) => { e.preventDefault(); salvar(e.currentTarget); }}
-        style={{ background: c.cream, padding: 28, width: "min(720px, 100%)", maxHeight: "90vh", overflow: "auto", border: `1px solid ${c.border}`, fontFamily: sans }}
+        style={{ background: c.cream, padding: 28, width: wide ? "min(1100px, 100%)" : "min(720px, 100%)", maxHeight: "90vh", overflow: "auto", border: `1px solid ${c.border}`, fontFamily: sans }}
       >
         <h2 style={{ fontSize: 20, fontWeight: 500, margin: "0 0 18px", color: c.ink }}>
           {editing.id ? "Editar aula" : "Nova aula"}
         </h2>
 
-        <Field label="Título"><input name="titulo" defaultValue={editing.titulo ?? ""} onChange={(e) => setPvTitulo(e.target.value)} style={inp} required /></Field>
-        <Field label="Slug (URL)"><input name="slug" defaultValue={editing.slug ?? ""} placeholder="gerado automaticamente do título" style={inp} /></Field>
-        <Field label="Descrição"><textarea name="descricao" defaultValue={editing.descricao ?? ""} onChange={(e) => setPvDesc(e.target.value)} rows={3} style={{ ...inp, resize: "vertical" }} /></Field>
+        <div style={{ display: "grid", gridTemplateColumns: wide ? "minmax(0,1fr) 360px" : "1fr", gap: 24, alignItems: "start" }}>
+          <div style={{ minWidth: 0 }}>
+            <Field label="Título"><input name="titulo" defaultValue={editing.titulo ?? ""} onChange={(e) => setPvTitulo(e.target.value)} style={inp} required /></Field>
+            <Field label="Slug (URL)"><input name="slug" defaultValue={editing.slug ?? ""} placeholder="gerado automaticamente do título" style={inp} /></Field>
+            <Field label="Descrição"><textarea name="descricao" defaultValue={editing.descricao ?? ""} onChange={(e) => setPvDesc(e.target.value)} rows={3} style={{ ...inp, resize: "vertical" }} /></Field>
 
-        <Field label="Temas (selecione um ou mais)">
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {temas.map((t) => {
-              const checked = pvTemasIds.includes(t.id);
-              return (
-                <label key={t.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, border: `1px solid ${c.border}`, padding: "6px 10px", background: "white", cursor: "pointer" }}>
-                  <input type="checkbox" name="temas" value={t.id} checked={checked} onChange={(e) => {
-                    setPvTemasIds((prev) => e.target.checked ? [...prev, t.id] : prev.filter((x) => x !== t.id));
-                  }} />
-                  <span style={{ fontSize: 13 }}>{t.titulo}</span>
-                </label>
-              );
-            })}
-            {temas.length === 0 && <span style={{ color: c.muted, fontSize: 13 }}>Crie ao menos um tema antes.</span>}
-          </div>
-        </Field>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <Field label="Tipo de conteúdo">
-            <select name="tipo" defaultValue={editing.tipo ?? "video"} onChange={(e) => setPvTipo(e.target.value as any)} style={inp}>
-              <option value="video">Vídeo</option>
-              <option value="pdf">PDF</option>
-              <option value="texto">Texto / Artigo</option>
-            </select>
-          </Field>
-          <Field label="Duração (min)"><input name="duracao_min" type="number" min={0} defaultValue={editing.duracao_min ?? 0} style={inp} /></Field>
-        </div>
-
-        <Field label="Capa (imagem) — usada como poster">
-          <input name="capa" type="file" accept="image/*" style={inp} />
-          {editing.capa_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_url}</div>}
-        </Field>
-        <Field label="Capa em vídeo (loop curto, MP4) — opcional, aparece no card">
-          <input name="capa_video" type="file" accept="video/*" style={inp} />
-          {editing.capa_video_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_video_url}</div>}
-        </Field>
-
-        <Field label="Vídeo da aula: arquivo OU URL externa (YouTube/Vimeo)">
-          <input name="video_file" type="file" accept="video/*" style={{ ...inp, marginBottom: 8 }} />
-          <input name="video_url_externa" placeholder="https://youtube.com/..." defaultValue={editing.video_url && String(editing.video_url).startsWith("http") ? editing.video_url : ""} style={inp} />
-        </Field>
-        <Field label="PDF (se tipo = PDF)"><input name="pdf_file" type="file" accept="application/pdf" style={inp} /></Field>
-        <Field label="HTML (se tipo = Texto)"><textarea name="conteudo_html" defaultValue={editing.conteudo_html ?? ""} rows={5} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} /></Field>
-
-        <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 16, marginTop: 8 }}>
-          <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 12 }}>Monetização</div>
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 10 }}>
-            <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
-              <input type="checkbox" name="gratis" defaultChecked={editing.gratis ?? false} onChange={(e) => setPvGratis(e.target.checked)} /> Aula grátis
-            </label>
-            <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
-              <input type="checkbox" name="previa_gratis" defaultChecked={editing.previa_gratis ?? false} /> Prévia liberada para todos
-            </label>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-            <Field label="Preço"><input name="preco_reais" type="number" min={0} step="0.01" defaultValue={((editing.preco_centavos ?? 0) / 100).toFixed(2)} placeholder="49.00" style={inp} /></Field>
-            <Field label="Label do preço"><input name="preco_label" defaultValue={editing.preco_label ?? ""} onChange={(e) => setPvPrecoLabel(e.target.value)} placeholder="R$ 49 / US$ 9" style={inp} /></Field>
-            <Field label="Moeda">
-              <select name="moeda" defaultValue={editing.moeda ?? "BRL"} style={inp}>
-                <option value="BRL">BRL</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-              </select>
+            <Field label="Temas (selecione um ou mais)">
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {temas.map((t) => {
+                  const checked = pvTemasIds.includes(t.id);
+                  return (
+                    <label key={t.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, border: `1px solid ${c.border}`, padding: "6px 10px", background: "white", cursor: "pointer" }}>
+                      <input type="checkbox" name="temas" value={t.id} checked={checked} onChange={(e) => {
+                        setPvTemasIds((prev) => e.target.checked ? [...prev, t.id] : prev.filter((x) => x !== t.id));
+                      }} />
+                      <span style={{ fontSize: 13 }}>{t.titulo}</span>
+                    </label>
+                  );
+                })}
+                {temas.length === 0 && <span style={{ color: c.muted, fontSize: 13 }}>Crie ao menos um tema antes.</span>}
+              </div>
             </Field>
-          </div>
-          <Field label="Link de compra externo (Stripe / Mercado Pago / Hotmart…)">
-            <input name="link_compra_externo" defaultValue={editing.link_compra_externo ?? ""} placeholder="https://..." style={inp} />
-          </Field>
-          <Field label="Benefícios da compra (um por linha — aparecem no carrinho como 'Você está adquirindo')">
-            <textarea
-              name="beneficios"
-              defaultValue={(editing.beneficios ?? []).join("\n")}
-              rows={5}
-              placeholder={"Acesso vitalício à aula\nVisualização ilimitada em qualquer dispositivo\nMateriais de apoio em PDF\nCertificado digital de conclusão\nSuporte da equipe Le Mater"}
-              style={{ ...inp, resize: "vertical" }}
-            />
-          </Field>
 
-          <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${c.border}` }}>
-            <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 10 }}>
-              Formas de pagamento por país
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <Field label="Tipo de conteúdo">
+                <select name="tipo" defaultValue={editing.tipo ?? "video"} onChange={(e) => setPvTipo(e.target.value as any)} style={inp}>
+                  <option value="video">Vídeo</option>
+                  <option value="pdf">PDF</option>
+                  <option value="texto">Texto / Artigo</option>
+                </select>
+              </Field>
+              <Field label="Duração (min)"><input name="duracao_min" type="number" min={0} defaultValue={editing.duracao_min ?? 0} style={inp} /></Field>
             </div>
-            <div style={{ fontSize: 12, color: c.muted, marginBottom: 12 }}>
-              Configure preço por país e plataforma (Mercado Pago, Stripe, Hotmart…). O comprador verá apenas as ofertas do país dele.
-            </div>
-            <OfertasEditor
-              ref={ofertasRef}
-              produtoTipo="aula"
-              produtoId={editing.id ?? null}
-              titulo="Ofertas da aula"
-            />
-          </div>
-        </div>
 
+            <Field label="Capa (imagem) — usada como poster">
+              <input name="capa" type="file" accept="image/*" style={inp} />
+              {editing.capa_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_url}</div>}
+            </Field>
+            <Field label="Capa em vídeo (loop curto, MP4) — opcional, aparece no card">
+              <input name="capa_video" type="file" accept="video/*" style={inp} />
+              {editing.capa_video_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_video_url}</div>}
+            </Field>
 
-        <label style={{ display: "inline-flex", gap: 8, alignItems: "center", margin: "8px 0 18px" }}>
-          <input type="checkbox" name="publicado" defaultChecked={editing.publicado ?? false} /> Publicar agora
-        </label>
+            <Field label="Vídeo da aula: arquivo OU URL externa (YouTube/Vimeo)">
+              <input name="video_file" type="file" accept="video/*" style={{ ...inp, marginBottom: 8 }} />
+              <input name="video_url_externa" placeholder="https://youtube.com/..." defaultValue={editing.video_url && String(editing.video_url).startsWith("http") ? editing.video_url : ""} style={inp} />
+            </Field>
+            <Field label="PDF (se tipo = PDF)"><input name="pdf_file" type="file" accept="application/pdf" style={inp} /></Field>
+            <Field label="HTML (se tipo = Texto)"><textarea name="conteudo_html" defaultValue={editing.conteudo_html ?? ""} rows={5} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} /></Field>
 
-        {/* Prévia do card */}
-        <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 16, marginTop: 8, marginBottom: 18 }}>
-          <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.muted, marginBottom: 12 }}>Prévia do card</div>
-          <div style={{ background: c.sageDark, color: "white", padding: 24, position: "relative", maxWidth: 360 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-              <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                {pvGratis && <div style={{ background: "rgba(255,255,255,0.15)", padding: "4px 10px", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Conteúdo grátis</div>}
-                <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>{pvTemaNome}</div>
+            <div style={{ borderTop: `1px solid ${c.border}`, paddingTop: 16, marginTop: 8 }}>
+              <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 12 }}>Monetização</div>
+              <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 10 }}>
+                <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+                  <input type="checkbox" name="gratis" defaultChecked={editing.gratis ?? false} onChange={(e) => setPvGratis(e.target.checked)} /> Aula grátis
+                </label>
+                <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+                  <input type="checkbox" name="previa_gratis" defaultChecked={editing.previa_gratis ?? false} /> Prévia liberada para todos
+                </label>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                <Field label="Preço"><input name="preco_reais" type="number" min={0} step="0.01" defaultValue={((editing.preco_centavos ?? 0) / 100).toFixed(2)} placeholder="49.00" style={inp} /></Field>
+                <Field label="Label do preço"><input name="preco_label" defaultValue={editing.preco_label ?? ""} onChange={(e) => setPvPrecoLabel(e.target.value)} placeholder="R$ 49 / US$ 9" style={inp} /></Field>
+                <Field label="Moeda">
+                  <select name="moeda" defaultValue={editing.moeda ?? "BRL"} style={inp}>
+                    <option value="BRL">BRL</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                  </select>
+                </Field>
+              </div>
+              <Field label="Link de compra externo (Stripe / Mercado Pago / Hotmart…)">
+                <input name="link_compra_externo" defaultValue={editing.link_compra_externo ?? ""} placeholder="https://..." style={inp} />
+              </Field>
+              <Field label="Benefícios da compra (um por linha — aparecem no carrinho como 'Você está adquirindo')">
+                <textarea
+                  name="beneficios"
+                  defaultValue={(editing.beneficios ?? []).join("\n")}
+                  rows={5}
+                  placeholder={"Acesso vitalício à aula\nVisualização ilimitada em qualquer dispositivo\nMateriais de apoio em PDF\nCertificado digital de conclusão\nSuporte da equipe Le Mater"}
+                  style={{ ...inp, resize: "vertical" }}
+                />
+              </Field>
+
+              <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${c.border}` }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 10 }}>
+                  Formas de pagamento por país
+                </div>
+                <div style={{ fontSize: 12, color: c.muted, marginBottom: 12 }}>
+                  Configure preço por país e plataforma (Mercado Pago, Stripe, Hotmart…). O comprador verá apenas as ofertas do país dele.
+                </div>
+                <OfertasEditor
+                  ref={ofertasRef}
+                  produtoTipo="aula"
+                  produtoId={editing.id ?? null}
+                  titulo="Ofertas da aula"
+                />
               </div>
             </div>
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 500, margin: "0 0 8px", lineHeight: 1.2 }}>{pvTitulo || "Título da aula"}</h3>
-            <p style={{ fontSize: 13, opacity: 0.85, margin: 0, lineHeight: 1.5 }}>{pvDesc || "Descrição aparece aqui."}</p>
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.2)", marginTop: 16, paddingTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div style={{ fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.6, marginBottom: 2 }}>Formato</div>
-                <div style={{ fontSize: 13 }}>{tipoLabel[pvTipo] ?? "Vídeo"}</div>
-              </div>
-              <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>
-                {pvGratis ? "Assistir grátis" : (pvPrecoLabel || "Comprar")}
-              </div>
-            </div>
+
+            <label style={{ display: "inline-flex", gap: 8, alignItems: "center", margin: "8px 0 18px" }}>
+              <input type="checkbox" name="publicado" defaultChecked={editing.publicado ?? false} /> Publicar agora
+            </label>
           </div>
-          <p style={{ fontSize: 11, color: c.muted, marginTop: 8 }}>É assim que o card aparece na vitrine do Atlas.</p>
+
+          {/* Coluna lateral: preview em tempo real */}
+          <div style={{ position: wide ? "sticky" : "static", top: 0, alignSelf: "start" }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.muted, marginBottom: 12 }}>Prévia do card</div>
+            {PreviewCard}
+            <p style={{ fontSize: 11, color: c.muted, marginTop: 8 }}>É assim que o card aparece na vitrine do Atlas. Atualiza em tempo real conforme você edita.</p>
+          </div>
         </div>
 
         {err && <p style={{ color: c.danger, fontSize: 13 }}>{err}</p>}
 
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", borderTop: `1px solid ${c.border}`, paddingTop: 16, marginTop: 8 }}>
           <button type="button" onClick={onClose} style={btn("transparent", c.ink)} disabled={busy}>Cancelar</button>
           <button type="submit" style={btn(c.sageDark)} disabled={busy}>{busy ? "Salvando…" : "Salvar"}</button>
         </div>
