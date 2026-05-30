@@ -372,9 +372,9 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
 
 export default TranslationsPanel;
 
-const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <label style={{ display: "block", marginBottom: 10 }}>
-    <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6 }}>{label}</div>
+const Row = ({ label, compact = false, children }: { label: string; compact?: boolean; children: React.ReactNode }) => (
+  <label style={{ display: compact ? "flex" : "block", flexDirection: compact ? "column" : undefined, marginBottom: compact ? 0 : 10, minHeight: compact ? 94 : undefined, height: compact ? "100%" : undefined }}>
+    <div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6, minHeight: compact ? 34 : undefined, display: compact ? "flex" : undefined, alignItems: compact ? "flex-end" : undefined, lineHeight: 1.2 }}>{label}</div>
     {children}
   </label>
 );
