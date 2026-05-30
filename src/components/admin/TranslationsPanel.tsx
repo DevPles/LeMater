@@ -184,7 +184,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
         video_url: r.video_url || null,
         pdf_url: r.pdf_url || null,
         capa_url: r.capa_url || null,
-          capa_video_url: r.capa_video_url || null,
+        capa_video_url: r.capa_video_url || null,
         audio_url: r.audio_url || null,
         legenda_url: r.legenda_url || null,
         conteudo_html: r.conteudo_html || null,
@@ -307,8 +307,8 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
           </Row>
 
           <div style={{ background: "white", border: `1px solid ${c.border}`, padding: 12, marginTop: 6, marginBottom: 12 }}>
-            <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sageDark, fontWeight: 600, marginBottom: 10 }}>
-              Preço para compradores de {tab === "ES" ? "🇪🇸 Espanha" : "🇺🇸 EUA / Inglês"}
+            <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sageDark, fontWeight: 600, marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
+              Preço para compradores de <FlagMark pais={tab} size={18} /> {tab === "ES" ? "Espanha" : "EUA / Inglês"}
             </div>
             <div style={{ fontSize: 12, color: c.muted, marginBottom: 10, lineHeight: 1.5 }}>
               Quando o usuário estiver com a bandeira <strong>{tab}</strong> no topo do app, ele verá esta aula com este preço e moeda. Deixe em branco para usar o preço base (PT-BR).
