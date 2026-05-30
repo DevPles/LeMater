@@ -303,6 +303,16 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             <div style={{ fontSize: 12, color: c.muted, marginBottom: 10, lineHeight: 1.5 }}>
               Quando o usuário estiver com a bandeira <strong>{tab}</strong> no topo do app, ele verá esta aula com este preço e moeda. Deixe em branco para usar o preço base (PT-BR).
             </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
+              <button type="button" onClick={() => update("gratis", true)} style={{ background: current.gratis === true ? c.sageDark : c.cream, color: current.gratis === true ? "white" : c.ink, border: `1px solid ${current.gratis === true ? c.sageDark : c.border}`, padding: 10, textAlign: "left", cursor: "pointer", fontFamily: sans }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>Grátis neste país</div>
+                <div style={{ fontSize: 11, opacity: 0.75 }}>Mostra Assistir</div>
+              </button>
+              <button type="button" onClick={() => update("gratis", false)} style={{ background: current.gratis === false ? c.sageDark : c.cream, color: current.gratis === false ? "white" : c.ink, border: `1px solid ${current.gratis === false ? c.sageDark : c.border}`, padding: 10, textAlign: "left", cursor: "pointer", fontFamily: sans }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 700 }}>Pago neste país</div>
+                <div style={{ fontSize: 11, opacity: 0.75 }}>Mostra Comprar</div>
+              </button>
+            </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", gap: 8 }}>
               <Row label={`Preço (${tab === "ES" ? "EUR" : "USD"})`}>
                 <input
