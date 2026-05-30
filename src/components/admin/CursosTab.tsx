@@ -357,9 +357,12 @@ function EstruturaTab({ cursoId, modulos, aulas, onChanged }: { cursoId: string;
 
       {editAula && (
         <div onClick={() => setEditAula(null)} style={modalBg}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "white", maxWidth: 700, width: "100%", padding: 28, maxHeight: "92vh", overflow: "auto" }}>
-            <h2 style={h2}>{editAula.id ? "Editar aula" : "Nova aula"}</h2>
-            <div style={{ display: "grid", gap: 12 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "white", maxWidth: 1080, width: "100%", padding: 0, maxHeight: "92vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "24px 28px 12px" }}>
+              <h2 style={{ ...h2, margin: 0 }}>{editAula.id ? "Editar aula" : "Nova aula"}</h2>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 320px", flex: 1, minHeight: 0, overflow: "hidden" }}>
+              <div style={{ padding: "8px 28px 20px", overflow: "auto", display: "grid", gap: 12 }}>
               <Field label="Título"><input value={editAula.titulo ?? ""} onChange={(e) => setEditAula({ ...editAula, titulo: e.target.value })} style={inp} /></Field>
               <Field label="Descrição"><textarea value={editAula.descricao ?? ""} onChange={(e) => setEditAula({ ...editAula, descricao: e.target.value })} style={{ ...inp, minHeight: 60 }} /></Field>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
@@ -432,8 +435,28 @@ function EstruturaTab({ cursoId, modulos, aulas, onChanged }: { cursoId: string;
                 </div>
               </Field>
               <Field label="Prévia"><label style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0" }}><input type="checkbox" checked={!!editAula.previa_gratis} onChange={(e) => setEditAula({ ...editAula, previa_gratis: e.target.checked })} /> Liberar como prévia gratuita (visível antes da compra)</label></Field>
+              </div>
+
+              <aside style={{ borderLeft: `1px solid ${c.border}`, background: c.warm, padding: "20px 18px", overflow: "auto" }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600 }}>Prévia da aula</div>
+                <div style={{ background: c.sageDark, color: "white", padding: 20 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                    <div style={{ fontSize: 28, fontWeight: 300, opacity: 0.4, fontFamily: serif }}>{String((editAula.ordem ?? 0) + 1).padStart(2, "0")}</div>
+                    {editAula.previa_gratis && <div style={{ background: "rgba(255,255,255,0.15)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase" }}>Prévia grátis</div>}
+                  </div>
+                  <h3 style={{ fontFamily: serif, fontSize: 20, fontWeight: 500, margin: "0 0 6px", lineHeight: 1.2 }}>{editAula.titulo || "Título da aula"}</h3>
+                  <p style={{ fontSize: 12, opacity: 0.85, margin: 0, lineHeight: 1.5 }}>{editAula.descricao || "Descrição aparece aqui."}</p>
+                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.2)", marginTop: 14, paddingTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11 }}>
+                    <span>{(editAula.tipo ?? "video").toUpperCase()} · {editAula.duracao_min ?? 0} min</span>
+                    <span style={{ background: "white", color: c.sageDark, padding: "6px 10px", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 500 }}>
+                      {editAula.preco_label || ((editAula.preco_centavos ?? 0) > 0 ? `R$ ${((editAula.preco_centavos ?? 0) / 100).toFixed(2)}` : "Grátis")}
+                    </span>
+                  </div>
+                </div>
+                <p style={{ fontSize: 10.5, color: c.muted, marginTop: 12, lineHeight: 1.5 }}>Atualiza em tempo real conforme você edita.</p>
+              </aside>
             </div>
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", padding: "14px 28px", borderTop: `1px solid ${c.border}`, background: c.cream }}>
               <button onClick={() => setEditAula(null)} style={btn(c.muted)}>Cancelar</button>
               <button onClick={salvarAula} style={btn(c.sageDark)}>Salvar</button>
             </div>
