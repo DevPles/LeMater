@@ -318,10 +318,10 @@ export default function AulaEditor({
 
         {/* ============ BODY SCROLLÁVEL ============ */}
         <div style={{ overflow: "auto", padding: "24px 28px", flex: 1 }}>
-          {/* PT-BR: sempre montado (preserva form data ao trocar de aba) */}
-          <div style={{ display: paisTab === "BR" ? "grid" : "none", gridTemplateColumns: wide ? "minmax(0,1fr) 340px" : "1fr", gap: 28, alignItems: "start" }}>
-
-              <div style={{ minWidth: 0 }}>
+          <div style={{ display: "grid", gridTemplateColumns: wide ? "minmax(0,1fr) 340px" : "1fr", gap: 28, alignItems: "start" }}>
+            <div style={{ minWidth: 0 }}>
+              {/* PT-BR: sempre montado (preserva form data ao trocar de aba) */}
+              <div style={{ display: paisTab === "BR" ? "block" : "none" }}>
                 <SectionTitle>Sobre a aula</SectionTitle>
                 <Field label="Título"><input name="titulo" defaultValue={editing.titulo ?? ""} onChange={(e) => setPvTitulo(e.target.value)} style={inp} required /></Field>
                 <Field label="Slug (URL)"><input name="slug" defaultValue={editing.slug ?? ""} placeholder="gerado automaticamente do título" style={inp} /></Field>
@@ -372,7 +372,7 @@ export default function AulaEditor({
                 <Field label="PDF (se tipo = PDF)"><input name="pdf_file" type="file" accept="application/pdf" style={inp} /></Field>
                 <Field label="HTML (se tipo = Texto)"><textarea name="conteudo_html" defaultValue={editing.conteudo_html ?? ""} rows={5} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} /></Field>
 
-                <SectionTitle>Monetização</SectionTitle>
+                <SectionTitle>Monetização — Brasil (preço base)</SectionTitle>
                 <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 10 }}>
                   <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
                     <input type="checkbox" name="gratis" defaultChecked={editing.gratis ?? false} onChange={(e) => setPvGratis(e.target.checked)} style={{ accentColor: c.sageDark }} /> Aula grátis
@@ -384,9 +384,12 @@ export default function AulaEditor({
                     <input type="checkbox" name="publicado" defaultChecked={editing.publicado ?? false} style={{ accentColor: c.sageDark }} /> Publicar agora
                   </label>
                 </div>
+                <div style={{ fontSize: 12, color: c.muted, marginBottom: 10 }}>
+                  Este é o preço para 🇧🇷 BR. Para 🇪🇸 ES e 🇺🇸 EN, defina o preço em cada aba acima.
+                </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-                  <Field label="Preço"><input name="preco_reais" type="number" min={0} step="0.01" defaultValue={((editing.preco_centavos ?? 0) / 100).toFixed(2)} placeholder="49.00" style={inp} /></Field>
-                  <Field label="Label do preço"><input name="preco_label" defaultValue={editing.preco_label ?? ""} onChange={(e) => setPvPrecoLabel(e.target.value)} placeholder="R$ 49 / US$ 9" style={inp} /></Field>
+                  <Field label="Preço (R$)"><input name="preco_reais" type="number" min={0} step="0.01" defaultValue={((editing.preco_centavos ?? 0) / 100).toFixed(2)} placeholder="49.00" style={inp} /></Field>
+                  <Field label="Label do preço"><input name="preco_label" defaultValue={editing.preco_label ?? ""} onChange={(e) => setPvPrecoLabel(e.target.value)} placeholder="R$ 49,00" style={inp} /></Field>
                   <Field label="Moeda">
                     <select name="moeda" defaultValue={editing.moeda ?? "BRL"} style={inp}>
                       <option value="BRL">BRL</option>
@@ -408,9 +411,9 @@ export default function AulaEditor({
                   />
                 </Field>
 
-                <SectionTitle>Formas de pagamento por país</SectionTitle>
+                <SectionTitle>Formas de pagamento por país (avançado)</SectionTitle>
                 <div style={{ fontSize: 12, color: c.muted, marginBottom: 12 }}>
-                  Preço e plataforma por país (Mercado Pago, Stripe, Hotmart…). O comprador verá apenas as ofertas do país dele.
+                  Opcional — plataformas externas por país (Mercado Pago, Stripe, Hotmart…). Se vazio, usamos o preço definido em cada aba de idioma.
                 </div>
                 <OfertasEditor
                   ref={ofertasRef}
@@ -420,30 +423,35 @@ export default function AulaEditor({
                 />
               </div>
 
-              {/* Coluna lateral: preview */}
-              <div style={{ position: wide ? "sticky" : "static", top: 0, alignSelf: "start" }}>
-                <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600 }}>Prévia do card</div>
-                {PreviewCard}
-                <p style={{ fontSize: 11, color: c.muted, marginTop: 8, lineHeight: 1.5 }}>É assim que aparece na vitrine do Atlas. Atualiza em tempo real.</p>
+              {/* ES / EN: bloco visual + painel mantido montado para preservar buffer */}
+              <div style={{ display: paisTab !== "BR" ? "block" : "none" }}>
+                <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: "14px 18px", marginBottom: 18, fontSize: 13, color: c.ink, lineHeight: 1.55 }}>
+                  <strong>Você está editando a versão {paisTab === "ES" ? "em Espanhol 🇪🇸" : "em Inglês 🇺🇸"}.</strong>{" "}
+                  Envie o vídeo dublado, o ebook/PDF traduzido, a capa específica e o preço na moeda local. Quando o usuário trocar a bandeira no topo do app, ele verá esta versão automaticamente.
+                </div>
+              </div>
+
+              {/* Painel de traduções: sempre montado, escondido em BR para preservar buffer e refletir no preview */}
+              <div style={{ display: paisTab !== "BR" ? "block" : "none" }}>
+                <TranslationsPanel
+                  ref={traducoesRef}
+                  itemType="curso_aula"
+                  itemId={savedId ?? null}
+                  lockedPais={paisTab === "BR" ? "ES" : paisTab}
+                  hideTabs
+                  onRowsChange={setTrRows}
+                />
               </div>
             </div>
 
-          {/* ES / EN: só renderizam quando ativos (form PT acima continua montado) */}
-          {paisTab !== "BR" && (
-            <div>
-              <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: "14px 18px", marginBottom: 18, fontSize: 13, color: c.ink, lineHeight: 1.55 }}>
-                <strong>Você está editando a versão {paisTab === "ES" ? "em Espanhol 🇪🇸" : "em Inglês 🇺🇸"}.</strong>{" "}
-                Envie o vídeo dublado, o ebook/PDF traduzido e (se quiser) capa específica. Quando o usuário do {paisTab === "ES" ? "🇪🇸 ES" : "🇺🇸 EN"} trocar a bandeira no topo do app, ele verá esta versão automaticamente.
-              </div>
-              <TranslationsPanel
-                ref={traducoesRef}
-                itemType="curso_aula"
-                itemId={savedId ?? null}
-                lockedPais={paisTab}
-                hideTabs
-              />
+            {/* Coluna lateral: preview SEMPRE visível, reflete país ativo */}
+            <div style={{ position: wide ? "sticky" : "static", top: 0, alignSelf: "start" }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600 }}>Prévia do card · {flag} {paisTab}</div>
+              {PreviewCard}
+              <p style={{ fontSize: 11, color: c.muted, marginTop: 8, lineHeight: 1.5 }}>É assim que aparece na vitrine para usuários do país <strong>{paisTab}</strong>. Atualiza em tempo real.</p>
             </div>
-          )}
+          </div>
+
 
 
           {err && <p style={{ color: c.danger, fontSize: 13, marginTop: 16 }}>{err}</p>}
