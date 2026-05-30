@@ -72,11 +72,11 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh" }}>
       <main style={{ padding: mainPadding, maxWidth: isApp ? 480 : undefined, margin: isApp ? "0 auto" : undefined }}>
         <div style={{ marginBottom: isApp ? 20 : 32 }}>
-          <div style={{ fontSize: isApp ? 10 : 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sage, fontWeight: 500, marginBottom: isApp ? 12 : 24, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 24, height: 1, background: c.sage }} />
-            ATLAS MATERNO
-          </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: isApp ? 12 : 20, flexWrap: "nowrap" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: isApp ? 12 : 20, flexWrap: "nowrap" }}>
+            <div style={{ fontSize: isApp ? 10 : 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sage, fontWeight: 500, display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ width: 24, height: 1, background: c.sage }} />
+              ATLAS MATERNO
+            </div>
             {temas.length > 0 && (
               <button
                 onClick={() => setMenuOpen(true)}
