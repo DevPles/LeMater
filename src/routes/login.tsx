@@ -876,7 +876,7 @@ const css = `
     box-shadow: 0 22px 34px -22px rgba(35, 71, 53, 0.45);
   }
 
-  .web-login-card[data-mode="register"] { --mobile-form-h: 460px; }
+  .web-login-card[data-mode="register"] { --mobile-form-h: 540px; }
   .web-login-card[data-mode="recover"] { --mobile-form-h: 260px; }
 
 
