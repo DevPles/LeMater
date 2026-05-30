@@ -5,8 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LiquidCard } from "@/components/LiquidCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
 import { listCursosVitrine, type CursoVitrine } from "@/lib/cursos.functions";
 import {
   GESTATION_WEEKS,
@@ -141,14 +139,20 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
   const [sist, setSist] = useState<Medicao[]>([]);
   const [dias, setDias] = useState<Medicao[]>([]);
 
-  const fetchCursos = useServerFn(listCursosVitrine);
-  const { data: cursos } = useQuery({
-    queryKey: ["cursos-vitrine-preview"],
-    queryFn: () => fetchCursos(),
-    staleTime: 60_000,
-  });
+  const [cursos, setCursos] = useState<CursoVitrine[]>([]);
+  useEffect(() => {
+    let active = true;
+    listCursosVitrine()
+      .then((list) => {
+        if (active) setCursos(list ?? []);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
   const cursoRecente: CursoVitrine | null = useMemo(() => {
-    return (cursos ?? []).find((c) => c.publicado) ?? cursos?.[0] ?? null;
+    return cursos.find((c) => c.publicado) ?? cursos[0] ?? null;
   }, [cursos]);
 
   useEffect(() => {
