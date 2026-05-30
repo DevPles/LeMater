@@ -7,6 +7,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useDistritos, useBairros, useUbs } from "@/hooks/useLocalidades";
 import { resolvePostLoginPath, waitForActiveSession } from "@/lib/auth-routing";
+import { WelcomeOverlay } from "@/components/WelcomeOverlay";
 
 const c = {
   cream: "#FAF5EE",
