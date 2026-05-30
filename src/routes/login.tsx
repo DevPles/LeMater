@@ -87,7 +87,7 @@ function LoginPage() {
       const destino = await resolvePostLoginPath(session.user.id, "/app/membro");
 
       setSuccessOpen(true);
-      window.setTimeout(() => navigate({ to: destino }), 1600);
+      window.setTimeout(() => navigate({ to: destino }), 2000);
     } catch (error) {
       toast.error((error as Error).message || "Não foi possível entrar.");
     } finally {
