@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { adminListCursos, adminUpsertAulaAvulsa } from "@/lib/cursos.functions";
 import OfertasEditor, { type OfertasEditorHandle } from "@/components/admin/OfertasEditor";
+import TranslationsPanel from "@/components/admin/TranslationsPanel";
 
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48" };
 const sans = "'DM Sans', sans-serif";
@@ -309,6 +310,16 @@ export default function AulaEditor({
                   produtoId={editing.id ?? null}
                   titulo="Ofertas da aula"
                 />
+              </div>
+
+              <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${c.border}` }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: c.sage, fontWeight: 600, marginBottom: 10 }}>
+                  Conteúdo por país (PT · ES · EN)
+                </div>
+                <div style={{ fontSize: 12, color: c.muted, marginBottom: 12 }}>
+                  PT é o conteúdo padrão (preenchido acima). Envie aqui o vídeo dublado, ebook/PDF e capa em <strong>Espanhol</strong> e <strong>Inglês</strong>. Quando o usuário trocar a bandeira no topo, ele verá a versão do país dele.
+                </div>
+                <TranslationsPanel itemType="curso_aula" itemId={editing.id ?? null} />
               </div>
             </div>
 

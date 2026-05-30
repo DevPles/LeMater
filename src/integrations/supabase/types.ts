@@ -503,6 +503,57 @@ export type Database = {
         }
         Relationships: []
       }
+      content_translations: {
+        Row: {
+          audio_url: string | null
+          capa_url: string | null
+          conteudo_html: string | null
+          created_at: string
+          descricao: string | null
+          id: string
+          item_id: string
+          item_type: string
+          legenda_url: string | null
+          pais: string
+          pdf_url: string | null
+          titulo: string | null
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          audio_url?: string | null
+          capa_url?: string | null
+          conteudo_html?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          item_id: string
+          item_type: string
+          legenda_url?: string | null
+          pais: string
+          pdf_url?: string | null
+          titulo?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          audio_url?: string | null
+          capa_url?: string | null
+          conteudo_html?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          item_id?: string
+          item_type?: string
+          legenda_url?: string | null
+          pais?: string
+          pdf_url?: string | null
+          titulo?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       course_audios: {
         Row: {
           ativo: boolean
