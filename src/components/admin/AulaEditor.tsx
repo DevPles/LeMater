@@ -276,7 +276,7 @@ export default function AulaEditor({
   const previewCategoria = pvTemaNome && pvTemaNome !== "Tema" ? pvTemaNome : null;
   const PreviewCard = (
     <div key={`${paisTab}-${acessoPreviewLabel}-${pvCapaVideoShow || pvCapaShow || "sem-capa"}`} style={{ position: "relative", width: "100%" }}>
-      <div style={{ position: "absolute", top: 8, left: 8, zIndex: 2, background: "rgba(255,255,255,0.92)", padding: "3px 5px", borderRadius: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.18)", display: "inline-flex", alignItems: "center" }}>
+      <div style={{ position: "absolute", top: 8, left: 8, zIndex: 2, display: "inline-flex", alignItems: "center" }}>
         <FlagMark pais={paisTab} size={16} />
       </div>
       <ContentCard
