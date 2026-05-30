@@ -166,10 +166,28 @@ export function BabySize({ week }: { week: number }) {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 60, opacity: 0 }}
               transition={{ type: "spring", damping: 26, stiffness: 260 }}
-              className="bg-card w-full md:max-w-md rounded-3xl md:rounded-3xl max-h-[75vh] overflow-y-auto border border-border shadow-2xl"
+              className="w-full md:max-w-md rounded-3xl md:rounded-3xl max-h-[75vh] overflow-y-auto border shadow-2xl relative"
               onClick={(e) => e.stopPropagation()}
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(1 0 0 / 0.55) 0%, oklch(1 0 0 / 0.35) 100%)",
+                borderColor: "oklch(1 0 0 / 0.5)",
+                backdropFilter: "blur(24px) saturate(160%)",
+                WebkitBackdropFilter: "blur(24px) saturate(160%)",
+                boxShadow:
+                  "0 24px 60px -20px color-mix(in oklab, var(--foreground) 35%, transparent), inset 0 1px 0 0 oklch(1 0 0 / 0.85), inset 0 -1px 0 0 oklch(1 0 0 / 0.2)",
+              }}
             >
-              <div className="sticky top-0 bg-card border-b border-border p-4 flex items-start justify-between gap-3 z-10">
+              <div
+                className="sticky top-0 border-b p-4 flex items-start justify-between gap-3 z-10"
+                style={{
+                  background:
+                    "linear-gradient(180deg, oklch(1 0 0 / 0.7) 0%, oklch(1 0 0 / 0.45) 100%)",
+                  borderColor: "oklch(1 0 0 / 0.4)",
+                  backdropFilter: "blur(18px) saturate(160%)",
+                  WebkitBackdropFilter: "blur(18px) saturate(160%)",
+                }}
+              >
                 <div>
                   <p className="text-[10px] uppercase tracking-wider font-bold text-primary">Semana {week} • {grupo.categoria}</p>
                   <h3 className="font-display font-bold text-lg text-foreground leading-tight">
@@ -180,7 +198,7 @@ export function BabySize({ week }: { week: number }) {
                 <button
                   onClick={() => setAberto(false)}
                   aria-label="Fechar"
-                  className="w-8 h-8 rounded-full bg-muted text-foreground text-base font-bold leading-none flex items-center justify-center hover:bg-muted/70 shrink-0"
+                  className="w-8 h-8 rounded-full bg-muted/70 text-foreground text-base font-bold leading-none flex items-center justify-center hover:bg-muted shrink-0 backdrop-blur"
                 >
                   ×
                 </button>
