@@ -233,7 +233,53 @@ export function RelatoriosEpidemiologicosTab() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-      {/* Filtros internos removidos — esta aba consome os filtros globais do topbar (cidade → bairro → UBS, idade, trimestre). */}
+      {/* Calendário inteligente de período */}
+      <div className="bg-card border border-border rounded-2xl p-4 flex flex-wrap items-center gap-2">
+        <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground mr-2">Período</span>
+        {[
+          { label: "Hoje", days: 1 },
+          { label: "7 dias", days: 7 },
+          { label: "30 dias", days: 30 },
+          { label: "90 dias", days: 90 },
+          { label: "365 dias", days: 365 },
+        ].map((p) => (
+          <button
+            key={p.label}
+            onClick={() => setRange(presetRange(p.days))}
+            className="px-3 h-8 rounded-full border border-border bg-background text-xs font-semibold hover:bg-muted transition"
+          >
+            {p.label}
+          </button>
+        ))}
+        <Popover open={calOpen} onOpenChange={setCalOpen}>
+          <PopoverTrigger asChild>
+            <button className="px-3 h-8 rounded-full border border-[#234735] bg-[#234735] text-white text-xs font-semibold hover:opacity-90 transition">
+              {range?.from && range?.to
+                ? `${fmtDayBR(range.from)} — ${fmtDayBR(range.to)}`
+                : "Selecionar intervalo"}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="range"
+              numberOfMonths={2}
+              selected={range}
+              onSelect={(r) => setRange(r)}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+        {range?.from && (
+          <button
+            onClick={() => setRange(undefined)}
+            className="px-3 h-8 rounded-full text-xs font-semibold text-muted-foreground hover:text-foreground"
+          >
+            Limpar
+          </button>
+        )}
+      </div>
+
+
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
