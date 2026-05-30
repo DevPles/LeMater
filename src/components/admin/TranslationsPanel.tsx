@@ -90,6 +90,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             video_url: t.video_url ?? "",
             pdf_url: t.pdf_url ?? "",
             capa_url: t.capa_url ?? "",
+            capa_video_url: t.capa_video_url ?? "",
             audio_url: t.audio_url ?? "",
             legenda_url: t.legenda_url ?? "",
             conteudo_html: t.conteudo_html ?? "",
@@ -120,6 +121,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
           video_url: r.video_url || null,
           pdf_url: r.pdf_url || null,
           capa_url: r.capa_url || null,
+          capa_video_url: r.capa_video_url || null,
           audio_url: r.audio_url || null,
           legenda_url: r.legenda_url || null,
           conteudo_html: r.conteudo_html || null,
@@ -246,7 +248,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
                   gap: 8,
                 }}
               >
-                <span style={{ fontSize: 16 }}>{t.flag}</span>
+                <FlagMark pais={t.pais} size={18} />
                 <span>{t.label}</span>
                 {hasContent && t.pais !== "BR" && <span style={{ background: rows[t.pais].id ? c.ok : "#B58A2E", color: "white", fontSize: 9, padding: "1px 5px", letterSpacing: "0.08em" }}>{rows[t.pais].id ? "OK" : "RASCUNHO"}</span>}
               </button>
