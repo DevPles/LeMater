@@ -255,12 +255,12 @@ export default function AulaEditor({
   const trCurrent = paisTab !== "BR" ? trRows?.[paisTab] : undefined;
   const pvTituloShow = (trCurrent?.titulo) || pvTitulo || "Título da aula";
   const pvDescShow = (trCurrent?.descricao) || pvDesc || "Descrição aparece aqui.";
-  const pvPrecoShow = pvGratis
+  const pvGratisShow = typeof trCurrent?.gratis === "boolean" ? trCurrent.gratis : pvGratis;
+  const pvPrecoShow = pvGratisShow
     ? "Assistir grátis"
     : trCurrent
       ? (trCurrent.preco_label || formatPreco(trCurrent.preco_centavos, trCurrent.moeda || MOEDA_PADRAO[paisTab]) || pvPrecoLabel || "Comprar")
       : (pvPrecoLabel || "Comprar");
-  const flag = paisTab === "BR" ? "🇧🇷" : paisTab === "ES" ? "🇪🇸" : "🇺🇸";
 
   // A prévia do card mostra apenas a mídia de capa, nunca o vídeo interno da aula.
   const pvCapaVideoShow = pvCapaVideoFile || editing.capa_video_url || "";
@@ -289,7 +289,7 @@ export default function AulaEditor({
         <div style={{ fontSize: 36, fontWeight: 300, opacity: 0.4, fontFamily: "'Playfair Display', serif" }}>01</div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
           <FlagMark pais={paisTab} size={20} />
-          {pvGratis
+          {pvGratisShow
             ? <div style={{ background: "rgba(255,255,255,0.18)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Grátis</div>
             : <div style={{ background: "rgba(0,0,0,0.25)", padding: "3px 8px", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 500 }}>Pago</div>}
           <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", opacity: 0.7 }}>{pvTemaNome}</div>
@@ -303,7 +303,7 @@ export default function AulaEditor({
           <div style={{ fontSize: 13 }}>{tipoLabel[pvTipo] ?? "Vídeo"}</div>
         </div>
         <div style={{ background: "white", color: c.sageDark, padding: "10px 16px", fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>
-          {pvGratis ? "▶ Assistir" : pvPrecoShow}
+          {pvGratisShow ? "Assistir" : pvPrecoShow}
         </div>
       </div>
       {paisTab !== "BR" && !trCurrent?.titulo && !trCurrent?.descricao && (
