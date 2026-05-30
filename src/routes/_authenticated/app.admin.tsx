@@ -258,7 +258,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
     <div>
       <h1 style={h1}>Painel geral</h1>
 
-      <div style={kpiGrid}>
+      <div className="admin-kpi-grid" style={kpiGrid}>
         <Kpi label="Receita do mês" value={fmtBRL(k.receita_mes_centavos)} hint={`${dReceita >= 0 ? "+" : ""}${dReceita}% vs mês ant.`} tone={dReceita >= 0 ? "ok" : "danger"} accent />
         <Kpi label="Pedidos pagos no mês" value={k.pedidos_mes} hint={`${dPedidos >= 0 ? "+" : ""}${dPedidos}% vs mês ant.`} tone={dPedidos >= 0 ? "ok" : "danger"} onClick={() => onGoTo?.("vendas")} />
         <Kpi label="Alunos com acesso ativo" value={k.alunos_ativos} onClick={() => onGoTo?.("alunos")} />
@@ -269,7 +269,7 @@ function DashboardTab({ onGoTo }: { onGoTo?: (t: Tab) => void }) {
         <Kpi label="Materiais publicados" value={k.materiais_publicados} />
       </div>
 
-      <div style={chartsGrid}>
+      <div className="admin-charts-grid" style={chartsGrid}>
         <Panel title="Pedidos pagos · últimos 14 dias">
           <DailyBars data={d.series.pedidos_14d} color={c.navy} />
         </Panel>
