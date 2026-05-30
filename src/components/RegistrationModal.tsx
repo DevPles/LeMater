@@ -87,6 +87,7 @@ export default function RegistrationModal({
   const [mode, setMode] = useState<Mode>(initialMode);
   const [step, setStep] = useState<1 | 2>(1);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
 
   useEffect(() => {
     if (open) {
