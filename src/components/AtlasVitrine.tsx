@@ -108,7 +108,7 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
                         alt={atual.label}
                         style={{ width: 18, height: 12, objectFit: "cover", borderRadius: 2, display: "block" }}
                       />
-                      {atual.p}
+                      {atual.code}
                     </button>
                     {paisMenuOpen && (
                       <>
