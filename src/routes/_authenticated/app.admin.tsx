@@ -25,22 +25,22 @@ export const Route = createFileRoute("/_authenticated/app/admin")({
   component: AdminPage,
 });
 
-// Paleta da marca (navy + gold + cream) — alinhada ao resto do app
+// Paleta da marca (green + gold + cream) — alinhada ao resto do app Le Mater
 const c = {
-  cream: "#faf8f3",
-  warm: "#f3eddf",
-  navy: "#1a1557",
-  navyDark: "#120f3f",
-  gold: "#f0c040",
-  goldDark: "#d4a52a",
-  ink: "#1a1557",
-  muted: "#6b6883",
-  border: "#e8e3d4",
+  cream: "#f5efe2",
+  warm: "#ebe4d3",
+  navy: "#234735",
+  navyDark: "#15301f",
+  gold: "#c9a24a",
+  goldDark: "#a8842f",
+  ink: "#234735",
+  muted: "#6b7a72",
+  border: "#d8d2c0",
   danger: "#b23a48",
   ok: "#2f7a4e",
   // aliases mantidos para retrocompatibilidade dos componentes existentes
-  sage: "#1a1557",
-  sageDark: "#1a1557",
+  sage: "#234735",
+  sageDark: "#15301f",
 };
 const serif = "'Playfair Display', serif";
 const sans = "'DM Sans', sans-serif";
