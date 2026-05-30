@@ -13,7 +13,7 @@ const TABS: { pais: Pais; flag: string; label: string }[] = [
   { pais: "US", flag: "🇺🇸", label: "English (EN)" },
 ];
 
-type Row = {
+export type TranslationRow = {
   id?: string;
   titulo: string;
   descricao: string;
@@ -23,12 +23,18 @@ type Row = {
   audio_url: string;
   legenda_url: string;
   conteudo_html: string;
+  preco_centavos: number;
+  moeda: string;
+  preco_label: string;
 };
+type Row = TranslationRow;
 
-const empty = (): Row => ({ id: undefined, titulo: "", descricao: "", video_url: "", pdf_url: "", capa_url: "", audio_url: "", legenda_url: "", conteudo_html: "" });
+export const MOEDA_PADRAO: Record<Pais, string> = { BR: "BRL", ES: "EUR", US: "USD" };
+
+const empty = (pais: Pais = "BR"): Row => ({ id: undefined, titulo: "", descricao: "", video_url: "", pdf_url: "", capa_url: "", audio_url: "", legenda_url: "", conteudo_html: "", preco_centavos: 0, moeda: MOEDA_PADRAO[pais], preco_label: "" });
 
 const isFilled = (r: Row) =>
-  !!(r.titulo || r.descricao || r.video_url || r.pdf_url || r.capa_url || r.audio_url || r.legenda_url || r.conteudo_html);
+  !!(r.titulo || r.descricao || r.video_url || r.pdf_url || r.capa_url || r.audio_url || r.legenda_url || r.conteudo_html || (r.preco_centavos && r.preco_centavos > 0) || r.preco_label);
 
 export type TranslationsPanelHandle = {
   /** Persist all buffered (ES/EN) translations against the given itemId. */
