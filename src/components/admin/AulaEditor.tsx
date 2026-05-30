@@ -501,7 +501,7 @@ export default function AulaEditor({
 
             {/* Coluna lateral: preview SEMPRE visível, reflete país ativo */}
             <div style={{ position: wide ? "sticky" : "static", top: 0, alignSelf: "start" }}>
-              <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600 }}>Prévia do card · {flag} {paisTab}</div>
+              <div style={{ fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase", color: c.muted, marginBottom: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>Prévia do card <span style={{ fontSize: 16 }}>{flag}</span></div>
               {PreviewCard}
               <p style={{ fontSize: 11, color: c.muted, marginTop: 8, lineHeight: 1.5 }}>É assim que aparece na vitrine para usuários do país <strong>{paisTab}</strong>. Atualiza em tempo real.</p>
             </div>
