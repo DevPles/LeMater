@@ -30,7 +30,7 @@ type Props = {
   onGoTo: (s: "gestantes" | "comunicacao" | "epidemiologia") => void;
 };
 
-const COLORS = ["#1a1557", "#f0c040", "#ff6b9d", "#4ecdc4", "#a78bfa"];
+const COLORS = ["#234735", "#c9a24a", "#ff6b9d", "#4ecdc4", "#a78bfa"];
 
 export function VisaoGeralSection({ profiles, alerts, loading, onGoTo }: Props) {
   const { filters } = useAdminFilters();
@@ -155,7 +155,7 @@ export function VisaoGeralSection({ profiles, alerts, loading, onGoTo }: Props) 
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip />
-              <Bar dataKey="value" fill="#1a1557" />
+              <Bar dataKey="value" fill="#234735" />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -185,21 +185,21 @@ export function VisaoGeralSection({ profiles, alerts, loading, onGoTo }: Props) 
           <button
             type="button"
             onClick={() => onGoTo("gestantes")}
-            className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a]"
+            className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#234735] text-white hover:bg-[#241e7a]"
           >
             Ver lista de gestantes ({total})
           </button>
           <button
             type="button"
             onClick={() => onGoTo("comunicacao")}
-            className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#f0c040] text-[#1a1557] hover:bg-[#e5b535]"
+            className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#c9a24a] text-[#234735] hover:bg-[#e5b535]"
           >
             Disparar campanha
           </button>
           <button
             type="button"
             onClick={() => onGoTo("epidemiologia")}
-            className="px-3 py-1.5 rounded-full text-xs font-bold bg-card border border-border hover:border-[#1a1557]/50"
+            className="px-3 py-1.5 rounded-full text-xs font-bold bg-card border border-border hover:border-[#234735]/50"
           >
             Análise epidemiológica
           </button>
@@ -217,7 +217,7 @@ function Kpi({ label, value, tone }: { label: string; value: number | string; to
         ? "text-amber-700"
         : tone === "ok"
           ? "text-emerald-700"
-          : "text-[#1a1557]";
+          : "text-[#234735]";
   return (
     <div className="bg-card border border-border rounded-2xl p-4">
       <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">{label}</p>

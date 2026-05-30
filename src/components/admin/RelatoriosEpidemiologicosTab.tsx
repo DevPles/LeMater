@@ -36,7 +36,7 @@ type ExamRow = { gestante_id: string; tipo_exame: string; status: string };
 type VaccinationRow = { gestante_id: string; vacina: string };
 type ImageResultRow = { gestante_id: string; tipo_exame: string; status: string };
 
-const COLORS = ["#1a1557", "#f0c040", "#ff6b9d", "#4ecdc4", "#45b7d1", "#96ceb4", "#feca57", "#a78bfa"];
+const COLORS = ["#234735", "#c9a24a", "#ff6b9d", "#4ecdc4", "#45b7d1", "#96ceb4", "#feca57", "#a78bfa"];
 
 function calcAge(dn: string | null): number | null {
   if (!dn) return null;
@@ -224,7 +224,7 @@ export function RelatoriosEpidemiologicosTab() {
               <XAxis dataKey="cidade" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" height={70} />
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip />
-              <Bar dataKey="qtd" fill="#1a1557" />
+              <Bar dataKey="qtd" fill="#234735" />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -278,7 +278,7 @@ export function RelatoriosEpidemiologicosTab() {
               <XAxis type="number" tick={{ fontSize: 10 }} />
               <YAxis type="category" dataKey="ubs" tick={{ fontSize: 10 }} width={140} />
               <Tooltip />
-              <Bar dataKey="qtd" fill="#f0c040" />
+              <Bar dataKey="qtd" fill="#c9a24a" />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -334,7 +334,7 @@ export function RelatoriosEpidemiologicosTab() {
               <XAxis dataKey="parametro" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" height={70} />
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip />
-              <Line type="monotone" dataKey="media" stroke="#1a1557" strokeWidth={2} />
+              <Line type="monotone" dataKey="media" stroke="#234735" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -361,7 +361,7 @@ function Kpi({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="bg-card border border-border rounded-2xl p-4">
       <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">{label}</p>
-      <p className="text-2xl font-bold text-[#1a1557] mt-1">{value}</p>
+      <p className="text-2xl font-bold text-[#234735] mt-1">{value}</p>
     </div>
   );
 }

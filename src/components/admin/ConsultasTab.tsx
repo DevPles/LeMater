@@ -270,14 +270,14 @@ export function ConsultasTab() {
           <button
             type="button"
             onClick={() => setCriarAberto(true)}
-            className="bg-[#f0c040] text-[#1a1557] text-xs font-bold px-3 py-1.5 rounded-full hover:opacity-90"
+            className="bg-[#c9a24a] text-[#234735] text-xs font-bold px-3 py-1.5 rounded-full hover:opacity-90"
           >
             + Novo horário
           </button>
           <button
             type="button"
             onClick={load}
-            className="bg-[#1a1557] text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:opacity-90"
+            className="bg-[#234735] text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:opacity-90"
           >
             Recarregar
           </button>
@@ -461,7 +461,7 @@ export function ConsultasTab() {
                           <button
                             onClick={() => gerarLink(item)}
                             disabled={generatingId === item.id}
-                            className="bg-[#1a1557] text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
+                            className="bg-[#234735] text-white text-xs font-semibold px-3 py-1.5 rounded-full hover:opacity-90 disabled:opacity-50"
                           >
                             {generatingId === item.id ? "..." : "Gerar link"}
                           </button>
@@ -491,7 +491,7 @@ export function ConsultasTab() {
                             <button
                               type="button"
                               onClick={() => setProntuarioId(item.id)}
-                              className="inline-flex items-center justify-center rounded-full bg-[#1a1557] hover:opacity-90 text-white text-xs font-bold px-3 h-8 shadow-sm transition-colors"
+                              className="inline-flex items-center justify-center rounded-full bg-[#234735] hover:opacity-90 text-white text-xs font-bold px-3 h-8 shadow-sm transition-colors"
                               title="Ver prontuário compilado"
                             >
                               Prontuário
@@ -674,7 +674,7 @@ export function ConsultasTab() {
                 type="button"
                 onClick={criarSlot}
                 disabled={criando}
-                className="bg-[#1a1557] text-white text-xs font-bold px-4 py-2 rounded-full hover:opacity-90 disabled:opacity-50"
+                className="bg-[#234735] text-white text-xs font-bold px-4 py-2 rounded-full hover:opacity-90 disabled:opacity-50"
               >
                 {criando ? "Publicando..." : "Publicar horário"}
               </button>

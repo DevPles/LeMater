@@ -25,22 +25,22 @@ export const Route = createFileRoute("/_authenticated/app/admin")({
   component: AdminPage,
 });
 
-// Paleta da marca (navy + gold + cream) — alinhada ao resto do app
+// Paleta da marca (green + gold + cream) — alinhada ao resto do app Le Mater
 const c = {
-  cream: "#faf8f3",
-  warm: "#f3eddf",
-  navy: "#1a1557",
-  navyDark: "#120f3f",
-  gold: "#f0c040",
-  goldDark: "#d4a52a",
-  ink: "#1a1557",
-  muted: "#6b6883",
-  border: "#e8e3d4",
+  cream: "#f5efe2",
+  warm: "#ebe4d3",
+  navy: "#234735",
+  navyDark: "#15301f",
+  gold: "#c9a24a",
+  goldDark: "#a8842f",
+  ink: "#234735",
+  muted: "#6b7a72",
+  border: "#d8d2c0",
   danger: "#b23a48",
   ok: "#2f7a4e",
   // aliases mantidos para retrocompatibilidade dos componentes existentes
-  sage: "#1a1557",
-  sageDark: "#1a1557",
+  sage: "#234735",
+  sageDark: "#15301f",
 };
 const serif = "'Playfair Display', serif";
 const sans = "'DM Sans', sans-serif";
@@ -108,13 +108,13 @@ function AdminPage() {
     <div style={{ fontFamily: sans, background: c.cream, color: c.ink, minHeight: "100vh", display: "flex" }}>
       <aside
         className={mobileOpen ? "admin-sidebar admin-sidebar-open" : "admin-sidebar"}
-        style={{ width: 240, background: "#1a1557", color: "white", minHeight: "100vh", position: "sticky", top: 0, alignSelf: "flex-start", display: "flex", flexDirection: "column" }}
+        style={{ width: 240, background: "#234735", color: "white", minHeight: "100vh", position: "sticky", top: 0, alignSelf: "flex-start", display: "flex", flexDirection: "column" }}
       >
         <div style={{ padding: "20px 18px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: 10 }}>
           <Link to="/"><img src={lemateLogo} alt="Le Mater" style={{ height: 32 }} /></Link>
           <div>
             <div style={{ fontFamily: serif, fontSize: 16, lineHeight: 1 }}>Admin</div>
-            <div style={{ fontSize: 9, letterSpacing: "0.18em", color: "#f0c040", marginTop: 4 }}>LE MATER</div>
+            <div style={{ fontSize: 9, letterSpacing: "0.18em", color: "#c9a24a", marginTop: 4 }}>LE MATER</div>
           </div>
         </div>
 
@@ -126,7 +126,7 @@ function AdminPage() {
               <div key={group.label} style={{ marginBottom: 2 }}>
                 <button
                   onClick={() => setOpenGroup(isOpen ? "" : group.label)}
-                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "none", color: hasActive ? "#f0c040" : "rgba(255,255,255,0.75)", padding: "9px 12px", fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer", borderRadius: 6, fontFamily: sans }}
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "none", color: hasActive ? "#c9a24a" : "rgba(255,255,255,0.75)", padding: "9px 12px", fontSize: 12, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer", borderRadius: 6, fontFamily: sans }}
                 >
                   <span>{group.label}</span>
                   <span style={{ fontSize: 10, opacity: 0.6, transform: isOpen ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>›</span>
@@ -139,7 +139,7 @@ function AdminPage() {
                         <button
                           key={t.id}
                           onClick={() => select(group.label, t.id)}
-                          style={{ width: "100%", textAlign: "left", background: active ? "rgba(240,192,64,0.15)" : "transparent", border: "none", color: active ? "#f0c040" : "rgba(255,255,255,0.7)", padding: "7px 14px", fontSize: 13, cursor: "pointer", borderRadius: 6, borderLeft: active ? "2px solid #f0c040" : "2px solid transparent", fontFamily: sans, marginBottom: 1 }}
+                          style={{ width: "100%", textAlign: "left", background: active ? "rgba(201,162,74,0.15)" : "transparent", border: "none", color: active ? "#c9a24a" : "rgba(255,255,255,0.7)", padding: "7px 14px", fontSize: 13, cursor: "pointer", borderRadius: 6, borderLeft: active ? "2px solid #c9a24a" : "2px solid transparent", fontFamily: sans, marginBottom: 1 }}
                         >
                           {t.label}
                         </button>

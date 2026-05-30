@@ -209,7 +209,7 @@ export function ProfissionaisTab() {
               onClick={() => setTipo(t)}
               className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors ${
                 tipo === t
-                  ? "bg-[#1a1557] text-white border-[#1a1557]"
+                  ? "bg-[#234735] text-white border-[#234735]"
                   : "bg-background text-foreground border-border hover:bg-muted"
               }`}
             >
@@ -297,7 +297,7 @@ export function ProfissionaisTab() {
             type="button"
             disabled={saving}
             onClick={handleCreate}
-            className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a] disabled:opacity-50"
+            className="px-4 py-2 rounded-full text-xs font-bold bg-[#234735] text-white hover:bg-[#241e7a] disabled:opacity-50"
           >
             {saving ? "Cadastrando..." : `Cadastrar ${tipoLabel[tipo].toLowerCase()}`}
           </button>
@@ -360,9 +360,9 @@ export function ProfissionaisTab() {
                       <span
                         className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${
                           isAdmin
-                            ? "bg-[#1a1557] text-[#f0c040]"
+                            ? "bg-[#234735] text-[#c9a24a]"
                             : isProf
-                              ? "bg-[#f0c040]/20 text-[#1a1557]"
+                              ? "bg-[#c9a24a]/20 text-[#234735]"
                               : "bg-muted text-muted-foreground"
                         }`}
                       >
@@ -398,7 +398,7 @@ export function ProfissionaisTab() {
                           <button
                             type="button"
                             onClick={() => toggleSenha(u.user_id)}
-                            className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+                            className="text-[10px] font-semibold text-[#234735] hover:underline"
                           >
                             {senhaVisivel ? "ocultar" : "mostrar"}
                           </button>
@@ -407,7 +407,7 @@ export function ProfissionaisTab() {
                             onClick={() =>
                               navigator.clipboard.writeText(u.password_plaintext!)
                             }
-                            className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+                            className="text-[10px] font-semibold text-[#234735] hover:underline"
                           >
                             copiar
                           </button>
@@ -436,7 +436,7 @@ export function ProfissionaisTab() {
                     <button
                       type="button"
                       onClick={() => setResetUserId(u)}
-                      className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#1a1557] text-white hover:bg-[#241e7a]"
+                      className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#234735] text-white hover:bg-[#241e7a]"
                     >
                       Redefinir senha
                     </button>
@@ -538,7 +538,7 @@ function ResetPasswordModal({
             type="button"
             onClick={salvar}
             disabled={saving || !novaSenha}
-            className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a] disabled:opacity-50"
+            className="px-4 py-2 rounded-full text-xs font-bold bg-[#234735] text-white hover:bg-[#241e7a] disabled:opacity-50"
           >
             {saving ? "Salvando..." : "Salvar nova senha"}
           </button>
@@ -600,7 +600,7 @@ function PasswordInput({
         <button
           type="button"
           onClick={() => setShow((v) => !v)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#1a1557] hover:underline"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#234735] hover:underline"
         >
           {show ? "ocultar" : "mostrar"}
         </button>

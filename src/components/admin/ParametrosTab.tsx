@@ -78,8 +78,8 @@ export function ParametrosTab() {
             onClick={() => setTab(t.v)}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
               tab === t.v
-                ? "bg-[#1a1557] text-white border-[#1a1557]"
-                : "bg-background text-muted-foreground border-border hover:border-[#1a1557]/50"
+                ? "bg-[#234735] text-white border-[#234735]"
+                : "bg-background text-muted-foreground border-border hover:border-[#234735]/50"
             }`}
           >
             {t.l}
@@ -190,7 +190,7 @@ function RangesEditor() {
           </div>
         </div>
         <div className="flex justify-end">
-          <button onClick={create} className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a]">
+          <button onClick={create} className="px-4 py-2 rounded-full text-xs font-bold bg-[#234735] text-white hover:bg-[#241e7a]">
             Adicionar faixa
           </button>
         </div>
@@ -283,7 +283,7 @@ function ExamsEditor() {
           </div>
         </div>
         <div className="flex justify-end">
-          <button onClick={create} className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a]">
+          <button onClick={create} className="px-4 py-2 rounded-full text-xs font-bold bg-[#234735] text-white hover:bg-[#241e7a]">
             Adicionar critério
           </button>
         </div>
@@ -376,7 +376,7 @@ function ImageScheduleEditor() {
           </div>
         </div>
         <div className="flex justify-end">
-          <button onClick={create} className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a]">
+          <button onClick={create} className="px-4 py-2 rounded-full text-xs font-bold bg-[#234735] text-white hover:bg-[#241e7a]">
             Adicionar janela
           </button>
         </div>
@@ -489,7 +489,7 @@ function VaccinesEditor({
           </div>
         </div>
         <div className="flex justify-end">
-          <button onClick={create} className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a]">
+          <button onClick={create} className="px-4 py-2 rounded-full text-xs font-bold bg-[#234735] text-white hover:bg-[#241e7a]">
             Adicionar vacina
           </button>
         </div>

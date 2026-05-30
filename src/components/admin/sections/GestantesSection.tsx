@@ -87,7 +87,7 @@ export function GestantesSection({ profiles, alerts, loading, onAbrirComunicacao
             type="button"
             onClick={onAbrirComunicacao}
             disabled={filtered.length === 0}
-            className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#f0c040] text-[#1a1557] hover:bg-[#e5b535] disabled:opacity-50"
+            className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#c9a24a] text-[#234735] hover:bg-[#e5b535] disabled:opacity-50"
           >
             Disparar para este recorte
           </button>
@@ -95,7 +95,7 @@ export function GestantesSection({ profiles, alerts, loading, onAbrirComunicacao
             type="button"
             onClick={exportar}
             disabled={filtered.length === 0}
-            className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#1a1557] text-white hover:bg-[#241e7a] disabled:opacity-50"
+            className="px-3 py-1.5 rounded-full text-xs font-bold bg-[#234735] text-white hover:bg-[#241e7a] disabled:opacity-50"
           >
             Exportar Excel
           </button>
@@ -105,7 +105,7 @@ export function GestantesSection({ profiles, alerts, loading, onAbrirComunicacao
       <div className="bg-card rounded-2xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-[#1a1557] text-white text-[11px] uppercase tracking-wide">
+            <thead className="bg-[#234735] text-white text-[11px] uppercase tracking-wide">
               <tr>
                 <Th>Nome</Th>
                 <Th>Idade</Th>
@@ -137,7 +137,7 @@ export function GestantesSection({ profiles, alerts, loading, onAbrirComunicacao
                         <button
                           type="button"
                           onClick={() => setDrawer(p.user_id)}
-                          className="text-left hover:underline text-[#1a1557]"
+                          className="text-left hover:underline text-[#234735]"
                         >
                           {p.nome ?? p.email ?? p.user_id.slice(0, 8)}
                         </button>
@@ -173,7 +173,7 @@ export function GestantesSection({ profiles, alerts, loading, onAbrirComunicacao
                           <button
                             type="button"
                             onClick={() => setDrawer(p.user_id)}
-                            className="text-[10px] font-semibold text-[#1a1557] hover:underline"
+                            className="text-[10px] font-semibold text-[#234735] hover:underline"
                           >
                             Ver
                           </button>
@@ -357,7 +357,7 @@ function Drawer({
               <button
                 type="button"
                 onClick={() => setEditando(true)}
-                className="text-[10px] font-bold uppercase tracking-wide px-3 py-1 rounded-full bg-[#1a1557] text-white hover:opacity-90"
+                className="text-[10px] font-bold uppercase tracking-wide px-3 py-1 rounded-full bg-[#234735] text-white hover:opacity-90"
               >
                 Editar dados
               </button>
@@ -438,7 +438,7 @@ function Drawer({
                 type="button"
                 onClick={salvar}
                 disabled={salvando}
-                className="px-4 py-2 rounded-full bg-[#f0c040] text-[#1a1557] text-xs font-bold hover:bg-[#e5b535] disabled:opacity-50"
+                className="px-4 py-2 rounded-full bg-[#c9a24a] text-[#234735] text-xs font-bold hover:bg-[#e5b535] disabled:opacity-50"
               >
                 {salvando ? "Salvando…" : "Salvar alterações"}
               </button>

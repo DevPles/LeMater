@@ -73,11 +73,11 @@ export function AdminTopbarFilters({ profiles, alerts, totalFiltrado }: Props) {
             Filtros globais
           </span>
           {activeCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#f0c040] text-[#1a1557]">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#c9a24a] text-[#234735]">
               {activeCount} ativo{activeCount > 1 ? "s" : ""}
             </span>
           )}
-          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#1a1557] text-white">
+          <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#234735] text-white">
             {totalFiltrado} gestante{totalFiltrado === 1 ? "" : "s"}
           </span>
         </div>
@@ -92,7 +92,7 @@ export function AdminTopbarFilters({ profiles, alerts, totalFiltrado }: Props) {
           <button
             type="button"
             onClick={reset}
-            className="text-[11px] font-semibold px-3 h-7 rounded-lg bg-[#1a1557] hover:bg-[#1a1557]/90 text-white transition-colors"
+            className="text-[11px] font-semibold px-3 h-7 rounded-lg bg-[#234735] hover:bg-[#234735]/90 text-white transition-colors"
           >
             Limpar tudo
           </button>
@@ -293,7 +293,7 @@ function CidadesPopover({
           <button
             type="button"
             onClick={onClear}
-            className="text-[10px] text-[#1a1557] font-semibold hover:underline"
+            className="text-[10px] text-[#234735] font-semibold hover:underline"
           >
             Limpar
           </button>
