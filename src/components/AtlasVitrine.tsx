@@ -6,7 +6,7 @@ import { CursoModal } from "@/components/CursoModal";
 import { CartDrawer, CartFloatingButton } from "@/components/CartDrawer";
 import { useCart, openCart } from "@/lib/cart-store";
 import { applyTranslation, useTranslatedList } from "@/hooks/useTranslatedContent";
-import { usePais } from "@/lib/translate.context";
+import { usePais, useLang, PAIS_TO_LANG, type Pais } from "@/lib/translate.context";
 import { videoForAulaCover } from "@/lib/atlas-cover-video";
 
 function formatAulaPreco(centavos: number, moeda: string) {
