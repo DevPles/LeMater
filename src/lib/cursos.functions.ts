@@ -630,7 +630,7 @@ export const listAtlasAulas = createServerFn({ method: "GET" })
     if (pais) {
       const { data: traducoes } = await supabaseAdmin
         .from("content_translations")
-        .select("item_id, titulo, descricao, capa_url, preco_centavos, preco_label, moeda, gratis")
+        .select("item_id, titulo, descricao, capa_url, capa_video_url, preco_centavos, preco_label, moeda, gratis")
         .eq("item_type", "curso_aula")
         .eq("pais", pais)
         .in("item_id", ids);
@@ -674,7 +674,7 @@ export const listAtlasAulas = createServerFn({ method: "GET" })
         matriculasAula.has(a.id) || cobertoPorCurso;
       return {
         id: a.id, slug: a.slug ?? a.id, titulo: tr?.titulo || a.titulo, descricao: tr?.descricao || a.descricao,
-        capa_url: tr?.capa_url || a.capa_url, capa_video_url: a.capa_video_url,
+        capa_url: tr?.capa_url || a.capa_url, capa_video_url: tr?.capa_video_url || a.capa_video_url,
         duracao_min: a.duracao_min, tipo: a.tipo as AtlasAulaVitrine["tipo"],
         gratis, preco_label: gratis ? "Grátis" : (tr?.preco_label || a.preco_label), preco_centavos: gratis ? 0 : (tr?.preco_centavos ?? a.preco_centavos ?? 0),
         moeda: tr?.moeda || a.moeda || "BRL",
