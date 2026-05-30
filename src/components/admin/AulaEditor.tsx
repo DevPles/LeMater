@@ -415,15 +415,19 @@ export default function AulaEditor({
                 </div>
 
                 <SectionTitle>Mídia em Português</SectionTitle>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "stretch" }}>
+                <div style={{ display: "grid", gridTemplateColumns: wide ? "repeat(4, minmax(0, 1fr))" : "repeat(2, minmax(0, 1fr))", gap: 12, alignItems: "stretch" }}>
                   <MediaField label="Capa (imagem) — usada como poster" hint={editing.capa_url ? `Atual: ${editing.capa_url}` : ""}>
-                    <input name="capa" type="file" accept="image/*" style={inp} />
+                    <input name="capa" type="file" accept="image/*" onChange={(e) => {
+                      setPvCapaFile((prev) => { if (prev) URL.revokeObjectURL(prev); return e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : ""; });
+                    }} style={{ ...inp, minHeight: 42 }} />
                   </MediaField>
                   <MediaField label="Capa em vídeo (loop curto, MP4) — opcional" hint={editing.capa_video_url ? `Atual: ${editing.capa_video_url}` : ""}>
-                    <input name="capa_video" type="file" accept="video/*" style={inp} />
+                    <input name="capa_video" type="file" accept="video/*" onChange={(e) => {
+                      setPvCapaVideoFile((prev) => { if (prev) URL.revokeObjectURL(prev); return e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : ""; });
+                    }} style={{ ...inp, minHeight: 42 }} />
                   </MediaField>
                   <MediaField label="Vídeo da aula — arquivo (MP4)" hint="">
-                    <input name="video_file" type="file" accept="video/*" style={inp} />
+                    <input name="video_file" type="file" accept="video/*" style={{ ...inp, minHeight: 42 }} />
                   </MediaField>
                   <MediaField label="Vídeo da aula — OU URL externa (YouTube/Vimeo)" hint="">
                     <input
@@ -431,7 +435,7 @@ export default function AulaEditor({
                       placeholder="https://youtube.com/..."
                       defaultValue={editing.video_url && String(editing.video_url).startsWith("http") ? editing.video_url : ""}
                       onChange={(e) => setPvVideoExt(e.target.value)}
-                      style={inp}
+                      style={{ ...inp, minHeight: 42 }}
                     />
                   </MediaField>
                 </div>
