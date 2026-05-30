@@ -81,6 +81,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             id: t.id,
             titulo: t.titulo ?? "",
             descricao: t.descricao ?? "",
+            gratis: typeof t.gratis === "boolean" ? t.gratis : null,
             video_url: t.video_url ?? "",
             pdf_url: t.pdf_url ?? "",
             capa_url: t.capa_url ?? "",
@@ -110,6 +111,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
           pais,
           titulo: r.titulo || null,
           descricao: r.descricao || null,
+          gratis: r.gratis,
           video_url: r.video_url || null,
           pdf_url: r.pdf_url || null,
           capa_url: r.capa_url || null,
@@ -149,7 +151,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
     finally { setBusy(false); }
   };
 
-  const update = (field: keyof Row, value: string | number) => {
+  const update = (field: keyof Row, value: string | number | boolean | null) => {
     setRows((prev) => {
       const next = { ...prev, [tab]: { ...prev[tab], [field]: value as any } };
       onRowsChange?.(next);
@@ -171,6 +173,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
         pais: tab,
         titulo: r.titulo || null,
         descricao: r.descricao || null,
+        gratis: r.gratis,
         video_url: r.video_url || null,
         pdf_url: r.pdf_url || null,
         capa_url: r.capa_url || null,
