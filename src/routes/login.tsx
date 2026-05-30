@@ -86,8 +86,8 @@ function LoginPage() {
       if (!session) throw new Error("Sessão não foi confirmada. Tente entrar novamente.");
       const destino = await resolvePostLoginPath(session.user.id, "/app/membro");
 
-      toast.success("Login realizado com sucesso.");
-      navigate({ to: destino });
+      setSuccessOpen(true);
+      window.setTimeout(() => navigate({ to: destino }), 1600);
     } catch (error) {
       toast.error((error as Error).message || "Não foi possível entrar.");
     } finally {
