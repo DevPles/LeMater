@@ -77,9 +77,6 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
             ATLAS MATERNO
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: isApp ? 12 : 20, flexWrap: "nowrap" }}>
-            <h2 style={{ fontFamily: serif, fontSize: isApp ? 26 : "clamp(28px, 3vw, 44px)", fontWeight: 300, lineHeight: 1.1, color: c.ink, margin: 0, flexShrink: 1, minWidth: 0 }}>
-              Atlas Materno.
-            </h2>
             {temas.length > 0 && (
               <button
                 onClick={() => setMenuOpen(true)}
