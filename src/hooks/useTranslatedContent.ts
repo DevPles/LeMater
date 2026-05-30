@@ -14,6 +14,7 @@ export type ContentTranslation = {
   video_url: string | null;
   pdf_url: string | null;
   capa_url: string | null;
+  capa_video_url: string | null;
   audio_url: string | null;
   legenda_url: string | null;
   conteudo_html: string | null;
@@ -63,7 +64,7 @@ export function useTranslatedContent(itemType: ContentItemType, itemId: string |
 export function applyTranslation<T extends Record<string, any>>(base: T, t: ContentTranslation | null): T {
   if (!t) return base;
   const out: any = { ...base };
-  for (const k of ["titulo","descricao","video_url","pdf_url","capa_url","audio_url","legenda_url","conteudo_html","preco_label"] as const) {
+  for (const k of ["titulo","descricao","video_url","pdf_url","capa_url","capa_video_url","audio_url","legenda_url","conteudo_html","preco_label"] as const) {
     if (t[k]) out[k] = t[k];
   }
   if (typeof t.gratis === "boolean") {
