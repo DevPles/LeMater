@@ -408,19 +408,17 @@ export default function AulaEditor({
                 </div>
 
                 <SectionTitle>Mídia em Português</SectionTitle>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <Field label="Capa (imagem) — usada como poster">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "stretch" }}>
+                  <MediaField label="Capa (imagem) — usada como poster" hint={editing.capa_url ? `Atual: ${editing.capa_url}` : ""}>
                     <input name="capa" type="file" accept="image/*" style={inp} />
-                    {editing.capa_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_url}</div>}
-                  </Field>
-                  <Field label="Capa em vídeo (loop curto, MP4) — opcional">
+                  </MediaField>
+                  <MediaField label="Capa em vídeo (loop curto, MP4) — opcional" hint={editing.capa_video_url ? `Atual: ${editing.capa_video_url}` : ""}>
                     <input name="capa_video" type="file" accept="video/*" style={inp} />
-                    {editing.capa_video_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_video_url}</div>}
-                  </Field>
-                  <Field label="Vídeo da aula — arquivo (MP4)">
+                  </MediaField>
+                  <MediaField label="Vídeo da aula — arquivo (MP4)" hint="">
                     <input name="video_file" type="file" accept="video/*" style={inp} />
-                  </Field>
-                  <Field label="Vídeo da aula — OU URL externa (YouTube/Vimeo)">
+                  </MediaField>
+                  <MediaField label="Vídeo da aula — OU URL externa (YouTube/Vimeo)" hint="">
                     <input
                       name="video_url_externa"
                       placeholder="https://youtube.com/..."
@@ -428,7 +426,7 @@ export default function AulaEditor({
                       onChange={(e) => setPvVideoExt(e.target.value)}
                       style={inp}
                     />
-                  </Field>
+                  </MediaField>
                 </div>
 
                 <Field label="PDF (se tipo = PDF)"><input name="pdf_file" type="file" accept="application/pdf" style={inp} /></Field>
