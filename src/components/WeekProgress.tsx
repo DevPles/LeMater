@@ -14,7 +14,7 @@ export function WeekProgress({ currentWeek, totalWeeks = 40 }: WeekProgressProps
 
   return (
     <Link to="/app/gestacao" className="block transition-transform hover:scale-[1.01]">
-      <LiquidCard className="p-5" bgOpacity={0.55}>
+      <LiquidCard className="p-5" bgOpacity={0.28}>
         <div className="mb-3 flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">{trimester}</p>
