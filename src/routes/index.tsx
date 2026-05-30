@@ -16,6 +16,27 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { translateBatch } from "@/lib/translate.functions";
 import { useLang, FLAG_TO_LANG, isTranslatable, type Lang } from "@/lib/translate.context";
 
+function AccessText({ children }: { children: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const sync = () => {
+      const txt = (el.textContent ?? "").trim();
+      if (txt) el.setAttribute("data-text", txt);
+    };
+    sync();
+    const obs = new MutationObserver(sync);
+    obs.observe(el, { childList: true, characterData: true, subtree: true });
+    return () => obs.disconnect();
+  }, []);
+  return (
+    <div ref={ref} className="lm-access-text" data-text={children}>
+      {children}
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
