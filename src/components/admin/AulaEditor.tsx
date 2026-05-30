@@ -384,19 +384,29 @@ export default function AulaEditor({
                 </div>
 
                 <SectionTitle>Mídia em Português</SectionTitle>
-                <Field label="Capa (imagem) — usada como poster">
-                  <input name="capa" type="file" accept="image/*" style={inp} />
-                  {editing.capa_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_url}</div>}
-                </Field>
-                <Field label="Capa em vídeo (loop curto, MP4) — opcional, aparece no card">
-                  <input name="capa_video" type="file" accept="video/*" style={inp} />
-                  {editing.capa_video_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_video_url}</div>}
-                </Field>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <Field label="Capa (imagem) — usada como poster">
+                    <input name="capa" type="file" accept="image/*" style={inp} />
+                    {editing.capa_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_url}</div>}
+                  </Field>
+                  <Field label="Capa em vídeo (loop curto, MP4) — opcional">
+                    <input name="capa_video" type="file" accept="video/*" style={inp} />
+                    {editing.capa_video_url && <div style={{ fontSize: 11, color: c.muted, marginTop: 4 }}>Atual: {editing.capa_video_url}</div>}
+                  </Field>
+                  <Field label="Vídeo da aula — arquivo (MP4)">
+                    <input name="video_file" type="file" accept="video/*" style={inp} />
+                  </Field>
+                  <Field label="Vídeo da aula — OU URL externa (YouTube/Vimeo)">
+                    <input
+                      name="video_url_externa"
+                      placeholder="https://youtube.com/..."
+                      defaultValue={editing.video_url && String(editing.video_url).startsWith("http") ? editing.video_url : ""}
+                      onChange={(e) => setPvVideoExt(e.target.value)}
+                      style={inp}
+                    />
+                  </Field>
+                </div>
 
-                <Field label="Vídeo da aula: arquivo OU URL externa (YouTube/Vimeo)">
-                  <input name="video_file" type="file" accept="video/*" style={{ ...inp, marginBottom: 8 }} />
-                  <input name="video_url_externa" placeholder="https://youtube.com/..." defaultValue={editing.video_url && String(editing.video_url).startsWith("http") ? editing.video_url : ""} style={inp} />
-                </Field>
                 <Field label="PDF (se tipo = PDF)"><input name="pdf_file" type="file" accept="application/pdf" style={inp} /></Field>
                 <Field label="HTML (se tipo = Texto)"><textarea name="conteudo_html" defaultValue={editing.conteudo_html ?? ""} rows={5} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} /></Field>
 
