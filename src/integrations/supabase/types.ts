@@ -510,6 +510,7 @@ export type Database = {
           conteudo_html: string | null
           created_at: string
           descricao: string | null
+          gratis: boolean | null
           id: string
           item_id: string
           item_type: string
@@ -529,6 +530,7 @@ export type Database = {
           conteudo_html?: string | null
           created_at?: string
           descricao?: string | null
+          gratis?: boolean | null
           id?: string
           item_id: string
           item_type: string
@@ -548,6 +550,7 @@ export type Database = {
           conteudo_html?: string | null
           created_at?: string
           descricao?: string | null
+          gratis?: boolean | null
           id?: string
           item_id?: string
           item_type?: string
