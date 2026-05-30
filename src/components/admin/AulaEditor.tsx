@@ -109,6 +109,13 @@ export default function AulaEditor({
   const [pvGratis, setPvGratis] = useState(editing.gratis ?? false);
   const [pvPrecoLabel, setPvPrecoLabel] = useState(editing.preco_label ?? "");
   const [pvVideoExt, setPvVideoExt] = useState<string>(editing.video_url && String(editing.video_url).startsWith("http") ? String(editing.video_url) : "");
+  const [pvCapaFile, setPvCapaFile] = useState("");
+  const [pvCapaVideoFile, setPvCapaVideoFile] = useState("");
+
+  useEffect(() => () => {
+    if (pvCapaFile) URL.revokeObjectURL(pvCapaFile);
+    if (pvCapaVideoFile) URL.revokeObjectURL(pvCapaVideoFile);
+  }, [pvCapaFile, pvCapaVideoFile]);
 
   const [pvTemasIds, setPvTemasIds] = useState<string[]>(editing.temas ?? []);
   const pvTemaNome = temas.find((t) => pvTemasIds.includes(t.id))?.titulo ?? "Tema";
@@ -255,43 +262,18 @@ export default function AulaEditor({
       : (pvPrecoLabel || "Comprar");
   const flag = paisTab === "BR" ? "🇧🇷" : paisTab === "ES" ? "🇪🇸" : "🇺🇸";
 
-  // Mídia para a prévia: prioriza tradução do país ativo; cai p/ PT
-  const ytId = (u: string) => {
-    const m = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/);
-    return m?.[1];
-  };
-  const vimeoId = (u: string) => u.match(/vimeo\.com\/(\d+)/)?.[1];
-  const embedUrl = (u: string): string | null => {
-    if (!u) return null;
-    const y = ytId(u); if (y) return `https://www.youtube.com/embed/${y}?autoplay=1&mute=1&loop=1&playlist=${y}&controls=0&modestbranding=1`;
-    const v = vimeoId(u); if (v) return `https://player.vimeo.com/video/${v}?autoplay=1&muted=1&loop=1&background=1`;
-    return null;
-  };
-  const pvVideoFile =
-    (trCurrent?.video_url && !embedUrl(String(trCurrent.video_url)) ? String(trCurrent.video_url) : "") ||
-    (editing.capa_video_url || "") ||
-    (editing.video_url && !embedUrl(String(editing.video_url)) ? String(editing.video_url) : "");
-  const pvVideoEmbed =
-    embedUrl(String(trCurrent?.video_url || "")) ||
-    embedUrl(pvVideoExt) ||
-    embedUrl(String(editing.video_url || ""));
-  const pvCapaShow = (trCurrent?.capa_url) || editing.capa_url || "";
+  // A prévia do card mostra apenas a mídia de capa, nunca o vídeo interno da aula.
+  const pvCapaVideoShow = pvCapaVideoFile || editing.capa_video_url || "";
+  const pvCapaShow = (trCurrent?.capa_url) || pvCapaFile || editing.capa_url || "";
 
   const PreviewCard = (
     <div style={{ background: c.sageDark, color: "white", position: "relative", width: "100%", overflow: "hidden" }}>
-      {(pvVideoFile || pvVideoEmbed || pvCapaShow) && (
+      {(pvCapaVideoShow || pvCapaShow) && (
         <div style={{ width: "100%", aspectRatio: "16 / 9", background: "#000", position: "relative" }}>
-          {pvVideoEmbed ? (
-            <iframe
-              key={pvVideoEmbed}
-              src={pvVideoEmbed}
-              allow="autoplay; encrypted-media; picture-in-picture"
-              style={{ width: "100%", height: "100%", border: 0, display: "block" }}
-            />
-          ) : pvVideoFile ? (
+          {pvCapaVideoShow ? (
             <video
-              key={pvVideoFile}
-              src={pvVideoFile}
+              key={pvCapaVideoShow}
+              src={pvCapaVideoShow}
               poster={pvCapaShow || undefined}
               autoPlay muted loop playsInline
               style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
