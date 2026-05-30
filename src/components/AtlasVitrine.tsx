@@ -33,6 +33,8 @@ export function AtlasVitrine({ variant = "site" }: { variant?: "site" | "app" })
   const [err, setErr] = useState<string | null>(null);
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [paisMenuOpen, setPaisMenuOpen] = useState(false);
+  const { setLang } = useLang();
   const cart = useCart();
   const pais = usePais();
   const { byId: translations } = useTranslatedList("curso_aula", aulas?.map((a) => a.id) ?? []);
