@@ -60,8 +60,8 @@ if (typeof window !== "undefined") {
 export const cartStore = {
   getItems: () => memo,
   add: (item: CartItem) => {
-    if (memo.some((i) => i.aula_id === item.aula_id)) return;
-    write([...memo, item]);
+    const exists = memo.some((i) => i.aula_id === item.aula_id);
+    write(exists ? memo.map((i) => (i.aula_id === item.aula_id ? item : i)) : [...memo, item]);
   },
   remove: (aula_id: string) => {
     write(memo.filter((i) => i.aula_id !== aula_id));
