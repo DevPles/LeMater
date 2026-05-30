@@ -331,7 +331,7 @@ export default function AulaEditor({
                 <div style={{ fontSize: 12, color: c.muted, marginBottom: 12 }}>
                   PT é o conteúdo padrão (preenchido acima). Envie aqui o vídeo dublado, ebook/PDF e capa em <strong>Espanhol</strong> e <strong>Inglês</strong>. Quando o usuário trocar a bandeira no topo, ele verá a versão do país dele.
                 </div>
-                <TranslationsPanel itemType="curso_aula" itemId={editing.id ?? null} />
+                <TranslationsPanel itemType="curso_aula" itemId={savedId ?? null} />
               </div>
             </div>
 
