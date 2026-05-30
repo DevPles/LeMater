@@ -141,6 +141,78 @@ export function PregnancyTimeline({ userId, dum, cadastroISO }: Props) {
         });
       }
       setRegistros(recs);
+
+      // Constrói marcos dinâmicos a partir das tabelas administradas em "Parâmetros".
+      // Mantém marcos estáticos não cobertos por DB (consultas, derivados) e adiciona um
+      // marco para cada exame de imagem e vacina cadastrada — garantindo que tudo que
+      // o admin registra apareça na jornada da gestante.
+      const dynamic: Milestone[] = [];
+
+      // Mantém apenas marcos estáticos de consulta/derivados (a parte clínica vem do DB).
+      for (const m of STATIC_MILESTONES) {
+        if (m.source === "appointment" || m.source === "derived") {
+          dynamic.push(m);
+        }
+      }
+
+      const slug = (s: string) =>
+        normalize(s)
+          .replace(/[^a-z0-9]+/g, " ")
+          .split(" ")
+          .filter((w) => w.length >= 4);
+
+      for (const r of (iesRes.data ?? []) as Array<{
+        tipo_exame: string;
+        semana_min: number;
+        semana_max: number;
+        obrigatorio: boolean;
+        mensagem: string;
+      }>) {
+        dynamic.push({
+          week: r.semana_min,
+          title: r.tipo_exame,
+          detail: r.mensagem,
+          janelaSemanas: [r.semana_min, r.semana_max],
+          source: "image",
+          matchAny: slug(r.tipo_exame),
+        });
+      }
+
+      for (const r of (vsRes.data ?? []) as Array<{
+        vacina: string;
+        semana_min: number;
+        semana_max: number | null;
+        obrigatoria: boolean;
+        mensagem: string;
+      }>) {
+        dynamic.push({
+          week: r.semana_min,
+          title: `Vacina: ${r.vacina}`,
+          detail: r.mensagem,
+          janelaSemanas: [r.semana_min, r.semana_max ?? 42],
+          source: "vaccine",
+          matchAny: slug(r.vacina),
+        });
+      }
+
+      for (const r of (vseRes.data ?? []) as Array<{
+        vacina: string;
+        semana_min: number;
+        semana_max: number | null;
+        mensagem: string;
+      }>) {
+        dynamic.push({
+          week: r.semana_min,
+          title: `Vacina opcional: ${r.vacina}`,
+          detail: r.mensagem,
+          janelaSemanas: [r.semana_min, r.semana_max ?? 42],
+          source: "vaccine",
+          matchAny: slug(r.vacina),
+        });
+      }
+
+      dynamic.sort((a, b) => a.week - b.week || a.title.localeCompare(b.title));
+      setDbMilestones(dynamic);
       setLoading(false);
     })();
     return () => {
