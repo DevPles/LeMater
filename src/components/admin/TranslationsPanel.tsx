@@ -6,11 +6,15 @@ import type { Pais } from "@/lib/translate.context";
 const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42", ink: "#1C1C1A", muted: "#6B6560", border: "#E8DDD2", danger: "#B23A48", ok: "#2E7D32" };
 const sans = "'DM Sans', sans-serif";
 const inp: CSSProperties = { width: "100%", background: "white", border: `1px solid ${c.border}`, padding: "10px 12px", fontSize: 14, fontFamily: sans, color: c.ink, outline: "none" };
+const FLAG_CODE: Record<Pais, string> = { BR: "br", ES: "es", US: "us" };
+const FlagMark = ({ pais, size = 18 }: { pais: Pais; size?: number }) => (
+  <img src={`https://flagcdn.com/w80/${FLAG_CODE[pais]}.png`} srcSet={`https://flagcdn.com/w160/${FLAG_CODE[pais]}.png 2x`} alt="" aria-label={pais} title={pais} style={{ width: size, height: Math.round(size * 0.68), objectFit: "cover", borderRadius: 2, boxShadow: "0 0 0 1px rgba(0,0,0,0.14) inset", flexShrink: 0 }} />
+);
 
-const TABS: { pais: Pais; flag: string; label: string }[] = [
-  { pais: "BR", flag: "🇧🇷", label: "Português (PT)" },
-  { pais: "ES", flag: "🇪🇸", label: "Español (ES)" },
-  { pais: "US", flag: "🇺🇸", label: "English (EN)" },
+const TABS: { pais: Pais; label: string }[] = [
+  { pais: "BR", label: "Português (PT)" },
+  { pais: "ES", label: "Español (ES)" },
+  { pais: "US", label: "English (EN)" },
 ];
 
 export type TranslationRow = {
@@ -21,6 +25,7 @@ export type TranslationRow = {
   video_url: string;
   pdf_url: string;
   capa_url: string;
+  capa_video_url: string;
   audio_url: string;
   legenda_url: string;
   conteudo_html: string;
@@ -32,10 +37,10 @@ type Row = TranslationRow;
 
 export const MOEDA_PADRAO: Record<Pais, string> = { BR: "BRL", ES: "EUR", US: "USD" };
 
-const empty = (pais: Pais = "BR"): Row => ({ id: undefined, titulo: "", descricao: "", gratis: null, video_url: "", pdf_url: "", capa_url: "", audio_url: "", legenda_url: "", conteudo_html: "", preco_centavos: 0, moeda: MOEDA_PADRAO[pais], preco_label: "" });
+const empty = (pais: Pais = "BR"): Row => ({ id: undefined, titulo: "", descricao: "", gratis: null, video_url: "", pdf_url: "", capa_url: "", capa_video_url: "", audio_url: "", legenda_url: "", conteudo_html: "", preco_centavos: 0, moeda: MOEDA_PADRAO[pais], preco_label: "" });
 
 const isFilled = (r: Row) =>
-  !!(r.titulo || r.descricao || r.gratis !== null || r.video_url || r.pdf_url || r.capa_url || r.audio_url || r.legenda_url || r.conteudo_html || (r.preco_centavos && r.preco_centavos > 0) || r.preco_label);
+  !!(r.titulo || r.descricao || r.gratis !== null || r.video_url || r.pdf_url || r.capa_url || r.capa_video_url || r.audio_url || r.legenda_url || r.conteudo_html || (r.preco_centavos && r.preco_centavos > 0) || r.preco_label);
 
 export type TranslationsPanelHandle = {
   /** Persist all buffered (ES/EN) translations against the given itemId. */
