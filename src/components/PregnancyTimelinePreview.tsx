@@ -402,7 +402,7 @@ export function PregnancyTimelinePreview({ userId, dum, cadastroISO }: Props) {
         whileTap={{ scale: 0.985 }}
         className="block w-full text-left group relative"
       >
-        <LiquidCard className="px-4 py-3.5" bgOpacity={0.28}>
+        <LiquidCard className="px-4 py-3.5" bgOpacity={0.12}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-baseline gap-2">
               <h3 className="font-display font-medium text-lg text-[#1a1557] leading-tight">
