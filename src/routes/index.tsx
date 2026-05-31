@@ -496,6 +496,23 @@ const sectionP: CSSProperties = {
   marginBottom: 24,
 };
 
+const neuBtn: CSSProperties = {
+  width: "100%",
+  background: `linear-gradient(135deg, ${c.sageDark} 0%, ${c.sage} 100%)`,
+  color: "white",
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase",
+  padding: "14px 18px",
+  border: "1.5px solid transparent",
+  borderRadius: 12,
+  boxShadow: "5px 5px 12px rgba(120, 100, 70, 0.28), -5px -5px 12px rgba(255, 250, 240, 0.95), inset 0 1px 0 rgba(255,255,255,0.15)",
+  cursor: "pointer",
+  fontFamily: "'DM Sans', sans-serif",
+  whiteSpace: "nowrap",
+};
+
 const btnPrimary: CSSProperties = {
   background: `linear-gradient(135deg, ${c.sageDark} 0%, ${c.sage} 100%)`,
   color: "white",
