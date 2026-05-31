@@ -552,14 +552,28 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           >
             Criada pela Enfermeira Obstetra Brasileira, Rayssa Leslie, a Le Mater é um ecossistema tecnológico de Cuidado Materno que integra Educação, Orientação Profissional, Carteira Digital da Gestante e Acompanhamento da tentativa de engravidar ao Pós-Parto.
           </p>
-          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "nowrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
-            <Link to="/atlas" style={{ textDecoration: "none" }}>
-              <button style={{ ...btnPrimary, whiteSpace: "nowrap", padding: "12px 16px" }}>ATLAS MATERNO</button>
+          <div style={{ display: "flex", gap: 12, alignItems: "stretch", flexWrap: "nowrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
+            <Link to="/atlas" style={{ textDecoration: "none", flex: 1, display: "flex" }}>
+              <button className="lm-neu-btn" style={neuBtn}>ATLAS MATERNO</button>
             </Link>
-            <Link to="/app" style={{ textDecoration: "none" }}>
-              <button style={{ ...btnPrimary, whiteSpace: "nowrap", padding: "12px 16px" }}>ACESSAR APLICATIVO</button>
+            <Link to="/app" style={{ textDecoration: "none", flex: 1, display: "flex" }}>
+              <button className="lm-neu-btn" style={neuBtn}>ACESSAR APLICATIVO</button>
             </Link>
           </div>
+          <style>{`
+            .lm-neu-btn {
+              position: relative;
+              transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .lm-neu-btn:hover {
+              transform: translateY(-2px);
+              box-shadow: 6px 6px 14px rgba(120, 100, 70, 0.32), -6px -6px 14px rgba(255, 250, 240, 1), inset 0 1px 0 rgba(255,255,255,0.18);
+            }
+            .lm-neu-btn:active {
+              transform: translateY(1px);
+              box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.28), inset -3px -3px 8px rgba(255, 255, 255, 0.12);
+            }
+          `}</style>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
             {[
               { num: "+10", lbl: "Anos em obstetrícia" },
