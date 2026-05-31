@@ -198,10 +198,12 @@ export function TermsAcceptanceModal() {
             <h2
               style={{
                 fontFamily: "'Cormorant Garamond', serif",
-                fontSize: 26,
+                fontSize: 22,
                 fontWeight: 500,
                 margin: 0,
                 color: "#1C1C1A",
+                whiteSpace: "nowrap",
+                textAlign: "center",
               }}
             >
               Termo de Uso e Consentimento
