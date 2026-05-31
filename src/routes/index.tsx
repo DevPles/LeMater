@@ -498,6 +498,10 @@ const sectionP: CSSProperties = {
 
 const neuBtn: CSSProperties = {
   width: "100%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  textAlign: "center",
   background: `linear-gradient(135deg, ${c.sageDark} 0%, ${c.sage} 100%)`,
   color: "white",
   fontSize: 11,
