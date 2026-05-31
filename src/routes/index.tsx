@@ -566,7 +566,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
         >
           {!isMobile && <SectionTag text="Gestação que você merece." />}
           <h1 style={{ fontFamily: serif, fontSize: "clamp(32px,4vw,54px)", fontWeight: 300, lineHeight: 1.1, marginBottom: 20, marginTop: isMobile ? 0 : 60 }}>
-            A gestação que você <em style={{ fontStyle: "italic", color: c.sage }}>merece viver.</em>
+            A gestação que você<br /><em style={{ fontStyle: "italic", color: c.sage }}>merece viver.</em>
           </h1>
           <p
             style={{ fontSize: isMobile ? 15 : 16, lineHeight: 1.6, color: c.muted, maxWidth: 640, marginBottom: 36, textAlign: "center", marginInline: "auto" }}
