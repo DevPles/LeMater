@@ -107,7 +107,6 @@ function LoginPage() {
       const dial = PAISES.find((p) => p.code === country)?.dial ?? "";
       if (!name) throw new Error("Informe seu nome.");
       if (!email || !email.includes("@")) throw new Error("Informe um e-mail válido.");
-      if (password.length < 4) throw new Error("A senha precisa ter ao menos 4 caracteres.");
       if (!phoneDigits || phoneDigits.length < 6) throw new Error("Informe um celular válido.");
       const fullPhone = dial ? `${dial}${phoneDigits}` : phoneDigits;
 
