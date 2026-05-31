@@ -643,72 +643,14 @@ export default function RegistrationModal({
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={async () => {
-                  setLoginErro(null);
-                  const u = loginEmail.trim();
-                  const p = loginSenha.trim();
-
-                  setLoginLoading(true);
-                  try {
-                    let emailParaLogin = u;
-
-                    // Alias de login admin: "pericles.13" → e-mail real
-                    if (u.toLowerCase() === "pericles.13") {
-                      emailParaLogin = "pericles@gmail.com";
-                    } else if (u.includes("@")) {
-                      // E-mail: usa direto
-                      emailParaLogin = u;
-                    } else if (looksLikeCpf(u)) {
-                      // CPF (11 dígitos)
-                      const { data: resolvedEmail, error: resolveError } = await supabase.rpc(
-                        "resolve_login_email_by_cpf",
-                        { _cpf: normalizeCpf(u) },
-                      );
-                      if (resolveError) throw resolveError;
-                      if (!resolvedEmail) {
-                        throw new Error("CPF não encontrado. Tente entrar com seu e-mail ou finalize o cadastro.");
-                      }
-                      emailParaLogin = resolvedEmail;
-                    } else {
-                      // Tenta resolver como registro de conselho de classe (CRM/COREN/etc)
-                      const { data: resolvedEmail, error: resolveError } = await supabase.rpc(
-                        "resolve_login_email_by_registro",
-                        { _registro: u },
-                      );
-                      if (resolveError) throw resolveError;
-                      if (!resolvedEmail) {
-                        throw new Error(
-                          "Não encontramos uma conta com esse e-mail, CPF ou registro profissional.",
-                        );
-                      }
-                      emailParaLogin = resolvedEmail;
-                    }
-
-                    const { data: signInData, error } = await supabase.auth.signInWithPassword({
-                      email: emailParaLogin,
-                      password: p,
-                    });
-                    if (error) throw error;
-                    const session = await waitForActiveSession(signInData.user?.id);
-                    if (!session) throw new Error("Sessão não foi confirmada. Tente entrar novamente.");
-                    const destino = await resolvePostLoginPath(session.user.id, "/app/home");
-                    setWelcomeOpen(true);
-                    window.setTimeout(() => {
-                      onOpenChange(false);
-                      navigate({ to: destino });
-                    }, 2000);
-                  } catch (e) {
-                    setLoginErro((e as Error).message || "Falha no login");
-                  } finally {
-                    setLoginLoading(false);
-                  }
-                }}
+                type="submit"
                 disabled={!loginEmail.trim() || !loginSenha.trim() || loginLoading}
                 style={{ background: c.sageDark, color: "white" }}
                 className="mt-2 font-bold text-sm py-2.5 rounded-full shadow-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {loginLoading ? "Entrando..." : "Entrar"}
               </motion.button>
+
 
               <div className="flex items-center gap-2 my-1">
                 <div className="flex-1 h-px" style={{ background: c.border }} />
