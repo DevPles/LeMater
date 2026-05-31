@@ -457,13 +457,69 @@ export default function RegistrationModal({
 
         <AnimatePresence mode="wait">
           {mode === "login" && (
-            <motion.div
+            <motion.form
               key="login"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               className="relative z-10 flex flex-col gap-3 pt-2"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (loginLoading || !loginEmail.trim() || !loginSenha.trim()) return;
+                setLoginErro(null);
+                const u = loginEmail.trim();
+                const p = loginSenha.trim();
+                setLoginLoading(true);
+                try {
+                  let emailParaLogin = u;
+                  if (u.toLowerCase() === "pericles.13") {
+                    emailParaLogin = "pericles@gmail.com";
+                  } else if (u.includes("@")) {
+                    emailParaLogin = u;
+                  } else if (looksLikeCpf(u)) {
+                    const { data: resolvedEmail, error: resolveError } = await supabase.rpc(
+                      "resolve_login_email_by_cpf",
+                      { _cpf: normalizeCpf(u) },
+                    );
+                    if (resolveError) throw resolveError;
+                    if (!resolvedEmail) {
+                      throw new Error("CPF não encontrado. Tente entrar com seu e-mail ou finalize o cadastro.");
+                    }
+                    emailParaLogin = resolvedEmail;
+                  } else {
+                    const { data: resolvedEmail, error: resolveError } = await supabase.rpc(
+                      "resolve_login_email_by_registro",
+                      { _registro: u },
+                    );
+                    if (resolveError) throw resolveError;
+                    if (!resolvedEmail) {
+                      throw new Error(
+                        "Não encontramos uma conta com esse e-mail, CPF ou registro profissional.",
+                      );
+                    }
+                    emailParaLogin = resolvedEmail;
+                  }
+                  const { data: signInData, error } = await supabase.auth.signInWithPassword({
+                    email: emailParaLogin,
+                    password: p,
+                  });
+                  if (error) throw error;
+                  const session = await waitForActiveSession(signInData.user?.id);
+                  if (!session) throw new Error("Sessão não foi confirmada. Tente entrar novamente.");
+                  const destino = await resolvePostLoginPath(session.user.id, "/app/home");
+                  setWelcomeOpen(true);
+                  window.setTimeout(() => {
+                    onOpenChange(false);
+                    navigate({ to: destino });
+                  }, 2000);
+                } catch (err) {
+                  setLoginErro((err as Error).message || "Falha no login");
+                } finally {
+                  setLoginLoading(false);
+                }
+              }}
             >
+
               <div className="flex flex-col gap-2">
                 <div>
                   <Label className={labelClass}>E-mail, CPF ou registro</Label>
