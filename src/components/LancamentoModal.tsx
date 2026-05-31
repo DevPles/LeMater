@@ -182,7 +182,7 @@ export function LancamentoModal({
     const { error } = await supabase.from("image_exam_results").insert(payload);
     if (error) {
       console.error(error);
-      flash("err", "Falha ao salvar exame de imagem.");
+      flash("err", `Falha ao salvar exame de imagem: ${error.message}`);
     } else {
       flash("ok", "Exame de imagem registrado.");
       onSaved?.();
