@@ -996,13 +996,24 @@ export default function RegistrationModal({
 
               <div>
                 <Label className={labelClass}>Senha (mín. 4 caracteres)</Label>
-                <Input
-                  type="password"
-                  value={senhaCadastro}
-                  onChange={(e) => setSenhaCadastro(e.target.value)}
-                  placeholder="••••••••"
-                  className={inputClass}
-                />
+                <div className="relative">
+                  <Input
+                    type={showCadastroPassword ? "text" : "password"}
+                    value={senhaCadastro}
+                    onChange={(e) => setSenhaCadastro(e.target.value)}
+                    placeholder="••••••••"
+                    className={`${inputClass} pr-10`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCadastroPassword((v) => !v)}
+                    aria-label={showCadastroPassword ? "Ocultar senha" : "Mostrar senha"}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 transition-colors p-1"
+                    style={{ color: c.sage }}
+                  >
+                    <EyeToggleIcon open={showCadastroPassword} />
+                  </button>
+                </div>
               </div>
 
               {/* Gestante toggle */}
