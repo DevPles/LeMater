@@ -552,15 +552,12 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           >
             Criada pela Enfermeira Obstetra Brasileira, Rayssa Leslie, a Le Mater é um ecossistema tecnológico de Cuidado Materno que integra Educação, Orientação Profissional, Carteira Digital da Gestante e Acompanhamento da tentativa de engravidar ao Pós-Parto.
           </p>
-          <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "nowrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
             <Link to="/atlas" style={{ textDecoration: "none" }}>
-              <button style={btnPrimary}>ATLAS MATERNO</button>
+              <button style={{ ...btnPrimary, whiteSpace: "nowrap", padding: "12px 16px" }}>ATLAS MATERNO</button>
             </Link>
             <Link to="/app" style={{ textDecoration: "none" }}>
-              <button style={{ ...btnPrimary, display: "inline-flex", alignItems: "center", gap: 10 }}>
-                <img src={logoMonograma} alt="" style={{ width: 22, height: 22, objectFit: "contain" }} />
-                ACESSAR APLICATIVO
-              </button>
+              <button style={{ ...btnPrimary, whiteSpace: "nowrap", padding: "12px 16px" }}>ACESSAR APLICATIVO</button>
             </Link>
           </div>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
