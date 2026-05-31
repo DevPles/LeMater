@@ -598,13 +598,25 @@ function PerfilPage() {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full px-4 py-2.5 rounded-full bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition disabled:opacity-50"
-          >
-            {saving ? "Salvando..." : "Salvar alterações"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 px-4 py-2.5 rounded-full bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition disabled:opacity-50"
+            >
+              {saving ? "Salvando..." : "Salvar alterações"}
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.href = "/app";
+              }}
+              className="px-4 py-2.5 rounded-full border border-border bg-card text-foreground font-medium text-sm hover:bg-muted transition"
+            >
+              Sair
+            </button>
+          </div>
         </form>
       </motion.div>
     </div>
