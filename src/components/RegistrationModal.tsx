@@ -269,7 +269,6 @@ export default function RegistrationModal({
     if (gestante === true) {
       // Validações para criar conta no Supabase já no step1 → 2
       if (!email.trim()) return setSubmitErro("Informe um e-mail.");
-      if (senhaCadastro.length < 4) return setSubmitErro("Senha precisa ter ao menos 4 caracteres.");
       setShowCelebration(true);
       setTimeout(() => {
         setShowCelebration(false);
@@ -279,8 +278,8 @@ export default function RegistrationModal({
     }
 
     // Não-gestante: cria conta simples e leva para home
-    if (!email.trim() || senhaCadastro.length < 4) {
-      return setSubmitErro("Informe e-mail e senha (mínimo 4 caracteres) para criar sua conta.");
+    if (!email.trim() || !senhaCadastro.trim()) {
+      return setSubmitErro("Informe e-mail e senha para criar sua conta.");
     }
     await criarContaENavegar(null);
   };
@@ -996,7 +995,7 @@ export default function RegistrationModal({
               </div>
 
               <div>
-                <Label className={labelClass}>Senha (mín. 4 caracteres)</Label>
+                <Label className={labelClass}>Senha</Label>
                 <div className="relative">
                   <Input
                     type={showCadastroPassword ? "text" : "password"}
