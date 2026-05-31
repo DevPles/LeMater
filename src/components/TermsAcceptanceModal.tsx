@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
 import { acceptTerms, getMyTermsAcceptance, TERMS_VERSION } from "@/lib/terms.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const TERMS_TEXT = `TERMO DE CONSENTIMENTO PARA USO DO APLICATIVO E COLETA DE DADOS
 
@@ -34,6 +35,7 @@ Ao clicar em "Li e aceito", você declara ter lido, compreendido e aceitado inte
 Versão do termo: ${TERMS_VERSION}`;
 
 export function TermsAcceptanceModal() {
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [needs, setNeeds] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -42,8 +44,30 @@ export function TermsAcceptanceModal() {
   const accept = useServerFn(acceptTerms);
 
   useEffect(() => {
+    let active = true;
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active) setAuthUserId(session?.user.id ?? null);
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) setAuthUserId(data.session?.user.id ?? null);
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (!authUserId) {
+        setNeeds(false);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
       try {
         const res = await get();
         if (cancelled) return;
@@ -57,7 +81,7 @@ export function TermsAcceptanceModal() {
     return () => {
       cancelled = true;
     };
-  }, [get]);
+  }, [authUserId, get]);
 
   const handleAccept = async () => {
     setSaving(true);
