@@ -10,6 +10,7 @@ import rayssa from "@/assets/rayssa-portrait.jpg";
 import lemateLogo from "@/assets/logo_oficial.png";
 
 import appIcon from "@/assets/app-icon.png";
+import logoMonograma from "@/assets/logo_monograma.png";
 import { LiquidCard } from "@/components/LiquidCard";
 import { InstagramIcon, YouTubeIcon, TikTokIcon, HotmartIcon, KiwifyIcon, SpotifyIcon } from "@/components/SocialIcons";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -554,6 +555,12 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
             <Link to="/atlas" style={{ textDecoration: "none" }}>
               <button style={btnPrimary}>ATLAS MATERNO</button>
+            </Link>
+            <Link to="/app" style={{ textDecoration: "none" }}>
+              <button style={{ ...btnPrimary, display: "inline-flex", alignItems: "center", gap: 10 }}>
+                <img src={logoMonograma} alt="" style={{ width: 22, height: 22, objectFit: "contain" }} />
+                ACESSAR APLICATIVO
+              </button>
             </Link>
           </div>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
