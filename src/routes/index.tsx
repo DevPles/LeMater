@@ -554,10 +554,10 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           </p>
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "nowrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
             <Link to="/atlas" style={{ textDecoration: "none" }}>
-              <button style={btnPrimary}>ATLAS MATERNO</button>
+              <button style={{ ...btnPrimary, whiteSpace: "nowrap", padding: "12px 16px" }}>ATLAS MATERNO</button>
             </Link>
             <Link to="/app" style={{ textDecoration: "none" }}>
-              <button style={btnPrimary}>ACESSAR APLICATIVO</button>
+              <button style={{ ...btnPrimary, whiteSpace: "nowrap", padding: "12px 16px" }}>ACESSAR APLICATIVO</button>
             </Link>
           </div>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
