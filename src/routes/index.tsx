@@ -556,6 +556,12 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             <Link to="/atlas" style={{ textDecoration: "none" }}>
               <button style={btnPrimary}>ATLAS MATERNO</button>
             </Link>
+            <Link to="/app" style={{ textDecoration: "none" }}>
+              <button style={{ ...btnPrimary, display: "inline-flex", alignItems: "center", gap: 10 }}>
+                <img src={logoMonograma} alt="" style={{ width: 22, height: 22, objectFit: "contain" }} />
+                ACESSAR APLICATIVO
+              </button>
+            </Link>
           </div>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
             {[
