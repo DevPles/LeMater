@@ -34,7 +34,7 @@ export function FlyingStork() {
       {bubbles.map((b, i) => (
         <motion.div
           key={i}
-          className={`absolute rounded-full ${b.color} opacity-40 blur-[2px]`}
+          className={`absolute rounded-full ${b.color} opacity-80 blur-[1px]`}
           style={{
             width: b.size,
             height: b.size,
