@@ -3,7 +3,7 @@ import { createHash } from "crypto";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-export const TERMS_VERSION = "1.0";
+export const TERMS_VERSION = "2.0";
 
 export const getMyTermsAcceptance = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
