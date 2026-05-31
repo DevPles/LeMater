@@ -31,6 +31,7 @@ function AppLayout() {
       <>
         <Outlet />
         <BottomNav />
+        <TermsAcceptanceModal />
       </>
     );
   }
