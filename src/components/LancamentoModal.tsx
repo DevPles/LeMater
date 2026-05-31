@@ -46,7 +46,7 @@ export function LancamentoModal({
 
   function flash(tipo: "ok" | "err", msg: string) {
     setFeedback({ tipo, msg });
-    setTimeout(() => setFeedback(null), 2500);
+    setTimeout(() => setFeedback(null), tipo === "err" ? 8000 : 2500);
   }
 
   async function salvarMedicao(form: FormData) {
@@ -182,7 +182,7 @@ export function LancamentoModal({
     const { error } = await supabase.from("image_exam_results").insert(payload);
     if (error) {
       console.error(error);
-      flash("err", "Falha ao salvar exame de imagem.");
+      flash("err", `Falha ao salvar exame de imagem: ${error.message}`);
     } else {
       flash("ok", "Exame de imagem registrado.");
       onSaved?.();
@@ -363,13 +363,14 @@ function FormaMedicao({ onSubmit, semanaAtual }: { onSubmit: (f: FormData) => Pr
   return (
     <form
       onSubmit={async (e) => {
+        const form = e.currentTarget;
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
         fd.set("parametro", parametro === "Outro" ? outro : parametro);
         setBusy(true);
         await onSubmit(fd);
         setBusy(false);
-        (e.currentTarget as HTMLFormElement).reset();
+        form.reset();
         setOutro("");
       }}
       className="space-y-2"
@@ -444,13 +445,14 @@ function FormaExameLab({ onSubmit }: { onSubmit: (f: FormData) => Promise<void> 
   return (
     <form
       onSubmit={async (e) => {
+        const form = e.currentTarget;
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
         fd.set("tipo", tipoSel === "Outro" ? outro : tipoSel);
         setBusy(true);
         await onSubmit(fd);
         setBusy(false);
-        (e.currentTarget as HTMLFormElement).reset();
+        form.reset();
         setTipoSel(EXAMES_LAB[0]); setOutro("");
       }}
       className="space-y-2"
@@ -508,13 +510,14 @@ function FormaExameImg({ onSubmit }: { onSubmit: (f: FormData) => Promise<void> 
   return (
     <form
       onSubmit={async (e) => {
+        const form = e.currentTarget;
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
         fd.set("tipo", tipoSel === "Outro" ? outro : tipoSel);
         setBusy(true);
         await onSubmit(fd);
         setBusy(false);
-        (e.currentTarget as HTMLFormElement).reset();
+        form.reset();
         setTipoSel(EXAMES_IMG[0]); setOutro("");
       }}
       className="space-y-2"
@@ -566,12 +569,13 @@ function FormaVacina({ onSubmit }: { onSubmit: (f: FormData) => Promise<void> })
   return (
     <form
       onSubmit={async (e) => {
+        const form = e.currentTarget;
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
         setBusy(true);
         await onSubmit(fd);
         setBusy(false);
-        (e.currentTarget as HTMLFormElement).reset();
+        form.reset();
       }}
       className="space-y-2"
     >
@@ -691,6 +695,7 @@ function SubGeral({ onSubmit }: { onSubmit: (e: EventoHist[]) => Promise<void> }
   return (
     <form
       onSubmit={async (e) => {
+        const form = e.currentTarget;
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
         const eventos: EventoHist[] = [];
@@ -709,7 +714,7 @@ function SubGeral({ onSubmit }: { onSubmit: (e: EventoHist[]) => Promise<void> }
         setBusy(true);
         await onSubmit(eventos);
         setBusy(false);
-        (e.currentTarget as HTMLFormElement).reset();
+        form.reset();
       }}
       className="space-y-2"
     >
@@ -748,6 +753,7 @@ function SubGestacoes({ onSubmit }: { onSubmit: (e: EventoHist[]) => Promise<voi
   return (
     <form
       onSubmit={async (e) => {
+        const form = e.currentTarget;
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
         const eventos: EventoHist[] = [];
@@ -796,7 +802,7 @@ function SubGestacoes({ onSubmit }: { onSubmit: (e: EventoHist[]) => Promise<voi
         setBusy(true);
         await onSubmit(eventos);
         setBusy(false);
-        (e.currentTarget as HTMLFormElement).reset();
+        form.reset();
       }}
       className="space-y-2"
     >
@@ -858,6 +864,7 @@ function SubChecklist({
   return (
     <form
       onSubmit={async (e) => {
+        const form = e.currentTarget;
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
         const eventos: EventoHist[] = [];
@@ -870,7 +877,7 @@ function SubChecklist({
         setBusy(true);
         await onSubmit(eventos);
         setBusy(false);
-        (e.currentTarget as HTMLFormElement).reset();
+        form.reset();
       }}
       className="space-y-2"
     >
