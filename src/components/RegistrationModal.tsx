@@ -128,6 +128,7 @@ export default function RegistrationModal({
   const [dataNasc, setDataNasc] = useState("");
   const [email, setEmail] = useState("");
   const [senhaCadastro, setSenhaCadastro] = useState("");
+  const [showCadastroPassword, setShowCadastroPassword] = useState(false);
   const [whatsapp, setWhatsapp] = useState("");
   const [foto, setFoto] = useState<string | null>(null);
   const [gestante, setGestante] = useState<boolean | null>(null);
