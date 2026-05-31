@@ -4,6 +4,7 @@ import appCss from "../styles.css?url";
 import { LangProvider } from "@/lib/translate.context";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/BottomNav";
+import { TermsAcceptanceModal } from "@/components/TermsAcceptanceModal";
 
 function NotFoundComponent() {
   const location = useLocation();
@@ -92,11 +93,13 @@ function RootComponent() {
   const { translating } = useAutoTranslate();
   const location = useLocation();
   const showAppNav = /^\/app\/(home|videos|videochamada|cartao|alertas|gestacao|perfil|cronograma)(\/|$)/.test(location.pathname);
+  const showTermsModal = /^\/app\/(home|videos|videochamada|cartao|alertas|gestacao|perfil|cronograma|profissional|sala)(\/|$)/.test(location.pathname);
 
   return (
     <>
       <Outlet />
       {showAppNav && <BottomNav />}
+      {showTermsModal && <TermsAcceptanceModal />}
       <Toaster />
       {translating && (
         <div style={{
