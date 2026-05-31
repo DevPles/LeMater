@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { waitForActiveSession } from "@/lib/auth-routing";
+import { TermsAcceptanceModal } from "@/components/TermsAcceptanceModal";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -8,5 +9,10 @@ export const Route = createFileRoute("/_authenticated")({
     const session = await waitForActiveSession(undefined, 5000);
     if (!session) throw redirect({ to: "/login" });
   },
-  component: () => <Outlet />,
+  component: () => (
+    <>
+      <Outlet />
+      <TermsAcceptanceModal />
+    </>
+  ),
 });

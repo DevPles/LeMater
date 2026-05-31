@@ -10,6 +10,54 @@ import {
 } from "@/utils/admin-users.functions";
 import { updateProfessional } from "@/utils/admin-professionals.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { listTermsAcceptances } from "@/lib/terms.functions";
+import { TERMS_TEXT } from "@/components/TermsAcceptanceModal";
+
+type Acceptance = { user_id: string; accepted_at: string; terms_version: string; hash: string };
+
+function openTermoPdf(u: UnifiedUser, a: Acceptance) {
+  const dt = new Date(a.accepted_at);
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Termo de Aceite — ${u.nome ?? u.email ?? ""}</title>
+<style>
+  body{font-family:'Helvetica',Arial,sans-serif;color:#1c1c1a;max-width:760px;margin:32px auto;padding:0 24px;line-height:1.55;}
+  h1{font-size:22px;margin:0 0 4px;}
+  .muted{color:#666;font-size:12px;}
+  .box{margin-top:20px;border:1px solid #ddd;border-radius:8px;padding:16px;background:#fafaf7;font-size:12px;}
+  .hash{font-family:'Courier New',monospace;word-break:break-all;}
+  pre{white-space:pre-wrap;font-family:inherit;font-size:13px;margin:16px 0;}
+  .sign{margin-top:32px;border-top:1px dashed #999;padding-top:16px;font-size:12px;}
+  @media print{button{display:none;}}
+</style></head><body>
+<button onclick="window.print()" style="float:right;padding:8px 14px;border:1px solid #234735;background:#234735;color:#fff;border-radius:6px;cursor:pointer;">Imprimir / Salvar PDF</button>
+<h1>Termo de Aceite — Uso da Plataforma e Coleta de Dados</h1>
+<p class="muted">Documento gerado automaticamente. Comprovante de aceite eletrônico.</p>
+<div class="box">
+  <div><strong>Usuário:</strong> ${(u.nome ?? "").replace(/</g, "&lt;")}</div>
+  <div><strong>E-mail:</strong> ${(u.email ?? "").replace(/</g, "&lt;")}</div>
+  ${u.cpf ? `<div><strong>CPF:</strong> ${u.cpf}</div>` : ""}
+  <div><strong>ID do usuário:</strong> <span class="hash">${u.user_id}</span></div>
+  <div><strong>Versão do termo:</strong> ${a.terms_version}</div>
+  <div><strong>Data e hora do aceite:</strong> ${dt.toLocaleString("pt-BR", { dateStyle: "full", timeStyle: "long" })}</div>
+  <div><strong>Timestamp ISO 8601:</strong> ${a.accepted_at}</div>
+  <div><strong>Hash de integridade (SHA-256):</strong><br><span class="hash">${a.hash}</span></div>
+</div>
+<pre>${TERMS_TEXT.replace(/</g, "&lt;")}</pre>
+<div class="sign">
+  Este documento comprova que o usuário identificado acima aceitou eletronicamente o presente termo
+  em ${dt.toLocaleString("pt-BR")}. O hash SHA-256 acima foi gerado pelo servidor a partir do
+  identificador do usuário, do carimbo de tempo (timestamp) e da versão do termo, garantindo a
+  integridade do registro.
+</div>
+<script>setTimeout(()=>window.print(),400);</script>
+</body></html>`;
+  const w = window.open("", "_blank");
+  if (!w) {
+    alert("Permita pop-ups para baixar o termo.");
+    return;
+  }
+  w.document.write(html);
+  w.document.close();
+}
 
 const ADMIN_SECRET = "unaerp2026";
 
@@ -68,12 +116,21 @@ export function AcessosUsuariosTab() {
   const [showSenhasIds, setShowSenhasIds] = useState<Set<string>>(new Set());
   const [resetUserId, setResetUserId] = useState<UnifiedUser | null>(null);
   const [editUser, setEditUser] = useState<UnifiedUser | null>(null);
+  const [acceptances, setAcceptances] = useState<Record<string, Acceptance>>({});
 
   const load = async () => {
     setLoading(true);
     try {
-      const res = await listAllUsers({ data: { adminSecret: ADMIN_SECRET } });
+      const [res, accRes] = await Promise.all([
+        listAllUsers({ data: { adminSecret: ADMIN_SECRET } }),
+        listTermsAcceptances({ data: { adminSecret: ADMIN_SECRET } }).catch(() => ({
+          acceptances: [] as Acceptance[],
+        })),
+      ]);
       setList(res.users);
+      const map: Record<string, Acceptance> = {};
+      for (const a of accRes.acceptances as Acceptance[]) map[a.user_id] = a;
+      setAcceptances(map);
     } catch (e) {
       console.error(e);
       setMsg("Erro ao listar usuários: " + (e as Error).message);
@@ -510,6 +567,28 @@ export function AcessosUsuariosTab() {
                           <span className="text-[11px] italic text-muted-foreground">
                             definida pelo próprio usuário (não armazenada)
                           </span>
+                        )}
+                      </div>
+                      <div className="mt-2 flex items-center gap-2 flex-wrap">
+                        <span className="text-[11px] font-semibold text-muted-foreground">Termo:</span>
+                        {acceptances[u.user_id] ? (
+                          <>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                              Aceito em {new Date(acceptances[u.user_id].accepted_at).toLocaleString("pt-BR")}
+                            </span>
+                            <code className="text-[10px] bg-muted px-2 py-0.5 rounded font-mono" title={acceptances[u.user_id].hash}>
+                              hash {acceptances[u.user_id].hash.slice(0, 12)}…
+                            </code>
+                            <button
+                              type="button"
+                              onClick={() => openTermoPdf(u, acceptances[u.user_id])}
+                              className="text-[10px] font-semibold text-[#234735] hover:underline"
+                            >
+                              baixar
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-[11px] italic text-muted-foreground">não aceito ainda</span>
                         )}
                       </div>
                     </div>
