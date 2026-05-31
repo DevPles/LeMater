@@ -116,12 +116,21 @@ export function AcessosUsuariosTab() {
   const [showSenhasIds, setShowSenhasIds] = useState<Set<string>>(new Set());
   const [resetUserId, setResetUserId] = useState<UnifiedUser | null>(null);
   const [editUser, setEditUser] = useState<UnifiedUser | null>(null);
+  const [acceptances, setAcceptances] = useState<Record<string, Acceptance>>({});
 
   const load = async () => {
     setLoading(true);
     try {
-      const res = await listAllUsers({ data: { adminSecret: ADMIN_SECRET } });
+      const [res, accRes] = await Promise.all([
+        listAllUsers({ data: { adminSecret: ADMIN_SECRET } }),
+        listTermsAcceptances({ data: { adminSecret: ADMIN_SECRET } }).catch(() => ({
+          acceptances: [] as Acceptance[],
+        })),
+      ]);
       setList(res.users);
+      const map: Record<string, Acceptance> = {};
+      for (const a of accRes.acceptances as Acceptance[]) map[a.user_id] = a;
+      setAcceptances(map);
     } catch (e) {
       console.error(e);
       setMsg("Erro ao listar usuários: " + (e as Error).message);
