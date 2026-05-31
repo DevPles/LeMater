@@ -552,7 +552,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           >
             Criada pela Enfermeira Obstetra Brasileira, Rayssa Leslie, a Le Mater é um ecossistema tecnológico de Cuidado Materno que integra Educação, Orientação Profissional, Carteira Digital da Gestante e Acompanhamento da tentativa de engravidar ao Pós-Parto.
           </p>
-          <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "nowrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
             <Link to="/atlas" style={{ textDecoration: "none" }}>
               <button style={btnPrimary}>ATLAS MATERNO</button>
             </Link>
