@@ -668,7 +668,8 @@ export default function RegistrationModal({
               >
                 Cadastrar
               </motion.button>
-            </motion.div>
+            </motion.form>
+
           )}
 
           {mode === "register" && (
