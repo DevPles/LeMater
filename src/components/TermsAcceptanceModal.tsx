@@ -220,6 +220,9 @@ export function TermsAcceptanceModal() {
               lineHeight: 1.55,
               color: "#2a2a28",
               whiteSpace: "pre-wrap",
+              textAlign: "justify",
+              textJustify: "inter-word",
+              hyphens: "auto",
             }}
           >
             {TERMS_TEXT}
