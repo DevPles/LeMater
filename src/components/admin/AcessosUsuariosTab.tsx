@@ -568,6 +568,7 @@ export function AcessosUsuariosTab() {
                             definida pelo próprio usuário (não armazenada)
                           </span>
                         )}
+                      </div>
                       <div className="mt-2 flex items-center gap-2 flex-wrap">
                         <span className="text-[11px] font-semibold text-muted-foreground">Termo:</span>
                         {acceptances[u.user_id] ? (
@@ -591,7 +592,6 @@ export function AcessosUsuariosTab() {
                         )}
                       </div>
                     </div>
-                  </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
