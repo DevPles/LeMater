@@ -569,11 +569,11 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           >
             Criada pela Enfermeira Obstetra Brasileira, Rayssa Leslie, a Le Mater é um ecossistema tecnológico de Cuidado Materno que integra Educação, Orientação Profissional, Carteira Digital da Gestante e Acompanhamento da tentativa de engravidar ao Pós-Parto.
           </p>
-          <div style={{ display: "flex", gap: 12, alignItems: "stretch", flexWrap: "nowrap", justifyContent: isMobile ? "center" : "flex-start", width: isMobile ? "100%" : "auto" }}>
-            <Link to="/atlas" style={{ textDecoration: "none", flex: 1, display: "flex" }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "stretch", flexWrap: "nowrap", justifyContent: "center", width: "100%", maxWidth: 520 }}>
+            <Link to="/atlas" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
               <button className="lm-neu-btn" style={neuBtn}>ATLAS MATERNO</button>
             </Link>
-            <Link to="/app" style={{ textDecoration: "none", flex: 1, display: "flex" }}>
+            <Link to="/app" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
               <button className="lm-neu-btn" style={neuBtn}>ACESSAR APLICATIVO</button>
             </Link>
           </div>
