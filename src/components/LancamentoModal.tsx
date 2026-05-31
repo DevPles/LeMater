@@ -46,7 +46,7 @@ export function LancamentoModal({
 
   function flash(tipo: "ok" | "err", msg: string) {
     setFeedback({ tipo, msg });
-    setTimeout(() => setFeedback(null), 2500);
+    setTimeout(() => setFeedback(null), tipo === "err" ? 8000 : 2500);
   }
 
   async function salvarMedicao(form: FormData) {
