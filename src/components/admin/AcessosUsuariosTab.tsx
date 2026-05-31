@@ -568,8 +568,30 @@ export function AcessosUsuariosTab() {
                             definida pelo próprio usuário (não armazenada)
                           </span>
                         )}
+                      <div className="mt-2 flex items-center gap-2 flex-wrap">
+                        <span className="text-[11px] font-semibold text-muted-foreground">Termo:</span>
+                        {acceptances[u.user_id] ? (
+                          <>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                              Aceito em {new Date(acceptances[u.user_id].accepted_at).toLocaleString("pt-BR")}
+                            </span>
+                            <code className="text-[10px] bg-muted px-2 py-0.5 rounded font-mono" title={acceptances[u.user_id].hash}>
+                              hash {acceptances[u.user_id].hash.slice(0, 12)}…
+                            </code>
+                            <button
+                              type="button"
+                              onClick={() => openTermoPdf(u, acceptances[u.user_id])}
+                              className="text-[10px] font-semibold text-[#234735] hover:underline"
+                            >
+                              baixar
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-[11px] italic text-muted-foreground">não aceito ainda</span>
+                        )}
                       </div>
                     </div>
+                  </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
