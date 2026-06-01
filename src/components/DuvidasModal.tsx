@@ -39,22 +39,22 @@ const FAQS: Faq[] = [
       es: "¿Qué es Le Mater?",
     },
     resposta: {
-      pt: "Le Mater é uma plataforma de cuidado materno humanizado fundada pela enfermeira Rayssa Leslie. Reunimos consultas, pré-natal, plano de parto, comunidade de mães e conteúdos guiados semana a semana — tudo em um só lugar, com escuta e ciência.",
-      en: "Le Mater is a humanized maternal care platform founded by nurse Rayssa Leslie. We bring together consultations, prenatal care, birth plans, a mothers' community and week-by-week guided content — all in one place, with active listening and science.",
-      es: "Le Mater es una plataforma de cuidado materno humanizado fundada por la enfermera Rayssa Leslie. Reunimos consultas, prenatal, plan de parto, comunidad de madres y contenido semana a semana — todo en un solo lugar, con escucha y ciencia.",
+      pt: "A Le Mater é um ecossistema tecnológico de cuidado materno criado pela Enfermeira Obstetra brasileira Rayssa Leslie. Integra Educação (Atlas Materno), Orientação Profissional (teleconsultas e atendimento presencial), Carteira Digital da Gestante e acompanhamento desde a tentativa de engravidar até o pós-parto — tudo em um só lugar.",
+      en: "Le Mater is a technology-driven maternal care ecosystem created by Brazilian Obstetric Nurse Rayssa Leslie. It integrates Education (Atlas Materno), Professional Guidance (telehealth and in-person care), a Digital Pregnancy Record and follow-up from preconception through postpartum — all in one place.",
+      es: "Le Mater es un ecosistema tecnológico de cuidado materno creado por la Enfermera Obstetra brasileña Rayssa Leslie. Integra Educación (Atlas Materno), Orientación Profesional (teleconsultas y atención presencial), Carnet Digital de la Gestante y seguimiento desde la búsqueda del embarazo hasta el posparto — todo en un solo lugar.",
     },
   },
   {
     id: "metodologia",
     pergunta: {
-      pt: "Como funciona a metodologia Le Mater?",
-      en: "How does the Le Mater method work?",
-      es: "¿Cómo funciona la metodología Le Mater?",
+      pt: "Como funciona o Método Le Mater?",
+      en: "How does the Le Mater Method work?",
+      es: "¿Cómo funciona el Método Le Mater?",
     },
     resposta: {
-      pt: "Nosso método combina três pilares: cuidado clínico baseado em evidência (pré-natal, exames, vacinas), preparo emocional (escuta ativa, plano de parto, manejo de medos) e suporte contínuo (comunidade, conteúdos por trimestre e acompanhamento no pós-parto). Cada gestante recebe um plano personalizado para o seu momento.",
-      en: "Our method has three pillars: evidence-based clinical care (prenatal, tests, vaccines), emotional preparation (active listening, birth plan, fear management) and continuous support (community, trimester-by-trimester content and postpartum follow-up). Each expectant mother receives a personalized plan.",
-      es: "Nuestro método combina tres pilares: cuidado clínico basado en evidencia (prenatal, exámenes, vacunas), preparación emocional (escucha activa, plan de parto, manejo de miedos) y soporte continuo (comunidad, contenido por trimestre y seguimiento posparto). Cada gestante recibe un plan personalizado.",
+      pt: "O Método Le Mater combina ciência e acolhimento em três frentes: cuidado clínico baseado em evidência (pré-natal, exames, vacinas e parto humanizado), educação contínua por trimestre via Atlas Materno, e Carteira Digital da Gestante que organiza medidas, exames e alertas inteligentes para você e sua equipe de saúde. Rayssa é certificada em ACLS (AHA) e ALSO (Advanced Life Support in Obstetrics).",
+      en: "The Le Mater Method blends science and warmth in three areas: evidence-based clinical care (prenatal, tests, vaccines and humanized birth), ongoing trimester education via Atlas Materno, and a Digital Pregnancy Record that organizes measurements, exams and smart alerts for you and your care team. Rayssa is certified in ACLS (AHA) and ALSO (Advanced Life Support in Obstetrics).",
+      es: "El Método Le Mater combina ciencia y acogida en tres frentes: cuidado clínico basado en evidencia (prenatal, exámenes, vacunas y parto humanizado), educación continua por trimestre vía Atlas Materno, y Carnet Digital de la Gestante que organiza medidas, exámenes y alertas inteligentes para ti y tu equipo de salud. Rayssa está certificada en ACLS (AHA) y ALSO (Advanced Life Support in Obstetrics).",
     },
   },
   {
@@ -65,22 +65,22 @@ const FAQS: Faq[] = [
       es: "¿Cómo son las consultas con Rayssa?",
     },
     resposta: {
-      pt: "As consultas duram em média 60 minutos, podem ser online (por vídeo) ou presenciais em Ribeirão Preto/SP. A Rayssa revisa exames, escuta o seu momento, orienta sobre pré-natal e constrói com você um plano de cuidado. Você sai com clareza dos próximos passos.",
-      en: "Consultations last around 60 minutes and can be online (by video) or in person in Ribeirão Preto, Brazil. Rayssa reviews your tests, listens to your moment, guides prenatal care, and builds a care plan with you. You leave with clarity on the next steps.",
-      es: "Las consultas duran cerca de 60 minutos, pueden ser en línea (por video) o presenciales en Ribeirão Preto, Brasil. Rayssa revisa exámenes, escucha tu momento, orienta el prenatal y construye contigo un plan de cuidado. Sales con claridad de los próximos pasos.",
+      pt: "As consultas podem ser online por videochamada (com sala dedicada dentro da própria plataforma) ou presenciais em Ribeirão Preto/SP. A Rayssa revisa exames, escuta o seu momento, orienta sobre pré-natal, parto e pós-parto, e tudo fica registrado no seu prontuário e na sua Carteira Digital.",
+      en: "Consultations can be online via video call (in a dedicated room inside the platform itself) or in person in Ribeirão Preto, Brazil. Rayssa reviews your tests, listens to your moment, guides prenatal, birth and postpartum care, and everything is recorded in your chart and Digital Pregnancy Record.",
+      es: "Las consultas pueden ser en línea por videollamada (con sala dedicada dentro de la propia plataforma) o presenciales en Ribeirão Preto, Brasil. Rayssa revisa exámenes, escucha tu momento, orienta el prenatal, parto y posparto, y todo queda registrado en tu historia clínica y Carnet Digital.",
     },
   },
   {
     id: "app",
     pergunta: {
-      pt: "Como funciona o app Le Mater?",
-      en: "How does the Le Mater app work?",
-      es: "¿Cómo funciona la app Le Mater?",
+      pt: "O que o app Le Mater oferece?",
+      en: "What does the Le Mater app offer?",
+      es: "¿Qué ofrece la app Le Mater?",
     },
     resposta: {
-      pt: "No app você acompanha sua gestação semana a semana, monta seu plano de parto guiado, recebe lembretes de exames e participa da comunidade de mães. Há conteúdos gratuitos e uma versão premium com aulas e checklists. Você pode começar sem custo.",
-      en: "In the app you follow your pregnancy week by week, build a guided birth plan, get test reminders and join the mothers' community. There are free contents and a premium tier with classes and checklists. You can start at no cost.",
-      es: "En la app acompañas tu embarazo semana a semana, armas tu plan de parto guiado, recibes recordatorios de exámenes y participas de la comunidad. Hay contenido gratuito y una versión premium con clases y checklists. Puedes empezar sin costo.",
+      pt: "No app você acompanha sua gestação semana a semana (tamanho do bebê, marcos e dicas), mantém sua Carteira Digital da Gestante (medidas, exames, vacinas e alertas), acessa o Atlas Materno com aulas por fase, agenda consultas e entra na videochamada com a equipe. Há conteúdo gratuito e áreas pagas (aulas, pacotes e assinatura).",
+      en: "In the app you follow your pregnancy week by week (baby size, milestones and tips), keep your Digital Pregnancy Record (measurements, tests, vaccines and alerts), access Atlas Materno classes by stage, book consultations and join video calls with the team. There is free content and paid areas (classes, bundles and subscription).",
+      es: "En la app sigues tu embarazo semana a semana (tamaño del bebé, hitos y consejos), mantienes tu Carnet Digital (medidas, exámenes, vacunas y alertas), accedes al Atlas Materno con clases por fase, agendas consultas y entras a la videollamada con el equipo. Hay contenido gratuito y áreas pagas (clases, paquetes y suscripción).",
     },
   },
   {
@@ -91,22 +91,22 @@ const FAQS: Faq[] = [
       es: "¿Cuáles son los valores y formas de pago?",
     },
     resposta: {
-      pt: "Os valores variam conforme o tipo de acompanhamento (consulta única, pacote pré-natal completo ou assinatura do app). No Brasil, o pagamento é processado via Mercado Pago — cartão de crédito em até 12x, Pix e boleto. Para outros países, usamos Stripe, aceitando cartões de crédito e débito internacionais em múltiplas moedas. Se quiser um orçamento exato, fale com a nossa equipe pelo WhatsApp.",
-      en: "Prices vary depending on the type of follow-up (single consultation, full prenatal package or app subscription). In Brazil, payments are processed through Mercado Pago — credit card up to 12x, Pix and boleto. For other countries, we use Stripe, accepting international credit and debit cards in multiple currencies. For an exact quote, please reach our team on WhatsApp.",
-      es: "Los precios varían según el tipo de acompañamiento (consulta única, paquete prenatal completo o suscripción de la app). En Brasil, el pago se procesa con Mercado Pago — tarjeta de crédito hasta 12x, Pix y boleto. Para otros países usamos Stripe, aceptando tarjetas de crédito y débito internacionales en varias monedas. Para una cotización exacta, habla con nuestro equipo por WhatsApp.",
+      pt: "Os valores variam conforme o tipo de acompanhamento (consulta avulsa, aulas do Atlas, pacotes ou assinatura). No Brasil, o pagamento é processado via Mercado Pago — cartão de crédito em até 12x, Pix e boleto. Para outros países, usamos Stripe, aceitando cartões internacionais em múltiplas moedas. Se quiser um orçamento exato, fale com a nossa equipe pelo WhatsApp.",
+      en: "Prices vary depending on the type of care (single consultation, Atlas classes, bundles or subscription). In Brazil, payments are processed via Mercado Pago — credit card up to 12x, Pix and boleto. For other countries we use Stripe, accepting international cards in multiple currencies. For an exact quote, reach our team on WhatsApp.",
+      es: "Los precios varían según el tipo de cuidado (consulta puntual, clases del Atlas, paquetes o suscripción). En Brasil, el pago se procesa vía Mercado Pago — tarjeta de crédito hasta 12x, Pix y boleto. Para otros países usamos Stripe, aceptando tarjetas internacionales en varias monedas. Para una cotización exacta, habla con nuestro equipo por WhatsApp.",
     },
   },
   {
     id: "internacional",
     pergunta: {
       pt: "Atendem gestantes fora do Brasil?",
-      en: "Do you attend mothers outside Brazil?",
+      en: "Do you support mothers outside Brazil?",
       es: "¿Atienden gestantes fuera de Brasil?",
     },
     resposta: {
-      pt: "Sim. Atendemos online em português, inglês e espanhol. O acompanhamento clínico segue as diretrizes do país onde você mora, complementando o trabalho do seu obstetra local com cuidado humanizado e suporte emocional.",
-      en: "Yes. We offer online care in Portuguese, English and Spanish. Clinical follow-up respects the guidelines of your country and complements your local obstetrician with humanized care and emotional support.",
-      es: "Sí. Atendemos en línea en portugués, inglés y español. El seguimiento clínico respeta las pautas del país donde vives y complementa a tu obstetra local con cuidado humanizado y soporte emocional.",
+      pt: "Sim. A plataforma está disponível em português, inglês e espanhol, e a teleconsulta acontece por videochamada dentro do próprio app. Nosso acompanhamento complementa o trabalho do seu obstetra local, respeitando as diretrizes do país onde você mora, com cuidado humanizado e suporte emocional.",
+      en: "Yes. The platform is available in Portuguese, English and Spanish, and telehealth happens via video call inside the app itself. Our care complements your local obstetrician, respecting your country's guidelines, with humanized care and emotional support.",
+      es: "Sí. La plataforma está disponible en portugués, inglés y español, y la teleconsulta ocurre por videollamada dentro de la propia app. Nuestro acompañamiento complementa a tu obstetra local, respetando las pautas de tu país, con cuidado humanizado y soporte emocional.",
     },
   },
   {
@@ -117,9 +117,9 @@ const FAQS: Faq[] = [
       es: "¿Y después de que nace el bebé?",
     },
     resposta: {
-      pt: "Seguimos com você no pós-parto: amamentação, recuperação física e emocional, cuidados com o bebê e a rede de apoio. Há consultas específicas de puerpério e conteúdos no app para os primeiros meses.",
-      en: "We stay with you postpartum: breastfeeding, physical and emotional recovery, baby care and support network. There are specific postpartum consultations and app content for the first months.",
-      es: "Te acompañamos en el posparto: lactancia, recuperación física y emocional, cuidado del bebé y red de apoyo. Hay consultas específicas de puerperio y contenido en la app para los primeros meses.",
+      pt: "Seguimos com você no puerpério: amamentação, recuperação física e emocional, cuidados com o recém-nascido e rede de apoio. Há checklists e aulas específicas no Atlas Materno e consultas de pós-parto com a equipe.",
+      en: "We stay with you through postpartum: breastfeeding, physical and emotional recovery, newborn care and support network. There are specific checklists and classes in Atlas Materno plus postpartum consultations with the team.",
+      es: "Te acompañamos en el puerperio: lactancia, recuperación física y emocional, cuidado del recién nacido y red de apoyo. Hay checklists y clases específicas en el Atlas Materno y consultas posparto con el equipo.",
     },
   },
 ];
