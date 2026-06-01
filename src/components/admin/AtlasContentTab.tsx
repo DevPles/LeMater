@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import MateriaisTab from "./MateriaisTab";
 import AulasTab from "./AulasTab";
 import TemasTab from "./TemasTab";
+import MultimidiaTab from "./MultimidiaTab";
 import NovoAtlasModal from "./NovoAtlasModal";
 import { listAtlasTemas, type AtlasTema } from "@/lib/cursos.functions";
 
@@ -10,7 +11,7 @@ const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type Aba = "conteudo" | "tema";
+type Aba = "conteudo" | "tema" | "multimidia";
 type TipoFiltro = "aula" | "servico";
 
 export default function AtlasContentTab() {
@@ -37,7 +38,7 @@ export default function AtlasContentTab() {
       </div>
 
       <div style={{ display: "flex", gap: 0, marginBottom: 20, borderBottom: `1px solid ${c.border}` }}>
-        {([["conteudo", "Conteúdo"], ["tema", "Temas"]] as [Aba, string][]).map(([k, label]) => {
+        {([["conteudo", "Conteúdo"], ["tema", "Temas"], ["multimidia", "Multimídia"]] as [Aba, string][]).map(([k, label]) => {
           const ativo = aba === k;
           return (
             <button key={k} onClick={() => setAba(k)} style={{
@@ -78,6 +79,7 @@ export default function AtlasContentTab() {
       )}
 
       {aba === "tema" && <TemasTab />}
+      {aba === "multimidia" && <MultimidiaTab />}
 
       {novoOpen && (
         <NovoAtlasModal
