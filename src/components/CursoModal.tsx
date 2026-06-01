@@ -262,17 +262,8 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                   </div>
                 )}
 
-                {/* Lista de miniaturas/títulos dos arquivos */}
-                {total > 1 && (
-                  <div style={{ marginTop: 10, display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
-                    {slides.map((s, i) => (
-                      <button key={i} type="button" onClick={() => setSlideIdx(i)}
-                        style={{ flexShrink: 0, padding: "6px 10px", background: i === slideIdx ? c.sageDark : "white", color: i === slideIdx ? "white" : c.ink, border: `1px solid ${i === slideIdx ? c.sageDark : c.border}`, cursor: "pointer", fontFamily: sans, fontSize: 11, letterSpacing: "0.04em", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {s.kind === "pdf" ? "PDF · " : "Vídeo · "}{s.nome}
-                      </button>
-                    ))}
-                  </div>
-                )}
+
+
 
                 <div style={{ marginTop: 14 }}>
                   <h3 style={{ fontFamily: serif, fontSize: isMobile ? 20 : 24, fontWeight: 400, margin: "0 0 8px", lineHeight: 1.25 }}>{player.aula.titulo}</h3>
