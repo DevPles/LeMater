@@ -78,6 +78,26 @@ import gestacaoEspanha3 from "@/assets/curso-videos/gestacao-espanha-3.mp4.asset
 import gestacaoEspanha4 from "@/assets/curso-videos/gestacao-espanha-4.mp4.asset.json";
 import gestacaoEspanha5 from "@/assets/curso-videos/gestacao-espanha-5.mp4.asset.json";
 import gestacaoEspanha6 from "@/assets/curso-videos/gestacao-espanha-6.mp4.asset.json";
+import esteticaBrasil1 from "@/assets/curso-videos/estetica-brasil-1.mp4.asset.json";
+import esteticaBrasil2 from "@/assets/curso-videos/estetica-brasil-2.mp4.asset.json";
+import esteticaBrasil3 from "@/assets/curso-videos/estetica-brasil-3.mp4.asset.json";
+import esteticaBrasil4 from "@/assets/curso-videos/estetica-brasil-4.mp4.asset.json";
+import esteticaBrasil5 from "@/assets/curso-videos/estetica-brasil-5.mp4.asset.json";
+import esteticaBrasil6 from "@/assets/curso-videos/estetica-brasil-6.mp4.asset.json";
+import esteticaBrasil7 from "@/assets/curso-videos/estetica-brasil-7.mp4.asset.json";
+import esteticaEua1 from "@/assets/curso-videos/estetica-eua-1.mp4.asset.json";
+import esteticaEua2 from "@/assets/curso-videos/estetica-eua-2.mp4.asset.json";
+import esteticaEua3 from "@/assets/curso-videos/estetica-eua-3.mp4.asset.json";
+import esteticaEua4 from "@/assets/curso-videos/estetica-eua-4.mp4.asset.json";
+import esteticaEua5 from "@/assets/curso-videos/estetica-eua-5.mp4.asset.json";
+import esteticaEua6 from "@/assets/curso-videos/estetica-eua-6.mp4.asset.json";
+import esteticaEua7 from "@/assets/curso-videos/estetica-eua-7.mp4.asset.json";
+import esteticaEspanha1 from "@/assets/curso-videos/estetica-espanha-1.mp4.asset.json";
+import esteticaEspanha2 from "@/assets/curso-videos/estetica-espanha-2.mp4.asset.json";
+import esteticaEspanha3 from "@/assets/curso-videos/estetica-espanha-3.mp4.asset.json";
+import esteticaEspanha4 from "@/assets/curso-videos/estetica-espanha-4.mp4.asset.json";
+import esteticaEspanha5 from "@/assets/curso-videos/estetica-espanha-5.mp4.asset.json";
+import esteticaEspanha6 from "@/assets/curso-videos/estetica-espanha-6.mp4.asset.json";
 
 type BuiltinVideo = { nome: string; url: string; keywords: string[] };
 const BUILTIN_VIDEOS: BuiltinVideo[] = [
@@ -163,6 +183,27 @@ const BUILTIN_VIDEOS: BuiltinVideo[] = [
   { nome: "Gestação segura · Espanha (Retiro)", url: gestacaoEspanha4.url, keywords: ["gesta", "gravid", "grávid", "caminhad", "exerc", "espanh", "madrid"] },
   { nome: "Gestação segura · Espanha (mediterrânea)", url: gestacaoEspanha5.url, keywords: ["gesta", "gravid", "grávid", "aliment", "nutri", "mediterr", "espanh"] },
   { nome: "Gestação segura · Espanha (casal Barcelona)", url: gestacaoEspanha6.url, keywords: ["gesta", "gravid", "grávid", "casal", "famil", "espanh", "barcelon"] },
+
+  { nome: "Estética gestacional · Brasil (skincare SP)", url: esteticaBrasil1.url, keywords: ["estetic", "cuidad", "skincare", "pele", "gesta", "gravid", "grávid", "brasil"] },
+  { nome: "Estética gestacional · Brasil (massagem Rio)", url: esteticaBrasil2.url, keywords: ["estetic", "cuidad", "massag", "spa", "gesta", "gravid", "grávid", "brasil"] },
+  { nome: "Estética gestacional · Brasil (máscara facial)", url: esteticaBrasil3.url, keywords: ["estetic", "cuidad", "facial", "mascara", "pele", "gesta", "gravid", "grávid", "brasil"] },
+  { nome: "Estética gestacional · Brasil (cabelo BH)", url: esteticaBrasil4.url, keywords: ["estetic", "cuidad", "cabelo", "salao", "gesta", "gravid", "grávid", "brasil"] },
+  { nome: "Estética gestacional · Brasil (óleo barriga)", url: esteticaBrasil5.url, keywords: ["estetic", "cuidad", "oleo", "estria", "barriga", "gesta", "gravid", "grávid", "brasil"] },
+  { nome: "Estética gestacional · Brasil (manicure SP)", url: esteticaBrasil6.url, keywords: ["estetic", "cuidad", "manicure", "unha", "gesta", "gravid", "grávid", "brasil"] },
+  { nome: "Estética gestacional · Brasil (escalda-pés)", url: esteticaBrasil7.url, keywords: ["estetic", "cuidad", "pes", "relax", "gesta", "gravid", "grávid", "brasil"] },
+  { nome: "Estética gestacional · EUA (skincare Brooklyn)", url: esteticaEua1.url, keywords: ["estetic", "cuidad", "skincare", "pele", "gesta", "gravid", "grávid", "eua", "americ"] },
+  { nome: "Estética gestacional · EUA (massagem LA)", url: esteticaEua2.url, keywords: ["estetic", "cuidad", "massag", "spa", "gesta", "gravid", "grávid", "eua"] },
+  { nome: "Estética gestacional · EUA (estrias NYC)", url: esteticaEua3.url, keywords: ["estetic", "cuidad", "estria", "oleo", "barriga", "gesta", "gravid", "grávid", "eua"] },
+  { nome: "Estética gestacional · EUA (cabelo Chicago)", url: esteticaEua4.url, keywords: ["estetic", "cuidad", "cabelo", "salao", "gesta", "gravid", "grávid", "eua"] },
+  { nome: "Estética gestacional · EUA (facial Seattle)", url: esteticaEua5.url, keywords: ["estetic", "cuidad", "facial", "vapor", "pele", "gesta", "gravid", "grávid", "eua"] },
+  { nome: "Estética gestacional · EUA (pedicure Austin)", url: esteticaEua6.url, keywords: ["estetic", "cuidad", "pedicure", "unha", "gesta", "gravid", "grávid", "eua"] },
+  { nome: "Estética gestacional · EUA (yoga Miami)", url: esteticaEua7.url, keywords: ["estetic", "cuidad", "yoga", "automass", "gesta", "gravid", "grávid", "eua"] },
+  { nome: "Estética gestacional · Espanha (skincare Madrid)", url: esteticaEspanha1.url, keywords: ["estetic", "cuidad", "skincare", "pele", "gesta", "gravid", "grávid", "espanh", "madrid"] },
+  { nome: "Estética gestacional · Espanha (spa Barcelona)", url: esteticaEspanha2.url, keywords: ["estetic", "cuidad", "massag", "spa", "gesta", "gravid", "grávid", "espanh", "barcelon"] },
+  { nome: "Estética gestacional · Espanha (óleo Valencia)", url: esteticaEspanha3.url, keywords: ["estetic", "cuidad", "oleo", "estria", "barriga", "gesta", "gravid", "grávid", "espanh", "valenc"] },
+  { nome: "Estética gestacional · Espanha (cabelo Sevilla)", url: esteticaEspanha4.url, keywords: ["estetic", "cuidad", "cabelo", "salao", "gesta", "gravid", "grávid", "espanh", "sevilla"] },
+  { nome: "Estética gestacional · Espanha (facial Madrid)", url: esteticaEspanha5.url, keywords: ["estetic", "cuidad", "facial", "mascara", "pele", "gesta", "gravid", "grávid", "espanh"] },
+  { nome: "Estética gestacional · Espanha (pedicure Bilbao)", url: esteticaEspanha6.url, keywords: ["estetic", "cuidad", "pedicure", "unha", "gesta", "gravid", "grávid", "espanh", "bilbao"] },
 ];
 
 const c = {
