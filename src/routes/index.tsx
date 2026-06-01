@@ -616,7 +616,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               content: "";
               position: absolute;
               inset: -115%;
-              z-index: -1;
+              z-index: 0;
               background: conic-gradient(
                 from 0deg,
                 rgba(240, 192, 64, 0.08) 0deg,
