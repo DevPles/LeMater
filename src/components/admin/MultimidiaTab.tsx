@@ -17,6 +17,16 @@ import amamentacao8 from "@/assets/curso-videos/amamentacao-8.mp4.asset.json";
 import amamentacao9 from "@/assets/curso-videos/amamentacao-9.mp4.asset.json";
 import amamentacao10 from "@/assets/curso-videos/amamentacao-10.mp4.asset.json";
 import amamentacao11 from "@/assets/curso-videos/amamentacao-11.mp4.asset.json";
+import amamentacao12 from "@/assets/curso-videos/amamentacao-12.mp4.asset.json";
+import amamentacao13 from "@/assets/curso-videos/amamentacao-13.mp4.asset.json";
+import amamentacao14 from "@/assets/curso-videos/amamentacao-14.mp4.asset.json";
+import amamentacao15 from "@/assets/curso-videos/amamentacao-15.mp4.asset.json";
+import amamentacao16 from "@/assets/curso-videos/amamentacao-16.mp4.asset.json";
+import amamentacao17 from "@/assets/curso-videos/amamentacao-17.mp4.asset.json";
+import amamentacao18 from "@/assets/curso-videos/amamentacao-18.mp4.asset.json";
+import amamentacao19 from "@/assets/curso-videos/amamentacao-19.mp4.asset.json";
+import amamentacao20 from "@/assets/curso-videos/amamentacao-20.mp4.asset.json";
+import amamentacao21 from "@/assets/curso-videos/amamentacao-21.mp4.asset.json";
 
 type BuiltinVideo = { nome: string; url: string; keywords: string[] };
 const BUILTIN_VIDEOS: BuiltinVideo[] = [
