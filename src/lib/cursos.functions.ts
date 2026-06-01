@@ -766,7 +766,14 @@ const AulaAvulsaSchema = z.object({
   link_compra_externo: z.string().max(500).nullable().optional(),
   beneficios: z.array(z.string().trim().min(1).max(200)).max(20).default([]),
   temas: z.array(z.string().uuid()).min(1, "Selecione ao menos um tema").max(20),
+  materiais_extras: z.array(z.object({
+    kind: z.enum(["pdf", "video_upload", "video_externo"]),
+    nome: z.string().trim().min(1).max(200),
+    path: z.string().max(500).nullable().optional(),
+    url: z.string().max(500).nullable().optional(),
+  })).max(50).optional(),
 });
+
 
 
 export const adminUpsertAulaAvulsa = createServerFn({ method: "POST" })
