@@ -82,7 +82,7 @@ export function ContentCard(p: ContentCardProps) {
         {p.titulo}
       </div>
       {p.descricao && (
-        <p style={{ fontSize: 11.5, lineHeight: 1.45, color: isDark ? "rgba(255,255,255,0.75)" : c.muted, marginBottom: 10 }}>
+        <p style={{ fontSize: 13.5, lineHeight: 1.55, color: isDark ? "rgba(255,255,255,0.78)" : c.muted, marginBottom: 10, textAlign: "justify", hyphens: "auto" }}>
           {p.descricao}
         </p>
       )}
