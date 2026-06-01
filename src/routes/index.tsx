@@ -853,8 +853,9 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
 
             </div>
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
-              <div style={{ height: 38, display: "flex", alignItems: "center", gap: 8, justifyContent: isMobile ? "center" : "flex-start", flexWrap: "wrap" }}>
+              <div style={{ height: 38, display: "flex", alignItems: "center", gap: 18, justifyContent: isMobile ? "center" : "flex-start", flexWrap: "wrap" }}>
                 {[
+                  { Icon: WhatsAppIcon, href: "https://wa.me/5511945383845", label: "WhatsApp" },
                   { Icon: InstagramIcon, href: "https://www.instagram.com/aleslierayssa", label: "Instagram" },
                   { Icon: YouTubeIcon, href: "https://youtube.com/@lemateroficial", label: "YouTube" },
                   { Icon: TikTokIcon, href: "https://www.tiktok.com/@lematerbr", label: "TikTok" },
@@ -863,7 +864,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                   { Icon: KiwifyIcon, href: "https://kiwify.com.br", label: "Kiwify" },
                   
                 ].map(({ Icon, href, label }) => (
-                  <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} title={label} style={{ lineHeight: 0, display: "inline-flex", transition: "transform 150ms, opacity 150ms", opacity: 0.92 }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.opacity = "1"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.opacity = "0.92"; }}>
+                  <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} title={label} style={{ lineHeight: 0, display: "inline-flex", padding: 4, transition: "transform 150ms, opacity 150ms", opacity: 0.92 }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.opacity = "1"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.opacity = "0.92"; }}>
                     <Icon size={26} />
                   </a>
                 ))}
