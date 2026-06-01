@@ -206,6 +206,7 @@ export default function MultimidiaTab() {
                   <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                     <button onClick={() => copyBuiltin(v.url)} style={btnSm(c.sage)}>Copiar link</button>
                     <a href={v.url} target="_blank" rel="noreferrer" style={{ ...btnSm(c.sageDark), textDecoration: "none", display: "inline-block" }}>Abrir</a>
+                    <a href={v.url} download={`${v.nome.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.mp4`} style={{ ...btnSm(c.gold), textDecoration: "none", display: "inline-block" }}>Baixar</a>
                   </div>
                 </div>
               ))}
