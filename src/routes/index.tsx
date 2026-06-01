@@ -832,6 +832,8 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
                 <span className="lm-mobile-only">Pós Graduada em Neonatologista</span><br />
                 <span className="lm-desktop-only">Especialista ACLS American Heart Association (AHA)</span>
                 <span className="lm-mobile-only">ACLS American Heart Association (AHA)</span><br />
+                <span className="lm-desktop-only">Pós Graduada em Estética Avançada pelo NEPUGA</span>
+                <span className="lm-mobile-only">Pós Graduada em Estética Avançada pelo NEPUGA</span><br />
                 Criadora do Método Le Mater<br />
                 Fundadora da Le Mater Estética
               </div>
