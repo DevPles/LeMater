@@ -473,6 +473,77 @@ export default function AulaEditor({
                 <Field label="PDF (se tipo = PDF)"><input name="pdf_file" type="file" accept="application/pdf" style={inp} /></Field>
                 <Field label="HTML (se tipo = Texto)"><textarea name="conteudo_html" defaultValue={editing.conteudo_html ?? ""} rows={5} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} /></Field>
 
+                <SectionTitle>Mídias adicionais (PDFs e vídeos)</SectionTitle>
+                <p style={{ fontSize: 12, color: c.muted, margin: "0 0 12px" }}>
+                  Anexe quantos PDFs e vídeos quiser. O aluno poderá clicar para ler o PDF em um modal ou assistir cada vídeo.
+                </p>
+
+                {/* Inputs para adicionar */}
+                <div style={{ display: "grid", gridTemplateColumns: wide ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 12 }}>
+                  <MediaField label="Adicionar PDFs (selecione vários)" hint="Cada arquivo vira um item clicável para o aluno.">
+                    <input type="file" accept="application/pdf" multiple onChange={(e) => {
+                      const files = Array.from(e.target.files ?? []);
+                      if (files.length === 0) return;
+                      setExtras((prev) => [
+                        ...prev,
+                        ...files.map((f) => ({ kind: "pdf" as const, nome: f.name.replace(/\.pdf$/i, ""), _file: f, _pending: true, _localId: makeLocalId() })),
+                      ]);
+                      e.target.value = "";
+                    }} style={{ ...inp, minHeight: 42 }} />
+                  </MediaField>
+                  <MediaField label="Adicionar vídeos (arquivos MP4 — selecione vários)" hint="Vídeos são reproduzidos dentro do player da aula.">
+                    <input type="file" accept="video/*" multiple onChange={(e) => {
+                      const files = Array.from(e.target.files ?? []);
+                      if (files.length === 0) return;
+                      setExtras((prev) => [
+                        ...prev,
+                        ...files.map((f) => ({ kind: "video_upload" as const, nome: f.name.replace(/\.[^.]+$/, ""), _file: f, _pending: true, _localId: makeLocalId() })),
+                      ]);
+                      e.target.value = "";
+                    }} style={{ ...inp, minHeight: 42 }} />
+                  </MediaField>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr auto", gap: 8, marginBottom: 16 }}>
+                  <input placeholder="URL do vídeo (YouTube, Vimeo…)" value={novoVideoUrl} onChange={(e) => setNovoVideoUrl(e.target.value)} style={inp} />
+                  <input placeholder="Nome do vídeo (opcional)" value={novoVideoNome} onChange={(e) => setNovoVideoNome(e.target.value)} style={inp} />
+                  <button type="button" onClick={() => {
+                    const u = novoVideoUrl.trim();
+                    if (!u) return;
+                    setExtras((prev) => [...prev, { kind: "video_externo", nome: novoVideoNome.trim() || "Vídeo externo", url: u, _pending: true, _localId: makeLocalId() }]);
+                    setNovoVideoUrl(""); setNovoVideoNome("");
+                  }} style={btn(c.sageDark)}>Adicionar URL</button>
+                </div>
+
+                {/* Lista de itens */}
+                {extras.length === 0 ? (
+                  <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: 14, textAlign: "center", color: c.muted, fontSize: 12, marginBottom: 18 }}>
+                    Nenhuma mídia adicional. Use os campos acima para anexar PDFs ou vídeos.
+                  </div>
+                ) : (
+                  <div style={{ border: `1px solid ${c.border}`, background: "white", marginBottom: 18 }}>
+                    {extras.map((ex, idx) => (
+                      <div key={ex._localId} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", padding: "10px 12px", borderBottom: idx < extras.length - 1 ? `1px solid ${c.border}` : "none" }}>
+                        <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: ex.kind === "pdf" ? "#B8923A" : c.sageDark, border: `1px solid ${ex.kind === "pdf" ? "#B8923A" : c.sageDark}`, padding: "3px 8px", fontWeight: 600 }}>
+                          {ex.kind === "pdf" ? "PDF" : ex.kind === "video_externo" ? "Vídeo URL" : "Vídeo"}
+                        </span>
+                        <input value={ex.nome} onChange={(e) => {
+                          const v = e.target.value;
+                          setExtras((prev) => prev.map((p) => p._localId === ex._localId ? { ...p, nome: v } : p));
+                        }} placeholder="Nome exibido para o aluno" style={{ ...inp, padding: "6px 10px", fontSize: 13 }} />
+                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                          {ex._pending && <span style={{ fontSize: 10, color: c.muted, letterSpacing: "0.1em" }}>NOVO</span>}
+                          <button type="button" onClick={() => setExtras((prev) => prev.filter((p) => p._localId !== ex._localId))}
+                            style={{ background: "transparent", border: `1px solid ${c.danger}`, color: c.danger, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", padding: "6px 10px", cursor: "pointer", fontFamily: sans }}>
+                            Remover
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+
                 <SectionTitle>Monetização — Brasil (preço base)</SectionTitle>
                 <input type="checkbox" name="gratis" checked={pvGratis} readOnly style={{ display: "none" }} />
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
