@@ -99,6 +99,29 @@ import esteticaEspanha4 from "@/assets/curso-videos/estetica-espanha-4.mp4.asset
 import esteticaEspanha5 from "@/assets/curso-videos/estetica-espanha-5.mp4.asset.json";
 import esteticaEspanha6 from "@/assets/curso-videos/estetica-espanha-6.mp4.asset.json";
 
+import puerperioBrasil1 from "@/assets/curso-videos/puerperio-brasil-1.mp4.asset.json";
+import puerperioBrasil2 from "@/assets/curso-videos/puerperio-brasil-2.mp4.asset.json";
+import puerperioBrasil3 from "@/assets/curso-videos/puerperio-brasil-3.mp4.asset.json";
+import puerperioBrasil4 from "@/assets/curso-videos/puerperio-brasil-4.mp4.asset.json";
+import puerperioBrasil5 from "@/assets/curso-videos/puerperio-brasil-5.mp4.asset.json";
+import puerperioBrasil6 from "@/assets/curso-videos/puerperio-brasil-6.mp4.asset.json";
+import puerperioBrasil7 from "@/assets/curso-videos/puerperio-brasil-7.mp4.asset.json";
+
+import puerperioEua1 from "@/assets/curso-videos/puerperio-eua-1.mp4.asset.json";
+import puerperioEua2 from "@/assets/curso-videos/puerperio-eua-2.mp4.asset.json";
+import puerperioEua3 from "@/assets/curso-videos/puerperio-eua-3.mp4.asset.json";
+import puerperioEua4 from "@/assets/curso-videos/puerperio-eua-4.mp4.asset.json";
+import puerperioEua5 from "@/assets/curso-videos/puerperio-eua-5.mp4.asset.json";
+import puerperioEua6 from "@/assets/curso-videos/puerperio-eua-6.mp4.asset.json";
+import puerperioEua7 from "@/assets/curso-videos/puerperio-eua-7.mp4.asset.json";
+
+import puerperioEspanha1 from "@/assets/curso-videos/puerperio-espanha-1.mp4.asset.json";
+import puerperioEspanha2 from "@/assets/curso-videos/puerperio-espanha-2.mp4.asset.json";
+import puerperioEspanha3 from "@/assets/curso-videos/puerperio-espanha-3.mp4.asset.json";
+import puerperioEspanha4 from "@/assets/curso-videos/puerperio-espanha-4.mp4.asset.json";
+import puerperioEspanha5 from "@/assets/curso-videos/puerperio-espanha-5.mp4.asset.json";
+import puerperioEspanha6 from "@/assets/curso-videos/puerperio-espanha-6.mp4.asset.json";
+
 type BuiltinVideo = { nome: string; url: string; keywords: string[] };
 const BUILTIN_VIDEOS: BuiltinVideo[] = [
   { nome: "Engravidar / Concepção", url: vidEngravidar, keywords: ["conceb", "concep", "engravid", "fertil"] },
@@ -204,6 +227,27 @@ const BUILTIN_VIDEOS: BuiltinVideo[] = [
   { nome: "Estética gestacional · Espanha (cabelo Sevilla)", url: esteticaEspanha4.url, keywords: ["estetic", "cuidad", "cabelo", "salao", "gesta", "gravid", "grávid", "espanh", "sevilla"] },
   { nome: "Estética gestacional · Espanha (facial Madrid)", url: esteticaEspanha5.url, keywords: ["estetic", "cuidad", "facial", "mascara", "pele", "gesta", "gravid", "grávid", "espanh"] },
   { nome: "Estética gestacional · Espanha (pedicure Bilbao)", url: esteticaEspanha6.url, keywords: ["estetic", "cuidad", "pedicure", "unha", "gesta", "gravid", "grávid", "espanh", "bilbao"] },
+
+  { nome: "Puerpério · Brasil (descanso SP)", url: puerperioBrasil1.url, keywords: ["puerp", "pos-parto", "pós-parto", "descans", "recuper", "brasil"] },
+  { nome: "Puerpério · Brasil (apoio do parceiro Rio)", url: puerperioBrasil2.url, keywords: ["puerp", "pos-parto", "pós-parto", "apoio", "parceir", "brasil"] },
+  { nome: "Puerpério · Brasil (amamentação BH)", url: puerperioBrasil3.url, keywords: ["puerp", "pos-parto", "pós-parto", "amament", "leite", "brasil"] },
+  { nome: "Puerpério · Brasil (apoio da avó Curitiba)", url: puerperioBrasil4.url, keywords: ["puerp", "pos-parto", "pós-parto", "famil", "avo", "brasil"] },
+  { nome: "Puerpério · Brasil (exercícios leves SP)", url: puerperioBrasil5.url, keywords: ["puerp", "pos-parto", "pós-parto", "exerc", "recuper", "brasil"] },
+  { nome: "Puerpério · Brasil (alimentação saudável)", url: puerperioBrasil6.url, keywords: ["puerp", "pos-parto", "pós-parto", "aliment", "nutri", "brasil"] },
+  { nome: "Puerpério · Brasil (banho no bebê)", url: puerperioBrasil7.url, keywords: ["puerp", "pos-parto", "pós-parto", "banho", "bebe", "bebe", "brasil"] },
+  { nome: "Puerpério · EUA (descanso Brooklyn)", url: puerperioEua1.url, keywords: ["puerp", "pos-parto", "pós-parto", "descans", "recuper", "eua", "americ"] },
+  { nome: "Puerpério · EUA (troca de fralda LA)", url: puerperioEua2.url, keywords: ["puerp", "pos-parto", "pós-parto", "fralda", "cuidad", "eua", "americ"] },
+  { nome: "Puerpério · EUA (exercícios Seattle)", url: puerperioEua3.url, keywords: ["puerp", "pos-parto", "pós-parto", "exerc", "recuper", "eua"] },
+  { nome: "Puerpério · EUA (momento em família Chicago)", url: puerperioEua4.url, keywords: ["puerp", "pos-parto", "pós-parto", "famil", "casal", "eua"] },
+  { nome: "Puerpério · EUA (massagem pós-parto Austin)", url: puerperioEua5.url, keywords: ["puerp", "pos-parto", "pós-parto", "massag", "spa", "eua"] },
+  { nome: "Puerpério · EUA (pediatra NYC)", url: puerperioEua6.url, keywords: ["puerp", "pos-parto", "pós-parto", "pediatr", "medico", "eua"] },
+  { nome: "Puerpério · EUA (smoothie Miami)", url: puerperioEua7.url, keywords: ["puerp", "pos-parto", "pós-parto", "aliment", "nutri", "eua"] },
+  { nome: "Puerpério · Espanha (descanso Madrid)", url: puerperioEspanha1.url, keywords: ["puerp", "pos-parto", "pós-parto", "descans", "recuper", "espanh", "madrid"] },
+  { nome: "Puerpério · Espanha (pai com bebê Barcelona)", url: puerperioEspanha2.url, keywords: ["puerp", "pos-parto", "pós-parto", "pai", "bebe", "bebe", "espanh"] },
+  { nome: "Puerpério · Espanha (amamentação Valencia)", url: puerperioEspanha3.url, keywords: ["puerp", "pos-parto", "pós-parto", "amament", "leite", "espanh"] },
+  { nome: "Puerpério · Espanha (celebração Sevilha)", url: puerperioEspanha4.url, keywords: ["puerp", "pos-parto", "pós-parto", "famil", "celebr", "espanh"] },
+  { nome: "Puerpério · Espanha (avo em Bilbao)", url: puerperioEspanha5.url, keywords: ["puerp", "pos-parto", "pós-parto", "avo", "famil", "espanh"] },
+  { nome: "Puerpério · Espanha (caminhada Madrid)", url: puerperioEspanha6.url, keywords: ["puerp", "pos-parto", "pós-parto", "caminhad", "exerc", "espanh"] },
 ];
 
 const c = {
