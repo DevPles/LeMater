@@ -13,6 +13,7 @@ import appIcon from "@/assets/app-icon.png";
 import logoMonograma from "@/assets/logo_monograma.png";
 import { LiquidCard } from "@/components/LiquidCard";
 import { AgendamentoModal } from "@/components/AgendamentoModal";
+import { DuvidasModal } from "@/components/DuvidasModal";
 import { InstagramIcon, YouTubeIcon, TikTokIcon, HotmartIcon, KiwifyIcon, SpotifyIcon, WhatsAppIcon } from "@/components/SocialIcons";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { translateBatch } from "@/lib/translate.functions";
@@ -617,7 +618,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               Tirar Dúvidas
             </button>
           </div>
-          <AgendamentoModal open={duvidasOpen} onClose={() => setDuvidasOpen(false)} />
+          <DuvidasModal open={duvidasOpen} onClose={() => setDuvidasOpen(false)} />
           <style>{`
             @property --lm-gold-angle {
               syntax: '<angle>';
