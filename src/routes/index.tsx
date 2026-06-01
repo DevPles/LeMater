@@ -575,10 +575,14 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           </p>
           <div style={{ display: "flex", gap: 12, alignItems: "stretch", flexWrap: "nowrap", justifyContent: "center", width: "100%", maxWidth: 520 }}>
             <Link to="/atlas" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
-              <button className="lm-neu-btn" style={neuBtn}>ATLAS MATERNO</button>
+              <span className="lm-gold-ring" style={{ display: "flex", flex: 1 }}>
+                <button className="lm-neu-btn" style={neuBtn}>ATLAS MATERNO</button>
+              </span>
             </Link>
             <Link to="/app" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
-              <button className="lm-neu-btn" style={neuBtn}>ACESSAR APLICATIVO</button>
+              <span className="lm-gold-ring" style={{ display: "flex", flex: 1 }}>
+                <button className="lm-neu-btn" style={neuBtn}>ACESSAR APLICATIVO</button>
+              </span>
             </Link>
           </div>
           <style>{`
@@ -594,6 +598,29 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               transform: translateY(1px);
               box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.28), inset -3px -3px 8px rgba(255, 255, 255, 0.12);
             }
+            .lm-gold-ring {
+              position: relative;
+              border-radius: 14px;
+              padding: 2px;
+              isolation: isolate;
+            }
+            .lm-gold-ring::before {
+              content: "";
+              position: absolute;
+              inset: 0;
+              border-radius: inherit;
+              padding: 2px;
+              background: conic-gradient(from 0deg, transparent 0deg, #f0c040 60deg, #fff2b8 90deg, #c9a24a 120deg, transparent 180deg, transparent 360deg);
+              -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+              mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+              -webkit-mask-composite: xor;
+              mask-composite: exclude;
+              animation: lmGoldSpin 3.5s linear infinite;
+              pointer-events: none;
+              z-index: 1;
+            }
+            .lm-gold-ring > button { border-radius: 12px; }
+            @keyframes lmGoldSpin { to { transform: rotate(360deg); } }
           `}</style>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
             {[
