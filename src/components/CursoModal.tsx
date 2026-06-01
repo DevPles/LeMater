@@ -103,6 +103,8 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const [cursoAudios, setCursoAudios] = useState<Audio[]>([]);
   const [modulosAbertos, setModulosAbertos] = useState<Record<string, boolean>>({});
   const [cartTick, setCartTick] = useState(0);
+  const [midiaAberta, setMidiaAberta] = useState<{ kind: "pdf" | "video"; nome: string; url: string; isExterno?: boolean } | null>(null);
+
 
   useEffect(() => {
     fn({ data: { slug } })
