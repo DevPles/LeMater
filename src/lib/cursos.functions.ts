@@ -237,6 +237,7 @@ export const getCursoBySlug = createServerFn({ method: "GET" })
 
 // ============== Player de aula ==============
 export type AulaAnexo = { nome: string; url: string };
+export type AulaMidia = { id: string; kind: "video" | "pdf"; nome: string; url: string; isExterno?: boolean };
 export type AulaPlayer = {
   aula: { id: string; titulo: string; descricao: string | null; tipo: "video"|"pdf"|"texto"; duracao_min: number; previa_gratis: boolean };
   conteudo:
@@ -246,6 +247,7 @@ export type AulaPlayer = {
     | { kind: "texto"; html: string }
     | { kind: "vazio" };
   anexos: AulaAnexo[];
+  midias: AulaMidia[];
 };
 
 export const getAulaPlayer = createServerFn({ method: "POST" })
@@ -276,24 +278,45 @@ export const getAulaPlayer = createServerFn({ method: "POST" })
       conteudo = { kind: "texto", html: a.conteudo_html ?? "" };
     }
 
-    // Anexos para download (qualquer tipo de aula)
+    // Mídias adicionais (PDFs e vídeos extras) + anexos (download de PDF, retrocompatibilidade)
     const raw = Array.isArray(a.materiais_extras) ? a.materiais_extras : [];
     const anexos: AulaAnexo[] = [];
+    const midias: AulaMidia[] = [];
+    let idx = 0;
     for (const item of raw) {
       if (!item || typeof item !== "object") continue;
-      const nome = String((item as any).nome ?? "Material");
-      const path = String((item as any).path ?? "");
-      if (!path) continue;
-      const { data: signed } = await supabaseAdmin.storage.from("materiais-pdf").createSignedUrl(path, 60 * 60, { download: nome });
-      if (signed) anexos.push({ nome, url: signed.signedUrl });
+      const it = item as any;
+      const nome = String(it.nome ?? "Material");
+      const path = it.path ? String(it.path) : "";
+      const url = it.url ? String(it.url) : "";
+      // Detecta tipo: novo formato usa `kind`, formato legado é PDF com {nome, path}
+      const kind: string = it.kind ?? "pdf";
+      const mid = `${a.id}-${idx++}`;
+
+      if (kind === "video_externo" && url) {
+        midias.push({ id: mid, kind: "video", nome, url: toEmbed(url) ?? url, isExterno: true });
+      } else if (kind === "video_upload" && path) {
+        const { data: signed } = await supabaseAdmin.storage.from("materiais-video").createSignedUrl(path, 60 * 120);
+        if (signed) midias.push({ id: mid, kind: "video", nome, url: signed.signedUrl });
+      } else if (path) {
+        // pdf (novo ou legado)
+        const { data: signed } = await supabaseAdmin.storage.from("materiais-pdf").createSignedUrl(path, 60 * 60);
+        if (signed) {
+          midias.push({ id: mid, kind: "pdf", nome, url: signed.signedUrl });
+          const { data: dl } = await supabaseAdmin.storage.from("materiais-pdf").createSignedUrl(path, 60 * 60, { download: nome });
+          if (dl) anexos.push({ nome, url: dl.signedUrl });
+        }
+      }
     }
 
     return {
       aula: { id: a.id, titulo: a.titulo, descricao: a.descricao, tipo: a.tipo as "video"|"pdf"|"texto", duracao_min: a.duracao_min, previa_gratis: a.previa_gratis },
       conteudo,
       anexos,
+      midias,
     };
   });
+
 
 // ============== Progresso ==============
 export const marcarAulaConcluida = createServerFn({ method: "POST" })
