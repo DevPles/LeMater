@@ -618,16 +618,17 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             }
             .lm-gold-trace rect {
               fill: none;
-              stroke: #f0c040;
-              stroke-width: 2;
+              stroke: rgba(240, 192, 64, 0.85);
+              stroke-width: 1;
               stroke-linecap: round;
-              stroke-dasharray: 70 600;
-              filter: drop-shadow(0 0 6px #f0c040) drop-shadow(0 0 12px rgba(240,192,64,0.55));
-              animation: lmGoldTrace 3s linear infinite;
+              stroke-dasharray: 40 1000;
+              filter: drop-shadow(0 0 3px rgba(240,192,64,0.55));
+              animation: lmGoldTrace 6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
             }
             @keyframes lmGoldTrace {
-              to { stroke-dashoffset: -670; }
+              to { stroke-dashoffset: -1040; }
             }
+
           `}</style>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
             {[
