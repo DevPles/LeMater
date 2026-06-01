@@ -25,7 +25,7 @@ export default function TemasTab() {
   const reload = () => listFn().then((d) => setItems(d as Tema[]));
   useEffect(() => { reload(); }, []);
 
-  const novo = () => setEdit({ titulo: "", slug: "", categoria: "geral", ordem: items.length, publicado: true });
+  const novo = () => setEdit({ titulo: "", slug: "", ordem: items.length, publicado: true });
 
   const salvar = async () => {
     if (!edit?.titulo || !edit.slug) { alert("Título e slug são obrigatórios"); return; }
@@ -64,7 +64,7 @@ export default function TemasTab() {
             <span style={{ color: c.muted }}>{t.ordem}</span>
             <strong style={{ color: c.ink }}>{t.titulo}</strong>
             <code style={{ fontSize: 12, color: c.muted }}>{t.slug}</code>
-            <span style={{ fontSize: 12, color: c.muted }}>{t.categoria}{t.publicado ? "" : " · oculto"}</span>
+            <span style={{ fontSize: 12, color: c.muted }}>{t.publicado ? "visível" : "oculto"}</span>
             <div style={{ display: "flex", gap: 6 }}>
               <button onClick={() => setEdit(t)} style={btnSm(c.sage)}>Editar</button>
               <button onClick={() => remover(t.id)} style={btnSm(c.danger)}>Remover</button>
@@ -80,15 +80,7 @@ export default function TemasTab() {
             <div style={{ display: "grid", gap: 12 }}>
               <Field label="Título"><input value={edit.titulo ?? ""} onChange={(e) => setEdit({ ...edit, titulo: e.target.value })} style={inp} /></Field>
               <Field label="Slug (URL)"><input value={edit.slug ?? ""} onChange={(e) => setEdit({ ...edit, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} style={inp} placeholder="gestacao" /></Field>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <Field label="Categoria">
-                  <input list="cat-temas" value={edit.categoria ?? ""} onChange={(e) => setEdit({ ...edit, categoria: e.target.value })} style={inp} />
-                  <datalist id="cat-temas">
-                    <option value="concepcao" /><option value="gestacao" /><option value="parto" /><option value="puerperio" /><option value="bebe" /><option value="geral" />
-                  </datalist>
-                </Field>
-                <Field label="Ordem"><input type="number" value={edit.ordem ?? 0} onChange={(e) => setEdit({ ...edit, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
-              </div>
+              <Field label="Ordem"><input type="number" value={edit.ordem ?? 0} onChange={(e) => setEdit({ ...edit, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
                 <input type="checkbox" checked={!!edit.publicado} onChange={(e) => setEdit({ ...edit, publicado: e.target.checked })} /> Visível no Atlas
               </label>
