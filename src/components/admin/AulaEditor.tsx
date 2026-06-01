@@ -219,12 +219,7 @@ export default function AulaEditor({
       }
 
       onSaved();
-      const wasNew = !(savedId ?? editing.id);
-      if (wasNew) {
-        setOk("Aula salva com sucesso. As versões ES/EN preenchidas também foram salvas. Você pode fechar ou continuar editando.");
-      } else {
-        onClose();
-      }
+      onClose();
 
     } catch (e: any) { setErr(e?.message ?? "Erro ao salvar"); }
     finally { setBusy(false); }
