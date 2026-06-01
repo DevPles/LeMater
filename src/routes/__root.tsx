@@ -5,6 +5,7 @@ import { LangProvider } from "@/lib/translate.context";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/BottomNav";
 import { TermsAcceptanceModal } from "@/components/TermsAcceptanceModal";
+import { AppDialogRoot } from "@/components/AppDialog";
 
 function NotFoundComponent() {
   const location = useLocation();
