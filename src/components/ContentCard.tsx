@@ -43,7 +43,7 @@ export function ContentCard(p: ContentCardProps) {
         cursor: "pointer",
         transform: hover ? "translateY(-4px)" : "translateY(0)",
         boxShadow: hover
-          ? "0 24px 50px -12px rgba(28,28,26,0.35), 0 10px 20px -8px rgba(28,28,26,0.2)"
+          ? "0 0 0 1px rgba(184,146,58,0.55), 0 0 28px 4px rgba(184,146,58,0.55), 0 0 60px 10px rgba(184,146,58,0.35), 0 24px 50px -12px rgba(28,28,26,0.35)"
           : "0 10px 24px -8px rgba(28,28,26,0.22), 0 4px 10px -4px rgba(28,28,26,0.12)",
         borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.6)"}`,
       }}
