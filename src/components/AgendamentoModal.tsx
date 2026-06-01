@@ -262,7 +262,7 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
       const paisNome = paisObj ? paisObj.nome[lang] : "—";
       const msg =
         `${t.waMsg} ${r.nome} ${t.waQuero}%0A%0A` +
-        `• ${t.waPais}: ${paisObj?.flag ?? ""} ${paisNome}%0A` +
+        `• ${t.waPais}: ${paisNome}%0A` +
         `• ${t.waMomento}: ${r.estagio ? labelEstagio[r.estagio] : "—"}` +
         (r.semanas ? ` (${r.semanas} ${t.waSem})` : "") + `%0A` +
         `• ${t.waMod}: ${r.modalidade ? labelModalidade[r.modalidade] : "—"}%0A` +
