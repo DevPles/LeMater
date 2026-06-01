@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { motion } from "framer-motion";
 import {
   createUserUnified,
@@ -240,9 +241,9 @@ export function AcessosUsuariosTab() {
 
   const handleDelete = async (u: UnifiedUser) => {
     if (
-      !window.confirm(
+      !(await appConfirm(
         `Apagar definitivamente ${u.nome ?? u.email}? Esta ação remove o usuário e todos os vínculos.`,
-      )
+      ))
     )
       return;
     try {

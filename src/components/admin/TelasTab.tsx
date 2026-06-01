@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { saveScreenContent, loadScreenContentOnce } from "@/hooks/useScreenContent";
@@ -171,8 +172,8 @@ export function TelasTab() {
     }
   };
 
-  const handleReset = () => {
-    if (confirm("Restaurar conteúdo padrão desta tela? As alterações não salvas serão perdidas.")) {
+  const handleReset = async () => {
+    if (await appConfirm("Restaurar conteúdo padrão desta tela? As alterações não salvas serão perdidas.")) {
       setData(screen.defaults);
     }
   };

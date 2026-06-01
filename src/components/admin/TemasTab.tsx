@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { useServerFn } from "@tanstack/react-start";
 import { adminListCursos, adminUpsertCurso, adminDeleteCurso } from "@/lib/cursos.functions";
 
@@ -42,7 +43,7 @@ export default function TemasTab() {
   };
 
   const remover = async (id: string) => {
-    if (!confirm("Remover este tema? Aulas vinculadas ficarão sem este tema.")) return;
+    if (!(await appConfirm("Remover este tema? Aulas vinculadas ficarão sem este tema."))) return;
     await delFn({ data: { id } }); reload();
   };
 

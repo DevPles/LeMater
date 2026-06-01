@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -151,7 +152,7 @@ function RangesEditor() {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Remover esta faixa?")) return;
+    if (!(await appConfirm("Remover esta faixa?"))) return;
     await supabase.from("reference_ranges").delete().eq("id", id);
     await load();
   };
@@ -250,7 +251,7 @@ function ExamsEditor() {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Remover?")) return;
+    if (!(await appConfirm("Remover?"))) return;
     await supabase.from("exam_criteria").delete().eq("id", id);
     await load();
   };
@@ -342,7 +343,7 @@ function ImageScheduleEditor() {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Remover?")) return;
+    if (!(await appConfirm("Remover?"))) return;
     await supabase.from("image_exam_schedule").delete().eq("id", id);
     await load();
   };
@@ -454,7 +455,7 @@ function VaccinesEditor({
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Remover?")) return;
+    if (!(await appConfirm("Remover?"))) return;
     await supabase.from(table).delete().eq("id", id);
     await load();
   };

@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -113,7 +114,7 @@ export default function CursosTab({ esconderNovo = false }: { esconderNovo?: boo
   };
 
   const remover = async (id: string) => {
-    if (!confirm("Remover este curso? Módulos e aulas também serão removidos.")) return;
+    if (!(await appConfirm("Remover este curso? Módulos e aulas também serão removidos."))) return;
     await delFn({ data: { id } });
     reload();
   };
@@ -225,7 +226,7 @@ function EstruturaTab({ cursoId, modulos, aulas, onChanged }: { cursoId: string;
   };
 
   const removerModulo = async (id: string) => {
-    if (!confirm("Remover este módulo e todas as aulas?")) return;
+    if (!(await appConfirm("Remover este módulo e todas as aulas?"))) return;
     await delModulo({ data: { id } }); onChanged();
   };
 
@@ -286,7 +287,7 @@ function EstruturaTab({ cursoId, modulos, aulas, onChanged }: { cursoId: string;
   };
 
   const removerAula = async (id: string) => {
-    if (!confirm("Remover esta aula?")) return;
+    if (!(await appConfirm("Remover esta aula?"))) return;
     await delAula({ data: { id } }); onChanged();
   };
 
@@ -488,7 +489,7 @@ function MatriculasTab({ cursoId }: { cursoId: string }) {
     setTermo(""); setResultados([]); reload();
   };
   const revogar = async (user_id: string) => {
-    if (!confirm("Revogar matrícula?")) return;
+    if (!(await appConfirm("Revogar matrícula?"))) return;
     await revogarFn({ data: { curso_id: cursoId, user_id } });
     reload();
   };

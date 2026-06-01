@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { useServerFn } from "@tanstack/react-start";
 import { adminListAulas, adminDeleteAula } from "@/lib/cursos.functions";
 import AulaEditor, { type AulaDraft } from "./AulaEditor";
@@ -35,7 +36,7 @@ export default function AulasTab({ reloadSignal, temaFilter }: { reloadSignal?: 
   const editar = (a: AulaRow) => setEditing({ ...a, temas: a.temas.map((t) => t.id) });
 
   const remover = async (id: string) => {
-    if (!confirm("Remover esta aula? A ação não pode ser desfeita.")) return;
+    if (!(await appConfirm("Remover esta aula? A ação não pode ser desfeita."))) return;
     await fnDelete({ data: { id } });
     await reload();
   };

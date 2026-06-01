@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useState, type CSSProperties } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { ContentItemType } from "@/hooks/useTranslatedContent";
 import type { Pais } from "@/lib/translate.context";
@@ -207,7 +208,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
   const remover = async () => {
     const id = rows[tab].id;
     if (!id) { setRows((prev) => { const next = { ...prev, [tab]: empty(tab) }; onRowsChange?.(next); return next; }); return; }
-    if (!confirm(`Remover a tradução ${tab} deste conteúdo?`)) return;
+    if (!(await appConfirm(`Remover a tradução ${tab} deste conteúdo?`))) return;
     setBusy(true); setMsg(null);
     const { error } = await supabase.from("content_translations").delete().eq("id", id);
     if (error) { setMsg({ kind: "err", text: error.message }); }

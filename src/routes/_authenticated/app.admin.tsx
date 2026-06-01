@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
+import { appConfirm } from "@/components/AppDialog";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -638,7 +639,7 @@ function AtlasCardsTab() {
   };
 
   const remover = async (id: string) => {
-    if (!confirm("Remover este card?")) return;
+    if (!(await appConfirm("Remover este card?"))) return;
     const { error } = await supabase.from("atlas_cards").delete().eq("id", id);
     if (error) { alert(error.message); return; }
     reload();
