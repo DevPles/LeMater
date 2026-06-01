@@ -135,6 +135,8 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
       .catch((e) => setPlayerErr(e?.message ?? "Erro"));
   }, [aulaSel]);
 
+  useEffect(() => { setSlideIdx(0); }, [aulaSel, player?.aula?.id]);
+
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
