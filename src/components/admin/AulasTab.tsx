@@ -15,8 +15,10 @@ type AulaRow = {
   publicado: boolean; gratis: boolean; preco_label: string | null; preco_centavos: number;
   moeda: string; link_compra_externo: string | null; previa_gratis: boolean;
   video_url?: string | null; pdf_url?: string | null; conteudo_html?: string | null;
+  materiais_extras?: { kind: "pdf" | "video_upload" | "video_externo"; nome: string; path?: string | null; url?: string | null }[];
   temas: { id: string; titulo: string }[];
 };
+
 
 export default function AulasTab({ reloadSignal, temaFilter }: { reloadSignal?: number; temaFilter?: string | null }) {
   const fnList = useServerFn(adminListAulas);
@@ -28,9 +30,10 @@ export default function AulasTab({ reloadSignal, temaFilter }: { reloadSignal?: 
 
   const reload = async () => {
     setErr(null);
-    try { setAulas(await fnList() as AulaRow[]); }
+    try { setAulas(await fnList() as unknown as AulaRow[]); }
     catch (e: any) { setErr(e?.message ?? "Erro"); }
   };
+
   useEffect(() => { reload(); }, [reloadSignal]);
 
   const editar = (a: AulaRow) => setEditing({ ...a, temas: a.temas.map((t) => t.id) });

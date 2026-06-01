@@ -103,6 +103,8 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const [cursoAudios, setCursoAudios] = useState<Audio[]>([]);
   const [modulosAbertos, setModulosAbertos] = useState<Record<string, boolean>>({});
   const [cartTick, setCartTick] = useState(0);
+  const [midiaAberta, setMidiaAberta] = useState<{ kind: "pdf" | "video"; nome: string; url: string; isExterno?: boolean } | null>(null);
+
 
   useEffect(() => {
     fn({ data: { slug } })
@@ -228,7 +230,30 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                     ))}
                   </div>
                 )}
+
+                {/* Mídias adicionais (PDFs e vídeos extras da aula) */}
+                {player.midias && player.midias.length > 0 && (
+                  <div style={{ marginTop: 18 }}>
+                    <div style={{ fontSize: 10, letterSpacing: "0.22em", color: c.sageDark, marginBottom: 10, fontFamily: sans, fontWeight: 600 }}>MATERIAIS DA AULA</div>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {player.midias.map((m) => (
+                        <button key={m.id} type="button"
+                          onClick={() => setMidiaAberta({ kind: m.kind, nome: m.nome, url: m.url, isExterno: m.isExterno })}
+                          style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: "white", border: `1px solid ${c.border}`, textAlign: "left", cursor: "pointer", fontFamily: sans }}>
+                          <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: m.kind === "pdf" ? c.gold : c.sageDark, border: `1px solid ${m.kind === "pdf" ? c.gold : c.sageDark}`, padding: "3px 8px", fontWeight: 600 }}>
+                            {m.kind === "pdf" ? "PDF" : "Vídeo"}
+                          </span>
+                          <span style={{ flex: 1, fontSize: 14, color: c.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.nome}</span>
+                          <span style={{ fontSize: 11, letterSpacing: "0.12em", color: c.sageDark, textTransform: "uppercase" }}>
+                            {m.kind === "pdf" ? "Ler" : "Assistir"}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
+
             </>
           )}
         </>
@@ -398,9 +423,38 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
           )
         )}
       </div>
+
+      {/* Modal de mídia (PDF ou Vídeo) */}
+      {midiaAberta && (
+        <div onClick={(e) => { e.stopPropagation(); setMidiaAberta(null); }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: isMobile ? 0 : 24 }}>
+          <div onClick={(e) => e.stopPropagation()}
+            style={{ background: midiaAberta.kind === "pdf" ? "white" : "#000", width: "100%", maxWidth: 1100, height: isMobile ? "100dvh" : "min(90vh, 760px)", position: "relative", display: "flex", flexDirection: "column", border: `1px solid ${c.border}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", background: c.sageDark, color: "white" }}>
+              <div style={{ fontFamily: sans, fontSize: 13, letterSpacing: "0.04em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {midiaAberta.nome}
+              </div>
+              <button onClick={() => setMidiaAberta(null)} aria-label="Fechar"
+                style={{ background: "transparent", color: "white", border: "1px solid rgba(255,255,255,0.4)", width: 32, height: 32, cursor: "pointer", fontSize: 18, fontFamily: sans, lineHeight: 1 }}>×</button>
+            </div>
+            <div style={{ flex: 1, minHeight: 0, background: midiaAberta.kind === "pdf" ? "white" : "#000" }}>
+              {midiaAberta.kind === "pdf" && (
+                <iframe src={midiaAberta.url} title={midiaAberta.nome} style={{ width: "100%", height: "100%", border: "none" }} />
+              )}
+              {midiaAberta.kind === "video" && midiaAberta.isExterno && (
+                <iframe src={midiaAberta.url} title={midiaAberta.nome} style={{ width: "100%", height: "100%", border: "none" }} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+              )}
+              {midiaAberta.kind === "video" && !midiaAberta.isExterno && (
+                <video src={midiaAberta.url} controls autoPlay style={{ width: "100%", height: "100%", background: "#000", display: "block" }} />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 function OfferRow({ offer, secao, ativo, onClick }: { offer: Offer; secao: "aula" | "curso"; ativo: boolean; onClick: () => void }) {
   return (
