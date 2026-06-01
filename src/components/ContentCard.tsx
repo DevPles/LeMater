@@ -34,6 +34,9 @@ export function ContentCard(p: ContentCardProps) {
     <div
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      onTouchStart={() => setHover(true)}
+      onTouchEnd={() => setTimeout(() => setHover(false), 1200)}
+      onTouchCancel={() => setHover(false)}
       style={{
         background: isDark ? c.sageDark : c.warm,
         padding: 14,
