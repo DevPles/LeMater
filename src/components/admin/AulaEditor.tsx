@@ -106,6 +106,8 @@ export default function AulaEditor({
 
   // Preview state
   const [pvTitulo, setPvTitulo] = useState(editing.titulo ?? "");
+  const [slugVal, setSlugVal] = useState(editing.slug ?? "");
+  const [slugTouched, setSlugTouched] = useState(!!editing.slug);
   const [pvDesc, setPvDesc] = useState(editing.descricao ?? "");
   const [pvTipo, setPvTipo] = useState(editing.tipo ?? "video");
   const [pvGratis, setPvGratis] = useState(editing.gratis ?? false);
@@ -217,12 +219,7 @@ export default function AulaEditor({
       }
 
       onSaved();
-      const wasNew = !(savedId ?? editing.id);
-      if (wasNew) {
-        setOk("Aula salva com sucesso. As versões ES/EN preenchidas também foram salvas. Você pode fechar ou continuar editando.");
-      } else {
-        onClose();
-      }
+      onClose();
 
     } catch (e: any) { setErr(e?.message ?? "Erro ao salvar"); }
     finally { setBusy(false); }
@@ -368,8 +365,8 @@ export default function AulaEditor({
               {/* PT-BR: sempre montado (preserva form data ao trocar de aba) */}
               <div style={{ display: paisTab === "BR" ? "block" : "none" }}>
                 <SectionTitle>Sobre a aula</SectionTitle>
-                <Field label="Título"><input name="titulo" defaultValue={editing.titulo ?? ""} onChange={(e) => setPvTitulo(e.target.value)} style={inp} required /></Field>
-                <Field label="Slug (URL)"><input name="slug" defaultValue={editing.slug ?? ""} placeholder="gerado automaticamente do título" style={inp} /></Field>
+                <Field label="Título"><input name="titulo" defaultValue={editing.titulo ?? ""} onChange={(e) => { const t = e.target.value; setPvTitulo(t); if (!slugTouched) setSlugVal(slugify(t)); }} style={inp} required /></Field>
+                <Field label="Slug (URL)"><input name="slug" value={slugVal} onChange={(e) => { setSlugTouched(true); setSlugVal(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")); }} placeholder="gerado automaticamente do título" style={inp} /></Field>
                 <Field label="Descrição"><textarea name="descricao" defaultValue={editing.descricao ?? ""} onChange={(e) => setPvDesc(e.target.value)} rows={3} style={{ ...inp, resize: "vertical" }} /></Field>
 
                 <Field label="Temas (selecione um ou mais)">
