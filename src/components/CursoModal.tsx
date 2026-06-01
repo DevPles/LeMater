@@ -221,17 +221,6 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                   <p style={{ color: c.muted, lineHeight: 1.55, margin: "0 0 12px", fontSize: 14 }}>{player.aula.descricao}</p>
                 )}
 
-                {player.anexos.length > 0 && (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-                    {player.anexos.map((a, i) => (
-                      <a key={i} href={a.url} download={a.nome} target="_blank" rel="noopener noreferrer" title={a.nome}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "white", border: `1px solid ${c.border}`, padding: "8px 12px", textDecoration: "none", color: c.sageDark, fontSize: 12, fontFamily: sans, letterSpacing: "0.02em" }}>
-                        <span style={{ fontSize: 14, lineHeight: 1 }}>↓</span>
-                        <span style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.nome}</span>
-                      </a>
-                    ))}
-                  </div>
-                )}
 
                 {/* Botão único: DOCUMENTOS (abre seletor de PDFs e vídeos) */}
                 {player.midias && player.midias.length > 0 && (() => {
