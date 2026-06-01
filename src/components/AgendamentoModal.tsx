@@ -503,7 +503,7 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
                 {atual === "resumo" && (
                   <Bloco titulo={t.resTitulo} sub={t.resSub}>
                     <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 10 }}>
-                      <ItemResumo k={t.rPais} v={paisObj ? `${paisObj.flag} ${paisObj.nome[lang]}` : ""} />
+                      <ItemResumo k={t.rPais} v={paisObj ? paisObj.nome[lang] : ""} />
                       <ItemResumo k={t.rNome} v={r.nome} />
                       <ItemResumo k={t.rMomento} v={labelEstagioCurto(r.estagio, t)} />
                       {ehGestante && <ItemResumo k={t.rSemanas} v={r.semanas} />}
