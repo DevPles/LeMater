@@ -64,7 +64,7 @@ export default function TemasTab() {
             <span style={{ color: c.muted }}>{t.ordem}</span>
             <strong style={{ color: c.ink }}>{t.titulo}</strong>
             <code style={{ fontSize: 12, color: c.muted }}>{t.slug}</code>
-            <span style={{ fontSize: 12, color: c.muted }}>{t.categoria}{t.publicado ? "" : " · oculto"}</span>
+            <span style={{ fontSize: 12, color: c.muted }}>{t.publicado ? "visível" : "oculto"}</span>
             <div style={{ display: "flex", gap: 6 }}>
               <button onClick={() => setEdit(t)} style={btnSm(c.sage)}>Editar</button>
               <button onClick={() => remover(t.id)} style={btnSm(c.danger)}>Remover</button>
