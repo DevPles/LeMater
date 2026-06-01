@@ -281,13 +281,20 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
     setStep((s) => Math.max(0, s - 1));
   }
 
-  async function enviar() {
+  async function enviar(destino: "consulta" | "app" = "consulta") {
     setEnviando(true);
     setErro(null);
     try {
       await registrar({
-        data: { nome: r.nome, email: r.email, telefone: r.whatsapp, material_id: null },
+        data: { nome: r.nome, email: r.email, telefone: r.whatsapp, material_id: destino },
       });
+      if (destino === "app") {
+        setStep(passos.length - 1);
+        setTimeout(() => {
+          window.open(APP_URL, "_blank", "noopener,noreferrer");
+        }, 500);
+        return;
+      }
       const labelEstagio: Record<Estagio, string> = {
         tentante: t.tentante, "1tri": t.t1, "2tri": t.t2, "3tri": t.t3, pos: t.pos,
       };
@@ -312,7 +319,7 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
       setStep(passos.length - 1);
       setTimeout(() => {
         window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, "_blank", "noopener,noreferrer");
-      }, 600);
+      }, 500);
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Erro");
     } finally {
