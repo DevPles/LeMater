@@ -372,23 +372,24 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
 
                 {atual === "pais" && (
                   <Bloco titulo={t.paisTitulo} sub={t.paisSub}>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
                       {PAISES.map((p) => {
                         const ativo = r.pais === p.code;
                         return (
                           <button key={p.code} type="button"
                             onClick={() => patch({ pais: p.code })}
                             style={{
-                              display: "flex", alignItems: "center", gap: 10,
-                              padding: "14px 14px", borderRadius: 14,
+                              display: "flex", alignItems: "center", gap: 14,
+                              padding: "14px 18px", borderRadius: 14,
                               border: `1.5px solid ${ativo ? c.sageDark : c.border}`,
                               background: "white",
                               boxShadow: ativo ? `0 0 0 4px ${c.sageLight}33` : "none",
                               cursor: "pointer", fontFamily: sans, textAlign: "left",
                               transition: "all 0.2s",
                             }}>
-                            <span style={{ fontSize: 26, lineHeight: 1 }}>{p.flag}</span>
-                            <span style={{ fontSize: 14, color: c.ink, fontWeight: 500 }}>
+                            <img src={p.flag} alt="" width={42} height={28}
+                              style={{ borderRadius: 4, objectFit: "cover", flexShrink: 0, boxShadow: "0 1px 2px rgba(0,0,0,0.1)" }} />
+                            <span style={{ fontSize: 16, color: c.ink, fontWeight: 500 }}>
                               {p.nome[lang]}
                             </span>
                           </button>
