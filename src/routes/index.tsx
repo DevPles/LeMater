@@ -1131,6 +1131,7 @@ function Produtos() {
 }
 
 function Contato() {
+  const [agendarOpen, setAgendarOpen] = useState(false);
   return (
     <section style={{ paddingTop: 70, minHeight: "100vh" }}>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 48px", textAlign: "center" }}>
@@ -1143,9 +1144,12 @@ function Contato() {
           Entre em contato ou acesse o sistema para iniciar seu acompanhamento com a Rayssa Leslie.
         </p>
         <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-          <button style={btnPrimary}>Agendar Consulta</button>
-          <button style={btnSecondary}>Acessar Sistema</button>
+          <button style={btnPrimary} onClick={() => setAgendarOpen(true)}>Agendar Consulta</button>
+          <Link to="/login" style={{ textDecoration: "none" }}>
+            <button style={btnSecondary}>Acessar Sistema</button>
+          </Link>
         </div>
+        <AgendamentoModal open={agendarOpen} onClose={() => setAgendarOpen(false)} />
         <div style={{ display: "flex", gap: 36, marginTop: 60, paddingTop: 40, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: "center" }}>
           {[
             ["Localização", "Ribeirão Preto, SP"],
