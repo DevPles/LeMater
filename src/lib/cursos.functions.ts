@@ -729,7 +729,7 @@ export const adminListAulas = createServerFn({ method: "GET" })
     await requireAdmin(context.userId);
     const { data: aulas, error } = await supabaseAdmin
       .from("curso_aulas")
-      .select("id, slug, titulo, descricao, tipo, duracao_min, capa_url, capa_video_url, video_url, pdf_url, conteudo_html, publicado, gratis, preco_label, preco_centavos, moeda, link_compra_externo, previa_gratis, beneficios, created_at, modulo_id")
+      .select("id, slug, titulo, descricao, tipo, duracao_min, capa_url, capa_video_url, video_url, pdf_url, conteudo_html, publicado, gratis, preco_label, preco_centavos, moeda, link_compra_externo, previa_gratis, beneficios, materiais_extras, created_at, modulo_id")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     const ids = (aulas ?? []).map((a) => a.id);
