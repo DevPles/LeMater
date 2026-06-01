@@ -28,6 +28,27 @@ import amamentacao19 from "@/assets/curso-videos/amamentacao-19.mp4.asset.json";
 import amamentacao20 from "@/assets/curso-videos/amamentacao-20.mp4.asset.json";
 import amamentacao21 from "@/assets/curso-videos/amamentacao-21.mp4.asset.json";
 
+import concepcao2 from "@/assets/curso-videos/concepcao-2.mp4.asset.json";
+import concepcao3 from "@/assets/curso-videos/concepcao-3.mp4.asset.json";
+import concepcao4 from "@/assets/curso-videos/concepcao-4.mp4.asset.json";
+import concepcao5 from "@/assets/curso-videos/concepcao-5.mp4.asset.json";
+import concepcao6 from "@/assets/curso-videos/concepcao-6.mp4.asset.json";
+import concepcao7 from "@/assets/curso-videos/concepcao-7.mp4.asset.json";
+import concepcao8 from "@/assets/curso-videos/concepcao-8.mp4.asset.json";
+import concepcao9 from "@/assets/curso-videos/concepcao-9.mp4.asset.json";
+import concepcao10 from "@/assets/curso-videos/concepcao-10.mp4.asset.json";
+import concepcao11 from "@/assets/curso-videos/concepcao-11.mp4.asset.json";
+import concepcao12 from "@/assets/curso-videos/concepcao-12.mp4.asset.json";
+import concepcao13 from "@/assets/curso-videos/concepcao-13.mp4.asset.json";
+import concepcao14 from "@/assets/curso-videos/concepcao-14.mp4.asset.json";
+import concepcao15 from "@/assets/curso-videos/concepcao-15.mp4.asset.json";
+import concepcao16 from "@/assets/curso-videos/concepcao-16.mp4.asset.json";
+import concepcao17 from "@/assets/curso-videos/concepcao-17.mp4.asset.json";
+import concepcao18 from "@/assets/curso-videos/concepcao-18.mp4.asset.json";
+import concepcao19 from "@/assets/curso-videos/concepcao-19.mp4.asset.json";
+import concepcao20 from "@/assets/curso-videos/concepcao-20.mp4.asset.json";
+import concepcao21 from "@/assets/curso-videos/concepcao-21.mp4.asset.json";
+
 type BuiltinVideo = { nome: string; url: string; keywords: string[] };
 const BUILTIN_VIDEOS: BuiltinVideo[] = [
   { nome: "Engravidar / Concepção", url: vidEngravidar, keywords: ["conceb", "concep", "engravid", "fertil"] },
