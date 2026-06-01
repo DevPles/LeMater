@@ -618,7 +618,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               Tirar Dúvidas
             </button>
           </div>
-          <AgendamentoModal open={duvidasOpen} onClose={() => setDuvidasOpen(false)} />
+          <DuvidasModal open={duvidasOpen} onClose={() => setDuvidasOpen(false)} />
           <style>{`
             @property --lm-gold-angle {
               syntax: '<angle>';
