@@ -577,11 +577,17 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             <Link to="/atlas" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
               <span className="lm-gold-ring" style={{ display: "flex", flex: 1 }}>
                 <button className="lm-neu-btn" style={neuBtn}>ATLAS MATERNO</button>
+                <svg className="lm-gold-trace" aria-hidden="true" preserveAspectRatio="none">
+                  <rect x="1.5" y="1.5" width="calc(100% - 3px)" height="calc(100% - 3px)" rx="11" ry="11" />
+                </svg>
               </span>
             </Link>
             <Link to="/app" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
               <span className="lm-gold-ring" style={{ display: "flex", flex: 1 }}>
                 <button className="lm-neu-btn" style={neuBtn}>ACESSAR APLICATIVO</button>
+                <svg className="lm-gold-trace" aria-hidden="true" preserveAspectRatio="none">
+                  <rect x="1.5" y="1.5" width="calc(100% - 3px)" height="calc(100% - 3px)" rx="11" ry="11" />
+                </svg>
               </span>
             </Link>
           </div>
@@ -601,26 +607,27 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             .lm-gold-ring {
               position: relative;
               border-radius: 14px;
-              padding: 2px;
-              isolation: isolate;
             }
-            .lm-gold-ring::before {
-              content: "";
+            .lm-gold-trace {
               position: absolute;
               inset: 0;
-              border-radius: inherit;
-              padding: 2px;
-              background: conic-gradient(from 0deg, transparent 0deg, #f0c040 60deg, #fff2b8 90deg, #c9a24a 120deg, transparent 180deg, transparent 360deg);
-              -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-              mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-              -webkit-mask-composite: xor;
-              mask-composite: exclude;
-              animation: lmGoldSpin 3.5s linear infinite;
+              width: 100%;
+              height: 100%;
               pointer-events: none;
-              z-index: 1;
+              overflow: visible;
             }
-            .lm-gold-ring > button { border-radius: 12px; }
-            @keyframes lmGoldSpin { to { transform: rotate(360deg); } }
+            .lm-gold-trace rect {
+              fill: none;
+              stroke: #f0c040;
+              stroke-width: 2;
+              stroke-linecap: round;
+              stroke-dasharray: 70 600;
+              filter: drop-shadow(0 0 6px #f0c040) drop-shadow(0 0 12px rgba(240,192,64,0.55));
+              animation: lmGoldTrace 3s linear infinite;
+            }
+            @keyframes lmGoldTrace {
+              to { stroke-dashoffset: -670; }
+            }
           `}</style>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
             {[
