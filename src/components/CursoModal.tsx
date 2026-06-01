@@ -207,11 +207,12 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
               {player.conteudo.kind === "texto" && (
                 <div style={{ lineHeight: 1.7, fontSize: 15, padding: 16, background: "white", border: `1px solid ${c.border}` }} dangerouslySetInnerHTML={{ __html: player.conteudo.html }} />
               )}
-              {player.conteudo.kind === "vazio" && (
+              {player.conteudo.kind === "vazio" && !(player.midias && player.midias.length > 0) && (
                 <div style={{ padding: 24, background: c.warm, border: `1px solid ${c.border}`, textAlign: "center" }}>
-                  <p style={{ color: c.muted, margin: 0 }}>Esta aula ainda não tem vídeo cadastrado.</p>
+                  <p style={{ color: c.muted, margin: 0 }}>Esta aula ainda não tem conteúdo cadastrado.</p>
                 </div>
               )}
+
 
               <div style={{ marginTop: 14 }}>
                 <h3 style={{ fontFamily: serif, fontSize: isMobile ? 20 : 24, fontWeight: 400, margin: "0 0 8px", lineHeight: 1.25 }}>{player.aula.titulo}</h3>
