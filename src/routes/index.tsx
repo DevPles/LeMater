@@ -551,6 +551,7 @@ const btnSecondary: CSSProperties = {
 function Inicio({ go }: { go: (id: SectionId) => void }) {
   const isMobile = useIsMobile();
   const { lang, setLang } = useLang();
+  const [duvidasOpen, setDuvidasOpen] = useState(false);
   return (
     <section style={{ paddingTop: isMobile ? 80 : 40, minHeight: "75vh", display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", flex: 1, flexWrap: "wrap", alignItems: "flex-start" }}>
