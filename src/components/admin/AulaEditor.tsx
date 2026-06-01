@@ -49,6 +49,13 @@ const toPublicStorageUrl = (bucket: string, value?: string | null) => {
   return supabase.storage.from(bucket).getPublicUrl(value).data.publicUrl;
 };
 
+export type MaterialExtra = {
+  kind: "pdf" | "video_upload" | "video_externo";
+  nome: string;
+  path?: string | null;
+  url?: string | null;
+};
+
 export type AulaDraft = {
   id?: string;
   titulo?: string;
@@ -70,7 +77,16 @@ export type AulaDraft = {
   conteudo_html?: string | null;
   beneficios?: string[];
   temas?: string[];
+  materiais_extras?: MaterialExtra[];
 };
+
+// Item local na UI do editor: pode ser já-salvo ou pendente (com File ou URL nova)
+type ExtraItem = MaterialExtra & {
+  _localId: string;
+  _file?: File;
+  _pending?: boolean;
+};
+
 
 
 type Tema = { id: string; titulo: string };
