@@ -248,6 +248,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
     setBusy(true); setMsg(null);
     try {
       const r = rows[tab];
+      const extras = await materializeExtras(tab);
       const payload: any = {
         item_type: itemType,
         item_id: itemId,
@@ -265,6 +266,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
         preco_centavos: r.preco_centavos > 0 ? r.preco_centavos : null,
         moeda: r.moeda || null,
         preco_label: r.preco_label || null,
+        materiais_extras: extras,
       };
       const { data, error } = await supabase
         .from("content_translations")
