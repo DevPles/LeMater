@@ -516,6 +516,7 @@ export type Database = {
           item_id: string
           item_type: string
           legenda_url: string | null
+          materiais_extras: Json
           moeda: string | null
           pais: string
           pdf_url: string | null
@@ -537,6 +538,7 @@ export type Database = {
           item_id: string
           item_type: string
           legenda_url?: string | null
+          materiais_extras?: Json
           moeda?: string | null
           pais: string
           pdf_url?: string | null
@@ -558,6 +560,7 @@ export type Database = {
           item_id?: string
           item_type?: string
           legenda_url?: string | null
+          materiais_extras?: Json
           moeda?: string | null
           pais?: string
           pdf_url?: string | null

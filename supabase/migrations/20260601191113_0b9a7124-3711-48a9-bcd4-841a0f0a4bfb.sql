@@ -1,0 +1,1 @@
+ALTER TABLE public.content_translations ADD COLUMN IF NOT EXISTS materiais_extras jsonb NOT NULL DEFAULT '[]'::jsonb;
