@@ -172,7 +172,7 @@ export function TelasTab() {
     }
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (await appConfirm("Restaurar conteúdo padrão desta tela? As alterações não salvas serão perdidas.")) {
       setData(screen.defaults);
     }
