@@ -6,6 +6,17 @@ import {
   vidPrimeirosCuidados, vidSonoBebe,
 } from "@/lib/atlas-cover-video";
 
+import amamentacao2 from "@/assets/curso-videos/amamentacao-2.mp4.asset.json";
+import amamentacao3 from "@/assets/curso-videos/amamentacao-3.mp4.asset.json";
+import amamentacao4 from "@/assets/curso-videos/amamentacao-4.mp4.asset.json";
+import amamentacao5 from "@/assets/curso-videos/amamentacao-5.mp4.asset.json";
+import amamentacao6 from "@/assets/curso-videos/amamentacao-6.mp4.asset.json";
+import amamentacao7 from "@/assets/curso-videos/amamentacao-7.mp4.asset.json";
+import amamentacao8 from "@/assets/curso-videos/amamentacao-8.mp4.asset.json";
+import amamentacao9 from "@/assets/curso-videos/amamentacao-9.mp4.asset.json";
+import amamentacao10 from "@/assets/curso-videos/amamentacao-10.mp4.asset.json";
+import amamentacao11 from "@/assets/curso-videos/amamentacao-11.mp4.asset.json";
+
 type BuiltinVideo = { nome: string; url: string; keywords: string[] };
 const BUILTIN_VIDEOS: BuiltinVideo[] = [
   { nome: "Engravidar / Concepção", url: vidEngravidar, keywords: ["conceb", "concep", "engravid", "fertil"] },
@@ -18,6 +29,16 @@ const BUILTIN_VIDEOS: BuiltinVideo[] = [
   { nome: "Amamentação", url: vidAmamentacao, keywords: ["amament", "leite", "peito"] },
   { nome: "Primeiros cuidados", url: vidPrimeirosCuidados, keywords: ["cuidad", "bebê", "bebe", "recem", "recém"] },
   { nome: "Sono do bebê", url: vidSonoBebe, keywords: ["sono", "dormir"] },
+  { nome: "Amamentação · Janela ao amanhecer", url: amamentacao2.url, keywords: ["amament", "leite", "peito"] },
+  { nome: "Amamentação · Pele a pele", url: amamentacao3.url, keywords: ["amament", "leite", "peito"] },
+  { nome: "Amamentação · Momento aconchego", url: amamentacao4.url, keywords: ["amament", "leite", "peito"] },
+  { nome: "Amamentação · Cadeira de balanço", url: amamentacao5.url, keywords: ["amament", "leite", "peito"] },
+  { nome: "Amamentação · Bomba e ordenha", url: amamentacao6.url, keywords: ["amament", "leite", "peito", "ordenha", "bomba"] },
+  { nome: "Amamentação · Pega correta", url: amamentacao7.url, keywords: ["amament", "leite", "peito", "pega"] },
+  { nome: "Amamentação · Sono após mamar", url: amamentacao8.url, keywords: ["amament", "leite", "peito"] },
+  { nome: "Amamentação · Manhã serena", url: amamentacao9.url, keywords: ["amament", "leite", "peito"] },
+  { nome: "Amamentação · Apoio da família", url: amamentacao10.url, keywords: ["amament", "leite", "peito", "famil"] },
+  { nome: "Amamentação · Consultora de lactação", url: amamentacao11.url, keywords: ["amament", "leite", "peito", "lactac", "consult"] },
 ];
 
 const c = {
