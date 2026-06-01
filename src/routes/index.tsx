@@ -844,7 +844,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           <img
             src={rayssa}
             alt="Rayssa Leslie, Enfermeira Pós Graduada em Obstetricia"
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }}
           />
           <LiquidCard bgOpacity={0} style={{ padding: "14px 16px", display: "flex", alignItems: "flex-start", gap: 10, position: "relative", zIndex: 2, background: "linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))", backdropFilter: "blur(8px) saturate(180%) contrast(110%)", WebkitBackdropFilter: "blur(8px) saturate(180%) contrast(110%)", borderColor: "rgba(255,255,255,0.18)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.2), 0 8px 24px -14px rgba(0,0,0,0.18)" }}>
             <div style={{ flex: 1, minWidth: 0 }}>
