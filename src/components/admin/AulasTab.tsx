@@ -30,9 +30,10 @@ export default function AulasTab({ reloadSignal, temaFilter }: { reloadSignal?: 
 
   const reload = async () => {
     setErr(null);
-    try { setAulas(await fnList() as AulaRow[]); }
+    try { setAulas(await fnList() as unknown as AulaRow[]); }
     catch (e: any) { setErr(e?.message ?? "Erro"); }
   };
+
   useEffect(() => { reload(); }, [reloadSignal]);
 
   const editar = (a: AulaRow) => setEditing({ ...a, temas: a.temas.map((t) => t.id) });
