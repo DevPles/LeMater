@@ -12,6 +12,7 @@ import lemateLogo from "@/assets/logo_oficial.png";
 import appIcon from "@/assets/app-icon.png";
 import logoMonograma from "@/assets/logo_monograma.png";
 import { LiquidCard } from "@/components/LiquidCard";
+import { AgendamentoModal } from "@/components/AgendamentoModal";
 import { InstagramIcon, YouTubeIcon, TikTokIcon, HotmartIcon, KiwifyIcon, SpotifyIcon } from "@/components/SocialIcons";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { translateBatch } from "@/lib/translate.functions";
