@@ -12,6 +12,10 @@ const btn = (bg: string): CSSProperties => ({ background: bg, color: "white", fo
 const btnSm = (bg: string): CSSProperties => ({ background: bg, color: "white", fontSize: 11, fontWeight: 500, letterSpacing: "0.08em", padding: "6px 12px", border: "none", cursor: "pointer", fontFamily: sans });
 const Field = ({ label, children }: any) => <label style={{ display: "block" }}><div style={{ fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 6 }}>{label}</div>{children}</label>;
 
+const slugify = (s: string) =>
+  s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/(^-+|-+$)/g, "").slice(0, 120);
+
 type Tema = { id: string; titulo: string; slug: string; categoria: string; ordem: number; publicado: boolean };
 
 export default function TemasTab() {
@@ -78,8 +82,8 @@ export default function TemasTab() {
           <div onClick={(e) => e.stopPropagation()} style={{ background: "white", maxWidth: 480, width: "100%", padding: 28, border: `1px solid ${c.border}` }}>
             <h2 style={{ fontFamily: serif, fontSize: 24, fontWeight: 400, margin: "0 0 18px" }}>{edit.id ? "Editar tema" : "Novo tema"}</h2>
             <div style={{ display: "grid", gap: 12 }}>
-              <Field label="Título"><input value={edit.titulo ?? ""} onChange={(e) => setEdit({ ...edit, titulo: e.target.value })} style={inp} /></Field>
-              <Field label="Slug (URL)"><input value={edit.slug ?? ""} onChange={(e) => setEdit({ ...edit, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} style={inp} placeholder="gestacao" /></Field>
+              <Field label="Título"><input value={edit.titulo ?? ""} onChange={(e) => { const t = e.target.value; setEdit((prev) => { const p = prev ?? {}; const prevAuto = slugify(p.titulo ?? ""); const slugVazioOuAuto = !p.slug || p.slug === prevAuto; return { ...p, titulo: t, slug: slugVazioOuAuto ? slugify(t) : p.slug }; }); }} style={inp} /></Field>
+              <Field label="Slug (URL)"><input value={edit.slug ?? ""} onChange={(e) => setEdit({ ...edit, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })} style={inp} placeholder="gerado automaticamente do título" /></Field>
               <Field label="Ordem"><input type="number" value={edit.ordem ?? 0} onChange={(e) => setEdit({ ...edit, ordem: parseInt(e.target.value) || 0 })} style={inp} /></Field>
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
                 <input type="checkbox" checked={!!edit.publicado} onChange={(e) => setEdit({ ...edit, publicado: e.target.checked })} /> Visível no Atlas

@@ -7,6 +7,11 @@ import { ContentCard } from "@/components/ContentCard";
 import OfertasEditor, { type OfertasEditorHandle } from "@/components/admin/OfertasEditor";
 import AudiosEditor, { type AudiosEditorHandle } from "@/components/admin/AudiosEditor";
 
+const slugify = (s: string) =>
+  s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/(^-+|-+$)/g, "").slice(0, 120);
+
+
 const c = {
   cream: "#FAF5EE",
   warm: "#F5EDE0",
@@ -828,15 +833,25 @@ function FormCurso({ curso, setCurso, aulas, setAulas, editando, ofertasCursoRef
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
         <Field label="Título do curso">
           <input {...noAuto} name="curso-titulo" value={curso.titulo}
-            onInput={(e) => handleCursoInput({ titulo: e.currentTarget.value })}
-            onChange={(e) => handleCursoInput({ titulo: e.currentTarget.value })}
+            onInput={(e) => {
+              const t = e.currentTarget.value;
+              const prevAuto = slugify(curso.titulo);
+              const slugVazioOuAuto = !curso.slug || curso.slug === prevAuto;
+              handleCursoInput(slugVazioOuAuto ? { titulo: t, slug: slugify(t) } : { titulo: t });
+            }}
+            onChange={(e) => {
+              const t = e.currentTarget.value;
+              const prevAuto = slugify(curso.titulo);
+              const slugVazioOuAuto = !curso.slug || curso.slug === prevAuto;
+              handleCursoInput(slugVazioOuAuto ? { titulo: t, slug: slugify(t) } : { titulo: t });
+            }}
             style={inp} placeholder="Ex.: Preparação para o parto" />
         </Field>
         <Field label="Slug (URL)">
           <input {...noAuto} name="curso-slug" value={curso.slug}
             onInput={(e) => handleCursoInput({ slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })}
             onChange={(e) => handleCursoInput({ slug: e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })}
-            style={inp} placeholder="meu-curso" />
+            style={inp} placeholder="gerado automaticamente do título" />
         </Field>
       </div>
       <Field label="Descrição curta (vitrine)">
