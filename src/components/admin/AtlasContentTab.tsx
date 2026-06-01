@@ -79,6 +79,7 @@ export default function AtlasContentTab() {
       )}
 
       {aba === "tema" && <TemasTab />}
+      {aba === "multimidia" && <MultimidiaTab />}
 
       {novoOpen && (
         <NovoAtlasModal
