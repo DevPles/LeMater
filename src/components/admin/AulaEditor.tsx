@@ -185,33 +185,12 @@ export default function AulaEditor({
         capa_video_url = supabase.storage.from("materiais-capas").getPublicUrl(up.path).data.publicUrl;
       }
 
-      const tipo = String(fd.get("tipo") ?? "video") as "video" | "pdf" | "texto";
-      let video_url: string | null = editing.video_url ?? null;
-      let pdf_url: string | null = editing.pdf_url ?? null;
-      let conteudo_html: string | null = editing.conteudo_html ?? null;
+      // Tipo agora é sempre "video" — todo o conteúdo (PDFs e vídeos) vive em materiais_extras.
+      const tipo: "video" | "pdf" | "texto" = "video";
+      const video_url: string | null = null;
+      const pdf_url: string | null = null;
+      const conteudo_html: string | null = null;
 
-      if (tipo === "video") {
-        const externa = String(fd.get("video_url_externa") ?? "").trim();
-        const videoFile = fd.get("video_file") as File | null;
-        if (videoFile && videoFile.size > 0) {
-          const path = `${Date.now()}-${videoFile.name.replace(/[^\w.-]/g, "_")}`;
-          const { error } = await supabase.storage.from("materiais-video").upload(path, videoFile);
-          if (error) throw new Error("Falha vídeo: " + error.message);
-          video_url = path;
-        } else if (externa) {
-          video_url = externa;
-        }
-      } else if (tipo === "pdf") {
-        const pdfFile = fd.get("pdf_file") as File | null;
-        if (pdfFile && pdfFile.size > 0) {
-          const path = `${Date.now()}-${pdfFile.name.replace(/[^\w.-]/g, "_")}`;
-          const { error } = await supabase.storage.from("materiais-pdf").upload(path, pdfFile);
-          if (error) throw new Error("Falha PDF: " + error.message);
-          pdf_url = path;
-        }
-      } else {
-        conteudo_html = String(fd.get("conteudo_html") ?? "");
-      }
 
       const beneficios = String(fd.get("beneficios") ?? "")
         .split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 20);
