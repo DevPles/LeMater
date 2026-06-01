@@ -345,10 +345,7 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
       if (tag === "TEXTAREA") return; // allow newlines in textarea
       e.preventDefault();
       if (atual === "sucesso") return fechar();
-      if (atual === "resumo") {
-        if (!enviando) enviar();
-        return;
-      }
+      if (atual === "oferta") return;
       if (podeAvancar()) avancar();
     }
     window.addEventListener("keydown", onKey);
