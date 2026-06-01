@@ -112,6 +112,9 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             preco_centavos: t.preco_centavos ?? 0,
             moeda: t.moeda ?? MOEDA_PADRAO[p],
             preco_label: t.preco_label ?? "",
+            materiais_extras: Array.isArray(t.materiais_extras)
+              ? (t.materiais_extras as any[]).map((m) => ({ kind: m.kind, nome: m.nome ?? "", path: m.path ?? null, url: m.url ?? null, _localId: makeLocalId() }))
+              : [],
           };
         });
         setRows(next);
