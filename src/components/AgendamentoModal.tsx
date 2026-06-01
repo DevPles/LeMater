@@ -32,14 +32,9 @@ interface Pais {
 }
 
 const PAISES: Pais[] = [
-  { code: "BR", flag: "🇧🇷", lang: "pt", nome: { pt: "Brasil", en: "Brazil", es: "Brasil" } },
-  { code: "PT", flag: "🇵🇹", lang: "pt", nome: { pt: "Portugal", en: "Portugal", es: "Portugal" } },
-  { code: "US", flag: "🇺🇸", lang: "en", nome: { pt: "Estados Unidos", en: "United States", es: "Estados Unidos" } },
-  { code: "GB", flag: "🇬🇧", lang: "en", nome: { pt: "Reino Unido", en: "United Kingdom", es: "Reino Unido" } },
-  { code: "ES", flag: "🇪🇸", lang: "es", nome: { pt: "Espanha", en: "Spain", es: "España" } },
-  { code: "MX", flag: "🇲🇽", lang: "es", nome: { pt: "México", en: "Mexico", es: "México" } },
-  { code: "AR", flag: "🇦🇷", lang: "es", nome: { pt: "Argentina", en: "Argentina", es: "Argentina" } },
-  { code: "OUTRO", flag: "🌎", lang: "pt", nome: { pt: "Outro país", en: "Other country", es: "Otro país" } },
+  { code: "BR", flag: "https://flagcdn.com/w160/br.png", lang: "pt", nome: { pt: "Brasil", en: "Brazil", es: "Brasil" } },
+  { code: "ES", flag: "https://flagcdn.com/w160/es.png", lang: "es", nome: { pt: "Espanha", en: "Spain", es: "España" } },
+  { code: "US", flag: "https://flagcdn.com/w160/us.png", lang: "en", nome: { pt: "Estados Unidos", en: "United States", es: "Estados Unidos" } },
 ];
 
 const T: Record<Lang, Record<string, string>> = {
@@ -267,7 +262,7 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
       const paisNome = paisObj ? paisObj.nome[lang] : "—";
       const msg =
         `${t.waMsg} ${r.nome} ${t.waQuero}%0A%0A` +
-        `• ${t.waPais}: ${paisObj?.flag ?? ""} ${paisNome}%0A` +
+        `• ${t.waPais}: ${paisNome}%0A` +
         `• ${t.waMomento}: ${r.estagio ? labelEstagio[r.estagio] : "—"}` +
         (r.semanas ? ` (${r.semanas} ${t.waSem})` : "") + `%0A` +
         `• ${t.waMod}: ${r.modalidade ? labelModalidade[r.modalidade] : "—"}%0A` +
@@ -377,23 +372,24 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
 
                 {atual === "pais" && (
                   <Bloco titulo={t.paisTitulo} sub={t.paisSub}>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
                       {PAISES.map((p) => {
                         const ativo = r.pais === p.code;
                         return (
                           <button key={p.code} type="button"
                             onClick={() => patch({ pais: p.code })}
                             style={{
-                              display: "flex", alignItems: "center", gap: 10,
-                              padding: "14px 14px", borderRadius: 14,
+                              display: "flex", alignItems: "center", gap: 14,
+                              padding: "14px 18px", borderRadius: 14,
                               border: `1.5px solid ${ativo ? c.sageDark : c.border}`,
                               background: "white",
                               boxShadow: ativo ? `0 0 0 4px ${c.sageLight}33` : "none",
                               cursor: "pointer", fontFamily: sans, textAlign: "left",
                               transition: "all 0.2s",
                             }}>
-                            <span style={{ fontSize: 26, lineHeight: 1 }}>{p.flag}</span>
-                            <span style={{ fontSize: 14, color: c.ink, fontWeight: 500 }}>
+                            <img src={p.flag} alt="" width={42} height={28}
+                              style={{ borderRadius: 4, objectFit: "cover", flexShrink: 0, boxShadow: "0 1px 2px rgba(0,0,0,0.1)" }} />
+                            <span style={{ fontSize: 16, color: c.ink, fontWeight: 500 }}>
                               {p.nome[lang]}
                             </span>
                           </button>
@@ -507,7 +503,7 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
                 {atual === "resumo" && (
                   <Bloco titulo={t.resTitulo} sub={t.resSub}>
                     <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 10 }}>
-                      <ItemResumo k={t.rPais} v={paisObj ? `${paisObj.flag} ${paisObj.nome[lang]}` : ""} />
+                      <ItemResumo k={t.rPais} v={paisObj ? paisObj.nome[lang] : ""} />
                       <ItemResumo k={t.rNome} v={r.nome} />
                       <ItemResumo k={t.rMomento} v={labelEstagioCurto(r.estagio, t)} />
                       {ehGestante && <ItemResumo k={t.rSemanas} v={r.semanas} />}
