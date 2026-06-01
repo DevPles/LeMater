@@ -64,7 +64,7 @@ export function ContentCard(p: ContentCardProps) {
         </div>
       )}
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 6 }}>
-        <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 300, color: isDark ? "rgba(255,255,255,0.18)" : c.border, lineHeight: 1 }}>{p.numero}</div>
+        <div style={{ fontFamily: serif, fontSize: 38, fontWeight: 500, color: isDark ? "rgba(240,192,64,0.95)" : c.gold, lineHeight: 1, letterSpacing: "0.02em" }}>{p.numero}</div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
           {p.badge && (
             <span style={{ fontSize: 8, letterSpacing: "0.12em", textTransform: "uppercase", color: "white", background: badgeColor, padding: "2px 6px", fontWeight: 600 }}>
@@ -82,7 +82,7 @@ export function ContentCard(p: ContentCardProps) {
         {p.titulo}
       </div>
       {p.descricao && (
-        <p style={{ fontSize: 11.5, lineHeight: 1.45, color: isDark ? "rgba(255,255,255,0.75)" : c.muted, marginBottom: 10 }}>
+        <p style={{ fontSize: 13.5, lineHeight: 1.55, color: isDark ? "rgba(255,255,255,0.78)" : c.muted, marginBottom: 10, textAlign: "justify", hyphens: "auto" }}>
           {p.descricao}
         </p>
       )}
