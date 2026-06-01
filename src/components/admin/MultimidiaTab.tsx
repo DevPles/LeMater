@@ -1,5 +1,24 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  vidEngravidar, vidPreNatal, vidExercicios, vidAlimentacao,
+  vidPartoHumanizado, vidPlanoParto, vidPuerperio, vidAmamentacao,
+  vidPrimeirosCuidados, vidSonoBebe,
+} from "@/lib/atlas-cover-video";
+
+type BuiltinVideo = { nome: string; url: string; keywords: string[] };
+const BUILTIN_VIDEOS: BuiltinVideo[] = [
+  { nome: "Engravidar / Concepção", url: vidEngravidar, keywords: ["conceb", "concep", "engravid", "fertil"] },
+  { nome: "Pré-natal / Gestação", url: vidPreNatal, keywords: ["gesta", "pre-natal", "pré-natal", "pre natal", "grávid", "gravid"] },
+  { nome: "Exercícios na gestação", url: vidExercicios, keywords: ["exerc", "movimento", "yoga", "atividade"] },
+  { nome: "Alimentação", url: vidAlimentacao, keywords: ["aliment", "nutri", "comida", "dieta"] },
+  { nome: "Parto humanizado", url: vidPartoHumanizado, keywords: ["parto", "humaniz", "trabalho de parto"] },
+  { nome: "Plano de parto", url: vidPlanoParto, keywords: ["plano de parto", "plano-de-parto", "plano parto"] },
+  { nome: "Puerpério", url: vidPuerperio, keywords: ["puerp", "pos-parto", "pós-parto", "pos parto"] },
+  { nome: "Amamentação", url: vidAmamentacao, keywords: ["amament", "leite", "peito"] },
+  { nome: "Primeiros cuidados", url: vidPrimeirosCuidados, keywords: ["cuidad", "bebê", "bebe", "recem", "recém"] },
+  { nome: "Sono do bebê", url: vidSonoBebe, keywords: ["sono", "dormir"] },
+];
 
 const c = {
   cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A42",
