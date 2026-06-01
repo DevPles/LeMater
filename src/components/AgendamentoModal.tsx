@@ -733,3 +733,53 @@ const pNota: CSSProperties = {
   background: "white", border: `1px solid ${c.border}`, borderRadius: 14,
   padding: "14px 16px",
 };
+
+function CartaoOferta({
+  tag, titulo, desc, botao, onClick, destaque, disabled,
+}: {
+  tag: string; titulo: string; desc: string; botao: string;
+  onClick: () => void; destaque?: boolean; disabled?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        position: "relative",
+        background: destaque ? "white" : c.cream,
+        border: `1.5px solid ${destaque ? c.sageDark : c.border}`,
+        borderRadius: 18,
+        padding: "18px 18px 16px",
+        boxShadow: destaque ? `0 14px 30px -18px rgba(45,90,66,0.45)` : "none",
+      }}
+    >
+      <div
+        style={{
+          display: "inline-block",
+          fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase",
+          color: destaque ? c.sageDark : c.muted,
+          background: destaque ? `${c.sageLight}33` : c.warm,
+          border: `1px solid ${destaque ? c.sageLight : c.border}`,
+          padding: "4px 10px", borderRadius: 999, marginBottom: 10, fontWeight: 600,
+        }}
+      >
+        {tag}
+      </div>
+      <h4 style={{ fontFamily: serif, fontSize: 20, lineHeight: 1.2, color: c.ink, margin: "0 0 6px", fontWeight: 500 }}>
+        {titulo}
+      </h4>
+      <p style={{ fontSize: 13.5, color: c.muted, lineHeight: 1.5, margin: "0 0 14px" }}>
+        {desc}
+      </p>
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        style={{
+          ...(destaque ? btnPrimario : { ...btnPrimario, background: "transparent", color: c.sageDark, border: `1.5px solid ${c.sageDark}` }),
+          width: "100%", opacity: disabled ? 0.55 : 1, cursor: disabled ? "wait" : "pointer",
+        }}
+      >
+        {botao}
+      </button>
+    </div>
+  );
+}
