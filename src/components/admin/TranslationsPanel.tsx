@@ -357,17 +357,68 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
               <input type="file" accept="image/*" onChange={(e) => onFile("capa_url", "materiais-capas", "capas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
               {current.capa_url && <Hint url={current.capa_url} />}
             </Row>
-            <Row label={`Vídeo dublado (${tab}) — aula`} compact>
-              <input type="file" accept="video/*" onChange={(e) => onFile("video_url", "materiais-video", "aulas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
-              {current.video_url && <Hint url={current.video_url} />}
-            </Row>
-            <Row label={`Vídeo da aula (${tab}) — OU URL externa`} compact>
-              <input value={current.video_url.startsWith("http") ? current.video_url : ""} onChange={(e) => update("video_url", e.target.value)} placeholder="https://..." style={{ ...inp, minHeight: 42 }} />
-            </Row>
-            <Row label={`PDF / Ebook (${tab})`} compact>
-              <input type="file" accept="application/pdf" onChange={(e) => onFile("pdf_url", "materiais-pdf", "materiais", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
-              {current.pdf_url && <Hint url={current.pdf_url} />}
-            </Row>
+          </div>
+
+          <div style={{ marginTop: 12, padding: 12, background: "white", border: `1px solid ${c.border}` }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sageDark, fontWeight: 600, marginBottom: 6 }}>
+              Conteúdo da aula ({tab}) — PDFs e vídeos
+            </div>
+            <p style={{ fontSize: 12, color: c.muted, margin: "0 0 10px" }}>
+              Adicione quantos PDFs e vídeos quiser para esta versão. O aluno em {tab} verá esta lista — clica num PDF para ler em modal, ou num vídeo para assistir.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+              <label style={{ display: "block" }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 4 }}>+ Adicionar PDFs</div>
+                <input type="file" accept="application/pdf" multiple onChange={(e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  if (files.length === 0) return;
+                  addExtras(files.map((f) => ({ kind: "pdf", nome: f.name.replace(/\.pdf$/i, ""), _file: f, _pending: true, _localId: makeLocalId() })));
+                  e.target.value = "";
+                }} style={{ ...inp, minHeight: 42 }} />
+              </label>
+              <label style={{ display: "block" }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 4 }}>+ Adicionar vídeos (MP4)</div>
+                <input type="file" accept="video/*" multiple onChange={(e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  if (files.length === 0) return;
+                  addExtras(files.map((f) => ({ kind: "video_upload", nome: f.name.replace(/\.[^.]+$/, ""), _file: f, _pending: true, _localId: makeLocalId() })));
+                  e.target.value = "";
+                }} style={{ ...inp, minHeight: 42 }} />
+              </label>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr auto", gap: 8, marginBottom: 10 }}>
+              <input placeholder="URL do vídeo (YouTube, Vimeo…)" value={novoVideoUrl} onChange={(e) => setNovoVideoUrl(e.target.value)} style={inp} />
+              <input placeholder="Nome do vídeo (opcional)" value={novoVideoNome} onChange={(e) => setNovoVideoNome(e.target.value)} style={inp} />
+              <button type="button" onClick={() => {
+                const u = novoVideoUrl.trim();
+                if (!u) return;
+                addExtras([{ kind: "video_externo", nome: novoVideoNome.trim() || "Vídeo externo", url: u, _pending: true, _localId: makeLocalId() }]);
+                setNovoVideoUrl(""); setNovoVideoNome("");
+              }} style={{ background: c.sageDark, color: "white", border: "none", padding: "10px 14px", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", fontFamily: sans }}>+ URL</button>
+            </div>
+            {(current.materiais_extras ?? []).length === 0 ? (
+              <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: 12, textAlign: "center", color: c.muted, fontSize: 12 }}>
+                Nenhuma mídia adicionada para {tab}. Use os botões acima para anexar PDFs ou vídeos.
+              </div>
+            ) : (
+              <div style={{ border: `1px solid ${c.border}` }}>
+                {(current.materiais_extras ?? []).map((ex, idx, arr) => (
+                  <div key={ex._localId} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", padding: "8px 10px", borderBottom: idx < arr.length - 1 ? `1px solid ${c.border}` : "none", background: c.cream }}>
+                    <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: ex.kind === "pdf" ? "#B8923A" : c.sageDark, border: `1px solid ${ex.kind === "pdf" ? "#B8923A" : c.sageDark}`, padding: "3px 8px", fontWeight: 600 }}>
+                      {ex.kind === "pdf" ? "PDF" : ex.kind === "video_externo" ? "Vídeo URL" : "Vídeo"}
+                    </span>
+                    <input value={ex.nome} onChange={(e) => updateExtra(ex._localId, { nome: e.target.value })} placeholder="Nome exibido" style={{ ...inp, padding: "6px 10px", fontSize: 13 }} />
+                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                      {ex._pending && <span style={{ fontSize: 10, color: c.muted, letterSpacing: "0.1em" }}>NOVO</span>}
+                      <button type="button" onClick={() => removeExtra(ex._localId)} style={{ background: "transparent", border: `1px solid ${c.danger}`, color: c.danger, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", padding: "5px 9px", cursor: "pointer", fontFamily: sans }}>Remover</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, alignItems: "stretch", marginTop: 12 }}>
             <Row label={`Áudio (${tab}) — opcional`} compact>
               <input type="file" accept="audio/*" onChange={(e) => onFile("audio_url", "materiais-video", "audios", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
               {current.audio_url && <Hint url={current.audio_url} />}
