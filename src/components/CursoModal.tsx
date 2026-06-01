@@ -423,9 +423,38 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
           )
         )}
       </div>
+
+      {/* Modal de mídia (PDF ou Vídeo) */}
+      {midiaAberta && (
+        <div onClick={(e) => { e.stopPropagation(); setMidiaAberta(null); }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 400, display: "flex", alignItems: "center", justifyContent: "center", padding: isMobile ? 0 : 24 }}>
+          <div onClick={(e) => e.stopPropagation()}
+            style={{ background: midiaAberta.kind === "pdf" ? "white" : "#000", width: "100%", maxWidth: 1100, height: isMobile ? "100dvh" : "min(90vh, 760px)", position: "relative", display: "flex", flexDirection: "column", border: `1px solid ${c.border}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", background: c.sageDark, color: "white" }}>
+              <div style={{ fontFamily: sans, fontSize: 13, letterSpacing: "0.04em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {midiaAberta.nome}
+              </div>
+              <button onClick={() => setMidiaAberta(null)} aria-label="Fechar"
+                style={{ background: "transparent", color: "white", border: "1px solid rgba(255,255,255,0.4)", width: 32, height: 32, cursor: "pointer", fontSize: 18, fontFamily: sans, lineHeight: 1 }}>×</button>
+            </div>
+            <div style={{ flex: 1, minHeight: 0, background: midiaAberta.kind === "pdf" ? "white" : "#000" }}>
+              {midiaAberta.kind === "pdf" && (
+                <iframe src={midiaAberta.url} title={midiaAberta.nome} style={{ width: "100%", height: "100%", border: "none" }} />
+              )}
+              {midiaAberta.kind === "video" && midiaAberta.isExterno && (
+                <iframe src={midiaAberta.url} title={midiaAberta.nome} style={{ width: "100%", height: "100%", border: "none" }} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+              )}
+              {midiaAberta.kind === "video" && !midiaAberta.isExterno && (
+                <video src={midiaAberta.url} controls autoPlay style={{ width: "100%", height: "100%", background: "#000", display: "block" }} />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 function OfferRow({ offer, secao, ativo, onClick }: { offer: Offer; secao: "aula" | "curso"; ativo: boolean; onClick: () => void }) {
   return (
