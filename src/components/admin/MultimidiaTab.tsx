@@ -58,6 +58,27 @@ import concepcaoEspanha1 from "@/assets/curso-videos/concepcao-espanha-1.mp4.ass
 import concepcaoEspanha2 from "@/assets/curso-videos/concepcao-espanha-2.mp4.asset.json";
 import concepcaoEspanha3 from "@/assets/curso-videos/concepcao-espanha-3.mp4.asset.json";
 
+import gestacaoBrasil1 from "@/assets/curso-videos/gestacao-brasil-1.mp4.asset.json";
+import gestacaoBrasil2 from "@/assets/curso-videos/gestacao-brasil-2.mp4.asset.json";
+import gestacaoBrasil3 from "@/assets/curso-videos/gestacao-brasil-3.mp4.asset.json";
+import gestacaoBrasil4 from "@/assets/curso-videos/gestacao-brasil-4.mp4.asset.json";
+import gestacaoBrasil5 from "@/assets/curso-videos/gestacao-brasil-5.mp4.asset.json";
+import gestacaoBrasil6 from "@/assets/curso-videos/gestacao-brasil-6.mp4.asset.json";
+import gestacaoBrasil7 from "@/assets/curso-videos/gestacao-brasil-7.mp4.asset.json";
+import gestacaoEua1 from "@/assets/curso-videos/gestacao-eua-1.mp4.asset.json";
+import gestacaoEua2 from "@/assets/curso-videos/gestacao-eua-2.mp4.asset.json";
+import gestacaoEua3 from "@/assets/curso-videos/gestacao-eua-3.mp4.asset.json";
+import gestacaoEua4 from "@/assets/curso-videos/gestacao-eua-4.mp4.asset.json";
+import gestacaoEua5 from "@/assets/curso-videos/gestacao-eua-5.mp4.asset.json";
+import gestacaoEua6 from "@/assets/curso-videos/gestacao-eua-6.mp4.asset.json";
+import gestacaoEua7 from "@/assets/curso-videos/gestacao-eua-7.mp4.asset.json";
+import gestacaoEspanha1 from "@/assets/curso-videos/gestacao-espanha-1.mp4.asset.json";
+import gestacaoEspanha2 from "@/assets/curso-videos/gestacao-espanha-2.mp4.asset.json";
+import gestacaoEspanha3 from "@/assets/curso-videos/gestacao-espanha-3.mp4.asset.json";
+import gestacaoEspanha4 from "@/assets/curso-videos/gestacao-espanha-4.mp4.asset.json";
+import gestacaoEspanha5 from "@/assets/curso-videos/gestacao-espanha-5.mp4.asset.json";
+import gestacaoEspanha6 from "@/assets/curso-videos/gestacao-espanha-6.mp4.asset.json";
+
 type BuiltinVideo = { nome: string; url: string; keywords: string[] };
 const BUILTIN_VIDEOS: BuiltinVideo[] = [
   { nome: "Engravidar / Concepção", url: vidEngravidar, keywords: ["conceb", "concep", "engravid", "fertil"] },
@@ -121,6 +142,27 @@ const BUILTIN_VIDEOS: BuiltinVideo[] = [
   { nome: "Concepção · Casal Espanha (Madrid)", url: concepcaoEspanha1.url, keywords: ["conceb", "concep", "engravid", "fertil", "espanh", "madrid"] },
   { nome: "Concepção · Casal Espanha (Barcelona)", url: concepcaoEspanha2.url, keywords: ["conceb", "concep", "engravid", "fertil", "espanh", "barcelon"] },
   { nome: "Concepção · Casal Espanha (Valencia)", url: concepcaoEspanha3.url, keywords: ["conceb", "concep", "engravid", "fertil", "espanh", "valenc"] },
+
+  { nome: "Gestação segura · Brasil (São Paulo)", url: gestacaoBrasil1.url, keywords: ["gesta", "gravid", "grávid", "pre-natal", "pré-natal", "brasil"] },
+  { nome: "Gestação segura · Brasil (yoga Rio)", url: gestacaoBrasil2.url, keywords: ["gesta", "gravid", "grávid", "exerc", "yoga", "brasil"] },
+  { nome: "Gestação segura · Brasil (ultrassom)", url: gestacaoBrasil3.url, keywords: ["gesta", "gravid", "grávid", "pre-natal", "pré-natal", "ultrasso", "brasil"] },
+  { nome: "Gestação segura · Brasil (caminhada)", url: gestacaoBrasil4.url, keywords: ["gesta", "gravid", "grávid", "caminhad", "exerc", "brasil"] },
+  { nome: "Gestação segura · Brasil (nutrição)", url: gestacaoBrasil5.url, keywords: ["gesta", "gravid", "grávid", "aliment", "nutri", "brasil"] },
+  { nome: "Gestação segura · Brasil (casal)", url: gestacaoBrasil6.url, keywords: ["gesta", "gravid", "grávid", "casal", "famil", "brasil"] },
+  { nome: "Gestação segura · Brasil (vitaminas)", url: gestacaoBrasil7.url, keywords: ["gesta", "gravid", "grávid", "vitamin", "pre-natal", "pré-natal", "brasil"] },
+  { nome: "Gestação segura · EUA (Brooklyn)", url: gestacaoEua1.url, keywords: ["gesta", "gravid", "grávid", "eua", "americ"] },
+  { nome: "Gestação segura · EUA (obstetra)", url: gestacaoEua2.url, keywords: ["gesta", "gravid", "grávid", "pre-natal", "pré-natal", "obstetr", "eua"] },
+  { nome: "Gestação segura · EUA (yoga LA)", url: gestacaoEua3.url, keywords: ["gesta", "gravid", "grávid", "yoga", "exerc", "eua"] },
+  { nome: "Gestação segura · EUA (Central Park)", url: gestacaoEua4.url, keywords: ["gesta", "gravid", "grávid", "caminhad", "exerc", "eua"] },
+  { nome: "Gestação segura · EUA (nutrição)", url: gestacaoEua5.url, keywords: ["gesta", "gravid", "grávid", "aliment", "nutri", "eua"] },
+  { nome: "Gestação segura · EUA (casal Seattle)", url: gestacaoEua6.url, keywords: ["gesta", "gravid", "grávid", "casal", "famil", "eua"] },
+  { nome: "Gestação segura · EUA (leitura)", url: gestacaoEua7.url, keywords: ["gesta", "gravid", "grávid", "leitura", "eua"] },
+  { nome: "Gestação segura · Espanha (Madrid)", url: gestacaoEspanha1.url, keywords: ["gesta", "gravid", "grávid", "espanh", "madrid"] },
+  { nome: "Gestação segura · Espanha (Barcelona clínica)", url: gestacaoEspanha2.url, keywords: ["gesta", "gravid", "grávid", "pre-natal", "pré-natal", "espanh", "barcelon"] },
+  { nome: "Gestação segura · Espanha (pilates)", url: gestacaoEspanha3.url, keywords: ["gesta", "gravid", "grávid", "pilates", "exerc", "espanh"] },
+  { nome: "Gestação segura · Espanha (Retiro)", url: gestacaoEspanha4.url, keywords: ["gesta", "gravid", "grávid", "caminhad", "exerc", "espanh", "madrid"] },
+  { nome: "Gestação segura · Espanha (mediterrânea)", url: gestacaoEspanha5.url, keywords: ["gesta", "gravid", "grávid", "aliment", "nutri", "mediterr", "espanh"] },
+  { nome: "Gestação segura · Espanha (casal Barcelona)", url: gestacaoEspanha6.url, keywords: ["gesta", "gravid", "grávid", "casal", "famil", "espanh", "barcelon"] },
 ];
 
 const c = {
