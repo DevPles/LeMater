@@ -618,16 +618,22 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             }
             .lm-gold-trace rect {
               fill: none;
-              stroke: rgba(240, 192, 64, 0.7);
-              stroke-width: 1;
-              stroke-linecap: round;
-              stroke-dasharray: 30 90;
-              filter: drop-shadow(0 0 3px rgba(240,192,64,0.55));
-              animation: lmGoldTrace 4s linear infinite;
+              stroke: rgba(240, 192, 64, 0.9);
+              stroke-width: 1.2;
+              filter: drop-shadow(0 0 2px rgba(240,192,64,0.5));
+              animation: lmGoldPulse 2.8s ease-in-out infinite;
             }
-            @keyframes lmGoldTrace {
-              to { stroke-dashoffset: -120; }
+            @keyframes lmGoldPulse {
+              0%, 100% {
+                stroke: rgba(240, 192, 64, 0.55);
+                filter: drop-shadow(0 0 1px rgba(240,192,64,0.35));
+              }
+              50% {
+                stroke: rgba(245, 210, 110, 1);
+                filter: drop-shadow(0 0 6px rgba(240,192,64,0.85)) drop-shadow(0 0 12px rgba(240,192,64,0.45));
+              }
             }
+
 
 
           `}</style>
