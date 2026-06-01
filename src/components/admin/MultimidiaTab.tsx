@@ -178,6 +178,47 @@ export default function MultimidiaTab() {
       {msg && <div style={banner(c.sage)}>{msg}</div>}
       {err && <div style={banner(c.danger)}>{err}</div>}
 
+      {(() => {
+        const haystack = (() => {
+          if (temaId === "__geral") return "";
+          const t = temas.find((x) => x.id === temaId);
+          return `${t?.slug ?? ""} ${t?.titulo ?? ""}`.toLowerCase();
+        })();
+        const matches = temaId === "__geral"
+          ? BUILTIN_VIDEOS
+          : BUILTIN_VIDEOS.filter((v) => v.keywords.some((k) => haystack.includes(k)));
+        const list = matches.length ? matches : BUILTIN_VIDEOS;
+        const copyBuiltin = async (url: string) => {
+          const full = typeof window !== "undefined" ? new URL(url, window.location.origin).toString() : url;
+          await navigator.clipboard.writeText(full);
+          setMsg("Link do vídeo integrado copiado.");
+        };
+        return (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 8, fontFamily: sans }}>
+              Vídeos integrados {temaId === "__geral" ? "(biblioteca padrão)" : matches.length ? "· sugeridos para este tema" : "· biblioteca completa"}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
+              {list.map((v) => (
+                <div key={v.url} style={{ background: "white", border: `1px solid ${c.border}`, padding: 10 }}>
+                  <video src={v.url} muted playsInline preload="metadata" style={{ width: "100%", height: 120, objectFit: "cover", background: "#000" }} onMouseEnter={(e) => (e.currentTarget as HTMLVideoElement).play().catch(() => {})} onMouseLeave={(e) => { const el = e.currentTarget as HTMLVideoElement; el.pause(); el.currentTime = 0; }} />
+                  <div style={{ fontFamily: serif, fontSize: 16, color: c.ink, marginTop: 8 }}>{v.nome}</div>
+                  <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                    <button onClick={() => copyBuiltin(v.url)} style={btnSm(c.sage)}>Copiar link</button>
+                    <a href={v.url} target="_blank" rel="noreferrer" style={{ ...btnSm(c.sageDark), textDecoration: "none", display: "inline-block" }}>Abrir</a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: c.muted, marginBottom: 8, fontFamily: sans }}>
+        Enviados pelo time
+      </div>
+
+
       <div style={{ background: "white", border: `1px solid ${c.border}` }}>
         {loading ? (
           <div style={{ padding: 24, color: c.muted, fontFamily: sans }}>Carregando…</div>
