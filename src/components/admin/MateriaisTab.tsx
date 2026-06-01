@@ -113,7 +113,7 @@ export default function MateriaisTab({
   };
 
   const remover = async (id: string) => {
-    if (!(await appConfirm("Remover este item?")) return;
+    if (!(await appConfirm("Remover este item?"))) return;
     await del({ data: { id } });
     reload();
   };
@@ -297,7 +297,7 @@ function AcessosSection({ materialId }: { materialId: string }) {
   };
 
   const revogar = async (user_id: string) => {
-    if (!(await appConfirm("Revogar acesso deste usuário?")) return;
+    if (!(await appConfirm("Revogar acesso deste usuário?"))) return;
     await revogarFn({ data: { material_id: materialId, user_id } });
     recarregar();
   };

@@ -197,7 +197,7 @@ function CuponsView() {
   useEffect(() => { reload(); }, []);
 
   const remover = async (id: string) => {
-    if (!(await appConfirm("Excluir este cupom?")) return;
+    if (!(await appConfirm("Excluir este cupom?"))) return;
     await fnDel({ data: { id } });
     reload();
   };

@@ -638,7 +638,7 @@ function AtlasCardsTab() {
   };
 
   const remover = async (id: string) => {
-    if (!(await appConfirm("Remover este card?")) return;
+    if (!(await appConfirm("Remover este card?"))) return;
     const { error } = await supabase.from("atlas_cards").delete().eq("id", id);
     if (error) { alert(error.message); return; }
     reload();

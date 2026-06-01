@@ -35,7 +35,7 @@ export default function AulasTab({ reloadSignal, temaFilter }: { reloadSignal?: 
   const editar = (a: AulaRow) => setEditing({ ...a, temas: a.temas.map((t) => t.id) });
 
   const remover = async (id: string) => {
-    if (!(await appConfirm("Remover esta aula? A ação não pode ser desfeita.")) return;
+    if (!(await appConfirm("Remover esta aula? A ação não pode ser desfeita."))) return;
     await fnDelete({ data: { id } });
     await reload();
   };
