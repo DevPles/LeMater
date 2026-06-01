@@ -551,6 +551,7 @@ const btnSecondary: CSSProperties = {
 function Inicio({ go }: { go: (id: SectionId) => void }) {
   const isMobile = useIsMobile();
   const { lang, setLang } = useLang();
+  const [duvidasOpen, setDuvidasOpen] = useState(false);
   return (
     <section style={{ paddingTop: isMobile ? 80 : 40, minHeight: "75vh", display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", flex: 1, flexWrap: "wrap", alignItems: "flex-start" }}>
@@ -586,6 +587,37 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               </span>
             </Link>
           </div>
+          <div style={{ display: "flex", justifyContent: "center", width: "100%", maxWidth: 520, marginTop: 14 }}>
+            <button
+              type="button"
+              onClick={() => setDuvidasOpen(true)}
+              style={{
+                fontFamily: sans,
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                padding: "12px 28px",
+                borderRadius: 999,
+                border: `1.5px solid ${c.sage}`,
+                background: "transparent",
+                color: c.sage,
+                cursor: "pointer",
+                transition: "all 0.25s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = c.sage;
+                e.currentTarget.style.color = "#FAF5EE";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.color = c.sage;
+              }}
+            >
+              Tirar Dúvidas
+            </button>
+          </div>
+          <AgendamentoModal open={duvidasOpen} onClose={() => setDuvidasOpen(false)} />
           <style>{`
             @property --lm-gold-angle {
               syntax: '<angle>';
