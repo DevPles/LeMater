@@ -25,7 +25,7 @@ export default function TemasTab() {
   const reload = () => listFn().then((d) => setItems(d as Tema[]));
   useEffect(() => { reload(); }, []);
 
-  const novo = () => setEdit({ titulo: "", slug: "", categoria: "geral", ordem: items.length, publicado: true });
+  const novo = () => setEdit({ titulo: "", slug: "", ordem: items.length, publicado: true });
 
   const salvar = async () => {
     if (!edit?.titulo || !edit.slug) { alert("Título e slug são obrigatórios"); return; }
