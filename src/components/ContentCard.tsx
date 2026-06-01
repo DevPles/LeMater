@@ -36,10 +36,16 @@ export function ContentCard(p: ContentCardProps) {
       onMouseLeave={() => setHover(false)}
       style={{
         background: isDark ? c.sageDark : c.warm,
-        padding: 14, transition: "background .3s",
+        padding: 14,
+        transition: "background .3s, transform .3s ease, box-shadow .3s ease",
         position: "relative", overflow: "hidden",
         display: "flex", flexDirection: "column",
         cursor: "pointer",
+        transform: hover ? "translateY(-4px)" : "translateY(0)",
+        boxShadow: hover
+          ? "0 24px 50px -12px rgba(28,28,26,0.35), 0 10px 20px -8px rgba(28,28,26,0.2)"
+          : "0 10px 24px -8px rgba(28,28,26,0.22), 0 4px 10px -4px rgba(28,28,26,0.12)",
+        borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.6)"}`,
       }}
       onClick={p.onAction}
     >
