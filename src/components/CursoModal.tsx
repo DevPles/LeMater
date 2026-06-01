@@ -194,57 +194,95 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
               Carregando aula…
             </div>
           )}
-          {player && (
-            <>
-              {player.conteudo.kind === "video_externo" && (
-                <div style={{ aspectRatio: "16/9", background: "black" }}>
-                  <iframe src={player.conteudo.embedUrl} style={{ width: "100%", height: "100%", border: "none" }} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
-                </div>
-              )}
-              {player.conteudo.kind === "video_upload" && (
-                <video src={player.conteudo.url} controls style={{ width: "100%", aspectRatio: "16/9", background: "black", display: "block" }} />
-              )}
-              {player.conteudo.kind === "pdf" && (
-                <iframe src={player.conteudo.url} style={{ width: "100%", height: isMobile ? "60vh" : "560px", border: `1px solid ${c.border}` }} />
-              )}
-              {player.conteudo.kind === "texto" && (
-                <div style={{ lineHeight: 1.7, fontSize: 15, padding: 16, background: "white", border: `1px solid ${c.border}` }} dangerouslySetInnerHTML={{ __html: player.conteudo.html }} />
-              )}
-              {player.conteudo.kind === "vazio" && !(player.midias && player.midias.length > 0) && (
-                <div style={{ padding: 24, background: c.warm, border: `1px solid ${c.border}`, textAlign: "center" }}>
-                  <p style={{ color: c.muted, margin: 0 }}>Esta aula ainda não tem conteúdo cadastrado.</p>
-                </div>
-              )}
+          {player && (() => {
+            // Construir slides a partir de midias (e fallback do conteudo principal)
+            type Slide = { kind: "pdf" | "video"; nome: string; url: string; isExterno?: boolean };
+            let slides: Slide[] = (player.midias ?? []).map((m) => ({ kind: m.kind, nome: m.nome, url: m.url, isExterno: m.isExterno }));
+            if (slides.length === 0) {
+              if (player.conteudo.kind === "video_externo") slides = [{ kind: "video", nome: player.aula.titulo, url: (player.conteudo as any).embedUrl, isExterno: true }];
+              else if (player.conteudo.kind === "video_upload") slides = [{ kind: "video", nome: player.aula.titulo, url: (player.conteudo as any).url }];
+              else if (player.conteudo.kind === "pdf") slides = [{ kind: "pdf", nome: player.aula.titulo, url: (player.conteudo as any).url }];
+            }
+            const total = slides.length;
+            const cur = total > 0 ? slides[Math.min(slideIdx, total - 1)] : null;
+            const go = (delta: number) => setSlideIdx((i) => (total ? (i + delta + total) % total : 0));
 
-
-              <div style={{ marginTop: 14 }}>
-                <h3 style={{ fontFamily: serif, fontSize: isMobile ? 20 : 24, fontWeight: 400, margin: "0 0 8px", lineHeight: 1.25 }}>{player.aula.titulo}</h3>
-                {player.aula.descricao && (
-                  <p style={{ color: c.muted, lineHeight: 1.55, margin: "0 0 12px", fontSize: 14 }}>{player.aula.descricao}</p>
+            return (
+              <>
+                {/* Carrossel de mídias no lugar do vídeo */}
+                {cur ? (
+                  <div style={{ position: "relative", background: "#000" }}>
+                    {cur.kind === "video" && cur.isExterno && (
+                      <div style={{ aspectRatio: "16/9", background: "#000" }}>
+                        <iframe key={cur.url} src={cur.url} style={{ width: "100%", height: "100%", border: "none" }} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+                      </div>
+                    )}
+                    {cur.kind === "video" && !cur.isExterno && (
+                      <video key={cur.url} src={cur.url} controls preload="metadata" style={{ width: "100%", aspectRatio: "16/9", background: "#000", display: "block" }} />
+                    )}
+                    {cur.kind === "pdf" && (
+                      <div style={{ aspectRatio: "16/9", background: c.warm, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: 24, textAlign: "center" }}>
+                        <div style={{ fontFamily: serif, fontSize: isMobile ? 18 : 22, color: c.ink, lineHeight: 1.3, wordBreak: "break-word", maxWidth: "90%" }}>{cur.nome}</div>
+                        <div style={{ fontSize: 10, letterSpacing: "0.2em", color: c.gold, fontFamily: sans, fontWeight: 600 }}>DOCUMENTO · PDF</div>
+                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+                          <button type="button" onClick={() => setMidiaAberta({ kind: "pdf", nome: cur.nome, url: cur.url })}
+                            style={{ background: c.sageDark, color: "white", border: "none", padding: "10px 18px", cursor: "pointer", fontFamily: sans, fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", fontWeight: 600 }}>
+                            Ver
+                          </button>
+                          <a href={cur.url} download={cur.nome} target="_blank" rel="noopener noreferrer"
+                            style={{ background: c.gold, color: "white", textDecoration: "none", padding: "10px 18px", fontFamily: sans, fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", fontWeight: 600, display: "inline-block" }}>
+                            Baixar
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                    {total > 1 && (
+                      <>
+                        <button type="button" aria-label="Anterior" onClick={() => go(-1)}
+                          style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.55)", color: "white", border: "none", width: 36, height: 36, cursor: "pointer", fontSize: 20, lineHeight: 1, fontFamily: sans }}>‹</button>
+                        <button type="button" aria-label="Próximo" onClick={() => go(1)}
+                          style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.55)", color: "white", border: "none", width: 36, height: 36, cursor: "pointer", fontSize: 20, lineHeight: 1, fontFamily: sans }}>›</button>
+                        <div style={{ position: "absolute", bottom: 8, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6 }}>
+                          {slides.map((_, i) => (
+                            <button key={i} type="button" aria-label={`Slide ${i + 1}`} onClick={() => setSlideIdx(i)}
+                              style={{ width: 8, height: 8, borderRadius: "50%", border: "none", background: i === slideIdx ? "white" : "rgba(255,255,255,0.45)", cursor: "pointer", padding: 0 }} />
+                          ))}
+                        </div>
+                        <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.55)", color: "white", fontFamily: sans, fontSize: 10, letterSpacing: "0.1em", padding: "3px 8px" }}>
+                          {slideIdx + 1} / {total}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ) : player.conteudo.kind === "texto" ? (
+                  <div style={{ lineHeight: 1.7, fontSize: 15, padding: 16, background: "white", border: `1px solid ${c.border}` }} dangerouslySetInnerHTML={{ __html: player.conteudo.html }} />
+                ) : (
+                  <div style={{ padding: 24, background: c.warm, border: `1px solid ${c.border}`, textAlign: "center" }}>
+                    <p style={{ color: c.muted, margin: 0 }}>Esta aula ainda não tem conteúdo cadastrado.</p>
+                  </div>
                 )}
 
-
-                {/* Botão único: DOCUMENTOS (abre seletor de PDFs e vídeos) */}
-                {player.midias && player.midias.length > 0 && (() => {
-                  const pdfs = player.midias.filter((m) => m.kind === "pdf").length;
-                  const videos = player.midias.filter((m) => m.kind === "video").length;
-                  const partes: string[] = [];
-                  if (pdfs) partes.push(`${pdfs} ${pdfs === 1 ? "PDF" : "PDFs"}`);
-                  if (videos) partes.push(`${videos} ${videos === 1 ? "vídeo" : "vídeos"}`);
-                  return (
-                    <div style={{ marginTop: 18 }}>
-                      <button type="button" onClick={() => setDocumentosAberto(true)}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 10, background: c.sageDark, color: "white", border: "none", padding: "12px 18px", cursor: "pointer", fontFamily: sans, fontSize: 12, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 600 }}>
-                        Documentos
-                        <span style={{ fontSize: 11, opacity: 0.8, letterSpacing: "0.08em", textTransform: "none", fontWeight: 400 }}>({partes.join(" · ")})</span>
+                {/* Lista de miniaturas/títulos dos arquivos */}
+                {total > 1 && (
+                  <div style={{ marginTop: 10, display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
+                    {slides.map((s, i) => (
+                      <button key={i} type="button" onClick={() => setSlideIdx(i)}
+                        style={{ flexShrink: 0, padding: "6px 10px", background: i === slideIdx ? c.sageDark : "white", color: i === slideIdx ? "white" : c.ink, border: `1px solid ${i === slideIdx ? c.sageDark : c.border}`, cursor: "pointer", fontFamily: sans, fontSize: 11, letterSpacing: "0.04em", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {s.kind === "pdf" ? "PDF · " : "Vídeo · "}{s.nome}
                       </button>
-                    </div>
-                  );
-                })()}
-              </div>
+                    ))}
+                  </div>
+                )}
 
-            </>
-          )}
+                <div style={{ marginTop: 14 }}>
+                  <h3 style={{ fontFamily: serif, fontSize: isMobile ? 20 : 24, fontWeight: 400, margin: "0 0 8px", lineHeight: 1.25 }}>{player.aula.titulo}</h3>
+                  {player.aula.descricao && (
+                    <p style={{ color: c.muted, lineHeight: 1.55, margin: "0 0 12px", fontSize: 14 }}>{player.aula.descricao}</p>
+                  )}
+                </div>
+              </>
+            );
+          })()}
         </>
       )}
 
