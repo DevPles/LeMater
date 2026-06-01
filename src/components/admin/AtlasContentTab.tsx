@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import MateriaisTab from "./MateriaisTab";
 import AulasTab from "./AulasTab";
 import TemasTab from "./TemasTab";
+import MultimidiaTab from "./MultimidiaTab";
 import NovoAtlasModal from "./NovoAtlasModal";
 import { listAtlasTemas, type AtlasTema } from "@/lib/cursos.functions";
 
