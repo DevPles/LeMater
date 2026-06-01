@@ -38,7 +38,7 @@ export default function AtlasContentTab() {
       </div>
 
       <div style={{ display: "flex", gap: 0, marginBottom: 20, borderBottom: `1px solid ${c.border}` }}>
-        {([["conteudo", "Conteúdo"], ["tema", "Temas"]] as [Aba, string][]).map(([k, label]) => {
+        {([["conteudo", "Conteúdo"], ["tema", "Temas"], ["multimidia", "Multimídia"]] as [Aba, string][]).map(([k, label]) => {
           const ativo = aba === k;
           return (
             <button key={k} onClick={() => setAba(k)} style={{
