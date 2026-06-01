@@ -133,7 +133,7 @@ export function AvaliacoesPanel({ userId }: { userId: string | null }) {
   };
 
   const excluir = async (id: string, token: string) => {
-    if (!confirm("Excluir este link de avaliação? Esta ação não pode ser desfeita.")) return;
+    if (!(await appConfirm("Excluir este link de avaliação? Esta ação não pode ser desfeita.")) return;
     const { error } = await supabase.from("evaluation_requests").delete().eq("id", id);
     if (error) {
       setMsg("Não foi possível excluir: " + error.message);

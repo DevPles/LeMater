@@ -42,7 +42,7 @@ export default function TemasTab() {
   };
 
   const remover = async (id: string) => {
-    if (!confirm("Remover este tema? Aulas vinculadas ficarão sem este tema.")) return;
+    if (!(await appConfirm("Remover este tema? Aulas vinculadas ficarão sem este tema.")) return;
     await delFn({ data: { id } }); reload();
   };
 

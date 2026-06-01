@@ -139,7 +139,7 @@ export function ProfissionaisTab() {
 
   const handleDelete = async (u: UnifiedUser) => {
     if (
-      !window.confirm(
+      !(await appConfirm(
         `Apagar definitivamente ${u.nome ?? u.email}? Esta ação remove o usuário e todos os vínculos.`,
       )
     )

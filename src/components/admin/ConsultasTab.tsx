@@ -224,7 +224,7 @@ export function ConsultasTab() {
 
   const apagar = async (item: Slot) => {
     const dt = new Date(item.data_hora).toLocaleString("pt-BR");
-    const confirma = window.confirm(
+    const confirma = await appConfirm(
       `Apagar esta consulta de ${dt}?\n\nEssa ação é permanente e remove o registro do histórico.`,
     );
     if (!confirma) return;

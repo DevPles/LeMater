@@ -155,7 +155,7 @@ export default function MultimidiaTab() {
   };
 
   const onDelete = async (f: VideoFile) => {
-    if (!confirm(`Remover "${f.name}"? Esta ação é permanente.`)) return;
+    if (!(await appConfirm(`Remover "${f.name}"? Esta ação é permanente.`)) return;
     const { error } = await supabase.storage.from(BUCKET).remove([f.path]);
     if (error) setErr(error.message);
     else setMsg("Vídeo removido.");

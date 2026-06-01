@@ -84,7 +84,7 @@ function PedidosView() {
                       <button onClick={() => fnAprovar({ data: { order_id: o.id } }).then(reload)} className="text-xs px-2 py-1 bg-[#234735] text-white rounded">Aprovar</button>
                     )}
                     {o.status === "aprovado" && (
-                      <button onClick={() => { if (confirm("Reembolsar e revogar acesso?")) fnReembolsar({ data: { order_id: o.id } }).then(reload); }} className="text-xs px-2 py-1 border border-red-600 text-red-700 rounded">Reembolsar</button>
+                      <button onClick={() => { if (await appConfirm("Reembolsar e revogar acesso?")) fnReembolsar({ data: { order_id: o.id } }).then(reload); }} className="text-xs px-2 py-1 border border-red-600 text-red-700 rounded">Reembolsar</button>
                     )}
                   </td>
                 </tr>
@@ -197,7 +197,7 @@ function CuponsView() {
   useEffect(() => { reload(); }, []);
 
   const remover = async (id: string) => {
-    if (!confirm("Excluir este cupom?")) return;
+    if (!(await appConfirm("Excluir este cupom?")) return;
     await fnDel({ data: { id } });
     reload();
   };

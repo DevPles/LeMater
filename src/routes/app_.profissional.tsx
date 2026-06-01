@@ -202,7 +202,7 @@ function Dashboard({ session }: { session: Session }) {
   };
 
   const cancelarSlot = async (id: string) => {
-    if (!confirm("Cancelar este horário?")) return;
+    if (!(await appConfirm("Cancelar este horário?")) return;
     await supabase.from("appointment_slots").update({ status: "cancelado" }).eq("id", id);
     await load();
   };
@@ -213,7 +213,7 @@ function Dashboard({ session }: { session: Session }) {
   };
 
   const removerSlot = async (id: string) => {
-    if (!confirm("Excluir este horário?")) return;
+    if (!(await appConfirm("Excluir este horário?")) return;
     await supabase.from("appointment_slots").delete().eq("id", id);
     await load();
   };
