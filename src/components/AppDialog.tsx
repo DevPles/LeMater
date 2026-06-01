@@ -43,18 +43,18 @@ export function installGlobalDialogOverrides() {
   if (typeof window === "undefined") return;
   const w = window as unknown as {
     __appDialogInstalled?: boolean;
-    alert: (msg?: unknown) => void;
-    confirm: (msg?: unknown) => boolean;
+    alert: (msg?: string) => void;
+    confirm: (msg?: string) => boolean;
   };
   if (w.__appDialogInstalled) return;
   w.__appDialogInstalled = true;
-  w.alert = (msg?: unknown) => {
+  w.alert = (msg?: string) => {
     void appAlert(String(msg ?? ""));
   };
-  w.confirm = ((msg?: unknown) => {
+  w.confirm = (msg?: string) => {
     void appConfirm(String(msg ?? ""));
     return true;
-  }) as typeof window.confirm;
+  };
 }
 
 const c = {
