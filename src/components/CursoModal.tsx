@@ -221,17 +221,6 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                   <p style={{ color: c.muted, lineHeight: 1.55, margin: "0 0 12px", fontSize: 14 }}>{player.aula.descricao}</p>
                 )}
 
-                {player.anexos.length > 0 && (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-                    {player.anexos.map((a, i) => (
-                      <a key={i} href={a.url} download={a.nome} target="_blank" rel="noopener noreferrer" title={a.nome}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "white", border: `1px solid ${c.border}`, padding: "8px 12px", textDecoration: "none", color: c.sageDark, fontSize: 12, fontFamily: sans, letterSpacing: "0.02em" }}>
-                        <span style={{ fontSize: 14, lineHeight: 1 }}>↓</span>
-                        <span style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.nome}</span>
-                      </a>
-                    ))}
-                  </div>
-                )}
 
                 {/* Botão único: DOCUMENTOS (abre seletor de PDFs e vídeos) */}
                 {player.midias && player.midias.length > 0 && (() => {
@@ -435,17 +424,27 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
             </div>
             <div style={{ overflow: "auto", padding: 16, display: "grid", gap: 10 }}>
               {player.midias.map((m) => (
-                <button key={m.id} type="button"
-                  onClick={() => { setMidiaAberta({ kind: m.kind, nome: m.nome, url: m.url, isExterno: m.isExterno }); setDocumentosAberto(false); }}
-                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "white", border: `1px solid ${c.border}`, textAlign: "left", cursor: "pointer", fontFamily: sans, minWidth: 0 }}>
+                <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "white", border: `1px solid ${c.border}`, minWidth: 0 }}>
                   <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: m.kind === "pdf" ? c.gold : c.sageDark, border: `1px solid ${m.kind === "pdf" ? c.gold : c.sageDark}`, padding: "3px 8px", fontWeight: 600, flexShrink: 0 }}>
                     {m.kind === "pdf" ? "PDF" : "Vídeo"}
                   </span>
-                  <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: c.ink, wordBreak: "break-word" }}>{m.nome}</span>
-                  <span style={{ fontSize: 11, letterSpacing: "0.12em", color: c.sageDark, textTransform: "uppercase", flexShrink: 0 }}>
+                  <button type="button"
+                    onClick={() => { setMidiaAberta({ kind: m.kind, nome: m.nome, url: m.url, isExterno: m.isExterno }); setDocumentosAberto(false); }}
+                    style={{ flex: 1, minWidth: 0, fontSize: 14, color: c.ink, wordBreak: "break-word", background: "transparent", border: "none", textAlign: "left", cursor: "pointer", fontFamily: sans, padding: 0 }}>
+                    {m.nome}
+                  </button>
+                  <button type="button"
+                    onClick={() => { setMidiaAberta({ kind: m.kind, nome: m.nome, url: m.url, isExterno: m.isExterno }); setDocumentosAberto(false); }}
+                    style={{ fontSize: 11, letterSpacing: "0.12em", color: c.sageDark, textTransform: "uppercase", flexShrink: 0, background: "transparent", border: "none", cursor: "pointer", fontFamily: sans, fontWeight: 600 }}>
                     {m.kind === "pdf" ? "Ler" : "Assistir"}
-                  </span>
-                </button>
+                  </button>
+                  {!m.isExterno && (
+                    <a href={m.url} download={m.nome} target="_blank" rel="noopener noreferrer" title={`Baixar ${m.nome}`}
+                      style={{ flexShrink: 0, color: c.sageDark, textDecoration: "none", border: `1px solid ${c.border}`, width: 32, height: 32, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 16, lineHeight: 1, background: c.warm }}>
+                      ↓
+                    </a>
+                  )}
+                </div>
               ))}
             </div>
           </div>
