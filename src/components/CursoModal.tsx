@@ -233,27 +233,23 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                   </div>
                 )}
 
-                {/* Mídias adicionais (PDFs e vídeos extras da aula) */}
-                {player.midias && player.midias.length > 0 && (
-                  <div style={{ marginTop: 18 }}>
-                    <div style={{ fontSize: 10, letterSpacing: "0.22em", color: c.sageDark, marginBottom: 10, fontFamily: sans, fontWeight: 600 }}>MATERIAIS DA AULA</div>
-                    <div style={{ display: "grid", gap: 8 }}>
-                      {player.midias.map((m) => (
-                        <button key={m.id} type="button"
-                          onClick={() => setMidiaAberta({ kind: m.kind, nome: m.nome, url: m.url, isExterno: m.isExterno })}
-                          style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: "white", border: `1px solid ${c.border}`, textAlign: "left", cursor: "pointer", fontFamily: sans }}>
-                          <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: m.kind === "pdf" ? c.gold : c.sageDark, border: `1px solid ${m.kind === "pdf" ? c.gold : c.sageDark}`, padding: "3px 8px", fontWeight: 600 }}>
-                            {m.kind === "pdf" ? "PDF" : "Vídeo"}
-                          </span>
-                          <span style={{ flex: 1, fontSize: 14, color: c.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.nome}</span>
-                          <span style={{ fontSize: 11, letterSpacing: "0.12em", color: c.sageDark, textTransform: "uppercase" }}>
-                            {m.kind === "pdf" ? "Ler" : "Assistir"}
-                          </span>
-                        </button>
-                      ))}
+                {/* Botão único: DOCUMENTOS (abre seletor de PDFs e vídeos) */}
+                {player.midias && player.midias.length > 0 && (() => {
+                  const pdfs = player.midias.filter((m) => m.kind === "pdf").length;
+                  const videos = player.midias.filter((m) => m.kind === "video").length;
+                  const partes: string[] = [];
+                  if (pdfs) partes.push(`${pdfs} ${pdfs === 1 ? "PDF" : "PDFs"}`);
+                  if (videos) partes.push(`${videos} ${videos === 1 ? "vídeo" : "vídeos"}`);
+                  return (
+                    <div style={{ marginTop: 18 }}>
+                      <button type="button" onClick={() => setDocumentosAberto(true)}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 10, background: c.sageDark, color: "white", border: "none", padding: "12px 18px", cursor: "pointer", fontFamily: sans, fontSize: 12, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 600 }}>
+                        Documentos
+                        <span style={{ fontSize: 11, opacity: 0.8, letterSpacing: "0.08em", textTransform: "none", fontWeight: 400 }}>({partes.join(" · ")})</span>
+                      </button>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
 
             </>
