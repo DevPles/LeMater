@@ -129,6 +129,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
       for (const pais of ["ES", "US"] as Pais[]) {
         const r = rows[pais];
         if (!isFilled(r)) continue;
+        const extras = await materializeExtras(pais);
         const payload: any = {
           item_type: itemType,
           item_id: newId,
@@ -146,6 +147,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
           preco_centavos: r.preco_centavos > 0 ? r.preco_centavos : null,
           moeda: r.moeda || null,
           preco_label: r.preco_label || null,
+          materiais_extras: extras,
         };
         const { error } = await supabase
           .from("content_translations")
