@@ -122,6 +122,29 @@ import puerperioEspanha4 from "@/assets/curso-videos/puerperio-espanha-4.mp4.ass
 import puerperioEspanha5 from "@/assets/curso-videos/puerperio-espanha-5.mp4.asset.json";
 import puerperioEspanha6 from "@/assets/curso-videos/puerperio-espanha-6.mp4.asset.json";
 
+import partoBrasil1 from "@/assets/curso-videos/parto-brasil-1.mp4.asset.json";
+import partoBrasil2 from "@/assets/curso-videos/parto-brasil-2.mp4.asset.json";
+import partoBrasil3 from "@/assets/curso-videos/parto-brasil-3.mp4.asset.json";
+import partoBrasil4 from "@/assets/curso-videos/parto-brasil-4.mp4.asset.json";
+import partoBrasil5 from "@/assets/curso-videos/parto-brasil-5.mp4.asset.json";
+import partoBrasil6 from "@/assets/curso-videos/parto-brasil-6.mp4.asset.json";
+import partoBrasil7 from "@/assets/curso-videos/parto-brasil-7.mp4.asset.json";
+
+import partoEua1 from "@/assets/curso-videos/parto-eua-1.mp4.asset.json";
+import partoEua2 from "@/assets/curso-videos/parto-eua-2.mp4.asset.json";
+import partoEua3 from "@/assets/curso-videos/parto-eua-3.mp4.asset.json";
+import partoEua4 from "@/assets/curso-videos/parto-eua-4.mp4.asset.json";
+import partoEua5 from "@/assets/curso-videos/parto-eua-5.mp4.asset.json";
+import partoEua6 from "@/assets/curso-videos/parto-eua-6.mp4.asset.json";
+import partoEua7 from "@/assets/curso-videos/parto-eua-7.mp4.asset.json";
+
+import partoEspanha1 from "@/assets/curso-videos/parto-espanha-1.mp4.asset.json";
+import partoEspanha2 from "@/assets/curso-videos/parto-espanha-2.mp4.asset.json";
+import partoEspanha3 from "@/assets/curso-videos/parto-espanha-3.mp4.asset.json";
+import partoEspanha4 from "@/assets/curso-videos/parto-espanha-4.mp4.asset.json";
+import partoEspanha5 from "@/assets/curso-videos/parto-espanha-5.mp4.asset.json";
+import partoEspanha6 from "@/assets/curso-videos/parto-espanha-6.mp4.asset.json";
+
 type BuiltinVideo = { nome: string; url: string; keywords: string[] };
 const BUILTIN_VIDEOS: BuiltinVideo[] = [
   { nome: "Engravidar / Concepção", url: vidEngravidar, keywords: ["conceb", "concep", "engravid", "fertil"] },
