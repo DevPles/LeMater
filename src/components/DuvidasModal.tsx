@@ -91,9 +91,9 @@ const FAQS: Faq[] = [
       es: "¿Cuáles son los valores y formas de pago?",
     },
     resposta: {
-      pt: "Os valores variam conforme o tipo de acompanhamento (consulta única, pacote pré-natal completo ou assinatura do app). Aceitamos cartão em até 12x, Pix e PayPal para outros países. Se quiser um orçamento exato, fale com a nossa equipe pelo WhatsApp.",
-      en: "Prices vary depending on the type of follow-up (single consultation, full prenatal package or app subscription). We accept credit card up to 12x, Pix and PayPal for other countries. For an exact quote, please reach our team on WhatsApp.",
-      es: "Los precios varían según el tipo de acompañamiento (consulta única, paquete prenatal completo o suscripción de la app). Aceptamos tarjeta hasta 12x, Pix y PayPal para otros países. Para una cotización exacta, habla con nuestro equipo por WhatsApp.",
+      pt: "Os valores variam conforme o tipo de acompanhamento (consulta única, pacote pré-natal completo ou assinatura do app). No Brasil, o pagamento é processado via Mercado Pago — cartão de crédito em até 12x, Pix e boleto. Para outros países, usamos Stripe, aceitando cartões de crédito e débito internacionais em múltiplas moedas. Se quiser um orçamento exato, fale com a nossa equipe pelo WhatsApp.",
+      en: "Prices vary depending on the type of follow-up (single consultation, full prenatal package or app subscription). In Brazil, payments are processed through Mercado Pago — credit card up to 12x, Pix and boleto. For other countries, we use Stripe, accepting international credit and debit cards in multiple currencies. For an exact quote, please reach our team on WhatsApp.",
+      es: "Los precios varían según el tipo de acompañamiento (consulta única, paquete prenatal completo o suscripción de la app). En Brasil, el pago se procesa con Mercado Pago — tarjeta de crédito hasta 12x, Pix y boleto. Para otros países usamos Stripe, aceptando tarjetas de crédito y débito internacionales en varias monedas. Para una cotización exacta, habla con nuestro equipo por WhatsApp.",
     },
   },
   {
