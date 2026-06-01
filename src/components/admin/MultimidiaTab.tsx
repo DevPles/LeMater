@@ -271,6 +271,27 @@ const BUILTIN_VIDEOS: BuiltinVideo[] = [
   { nome: "Puerpério · Espanha (celebração Sevilha)", url: puerperioEspanha4.url, keywords: ["puerp", "pos-parto", "pós-parto", "famil", "celebr", "espanh"] },
   { nome: "Puerpério · Espanha (avo em Bilbao)", url: puerperioEspanha5.url, keywords: ["puerp", "pos-parto", "pós-parto", "avo", "famil", "espanh"] },
   { nome: "Puerpério · Espanha (caminhada Madrid)", url: puerperioEspanha6.url, keywords: ["puerp", "pos-parto", "pós-parto", "caminhad", "exerc", "espanh"] },
+
+  { nome: "Preparo para o parto · Brasil (respiração SP)", url: partoBrasil1.url, keywords: ["parto", "preparo", "respiracao", "yoga", "brasil"] },
+  { nome: "Preparo para o parto · Brasil (mala maternidade Rio)", url: partoBrasil2.url, keywords: ["parto", "preparo", "mala", "maternidade", "brasil"] },
+  { nome: "Preparo para o parto · Brasil (aula Curitiba)", url: partoBrasil3.url, keywords: ["parto", "preparo", "aula", "oficina", "brasil"] },
+  { nome: "Preparo para o parto · Brasil (meditação BH)", url: partoBrasil4.url, keywords: ["parto", "preparo", "meditacao", "mindfulness", "brasil"] },
+  { nome: "Preparo para o parto · Brasil (massagem Recife)", url: partoBrasil5.url, keywords: ["parto", "preparo", "massagem", "parceiro", "brasil"] },
+  { nome: "Preparo para o parto · Brasil (caminhada POA)", url: partoBrasil6.url, keywords: ["parto", "preparo", "caminhada", "exerc", "brasil"] },
+  { nome: "Preparo para o parto · Brasil (leitura Salvador)", url: partoBrasil7.url, keywords: ["parto", "preparo", "leitura", "tecnicas", "brasil"] },
+  { nome: "Preparo para o parto · EUA (exercícios NYC)", url: partoEua1.url, keywords: ["parto", "preparo", "exercicios", "pelvico", "eua", "americ"] },
+  { nome: "Preparo para o parto · EUA (tour hospital LA)", url: partoEua2.url, keywords: ["parto", "preparo", "hospital", "tour", "eua", "americ"] },
+  { nome: "Preparo para o parto · EUA (aula Chicago)", url: partoEua3.url, keywords: ["parto", "preparo", "aula", "oficina", "eua", "americ"] },
+  { nome: "Preparo para o parto · EUA (massagem Miami)", url: partoEua4.url, keywords: ["parto", "preparo", "massagem", "parceiro", "eua", "americ"] },
+  { nome: "Preparo para o parto · EUA (aromaterapia Seattle)", url: partoEua5.url, keywords: ["parto", "preparo", "aromaterapia", "relax", "eua", "americ"] },
+  { nome: "Preparo para o parto · EUA (quarto bebê Austin)", url: partoEua6.url, keywords: ["parto", "preparo", "quarto", "berco", "ninho", "eua", "americ"] },
+  { nome: "Preparo para o parto · EUA (hidroterapia Boston)", url: partoEua7.url, keywords: ["parto", "preparo", "hidroterapia", "agua", "eua", "americ"] },
+  { nome: "Preparo para o parto · Espanha (yoga Madrid)", url: partoEspanha1.url, keywords: ["parto", "preparo", "yoga", "exerc", "espanh", "madrid"] },
+  { nome: "Preparo para o parto · Espanha (aula Barcelona)", url: partoEspanha2.url, keywords: ["parto", "preparo", "aula", "oficina", "espanh", "barcelon"] },
+  { nome: "Preparo para o parto · Espanha (banho Valencia)", url: partoEspanha3.url, keywords: ["parto", "preparo", "banho", "relax", "espanh", "valenc"] },
+  { nome: "Preparo para o parto · Espanha (respiração Sevilla)", url: partoEspanha4.url, keywords: ["parto", "preparo", "respiracao", "mindfulness", "espanh", "sevilla"] },
+  { nome: "Preparo para o parto · Espanha (plano Bilbao)", url: partoEspanha5.url, keywords: ["parto", "preparo", "plano", "checklist", "espanh", "bilbao"] },
+  { nome: "Preparo para o parto · Espanha (passeio Málaga)", url: partoEspanha6.url, keywords: ["parto", "preparo", "passeio", "caminhada", "exerc", "espanh", "malaga"] },
 ];
 
 const c = {
