@@ -17,7 +17,8 @@ const c = {
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-const WHATSAPP_NUMERO = "5516999999999";
+const WHATSAPP_NUMERO = "5511945383845";
+const APP_URL = "https://lemater.com/app";
 
 type Lang = "pt" | "en" | "es";
 type Estagio = "tentante" | "1tri" | "2tri" | "3tri" | "pos";
