@@ -7,6 +7,11 @@ import { ContentCard } from "@/components/ContentCard";
 import OfertasEditor, { type OfertasEditorHandle } from "@/components/admin/OfertasEditor";
 import AudiosEditor, { type AudiosEditorHandle } from "@/components/admin/AudiosEditor";
 
+const slugify = (s: string) =>
+  s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/(^-+|-+$)/g, "").slice(0, 120);
+
+
 const c = {
   cream: "#FAF5EE",
   warm: "#F5EDE0",
