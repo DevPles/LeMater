@@ -451,45 +451,8 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
         )}
       </div>
 
-      {/* Modal seletor de Documentos (PDFs e vídeos da aula) */}
-      {documentosAberto && player?.midias && player.midias.length > 0 && (
-        <div onClick={() => setDocumentosAberto(false)}
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 380, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-          <div onClick={(e) => e.stopPropagation()}
-            style={{ background: c.cream, width: "100%", maxWidth: 560, maxHeight: "85vh", display: "flex", flexDirection: "column", border: `1px solid ${c.border}` }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", background: c.sageDark, color: "white" }}>
-              <div style={{ fontFamily: sans, fontSize: 12, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 600 }}>Documentos da aula</div>
-              <button onClick={() => setDocumentosAberto(false)} aria-label="Fechar"
-                style={{ background: "transparent", color: "white", border: "1px solid rgba(255,255,255,0.4)", width: 32, height: 32, cursor: "pointer", fontSize: 18, fontFamily: sans, lineHeight: 1 }}>×</button>
-            </div>
-            <div style={{ overflow: "auto", padding: 16, display: "grid", gap: 10 }}>
-              {player.midias.map((m) => (
-                <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "white", border: `1px solid ${c.border}`, minWidth: 0 }}>
-                  <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: m.kind === "pdf" ? c.gold : c.sageDark, border: `1px solid ${m.kind === "pdf" ? c.gold : c.sageDark}`, padding: "3px 8px", fontWeight: 600, flexShrink: 0 }}>
-                    {m.kind === "pdf" ? "PDF" : "Vídeo"}
-                  </span>
-                  <button type="button"
-                    onClick={() => { setMidiaAberta({ kind: m.kind, nome: m.nome, url: m.url, isExterno: m.isExterno }); setDocumentosAberto(false); }}
-                    style={{ flex: 1, minWidth: 0, fontSize: 14, color: c.ink, wordBreak: "break-word", background: "transparent", border: "none", textAlign: "left", cursor: "pointer", fontFamily: sans, padding: 0 }}>
-                    {m.nome}
-                  </button>
-                  <button type="button"
-                    onClick={() => { setMidiaAberta({ kind: m.kind, nome: m.nome, url: m.url, isExterno: m.isExterno }); setDocumentosAberto(false); }}
-                    style={{ fontSize: 11, letterSpacing: "0.12em", color: c.sageDark, textTransform: "uppercase", flexShrink: 0, background: "transparent", border: "none", cursor: "pointer", fontFamily: sans, fontWeight: 600 }}>
-                    {m.kind === "pdf" ? "Ler" : "Assistir"}
-                  </button>
-                  {!m.isExterno && (
-                    <a href={m.url} download={m.nome} target="_blank" rel="noopener noreferrer" title={`Baixar ${m.nome}`}
-                      style={{ flexShrink: 0, color: c.sageDark, textDecoration: "none", border: `1px solid ${c.border}`, width: 32, height: 32, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 16, lineHeight: 1, background: c.warm }}>
-                      ↓
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+
+
 
       {/* Modal de mídia (PDF ou Vídeo) */}
       {midiaAberta && (
