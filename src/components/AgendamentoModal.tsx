@@ -17,7 +17,8 @@ const c = {
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-const WHATSAPP_NUMERO = "5516999999999";
+const WHATSAPP_NUMERO = "5511945383845";
+const APP_URL = "https://lemater.com/app";
 
 type Lang = "pt" | "en" | "es";
 type Estagio = "tentante" | "1tri" | "2tri" | "3tri" | "pos";
@@ -77,6 +78,18 @@ const T: Record<Lang, Record<string, string>> = {
     waMsg: "Olá Rayssa! Sou", waQuero: "e gostaria de agendar uma consulta.",
     waMomento: "Momento", waSem: "semanas", waMod: "Modalidade", waPer: "Melhor período",
     waCidade: "Cidade", waDuv: "Principais dúvidas", waCont: "Contato", waPais: "País",
+    ofTitulo: "Como prefere continuar daqui?",
+    ofSub: "Escolha o caminho mais natural para o seu momento. Você não precisa decidir tudo agora.",
+    ofConsultaTag: "Recomendado pra você",
+    ofConsultaTitulo: "Consulta acolhedora com a Rayssa",
+    ofConsultaDesc: "Atendimento humanizado, pré-natal completo e plano de cuidado feito sob medida. Vagas limitadas esta semana.",
+    ofConsultaBtn: "Falar com a Rayssa agora",
+    ofAppTag: "Comece grátis",
+    ofAppTitulo: "Acompanhe sua gestação no app Le Mater",
+    ofAppDesc: "Conteúdos semana a semana, plano de parto guiado e a comunidade de mães. Experimente sem custo.",
+    ofAppBtn: "Acessar o app gratuito",
+    ofProva: "Mais de 1.200 famílias atendidas · 5.0 ★ no Google",
+    ofOu: "ou",
   },
   en: {
     inicio: "Start", pronto: "Done", de: "of", cancelar: "Cancel", voltar: "Back",
@@ -117,6 +130,18 @@ const T: Record<Lang, Record<string, string>> = {
     waMsg: "Hi Rayssa! I'm", waQuero: "and I'd like to schedule a consultation.",
     waMomento: "Moment", waSem: "weeks", waMod: "Format", waPer: "Best time",
     waCidade: "City", waDuv: "Main topics", waCont: "Contact", waPais: "Country",
+    ofTitulo: "How would you like to continue from here?",
+    ofSub: "Pick the path that feels most natural. You don't have to decide everything now.",
+    ofConsultaTag: "Recommended for you",
+    ofConsultaTitulo: "Warm consultation with Rayssa",
+    ofConsultaDesc: "Humanized care, complete prenatal follow-up and a tailored care plan. Limited spots this week.",
+    ofConsultaBtn: "Talk to Rayssa now",
+    ofAppTag: "Start free",
+    ofAppTitulo: "Follow your pregnancy in the Le Mater app",
+    ofAppDesc: "Week-by-week content, a guided birth plan, and the mothers community. Try it at no cost.",
+    ofAppBtn: "Open the free app",
+    ofProva: "1,200+ families served · 5.0 ★ on Google",
+    ofOu: "or",
   },
   es: {
     inicio: "Inicio", pronto: "Listo", de: "de", cancelar: "Cancelar", voltar: "Volver",
@@ -157,6 +182,18 @@ const T: Record<Lang, Record<string, string>> = {
     waMsg: "¡Hola Rayssa! Soy", waQuero: "y me gustaría agendar una consulta.",
     waMomento: "Momento", waSem: "semanas", waMod: "Modalidad", waPer: "Mejor horario",
     waCidade: "Ciudad", waDuv: "Temas principales", waCont: "Contacto", waPais: "País",
+    ofTitulo: "¿Cómo prefieres continuar desde aquí?",
+    ofSub: "Elige el camino más natural para tu momento. No necesitas decidirlo todo ahora.",
+    ofConsultaTag: "Recomendado para ti",
+    ofConsultaTitulo: "Consulta acogedora con Rayssa",
+    ofConsultaDesc: "Atención humanizada, prenatal completo y plan de cuidado a tu medida. Cupos limitados esta semana.",
+    ofConsultaBtn: "Hablar con Rayssa ahora",
+    ofAppTag: "Empieza gratis",
+    ofAppTitulo: "Acompaña tu embarazo en la app Le Mater",
+    ofAppDesc: "Contenido semana a semana, plan de parto guiado y la comunidad de madres. Pruébala sin costo.",
+    ofAppBtn: "Abrir la app gratuita",
+    ofProva: "Más de 1.200 familias atendidas · 5.0 ★ en Google",
+    ofOu: "o",
   },
 };
 
@@ -210,6 +247,7 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
     "contato",
     "mensagem",
     "resumo",
+    "oferta",
     "sucesso",
   ];
   const total = passos.length - 1;
@@ -243,13 +281,20 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
     setStep((s) => Math.max(0, s - 1));
   }
 
-  async function enviar() {
+  async function enviar(destino: "consulta" | "app" = "consulta") {
     setEnviando(true);
     setErro(null);
     try {
       await registrar({
-        data: { nome: r.nome, email: r.email, telefone: r.whatsapp, material_id: null },
+        data: { nome: r.nome, email: r.email, telefone: r.whatsapp, material_id: destino },
       });
+      if (destino === "app") {
+        setStep(passos.length - 1);
+        setTimeout(() => {
+          window.open(APP_URL, "_blank", "noopener,noreferrer");
+        }, 500);
+        return;
+      }
       const labelEstagio: Record<Estagio, string> = {
         tentante: t.tentante, "1tri": t.t1, "2tri": t.t2, "3tri": t.t3, pos: t.pos,
       };
@@ -274,7 +319,7 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
       setStep(passos.length - 1);
       setTimeout(() => {
         window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${msg}`, "_blank", "noopener,noreferrer");
-      }, 600);
+      }, 500);
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Erro");
     } finally {
@@ -300,10 +345,7 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
       if (tag === "TEXTAREA") return; // allow newlines in textarea
       e.preventDefault();
       if (atual === "sucesso") return fechar();
-      if (atual === "resumo") {
-        if (!enviando) enviar();
-        return;
-      }
+      if (atual === "oferta") return;
       if (podeAvancar()) avancar();
     }
     window.addEventListener("keydown", onKey);
@@ -519,6 +561,39 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
                   </Bloco>
                 )}
 
+                {atual === "oferta" && (
+                  <Bloco titulo={`${t.ofTitulo}`} sub={t.ofSub}>
+                    <div style={{ display: "grid", gap: 14 }}>
+                      <CartaoOferta
+                        destaque
+                        tag={t.ofConsultaTag}
+                        titulo={t.ofConsultaTitulo}
+                        desc={t.ofConsultaDesc}
+                        botao={enviando ? t.enviando : t.ofConsultaBtn}
+                        onClick={() => { if (!enviando) enviar("consulta"); }}
+                        disabled={enviando}
+                      />
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, color: c.muted, fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+                        <span style={{ flex: 1, height: 1, background: c.border }} />
+                        {t.ofOu}
+                        <span style={{ flex: 1, height: 1, background: c.border }} />
+                      </div>
+                      <CartaoOferta
+                        tag={t.ofAppTag}
+                        titulo={t.ofAppTitulo}
+                        desc={t.ofAppDesc}
+                        botao={t.ofAppBtn}
+                        onClick={() => { if (!enviando) enviar("app"); }}
+                        disabled={enviando}
+                      />
+                      <p style={{ textAlign: "center", fontSize: 12, color: c.muted, marginTop: 4, letterSpacing: "0.04em" }}>
+                        {t.ofProva}
+                      </p>
+                      {erro && <p style={{ color: c.terracotta, marginTop: 4, fontSize: 13, textAlign: "center" }}>{erro}</p>}
+                    </div>
+                  </Bloco>
+                )}
+
                 {atual === "sucesso" && (
                   <Bloco titulo={`${t.sucTitulo}${primeiro(r.nome) ? ", " + primeiro(r.nome) : ""}`} sub={t.sucSub}>
                     <p style={pNota}>{t.sucNota}</p>
@@ -535,27 +610,24 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
           }}>
             {atual === "sucesso" ? (
               <button onClick={fechar} style={{ ...btnPrimario, marginLeft: "auto" }}>{t.fechar}</button>
+            ) : atual === "oferta" ? (
+              <button onClick={voltar} style={btnGhost}>{t.voltar}</button>
             ) : (
               <>
                 <button onClick={step === 0 ? fechar : voltar} style={btnGhost}>
                   {step === 0 ? t.cancelar : t.voltar}
                 </button>
-                {atual === "resumo" ? (
-                  <button onClick={enviar} disabled={enviando} style={btnPrimario}>
-                    {enviando ? t.enviando : t.enviar}
-                  </button>
-                ) : (
-                  <button onClick={avancar} disabled={!podeAvancar()}
-                    style={{
-                      ...btnPrimario, opacity: podeAvancar() ? 1 : 0.45,
-                      cursor: podeAvancar() ? "pointer" : "not-allowed",
-                    }}>
-                    {step === 0 ? t.comecar : t.continuar}
-                  </button>
-                )}
+                <button onClick={avancar} disabled={!podeAvancar()}
+                  style={{
+                    ...btnPrimario, opacity: podeAvancar() ? 1 : 0.45,
+                    cursor: podeAvancar() ? "pointer" : "not-allowed",
+                  }}>
+                  {step === 0 ? t.comecar : t.continuar}
+                </button>
               </>
             )}
           </div>
+
         </motion.div>
       </motion.div>
     </AnimatePresence>
@@ -661,3 +733,53 @@ const pNota: CSSProperties = {
   background: "white", border: `1px solid ${c.border}`, borderRadius: 14,
   padding: "14px 16px",
 };
+
+function CartaoOferta({
+  tag, titulo, desc, botao, onClick, destaque, disabled,
+}: {
+  tag: string; titulo: string; desc: string; botao: string;
+  onClick: () => void; destaque?: boolean; disabled?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        position: "relative",
+        background: destaque ? "white" : c.cream,
+        border: `1.5px solid ${destaque ? c.sageDark : c.border}`,
+        borderRadius: 18,
+        padding: "18px 18px 16px",
+        boxShadow: destaque ? `0 14px 30px -18px rgba(45,90,66,0.45)` : "none",
+      }}
+    >
+      <div
+        style={{
+          display: "inline-block",
+          fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase",
+          color: destaque ? c.sageDark : c.muted,
+          background: destaque ? `${c.sageLight}33` : c.warm,
+          border: `1px solid ${destaque ? c.sageLight : c.border}`,
+          padding: "4px 10px", borderRadius: 999, marginBottom: 10, fontWeight: 600,
+        }}
+      >
+        {tag}
+      </div>
+      <h4 style={{ fontFamily: serif, fontSize: 20, lineHeight: 1.2, color: c.ink, margin: "0 0 6px", fontWeight: 500 }}>
+        {titulo}
+      </h4>
+      <p style={{ fontSize: 13.5, color: c.muted, lineHeight: 1.5, margin: "0 0 14px" }}>
+        {desc}
+      </p>
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        style={{
+          ...(destaque ? btnPrimario : { ...btnPrimario, background: "transparent", color: c.sageDark, border: `1.5px solid ${c.sageDark}` }),
+          width: "100%", opacity: disabled ? 0.55 : 1, cursor: disabled ? "wait" : "pointer",
+        }}
+      >
+        {botao}
+      </button>
+    </div>
+  );
+}
