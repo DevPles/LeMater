@@ -309,6 +309,18 @@ export const getAulaPlayer = createServerFn({ method: "POST" })
       }
     }
 
+    // Quando a aula foi cadastrada pelo novo editor, o vídeo principal fica em
+    // `materiais_extras` e não mais em `video_url`. Nesse caso, usa o primeiro
+    // vídeo extra como conteúdo principal para preencher o player da aula.
+    if (conteudo.kind === "vazio") {
+      const videoPrincipal = midias.find((m) => m.kind === "video");
+      if (videoPrincipal) {
+        conteudo = videoPrincipal.isExterno
+          ? { kind: "video_externo", embedUrl: videoPrincipal.url }
+          : { kind: "video_upload", url: videoPrincipal.url };
+      }
+    }
+
     return {
       aula: { id: a.id, titulo: a.titulo, descricao: a.descricao, tipo: a.tipo as "video"|"pdf"|"texto", duracao_min: a.duracao_min, previa_gratis: a.previa_gratis },
       conteudo,
