@@ -141,7 +141,7 @@ export function ProfissionaisTab() {
     if (
       !(await appConfirm(
         `Apagar definitivamente ${u.nome ?? u.email}? Esta ação remove o usuário e todos os vínculos.`,
-      )
+      ))
     )
       return;
     try {
