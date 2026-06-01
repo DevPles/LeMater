@@ -144,6 +144,15 @@ export default function AulaEditor({
   // Buffer ao vivo das traduções (atualizado pelo TranslationsPanel via onRowsChange)
   const [trRows, setTrRows] = useState<Record<Pais, TranslationRow> | null>(null);
 
+  // Mídias adicionais (PDFs e vídeos extras) — múltiplos por aula
+  const makeLocalId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const [extras, setExtras] = useState<ExtraItem[]>(
+    (editing.materiais_extras ?? []).map((m) => ({ ...m, _localId: makeLocalId() }))
+  );
+  const [novoVideoUrl, setNovoVideoUrl] = useState("");
+  const [novoVideoNome, setNovoVideoNome] = useState("");
+
+
   useEffect(() => {
     fnTemas().then((t) => setTemas((t as any[]).map((x) => ({ id: x.id, titulo: x.titulo }))));
   }, []);
