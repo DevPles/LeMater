@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { useServerFn } from "@tanstack/react-start";
 import { adminListCursos, adminUpsertCurso, adminDeleteCurso } from "@/lib/cursos.functions";
 

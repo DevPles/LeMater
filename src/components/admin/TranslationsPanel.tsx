@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useState, type CSSProperties } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { ContentItemType } from "@/hooks/useTranslatedContent";
 import type { Pais } from "@/lib/translate.context";

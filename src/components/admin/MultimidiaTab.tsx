@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { supabase } from "@/integrations/supabase/client";
 import {
   vidEngravidar, vidPreNatal, vidExercicios, vidAlimentacao,

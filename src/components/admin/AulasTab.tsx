@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { useServerFn } from "@tanstack/react-start";
 import { adminListAulas, adminDeleteAula } from "@/lib/cursos.functions";
 import AulaEditor, { type AulaDraft } from "./AulaEditor";

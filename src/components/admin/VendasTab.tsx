@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { useServerFn } from "@tanstack/react-start";
 import { listVendas, listCupons, saveCupom, deleteCupom, listCursosBasic } from "@/lib/vendas.functions";
 import { listOrders, aprovarPedidoManual, reembolsarPedido } from "@/lib/orders.functions";

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { appConfirm } from "@/components/AppDialog";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { saveScreenContent, loadScreenContentOnce } from "@/hooks/useScreenContent";
