@@ -182,6 +182,18 @@ const T: Record<Lang, Record<string, string>> = {
     waMsg: "¡Hola Rayssa! Soy", waQuero: "y me gustaría agendar una consulta.",
     waMomento: "Momento", waSem: "semanas", waMod: "Modalidad", waPer: "Mejor horario",
     waCidade: "Ciudad", waDuv: "Temas principales", waCont: "Contacto", waPais: "País",
+    ofTitulo: "¿Cómo prefieres continuar desde aquí?",
+    ofSub: "Elige el camino más natural para tu momento. No necesitas decidirlo todo ahora.",
+    ofConsultaTag: "Recomendado para ti",
+    ofConsultaTitulo: "Consulta acogedora con Rayssa",
+    ofConsultaDesc: "Atención humanizada, prenatal completo y plan de cuidado a tu medida. Cupos limitados esta semana.",
+    ofConsultaBtn: "Hablar con Rayssa ahora",
+    ofAppTag: "Empieza gratis",
+    ofAppTitulo: "Acompaña tu embarazo en la app Le Mater",
+    ofAppDesc: "Contenido semana a semana, plan de parto guiado y la comunidad de madres. Pruébala sin costo.",
+    ofAppBtn: "Abrir la app gratuita",
+    ofProva: "Más de 1.200 familias atendidas · 5.0 ★ en Google",
+    ofOu: "o",
   },
 };
 
