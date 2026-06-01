@@ -853,7 +853,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
 
             </div>
             <div style={{ textAlign: isMobile ? "center" : "left", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
-              <div style={{ height: 38, display: "flex", alignItems: "center", gap: 18, justifyContent: isMobile ? "center" : "flex-start", flexWrap: "wrap" }}>
+              <div style={{ height: 38, display: "flex", alignItems: "center", gap: 10, justifyContent: isMobile ? "center" : "flex-start", flexWrap: "nowrap" }}>
                 {[
                   { Icon: WhatsAppIcon, href: "https://wa.me/5511945383845", label: "WhatsApp" },
                   { Icon: InstagramIcon, href: "https://www.instagram.com/aleslierayssa", label: "Instagram" },
