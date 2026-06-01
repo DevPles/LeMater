@@ -247,6 +247,7 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
     "contato",
     "mensagem",
     "resumo",
+    "oferta",
     "sucesso",
   ];
   const total = passos.length - 1;
