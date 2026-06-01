@@ -50,6 +50,16 @@ const BUILTIN_VIDEOS: BuiltinVideo[] = [
   { nome: "Amamentação · Manhã serena", url: amamentacao9.url, keywords: ["amament", "leite", "peito"] },
   { nome: "Amamentação · Apoio da família", url: amamentacao10.url, keywords: ["amament", "leite", "peito", "famil"] },
   { nome: "Amamentação · Consultora de lactação", url: amamentacao11.url, keywords: ["amament", "leite", "peito", "lactac", "consult"] },
+  { nome: "Amamentação · Mãe africana", url: amamentacao12.url, keywords: ["amament", "leite", "peito", "africa", "negra"] },
+  { nome: "Amamentação · Mãe latina", url: amamentacao13.url, keywords: ["amament", "leite", "peito", "latina", "hispan"] },
+  { nome: "Amamentação · Mãe do Oriente Médio", url: amamentacao14.url, keywords: ["amament", "leite", "peito", "oriente", "arabe"] },
+  { nome: "Amamentação · Mãe indiana", url: amamentacao15.url, keywords: ["amament", "leite", "peito", "india", "sari"] },
+  { nome: "Amamentação · Mãe asiática", url: amamentacao16.url, keywords: ["amament", "leite", "peito", "asiat"] },
+  { nome: "Amamentação · Mãe nórdica", url: amamentacao17.url, keywords: ["amament", "leite", "peito", "nordic", "loira"] },
+  { nome: "Amamentação · Mãe indígena", url: amamentacao18.url, keywords: ["amament", "leite", "peito", "indigen"] },
+  { nome: "Amamentação · Mãe afro-brasileira", url: amamentacao19.url, keywords: ["amament", "leite", "peito", "afro", "tranç"] },
+  { nome: "Amamentação · Mãe filipina", url: amamentacao20.url, keywords: ["amament", "leite", "peito", "filipina", "tropic"] },
+  { nome: "Amamentação · Mãe ruiva celta", url: amamentacao21.url, keywords: ["amament", "leite", "peito", "ruiva", "celta"] },
 ];
 
 const c = {
