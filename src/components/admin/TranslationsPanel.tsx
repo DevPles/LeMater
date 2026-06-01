@@ -162,6 +162,60 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
     return supabase.storage.from(bucket).getPublicUrl(up.path).data.publicUrl;
   };
 
+  // Faz upload retornando o `path` (chave no bucket) — usado para materiais_extras
+  // pois o player gera signed URLs a partir do path no servidor.
+  const uploadPath = async (bucket: string, file: File, subfolder: string, pais: Pais): Promise<string> => {
+    const path = `${subfolder}/${pais.toLowerCase()}/${Date.now()}-${file.name.replace(/[^\w.-]/g, "_")}`;
+    const { data: up, error } = await supabase.storage.from(bucket).upload(path, file);
+    if (error) throw new Error(`Falha upload ${file.name}: ${error.message}`);
+    return up.path;
+  };
+
+  const materializeExtras = async (pais: Pais): Promise<{ kind: ExtraItem["kind"]; nome: string; path?: string | null; url?: string | null }[]> => {
+    const list = rows[pais].materiais_extras ?? [];
+    const out: { kind: ExtraItem["kind"]; nome: string; path?: string | null; url?: string | null }[] = [];
+    for (const ex of list) {
+      if (ex.kind === "video_externo") {
+        out.push({ kind: "video_externo", nome: ex.nome || "Vídeo externo", url: ex.url ?? "" });
+      } else if (ex._pending && ex._file) {
+        const bucket = ex.kind === "pdf" ? "materiais-pdf" : "materiais-video";
+        const subfolder = ex.kind === "pdf" ? "materiais" : "aulas";
+        const path = await uploadPath(bucket, ex._file, subfolder, pais);
+        out.push({ kind: ex.kind, nome: ex.nome || ex._file.name, path });
+      } else if (ex.path || ex.url) {
+        out.push({ kind: ex.kind, nome: ex.nome, path: ex.path ?? null, url: ex.url ?? null });
+      }
+    }
+    // Atualiza estado para descartar marcadores _pending depois de persistir
+    setRows((prev) => ({ ...prev, [pais]: { ...prev[pais], materiais_extras: out.map((m) => ({ ...m, _localId: makeLocalId() })) } }));
+    return out;
+  };
+
+  const addExtras = (items: ExtraItem[]) => {
+    setRows((prev) => {
+      const next = { ...prev, [tab]: { ...prev[tab], materiais_extras: [...(prev[tab].materiais_extras ?? []), ...items] } };
+      onRowsChange?.(next);
+      return next;
+    });
+  };
+  const updateExtra = (localId: string, patch: Partial<ExtraItem>) => {
+    setRows((prev) => {
+      const next = { ...prev, [tab]: { ...prev[tab], materiais_extras: (prev[tab].materiais_extras ?? []).map((e) => e._localId === localId ? { ...e, ...patch } : e) } };
+      onRowsChange?.(next);
+      return next;
+    });
+  };
+  const removeExtra = (localId: string) => {
+    setRows((prev) => {
+      const next = { ...prev, [tab]: { ...prev[tab], materiais_extras: (prev[tab].materiais_extras ?? []).filter((e) => e._localId !== localId) } };
+      onRowsChange?.(next);
+      return next;
+    });
+  };
+
+  const [novoVideoUrl, setNovoVideoUrl] = useState("");
+  const [novoVideoNome, setNovoVideoNome] = useState("");
+
   const onFile = async (field: keyof Row, bucket: string, subfolder: string, file: File | null) => {
     if (!file) return;
     setBusy(true); setMsg(null);
