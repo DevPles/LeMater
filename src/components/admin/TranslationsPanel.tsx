@@ -18,6 +18,16 @@ const TABS: { pais: Pais; label: string }[] = [
   { pais: "US", label: "English (EN)" },
 ];
 
+export type ExtraItem = {
+  kind: "pdf" | "video_upload" | "video_externo";
+  nome: string;
+  path?: string | null;
+  url?: string | null;
+  _file?: File;
+  _pending?: boolean;
+  _localId: string;
+};
+
 export type TranslationRow = {
   id?: string;
   titulo: string;
@@ -33,15 +43,19 @@ export type TranslationRow = {
   preco_centavos: number;
   moeda: string;
   preco_label: string;
+  materiais_extras: ExtraItem[];
 };
 type Row = TranslationRow;
 
 export const MOEDA_PADRAO: Record<Pais, string> = { BR: "BRL", ES: "EUR", US: "USD" };
 
-const empty = (pais: Pais = "BR"): Row => ({ id: undefined, titulo: "", descricao: "", gratis: null, video_url: "", pdf_url: "", capa_url: "", capa_video_url: "", audio_url: "", legenda_url: "", conteudo_html: "", preco_centavos: 0, moeda: MOEDA_PADRAO[pais], preco_label: "" });
+let _lid = 0;
+const makeLocalId = () => `lid-${Date.now()}-${++_lid}`;
+
+const empty = (pais: Pais = "BR"): Row => ({ id: undefined, titulo: "", descricao: "", gratis: null, video_url: "", pdf_url: "", capa_url: "", capa_video_url: "", audio_url: "", legenda_url: "", conteudo_html: "", preco_centavos: 0, moeda: MOEDA_PADRAO[pais], preco_label: "", materiais_extras: [] });
 
 const isFilled = (r: Row) =>
-  !!(r.titulo || r.descricao || r.gratis !== null || r.video_url || r.pdf_url || r.capa_url || r.capa_video_url || r.audio_url || r.legenda_url || r.conteudo_html || (r.preco_centavos && r.preco_centavos > 0) || r.preco_label);
+  !!(r.titulo || r.descricao || r.gratis !== null || r.video_url || r.pdf_url || r.capa_url || r.capa_video_url || r.audio_url || r.legenda_url || r.conteudo_html || (r.preco_centavos && r.preco_centavos > 0) || r.preco_label || (r.materiais_extras && r.materiais_extras.length > 0));
 
 export type TranslationsPanelHandle = {
   /** Persist all buffered (ES/EN) translations against the given itemId. */
@@ -98,6 +112,9 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
             preco_centavos: t.preco_centavos ?? 0,
             moeda: t.moeda ?? MOEDA_PADRAO[p],
             preco_label: t.preco_label ?? "",
+            materiais_extras: Array.isArray(t.materiais_extras)
+              ? (t.materiais_extras as any[]).map((m) => ({ kind: m.kind, nome: m.nome ?? "", path: m.path ?? null, url: m.url ?? null, _localId: makeLocalId() }))
+              : [],
           };
         });
         setRows(next);
@@ -112,6 +129,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
       for (const pais of ["ES", "US"] as Pais[]) {
         const r = rows[pais];
         if (!isFilled(r)) continue;
+        const extras = await materializeExtras(pais);
         const payload: any = {
           item_type: itemType,
           item_id: newId,
@@ -129,6 +147,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
           preco_centavos: r.preco_centavos > 0 ? r.preco_centavos : null,
           moeda: r.moeda || null,
           preco_label: r.preco_label || null,
+          materiais_extras: extras,
         };
         const { error } = await supabase
           .from("content_translations")
@@ -144,6 +163,60 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
     if (error) throw new Error(`Falha upload ${file.name}: ${error.message}`);
     return supabase.storage.from(bucket).getPublicUrl(up.path).data.publicUrl;
   };
+
+  // Faz upload retornando o `path` (chave no bucket) — usado para materiais_extras
+  // pois o player gera signed URLs a partir do path no servidor.
+  const uploadPath = async (bucket: string, file: File, subfolder: string, pais: Pais): Promise<string> => {
+    const path = `${subfolder}/${pais.toLowerCase()}/${Date.now()}-${file.name.replace(/[^\w.-]/g, "_")}`;
+    const { data: up, error } = await supabase.storage.from(bucket).upload(path, file);
+    if (error) throw new Error(`Falha upload ${file.name}: ${error.message}`);
+    return up.path;
+  };
+
+  const materializeExtras = async (pais: Pais): Promise<{ kind: ExtraItem["kind"]; nome: string; path?: string | null; url?: string | null }[]> => {
+    const list = rows[pais].materiais_extras ?? [];
+    const out: { kind: ExtraItem["kind"]; nome: string; path?: string | null; url?: string | null }[] = [];
+    for (const ex of list) {
+      if (ex.kind === "video_externo") {
+        out.push({ kind: "video_externo", nome: ex.nome || "Vídeo externo", url: ex.url ?? "" });
+      } else if (ex._pending && ex._file) {
+        const bucket = ex.kind === "pdf" ? "materiais-pdf" : "materiais-video";
+        const subfolder = ex.kind === "pdf" ? "materiais" : "aulas";
+        const path = await uploadPath(bucket, ex._file, subfolder, pais);
+        out.push({ kind: ex.kind, nome: ex.nome || ex._file.name, path });
+      } else if (ex.path || ex.url) {
+        out.push({ kind: ex.kind, nome: ex.nome, path: ex.path ?? null, url: ex.url ?? null });
+      }
+    }
+    // Atualiza estado para descartar marcadores _pending depois de persistir
+    setRows((prev) => ({ ...prev, [pais]: { ...prev[pais], materiais_extras: out.map((m) => ({ ...m, _localId: makeLocalId() })) } }));
+    return out;
+  };
+
+  const addExtras = (items: ExtraItem[]) => {
+    setRows((prev) => {
+      const next = { ...prev, [tab]: { ...prev[tab], materiais_extras: [...(prev[tab].materiais_extras ?? []), ...items] } };
+      onRowsChange?.(next);
+      return next;
+    });
+  };
+  const updateExtra = (localId: string, patch: Partial<ExtraItem>) => {
+    setRows((prev) => {
+      const next = { ...prev, [tab]: { ...prev[tab], materiais_extras: (prev[tab].materiais_extras ?? []).map((e) => e._localId === localId ? { ...e, ...patch } : e) } };
+      onRowsChange?.(next);
+      return next;
+    });
+  };
+  const removeExtra = (localId: string) => {
+    setRows((prev) => {
+      const next = { ...prev, [tab]: { ...prev[tab], materiais_extras: (prev[tab].materiais_extras ?? []).filter((e) => e._localId !== localId) } };
+      onRowsChange?.(next);
+      return next;
+    });
+  };
+
+  const [novoVideoUrl, setNovoVideoUrl] = useState("");
+  const [novoVideoNome, setNovoVideoNome] = useState("");
 
   const onFile = async (field: keyof Row, bucket: string, subfolder: string, file: File | null) => {
     if (!file) return;
@@ -175,6 +248,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
     setBusy(true); setMsg(null);
     try {
       const r = rows[tab];
+      const extras = await materializeExtras(tab);
       const payload: any = {
         item_type: itemType,
         item_id: itemId,
@@ -192,6 +266,7 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
         preco_centavos: r.preco_centavos > 0 ? r.preco_centavos : null,
         moeda: r.moeda || null,
         preco_label: r.preco_label || null,
+        materiais_extras: extras,
       };
       const { data, error } = await supabase
         .from("content_translations")
@@ -282,17 +357,68 @@ const TranslationsPanel = forwardRef<TranslationsPanelHandle, {
               <input type="file" accept="image/*" onChange={(e) => onFile("capa_url", "materiais-capas", "capas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
               {current.capa_url && <Hint url={current.capa_url} />}
             </Row>
-            <Row label={`Vídeo dublado (${tab}) — aula`} compact>
-              <input type="file" accept="video/*" onChange={(e) => onFile("video_url", "materiais-video", "aulas", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
-              {current.video_url && <Hint url={current.video_url} />}
-            </Row>
-            <Row label={`Vídeo da aula (${tab}) — OU URL externa`} compact>
-              <input value={current.video_url.startsWith("http") ? current.video_url : ""} onChange={(e) => update("video_url", e.target.value)} placeholder="https://..." style={{ ...inp, minHeight: 42 }} />
-            </Row>
-            <Row label={`PDF / Ebook (${tab})`} compact>
-              <input type="file" accept="application/pdf" onChange={(e) => onFile("pdf_url", "materiais-pdf", "materiais", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
-              {current.pdf_url && <Hint url={current.pdf_url} />}
-            </Row>
+          </div>
+
+          <div style={{ marginTop: 12, padding: 12, background: "white", border: `1px solid ${c.border}` }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: c.sageDark, fontWeight: 600, marginBottom: 6 }}>
+              Conteúdo da aula ({tab}) — PDFs e vídeos
+            </div>
+            <p style={{ fontSize: 12, color: c.muted, margin: "0 0 10px" }}>
+              Adicione quantos PDFs e vídeos quiser para esta versão. O aluno em {tab} verá esta lista — clica num PDF para ler em modal, ou num vídeo para assistir.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+              <label style={{ display: "block" }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 4 }}>+ Adicionar PDFs</div>
+                <input type="file" accept="application/pdf" multiple onChange={(e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  if (files.length === 0) return;
+                  addExtras(files.map((f) => ({ kind: "pdf", nome: f.name.replace(/\.pdf$/i, ""), _file: f, _pending: true, _localId: makeLocalId() })));
+                  e.target.value = "";
+                }} style={{ ...inp, minHeight: 42 }} />
+              </label>
+              <label style={{ display: "block" }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: c.muted, marginBottom: 4 }}>+ Adicionar vídeos (MP4)</div>
+                <input type="file" accept="video/*" multiple onChange={(e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  if (files.length === 0) return;
+                  addExtras(files.map((f) => ({ kind: "video_upload", nome: f.name.replace(/\.[^.]+$/, ""), _file: f, _pending: true, _localId: makeLocalId() })));
+                  e.target.value = "";
+                }} style={{ ...inp, minHeight: 42 }} />
+              </label>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr auto", gap: 8, marginBottom: 10 }}>
+              <input placeholder="URL do vídeo (YouTube, Vimeo…)" value={novoVideoUrl} onChange={(e) => setNovoVideoUrl(e.target.value)} style={inp} />
+              <input placeholder="Nome do vídeo (opcional)" value={novoVideoNome} onChange={(e) => setNovoVideoNome(e.target.value)} style={inp} />
+              <button type="button" onClick={() => {
+                const u = novoVideoUrl.trim();
+                if (!u) return;
+                addExtras([{ kind: "video_externo", nome: novoVideoNome.trim() || "Vídeo externo", url: u, _pending: true, _localId: makeLocalId() }]);
+                setNovoVideoUrl(""); setNovoVideoNome("");
+              }} style={{ background: c.sageDark, color: "white", border: "none", padding: "10px 14px", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", fontFamily: sans }}>+ URL</button>
+            </div>
+            {(current.materiais_extras ?? []).length === 0 ? (
+              <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: 12, textAlign: "center", color: c.muted, fontSize: 12 }}>
+                Nenhuma mídia adicionada para {tab}. Use os botões acima para anexar PDFs ou vídeos.
+              </div>
+            ) : (
+              <div style={{ border: `1px solid ${c.border}` }}>
+                {(current.materiais_extras ?? []).map((ex, idx, arr) => (
+                  <div key={ex._localId} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", padding: "8px 10px", borderBottom: idx < arr.length - 1 ? `1px solid ${c.border}` : "none", background: c.cream }}>
+                    <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: ex.kind === "pdf" ? "#B8923A" : c.sageDark, border: `1px solid ${ex.kind === "pdf" ? "#B8923A" : c.sageDark}`, padding: "3px 8px", fontWeight: 600 }}>
+                      {ex.kind === "pdf" ? "PDF" : ex.kind === "video_externo" ? "Vídeo URL" : "Vídeo"}
+                    </span>
+                    <input value={ex.nome} onChange={(e) => updateExtra(ex._localId, { nome: e.target.value })} placeholder="Nome exibido" style={{ ...inp, padding: "6px 10px", fontSize: 13 }} />
+                    <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                      {ex._pending && <span style={{ fontSize: 10, color: c.muted, letterSpacing: "0.1em" }}>NOVO</span>}
+                      <button type="button" onClick={() => removeExtra(ex._localId)} style={{ background: "transparent", border: `1px solid ${c.danger}`, color: c.danger, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", padding: "5px 9px", cursor: "pointer", fontFamily: sans }}>Remover</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10, alignItems: "stretch", marginTop: 12 }}>
             <Row label={`Áudio (${tab}) — opcional`} compact>
               <input type="file" accept="audio/*" onChange={(e) => onFile("audio_url", "materiais-video", "audios", e.target.files?.[0] ?? null)} style={{ ...inp, minHeight: 42 }} />
               {current.audio_url && <Hint url={current.audio_url} />}
