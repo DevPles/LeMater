@@ -78,6 +78,26 @@ import gestacaoEspanha3 from "@/assets/curso-videos/gestacao-espanha-3.mp4.asset
 import gestacaoEspanha4 from "@/assets/curso-videos/gestacao-espanha-4.mp4.asset.json";
 import gestacaoEspanha5 from "@/assets/curso-videos/gestacao-espanha-5.mp4.asset.json";
 import gestacaoEspanha6 from "@/assets/curso-videos/gestacao-espanha-6.mp4.asset.json";
+import esteticaBrasil1 from "@/assets/curso-videos/estetica-brasil-1.mp4.asset.json";
+import esteticaBrasil2 from "@/assets/curso-videos/estetica-brasil-2.mp4.asset.json";
+import esteticaBrasil3 from "@/assets/curso-videos/estetica-brasil-3.mp4.asset.json";
+import esteticaBrasil4 from "@/assets/curso-videos/estetica-brasil-4.mp4.asset.json";
+import esteticaBrasil5 from "@/assets/curso-videos/estetica-brasil-5.mp4.asset.json";
+import esteticaBrasil6 from "@/assets/curso-videos/estetica-brasil-6.mp4.asset.json";
+import esteticaBrasil7 from "@/assets/curso-videos/estetica-brasil-7.mp4.asset.json";
+import esteticaEua1 from "@/assets/curso-videos/estetica-eua-1.mp4.asset.json";
+import esteticaEua2 from "@/assets/curso-videos/estetica-eua-2.mp4.asset.json";
+import esteticaEua3 from "@/assets/curso-videos/estetica-eua-3.mp4.asset.json";
+import esteticaEua4 from "@/assets/curso-videos/estetica-eua-4.mp4.asset.json";
+import esteticaEua5 from "@/assets/curso-videos/estetica-eua-5.mp4.asset.json";
+import esteticaEua6 from "@/assets/curso-videos/estetica-eua-6.mp4.asset.json";
+import esteticaEua7 from "@/assets/curso-videos/estetica-eua-7.mp4.asset.json";
+import esteticaEspanha1 from "@/assets/curso-videos/estetica-espanha-1.mp4.asset.json";
+import esteticaEspanha2 from "@/assets/curso-videos/estetica-espanha-2.mp4.asset.json";
+import esteticaEspanha3 from "@/assets/curso-videos/estetica-espanha-3.mp4.asset.json";
+import esteticaEspanha4 from "@/assets/curso-videos/estetica-espanha-4.mp4.asset.json";
+import esteticaEspanha5 from "@/assets/curso-videos/estetica-espanha-5.mp4.asset.json";
+import esteticaEspanha6 from "@/assets/curso-videos/estetica-espanha-6.mp4.asset.json";
 
 type BuiltinVideo = { nome: string; url: string; keywords: string[] };
 const BUILTIN_VIDEOS: BuiltinVideo[] = [
