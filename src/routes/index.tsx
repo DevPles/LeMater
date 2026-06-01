@@ -577,21 +577,20 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             <Link to="/atlas" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
               <span className="lm-gold-ring" style={{ display: "flex", flex: 1 }}>
                 <button className="lm-neu-btn" style={neuBtn}>ATLAS MATERNO</button>
-                <svg className="lm-gold-trace" aria-hidden="true" preserveAspectRatio="none">
-                  <rect x="1.5" y="1.5" width="calc(100% - 3px)" height="calc(100% - 3px)" rx="11" ry="11" />
-                </svg>
               </span>
             </Link>
             <Link to="/app" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
               <span className="lm-gold-ring" style={{ display: "flex", flex: 1 }}>
                 <button className="lm-neu-btn" style={neuBtn}>ACESSAR APLICATIVO</button>
-                <svg className="lm-gold-trace" aria-hidden="true" preserveAspectRatio="none">
-                  <rect x="1.5" y="1.5" width="calc(100% - 3px)" height="calc(100% - 3px)" rx="11" ry="11" />
-                </svg>
               </span>
             </Link>
           </div>
           <style>{`
+            @property --lm-gold-angle {
+              syntax: '<angle>';
+              initial-value: 0deg;
+              inherits: false;
+            }
             .lm-neu-btn {
               position: relative;
               transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -607,36 +606,32 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             .lm-gold-ring {
               position: relative;
               border-radius: 14px;
+              padding: 1px;
+              background:
+                conic-gradient(
+                  from var(--lm-gold-angle),
+                  rgba(240, 192, 64, 0) 0deg,
+                  rgba(240, 192, 64, 0.15) 60deg,
+                  rgba(245, 210, 110, 0.95) 140deg,
+                  rgba(255, 230, 150, 1) 180deg,
+                  rgba(245, 210, 110, 0.95) 220deg,
+                  rgba(240, 192, 64, 0.15) 300deg,
+                  rgba(240, 192, 64, 0) 360deg
+                );
+              animation: lmGoldSpin 6s linear infinite;
             }
-            .lm-gold-trace {
-              position: absolute;
-              inset: 0;
+            .lm-gold-ring > button {
+              border-radius: 13px;
               width: 100%;
-              height: 100%;
-              pointer-events: none;
-              overflow: visible;
             }
-            .lm-gold-trace rect {
-              fill: none;
-              stroke: rgba(240, 192, 64, 0.9);
-              stroke-width: 1.2;
-              filter: drop-shadow(0 0 2px rgba(240,192,64,0.5));
-              animation: lmGoldPulse 2.8s ease-in-out infinite;
+            @keyframes lmGoldSpin {
+              to { --lm-gold-angle: 360deg; }
             }
-            @keyframes lmGoldPulse {
-              0%, 100% {
-                stroke: rgba(240, 192, 64, 0.55);
-                filter: drop-shadow(0 0 1px rgba(240,192,64,0.35));
-              }
-              50% {
-                stroke: rgba(245, 210, 110, 1);
-                filter: drop-shadow(0 0 6px rgba(240,192,64,0.85)) drop-shadow(0 0 12px rgba(240,192,64,0.45));
-              }
+            @supports not (background: conic-gradient(from 0deg, red, blue)) {
+              .lm-gold-ring { background: rgba(240, 192, 64, 0.5); animation: none; }
             }
-
-
-
           `}</style>
+
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: `1px solid ${c.border}`, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", width: "100%" }}>
             {[
               { num: "+10", lbl: "Anos em obstetrícia" },
