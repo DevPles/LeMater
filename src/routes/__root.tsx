@@ -102,6 +102,7 @@ function RootComponent() {
       {showAppNav && <BottomNav />}
       {showTermsModal && <TermsAcceptanceModal />}
       <Toaster />
+      <AppDialogRoot />
       {translating && (
         <div style={{
           position: "fixed",
