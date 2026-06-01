@@ -805,7 +805,12 @@ export const adminUpsertAulaAvulsa = createServerFn({ method: "POST" })
       moeda: data.moeda,
       link_compra_externo: data.gratis ? null : (data.link_compra_externo ?? null),
       beneficios: data.beneficios ?? [],
+      materiais_extras: (data.materiais_extras ?? []).map((m) => ({
+        kind: m.kind, nome: m.nome,
+        path: m.path ?? null, url: m.url ?? null,
+      })),
     };
+
 
     if (data.id) payload.id = data.id;
 
