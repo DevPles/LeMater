@@ -106,6 +106,8 @@ export default function AulaEditor({
 
   // Preview state
   const [pvTitulo, setPvTitulo] = useState(editing.titulo ?? "");
+  const [slugVal, setSlugVal] = useState(editing.slug ?? "");
+  const [slugTouched, setSlugTouched] = useState(!!editing.slug);
   const [pvDesc, setPvDesc] = useState(editing.descricao ?? "");
   const [pvTipo, setPvTipo] = useState(editing.tipo ?? "video");
   const [pvGratis, setPvGratis] = useState(editing.gratis ?? false);
