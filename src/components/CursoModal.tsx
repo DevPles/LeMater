@@ -230,7 +230,30 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
                     ))}
                   </div>
                 )}
+
+                {/* Mídias adicionais (PDFs e vídeos extras da aula) */}
+                {player.midias && player.midias.length > 0 && (
+                  <div style={{ marginTop: 18 }}>
+                    <div style={{ fontSize: 10, letterSpacing: "0.22em", color: c.sageDark, marginBottom: 10, fontFamily: sans, fontWeight: 600 }}>MATERIAIS DA AULA</div>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {player.midias.map((m) => (
+                        <button key={m.id} type="button"
+                          onClick={() => setMidiaAberta({ kind: m.kind, nome: m.nome, url: m.url, isExterno: m.isExterno })}
+                          style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: "white", border: `1px solid ${c.border}`, textAlign: "left", cursor: "pointer", fontFamily: sans }}>
+                          <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: m.kind === "pdf" ? c.gold : c.sageDark, border: `1px solid ${m.kind === "pdf" ? c.gold : c.sageDark}`, padding: "3px 8px", fontWeight: 600 }}>
+                            {m.kind === "pdf" ? "PDF" : "Vídeo"}
+                          </span>
+                          <span style={{ flex: 1, fontSize: 14, color: c.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.nome}</span>
+                          <span style={{ fontSize: 11, letterSpacing: "0.12em", color: c.sageDark, textTransform: "uppercase" }}>
+                            {m.kind === "pdf" ? "Ler" : "Assistir"}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
+
             </>
           )}
         </>
