@@ -429,7 +429,7 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
 
                 {atual === "duvidas" && (
                   <Bloco titulo={t.duvidasTitulo} sub={t.duvidasSub}>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
                       {duvidasOpcoes.map((d) => {
                         const ativa = r.duvidas.includes(d);
                         return (
@@ -438,11 +438,12 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
                               duvidas: ativa ? r.duvidas.filter((x) => x !== d) : [...r.duvidas, d],
                             })}
                             style={{
-                              padding: "10px 16px", borderRadius: 999,
+                              padding: "10px 12px", borderRadius: 999,
                               border: `1px solid ${ativa ? c.sageDark : c.border}`,
                               background: ativa ? c.sageDark : "white",
                               color: ativa ? c.cream : c.ink,
-                              cursor: "pointer", fontFamily: sans, fontSize: 13.5,
+                              cursor: "pointer", fontFamily: sans, fontSize: 12.5,
+                              textAlign: "center", lineHeight: 1.2,
                               transition: "all 0.2s",
                             }}>{d}</button>
                         );
