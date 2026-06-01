@@ -564,6 +564,39 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
                   </Bloco>
                 )}
 
+                {atual === "oferta" && (
+                  <Bloco titulo={`${t.ofTitulo}`} sub={t.ofSub}>
+                    <div style={{ display: "grid", gap: 14 }}>
+                      <CartaoOferta
+                        destaque
+                        tag={t.ofConsultaTag}
+                        titulo={t.ofConsultaTitulo}
+                        desc={t.ofConsultaDesc}
+                        botao={enviando ? t.enviando : t.ofConsultaBtn}
+                        onClick={() => { if (!enviando) enviar("consulta"); }}
+                        disabled={enviando}
+                      />
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, color: c.muted, fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+                        <span style={{ flex: 1, height: 1, background: c.border }} />
+                        {t.ofOu}
+                        <span style={{ flex: 1, height: 1, background: c.border }} />
+                      </div>
+                      <CartaoOferta
+                        tag={t.ofAppTag}
+                        titulo={t.ofAppTitulo}
+                        desc={t.ofAppDesc}
+                        botao={t.ofAppBtn}
+                        onClick={() => { if (!enviando) enviar("app"); }}
+                        disabled={enviando}
+                      />
+                      <p style={{ textAlign: "center", fontSize: 12, color: c.muted, marginTop: 4, letterSpacing: "0.04em" }}>
+                        {t.ofProva}
+                      </p>
+                      {erro && <p style={{ color: c.terracotta, marginTop: 4, fontSize: 13, textAlign: "center" }}>{erro}</p>}
+                    </div>
+                  </Bloco>
+                )}
+
                 {atual === "sucesso" && (
                   <Bloco titulo={`${t.sucTitulo}${primeiro(r.nome) ? ", " + primeiro(r.nome) : ""}`} sub={t.sucSub}>
                     <p style={pNota}>{t.sucNota}</p>
@@ -580,27 +613,24 @@ export function AgendamentoModal({ open, onClose }: { open: boolean; onClose: ()
           }}>
             {atual === "sucesso" ? (
               <button onClick={fechar} style={{ ...btnPrimario, marginLeft: "auto" }}>{t.fechar}</button>
+            ) : atual === "oferta" ? (
+              <button onClick={voltar} style={btnGhost}>{t.voltar}</button>
             ) : (
               <>
                 <button onClick={step === 0 ? fechar : voltar} style={btnGhost}>
                   {step === 0 ? t.cancelar : t.voltar}
                 </button>
-                {atual === "resumo" ? (
-                  <button onClick={enviar} disabled={enviando} style={btnPrimario}>
-                    {enviando ? t.enviando : t.enviar}
-                  </button>
-                ) : (
-                  <button onClick={avancar} disabled={!podeAvancar()}
-                    style={{
-                      ...btnPrimario, opacity: podeAvancar() ? 1 : 0.45,
-                      cursor: podeAvancar() ? "pointer" : "not-allowed",
-                    }}>
-                    {step === 0 ? t.comecar : t.continuar}
-                  </button>
-                )}
+                <button onClick={avancar} disabled={!podeAvancar()}
+                  style={{
+                    ...btnPrimario, opacity: podeAvancar() ? 1 : 0.45,
+                    cursor: podeAvancar() ? "pointer" : "not-allowed",
+                  }}>
+                  {step === 0 ? t.comecar : t.continuar}
+                </button>
               </>
             )}
           </div>
+
         </motion.div>
       </motion.div>
     </AnimatePresence>
