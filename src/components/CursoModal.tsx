@@ -400,12 +400,12 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
 
         {data && (
           isMobile ? (
-            <div style={{ height: "100dvh", overflow: "auto", background: c.cream }}>
+            <div style={{ height: "100dvh", overflowY: "auto", overflowX: "hidden", background: c.cream, maxWidth: "100vw" }}>
               <div id="curso-modal-top" />
-              <div style={{ padding: "44px 16px 20px", background: c.cream }}>
+              <div style={{ padding: "44px 16px 20px", background: c.cream, minWidth: 0, maxWidth: "100%", overflowX: "hidden", wordBreak: "break-word" }}>
                 {renderPlayer()}
               </div>
-              <div style={{ padding: "20px 16px 32px", background: c.warm }}>
+              <div style={{ padding: "20px 16px 32px", background: c.warm, minWidth: 0, maxWidth: "100%", overflowX: "hidden", wordBreak: "break-word" }}>
                 {renderLista()}
               </div>
             </div>
