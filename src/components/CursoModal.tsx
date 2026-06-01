@@ -104,7 +104,7 @@ export function CursoModal({ slug, onClose }: { slug: string; onClose: () => voi
   const [modulosAbertos, setModulosAbertos] = useState<Record<string, boolean>>({});
   const [cartTick, setCartTick] = useState(0);
   const [midiaAberta, setMidiaAberta] = useState<{ kind: "pdf" | "video"; nome: string; url: string; isExterno?: boolean } | null>(null);
-  const [documentosAberto, setDocumentosAberto] = useState(false);
+  const [slideIdx, setSlideIdx] = useState(0);
 
 
   useEffect(() => {
