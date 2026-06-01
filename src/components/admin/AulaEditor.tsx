@@ -434,19 +434,12 @@ export default function AulaEditor({
                   </div>
                 </Field>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <Field label="Tipo de conteúdo">
-                    <select name="tipo" defaultValue={editing.tipo ?? "video"} onChange={(e) => setPvTipo(e.target.value as any)} style={inp}>
-                      <option value="video">Vídeo</option>
-                      <option value="pdf">PDF</option>
-                      <option value="texto">Texto / Artigo</option>
-                    </select>
-                  </Field>
-                  <Field label="Duração (min)"><input name="duracao_min" type="number" min={0} defaultValue={editing.duracao_min ?? 0} style={inp} /></Field>
+                <div style={{ display: "grid", gridTemplateColumns: wide ? "1fr 1fr" : "1fr", gap: 12 }}>
+                  <Field label="Duração estimada (min)"><input name="duracao_min" type="number" min={0} defaultValue={editing.duracao_min ?? 0} style={inp} /></Field>
                 </div>
 
-                <SectionTitle>Mídia em Português</SectionTitle>
-                <div style={{ display: "grid", gridTemplateColumns: wide ? "repeat(4, minmax(0, 1fr))" : "repeat(2, minmax(0, 1fr))", gap: 12, alignItems: "stretch" }}>
+                <SectionTitle>Capa da aula</SectionTitle>
+                <div style={{ display: "grid", gridTemplateColumns: wide ? "1fr 1fr" : "1fr", gap: 12, alignItems: "stretch" }}>
                   <MediaField label="Capa (imagem) — usada como poster" hint={editing.capa_url ? `Atual: ${editing.capa_url}` : ""}>
                     <input name="capa" type="file" accept="image/*" onChange={(e) => {
                       setPvCapaFile((prev) => { if (prev) URL.revokeObjectURL(prev); return e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : ""; });
@@ -457,30 +450,15 @@ export default function AulaEditor({
                       setPvCapaVideoFile((prev) => { if (prev) URL.revokeObjectURL(prev); return e.target.files?.[0] ? URL.createObjectURL(e.target.files[0]) : ""; });
                     }} style={{ ...inp, minHeight: 42 }} />
                   </MediaField>
-                  <MediaField label="Vídeo da aula — arquivo (MP4)" hint="">
-                    <input name="video_file" type="file" accept="video/*" style={{ ...inp, minHeight: 42 }} />
-                  </MediaField>
-                  <MediaField label="Vídeo da aula — OU URL externa (YouTube/Vimeo)" hint="">
-                    <input
-                      name="video_url_externa"
-                      placeholder="https://youtube.com/..."
-                      defaultValue={editing.video_url && String(editing.video_url).startsWith("http") ? editing.video_url : ""}
-                      style={{ ...inp, minHeight: 42 }}
-                    />
-                  </MediaField>
                 </div>
 
-                <Field label="PDF (se tipo = PDF)"><input name="pdf_file" type="file" accept="application/pdf" style={inp} /></Field>
-                <Field label="HTML (se tipo = Texto)"><textarea name="conteudo_html" defaultValue={editing.conteudo_html ?? ""} rows={5} style={{ ...inp, resize: "vertical", fontFamily: "ui-monospace, monospace" }} /></Field>
-
-                <SectionTitle>Mídias adicionais (PDFs e vídeos)</SectionTitle>
+                <SectionTitle>Conteúdo da aula — PDFs e vídeos</SectionTitle>
                 <p style={{ fontSize: 12, color: c.muted, margin: "0 0 12px" }}>
-                  Anexe quantos PDFs e vídeos quiser. O aluno poderá clicar para ler o PDF em um modal ou assistir cada vídeo.
+                  Adicione quantos PDFs e vídeos quiser. O aluno vê uma lista — clica num PDF para ler em modal, ou num vídeo para assistir.
                 </p>
 
-                {/* Inputs para adicionar */}
                 <div style={{ display: "grid", gridTemplateColumns: wide ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 12 }}>
-                  <MediaField label="Adicionar PDFs (selecione vários)" hint="Cada arquivo vira um item clicável para o aluno.">
+                  <MediaField label="+ Adicionar PDFs (1 ou vários de uma vez)" hint="Cada arquivo vira um item clicável para o aluno.">
                     <input type="file" accept="application/pdf" multiple onChange={(e) => {
                       const files = Array.from(e.target.files ?? []);
                       if (files.length === 0) return;
@@ -491,7 +469,7 @@ export default function AulaEditor({
                       e.target.value = "";
                     }} style={{ ...inp, minHeight: 42 }} />
                   </MediaField>
-                  <MediaField label="Adicionar vídeos (arquivos MP4 — selecione vários)" hint="Vídeos são reproduzidos dentro do player da aula.">
+                  <MediaField label="+ Adicionar vídeos (arquivos MP4 — 1 ou vários)" hint="Vídeos são reproduzidos dentro do player da aula.">
                     <input type="file" accept="video/*" multiple onChange={(e) => {
                       const files = Array.from(e.target.files ?? []);
                       if (files.length === 0) return;
@@ -512,13 +490,12 @@ export default function AulaEditor({
                     if (!u) return;
                     setExtras((prev) => [...prev, { kind: "video_externo", nome: novoVideoNome.trim() || "Vídeo externo", url: u, _pending: true, _localId: makeLocalId() }]);
                     setNovoVideoUrl(""); setNovoVideoNome("");
-                  }} style={btn(c.sageDark)}>Adicionar URL</button>
+                  }} style={btn(c.sageDark)}>+ Adicionar URL</button>
                 </div>
 
-                {/* Lista de itens */}
                 {extras.length === 0 ? (
                   <div style={{ background: c.warm, border: `1px solid ${c.border}`, padding: 14, textAlign: "center", color: c.muted, fontSize: 12, marginBottom: 18 }}>
-                    Nenhuma mídia adicional. Use os campos acima para anexar PDFs ou vídeos.
+                    Nenhuma mídia adicionada ainda. Use os botões acima para anexar PDFs ou vídeos.
                   </div>
                 ) : (
                   <div style={{ border: `1px solid ${c.border}`, background: "white", marginBottom: 18 }}>
@@ -542,6 +519,7 @@ export default function AulaEditor({
                     ))}
                   </div>
                 )}
+
 
 
                 <SectionTitle>Monetização — Brasil (preço base)</SectionTitle>
