@@ -573,7 +573,7 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           >
             Criada pela Enfermeira Obstetra Brasileira, Rayssa Leslie, a Le Mater é um ecossistema tecnológico de Cuidado Materno que integra Educação, Orientação Profissional, Carteira Digital da Gestante e Acompanhamento da tentativa de engravidar ao Pós-Parto.
           </p>
-          <div className="lm-hero-actions" style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 12, alignItems: "stretch", flexWrap: "nowrap", justifyContent: "center", width: "100%", maxWidth: isMobile ? 360 : 520 }}>
+          <div className="lm-hero-actions" style={{ display: "flex", flexDirection: "row", gap: 12, alignItems: "stretch", flexWrap: "nowrap", justifyContent: "center", width: "100%", maxWidth: 520 }}>
             <Link className="lm-hero-action" to="/atlas" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
               <span className="lm-gold-ring" style={{ display: "flex", flex: 1 }}>
                 <button className="lm-neu-btn" style={neuBtn}>ATLAS MATERNO</button>
@@ -651,8 +651,11 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
               .lm-gold-ring::before { display: none; }
             }
             @media (max-width: 460px) {
-              .lm-hero-actions { flex-direction: column !important; max-width: 360px !important; }
-              .lm-hero-action { flex-basis: auto !important; width: 100%; }
+              .lm-hero-actions { flex-direction: row !important; gap: 8px !important; max-width: 100% !important; }
+              .lm-hero-action { flex: 1 1 0 !important; min-width: 0 !important; }
+              .lm-neu-btn { font-size: 9px !important; letter-spacing: 0.08em !important; padding: 13px 6px !important; }
+              .lm-gold-ring { border-radius: 12px !important; }
+              .lm-gold-ring > button { border-radius: 11px !important; }
             }
           `}</style>
 
