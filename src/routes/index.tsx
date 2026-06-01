@@ -573,13 +573,13 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
           >
             Criada pela Enfermeira Obstetra Brasileira, Rayssa Leslie, a Le Mater é um ecossistema tecnológico de Cuidado Materno que integra Educação, Orientação Profissional, Carteira Digital da Gestante e Acompanhamento da tentativa de engravidar ao Pós-Parto.
           </p>
-          <div style={{ display: "flex", gap: 12, alignItems: "stretch", flexWrap: "nowrap", justifyContent: "center", width: "100%", maxWidth: 520 }}>
-            <Link to="/atlas" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
+          <div className="lm-hero-actions" style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 12, alignItems: "stretch", flexWrap: "nowrap", justifyContent: "center", width: "100%", maxWidth: isMobile ? 360 : 520 }}>
+            <Link className="lm-hero-action" to="/atlas" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
               <span className="lm-gold-ring" style={{ display: "flex", flex: 1 }}>
                 <button className="lm-neu-btn" style={neuBtn}>ATLAS MATERNO</button>
               </span>
             </Link>
-            <Link to="/app" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
+            <Link className="lm-hero-action" to="/app" style={{ textDecoration: "none", flex: "1 1 0", minWidth: 0, display: "flex" }}>
               <span className="lm-gold-ring" style={{ display: "flex", flex: 1 }}>
                 <button className="lm-neu-btn" style={neuBtn}>ACESSAR APLICATIVO</button>
               </span>
@@ -605,30 +605,54 @@ function Inicio({ go }: { go: (id: SectionId) => void }) {
             }
             .lm-gold-ring {
               position: relative;
+              isolation: isolate;
+              overflow: hidden;
               border-radius: 14px;
-              padding: 1px;
-              background:
-                conic-gradient(
-                  from var(--lm-gold-angle),
-                  rgba(240, 192, 64, 0) 0deg,
-                  rgba(240, 192, 64, 0.15) 60deg,
-                  rgba(245, 210, 110, 0.95) 140deg,
-                  rgba(255, 230, 150, 1) 180deg,
-                  rgba(245, 210, 110, 0.95) 220deg,
-                  rgba(240, 192, 64, 0.15) 300deg,
-                  rgba(240, 192, 64, 0) 360deg
-                );
-              animation: lmGoldSpin 6s linear infinite;
+              padding: 1.5px;
+              background: rgba(240, 192, 64, 0.32);
+              box-shadow: 0 0 0 1px rgba(240, 192, 64, 0.12), 0 10px 24px rgba(120, 100, 70, 0.18);
+            }
+            .lm-gold-ring::before {
+              content: "";
+              position: absolute;
+              inset: -115%;
+              z-index: 0;
+              background: conic-gradient(
+                from 0deg,
+                rgba(240, 192, 64, 0.08) 0deg,
+                rgba(240, 192, 64, 0.08) 245deg,
+                rgba(255, 238, 170, 0.95) 285deg,
+                rgba(240, 192, 64, 0.58) 318deg,
+                rgba(240, 192, 64, 0.08) 360deg
+              );
+              animation: lmGoldSweep 3.8s linear infinite;
+              will-change: transform;
+            }
+            .lm-gold-ring::after {
+              content: "";
+              position: absolute;
+              inset: 0;
+              z-index: 2;
+              pointer-events: none;
+              border-radius: inherit;
+              box-shadow: inset 0 0 0 1px rgba(255, 234, 165, 0.22), 0 0 14px rgba(240, 192, 64, 0.12);
             }
             .lm-gold-ring > button {
               border-radius: 13px;
+              position: relative;
+              z-index: 1;
               width: 100%;
             }
-            @keyframes lmGoldSpin {
-              to { --lm-gold-angle: 360deg; }
+            @keyframes lmGoldSweep {
+              to { transform: rotate(360deg); }
             }
             @supports not (background: conic-gradient(from 0deg, red, blue)) {
-              .lm-gold-ring { background: rgba(240, 192, 64, 0.5); animation: none; }
+              .lm-gold-ring { background: rgba(240, 192, 64, 0.5); }
+              .lm-gold-ring::before { display: none; }
+            }
+            @media (max-width: 460px) {
+              .lm-hero-actions { flex-direction: column !important; max-width: 360px !important; }
+              .lm-hero-action { flex-basis: auto !important; width: 100%; }
             }
           `}</style>
 
