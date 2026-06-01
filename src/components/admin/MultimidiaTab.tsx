@@ -48,6 +48,15 @@ import concepcao18 from "@/assets/curso-videos/concepcao-18.mp4.asset.json";
 import concepcao19 from "@/assets/curso-videos/concepcao-19.mp4.asset.json";
 import concepcao20 from "@/assets/curso-videos/concepcao-20.mp4.asset.json";
 import concepcao21 from "@/assets/curso-videos/concepcao-21.mp4.asset.json";
+import concepcaoEua1 from "@/assets/curso-videos/concepcao-eua-1.mp4.asset.json";
+import concepcaoEua2 from "@/assets/curso-videos/concepcao-eua-2.mp4.asset.json";
+import concepcaoEua3 from "@/assets/curso-videos/concepcao-eua-3.mp4.asset.json";
+import concepcaoBrasil1 from "@/assets/curso-videos/concepcao-brasil-1.mp4.asset.json";
+import concepcaoBrasil2 from "@/assets/curso-videos/concepcao-brasil-2.mp4.asset.json";
+import concepcaoBrasil3 from "@/assets/curso-videos/concepcao-brasil-3.mp4.asset.json";
+import concepcaoEspanha1 from "@/assets/curso-videos/concepcao-espanha-1.mp4.asset.json";
+import concepcaoEspanha2 from "@/assets/curso-videos/concepcao-espanha-2.mp4.asset.json";
+import concepcaoEspanha3 from "@/assets/curso-videos/concepcao-espanha-3.mp4.asset.json";
 
 type BuiltinVideo = { nome: string; url: string; keywords: string[] };
 const BUILTIN_VIDEOS: BuiltinVideo[] = [
@@ -102,6 +111,16 @@ const BUILTIN_VIDEOS: BuiltinVideo[] = [
   { nome: "Concepção · Casal polinésio", url: concepcao19.url, keywords: ["conceb", "concep", "engravid", "fertil", "polines"] },
   { nome: "Concepção · Casal eslavo", url: concepcao20.url, keywords: ["conceb", "concep", "engravid", "fertil", "eslav"] },
   { nome: "Concepção · Casal vietnamita", url: concepcao21.url, keywords: ["conceb", "concep", "engravid", "fertil", "vietnam"] },
+
+  { nome: "Concepção · Casal EUA (Brooklyn)", url: concepcaoEua1.url, keywords: ["conceb", "concep", "engravid", "fertil", "eua", "americ"] },
+  { nome: "Concepção · Casal EUA (cozinha)", url: concepcaoEua2.url, keywords: ["conceb", "concep", "engravid", "fertil", "eua", "americ"] },
+  { nome: "Concepção · Casal EUA (parque)", url: concepcaoEua3.url, keywords: ["conceb", "concep", "engravid", "fertil", "eua", "americ"] },
+  { nome: "Concepção · Casal Brasil (São Paulo)", url: concepcaoBrasil1.url, keywords: ["conceb", "concep", "engravid", "fertil", "brasil"] },
+  { nome: "Concepção · Casal Brasil (Rio)", url: concepcaoBrasil2.url, keywords: ["conceb", "concep", "engravid", "fertil", "brasil", "rio"] },
+  { nome: "Concepção · Casal Brasil (cozinha)", url: concepcaoBrasil3.url, keywords: ["conceb", "concep", "engravid", "fertil", "brasil"] },
+  { nome: "Concepção · Casal Espanha (Madrid)", url: concepcaoEspanha1.url, keywords: ["conceb", "concep", "engravid", "fertil", "espanh", "madrid"] },
+  { nome: "Concepção · Casal Espanha (Barcelona)", url: concepcaoEspanha2.url, keywords: ["conceb", "concep", "engravid", "fertil", "espanh", "barcelon"] },
+  { nome: "Concepção · Casal Espanha (Valencia)", url: concepcaoEspanha3.url, keywords: ["conceb", "concep", "engravid", "fertil", "espanh", "valenc"] },
 ];
 
 const c = {
