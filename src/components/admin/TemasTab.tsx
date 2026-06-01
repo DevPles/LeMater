@@ -74,7 +74,7 @@ export default function TemasTab() {
       </div>
 
       {edit && (
-        <div onClick={() => setEdit(null)} style={{ position: "fixed", inset: 0, background: "rgba(28,28,26,0.6)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(28,28,26,0.6)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: "white", maxWidth: 480, width: "100%", padding: 28, border: `1px solid ${c.border}` }}>
             <h2 style={{ fontFamily: serif, fontSize: 24, fontWeight: 400, margin: "0 0 18px" }}>{edit.id ? "Editar tema" : "Novo tema"}</h2>
             <div style={{ display: "grid", gap: 12 }}>
