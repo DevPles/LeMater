@@ -216,6 +216,24 @@ export default function AulaEditor({
       const beneficios = String(fd.get("beneficios") ?? "")
         .split("\n").map((s) => s.trim()).filter(Boolean).slice(0, 20);
 
+      // Upload de mídias adicionais (PDFs e vídeos) pendentes
+      const extrasFinal: MaterialExtra[] = [];
+      for (const ex of extras) {
+        if (ex._file) {
+          const bucket = ex.kind === "pdf" ? "materiais-pdf" : "materiais-video";
+          const folder = ex.kind === "pdf" ? "extras" : "extras";
+          const safeName = ex._file.name.replace(/[^\w.-]/g, "_");
+          const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 6)}-${safeName}`;
+          const { error } = await supabase.storage.from(bucket).upload(path, ex._file);
+          if (error) throw new Error(`Falha ao enviar ${ex._file.name}: ${error.message}`);
+          extrasFinal.push({ kind: ex.kind, nome: ex.nome || ex._file.name, path });
+        } else if (ex.kind === "video_externo" && ex.url) {
+          extrasFinal.push({ kind: "video_externo", nome: ex.nome || "Vídeo", url: ex.url });
+        } else if (ex.path) {
+          extrasFinal.push({ kind: ex.kind, nome: ex.nome, path: ex.path });
+        }
+      }
+
       const saved = await fnSave({ data: {
         id: savedId ?? editing.id,
         titulo, slug,
@@ -232,7 +250,12 @@ export default function AulaEditor({
         link_compra_externo: String(fd.get("link_compra_externo") ?? "") || null,
         beneficios,
         temas: temasSel,
+        materiais_extras: extrasFinal,
       } as any }) as { id: string };
+
+      // Limpa flags _file/_pending dos itens recém-enviados
+      setExtras(extrasFinal.map((m) => ({ ...m, _localId: makeLocalId() })));
+
 
       if (saved?.id) setSavedId(saved.id);
 
