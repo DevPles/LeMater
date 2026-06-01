@@ -32,14 +32,9 @@ interface Pais {
 }
 
 const PAISES: Pais[] = [
-  { code: "BR", flag: "🇧🇷", lang: "pt", nome: { pt: "Brasil", en: "Brazil", es: "Brasil" } },
-  { code: "PT", flag: "🇵🇹", lang: "pt", nome: { pt: "Portugal", en: "Portugal", es: "Portugal" } },
-  { code: "US", flag: "🇺🇸", lang: "en", nome: { pt: "Estados Unidos", en: "United States", es: "Estados Unidos" } },
-  { code: "GB", flag: "🇬🇧", lang: "en", nome: { pt: "Reino Unido", en: "United Kingdom", es: "Reino Unido" } },
-  { code: "ES", flag: "🇪🇸", lang: "es", nome: { pt: "Espanha", en: "Spain", es: "España" } },
-  { code: "MX", flag: "🇲🇽", lang: "es", nome: { pt: "México", en: "Mexico", es: "México" } },
-  { code: "AR", flag: "🇦🇷", lang: "es", nome: { pt: "Argentina", en: "Argentina", es: "Argentina" } },
-  { code: "OUTRO", flag: "🌎", lang: "pt", nome: { pt: "Outro país", en: "Other country", es: "Otro país" } },
+  { code: "BR", flag: "https://flagcdn.com/w160/br.png", lang: "pt", nome: { pt: "Brasil", en: "Brazil", es: "Brasil" } },
+  { code: "ES", flag: "https://flagcdn.com/w160/es.png", lang: "es", nome: { pt: "Espanha", en: "Spain", es: "España" } },
+  { code: "US", flag: "https://flagcdn.com/w160/us.png", lang: "en", nome: { pt: "Estados Unidos", en: "United States", es: "Estados Unidos" } },
 ];
 
 const T: Record<Lang, Record<string, string>> = {
