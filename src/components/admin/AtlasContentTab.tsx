@@ -11,7 +11,7 @@ const c = { cream: "#FAF5EE", warm: "#F5EDE0", sage: "#5C8A6E", sageDark: "#2D5A
 const serif = "'Cormorant Garamond', serif";
 const sans = "'DM Sans', sans-serif";
 
-type Aba = "conteudo" | "tema";
+type Aba = "conteudo" | "tema" | "multimidia";
 type TipoFiltro = "aula" | "servico";
 
 export default function AtlasContentTab() {
